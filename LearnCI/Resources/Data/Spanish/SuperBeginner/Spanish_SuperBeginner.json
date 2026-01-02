@@ -1,0 +1,44 @@
+{
+    "id": "deck_es_sb_001",
+    "language": "Spanish",
+    "level": "Super Beginner",
+    "title": "Essential Greetings & Basics",
+    "cards": [
+        {
+            "id": "card_es_001",
+            "targetWord": "Hola",
+            "nativeTranslation": "Hello",
+            "sentenceTarget": "Hola, ¿cómo estás?",
+            "sentenceNative": "Hello, how are you?",
+            "audioWordFile": "es_hola.mp3",
+            "audioSentenceFile": "es_sentence_hola.mp3"
+        },
+        {
+            "id": "card_es_002",
+            "targetWord": "Buenos días",
+            "nativeTranslation": "Good morning",
+            "sentenceTarget": "Buenos días a todos.",
+            "sentenceNative": "Good morning everyone.",
+            "audioWordFile": "es_buenosdias.mp3",
+            "audioSentenceFile": "es_sentence_buenosdias.mp3"
+        },
+         {
+            "id": "card_es_003",
+            "targetWord": "Gato",
+            "nativeTranslation": "Cat",
+            "sentenceTarget": "El gato es negro.",
+            "sentenceNative": "The cat is black.",
+            "audioWordFile": "es_gato.mp3",
+            "audioSentenceFile": "es_sentence_gato.mp3"
+        },
+         {
+            "id": "card_es_004",
+            "targetWord": "Agua",
+            "nativeTranslation": "Water",
+            "sentenceTarget": "Quiero beber agua.",
+            "sentenceNative": "I want to drink water.",
+            "audioWordFile": "es_agua.mp3",
+            "audioSentenceFile": "es_sentence_agua.mp3"
+        }
+    ]
+}

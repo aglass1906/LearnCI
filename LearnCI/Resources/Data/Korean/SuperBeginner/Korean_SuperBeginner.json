@@ -1,0 +1,44 @@
+{
+    "id": "deck_kr_sb_001",
+    "language": "Korean",
+    "level": "Super Beginner",
+    "title": "Essential Greetings & Basics",
+    "cards": [
+        {
+            "id": "card_kr_001",
+            "targetWord": "안녕하세요",
+            "nativeTranslation": "Hello",
+            "sentenceTarget": "안녕하세요, 잘 지내세요?",
+            "sentenceNative": "Hello, how are you?",
+            "audioWordFile": "kr_annyeong.mp3",
+            "audioSentenceFile": "kr_sentence_annyeong.mp3"
+        },
+        {
+            "id": "card_kr_002",
+            "targetWord": "감사합니다",
+            "nativeTranslation": "Thank you",
+            "sentenceTarget": "도와주셔서 감사합니다.",
+            "sentenceNative": "Thank you for helping.",
+            "audioWordFile": "kr_gamsa.mp3",
+            "audioSentenceFile": "kr_sentence_gamsa.mp3"
+        },
+        {
+            "id": "card_kr_003",
+            "targetWord": "고양이",
+            "nativeTranslation": "Cat",
+            "sentenceTarget": "고양이는 귀여워요.",
+            "sentenceNative": "The cat is cute.",
+            "audioWordFile": "kr_goyangi.mp3",
+            "audioSentenceFile": "kr_sentence_goyangi.mp3"
+        },
+        {
+            "id": "card_kr_004",
+            "targetWord": "물",
+            "nativeTranslation": "Water",
+            "sentenceTarget": "물 좀 주세요.",
+            "sentenceNative": "Please give me some water.",
+            "audioWordFile": "kr_mul.mp3",
+            "audioSentenceFile": "kr_sentence_mul.mp3"
+        }
+    ]
+}

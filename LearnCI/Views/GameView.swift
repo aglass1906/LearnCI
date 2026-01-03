@@ -114,6 +114,23 @@ struct GameView: View {
                     }
                 }
             }
+            .onChange(of: isPaused) { _, newValue in
+                if newValue {
+                    audioManager.stopAudio()
+                } else {
+                    playCurrentCardAudio()
+                }
+            }
+            .onChange(of: currentCardIndex) { _, _ in
+                playCurrentCardAudio()
+            }
+            .onChange(of: isFlipped) { _, newValue in
+                if !newValue { // When flipped back to front
+                    playCurrentCardAudio()
+                } else {
+                    audioManager.stopAudio() // Stop word/sentence audio when showing meaning
+                }
+            }
         }
     }
     
@@ -276,46 +293,55 @@ struct GameView: View {
                         
                         VStack(spacing: 20) {
                             if !isFlipped {
-                                // Front: Target Content
-                                VStack(spacing: 15) {
-                                    HStack {
-                                        Text(card.targetWord)
-                                            .font(.system(size: 40, weight: .bold))
+                                    // Front: Target Content
+                                    VStack(spacing: 15) {
+                                        // Optional Image
+                                        if let image = resolveImage(card.imageFile, folder: deck.baseFolderName) {
+                                            image
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(maxHeight: 180)
+                                                .cornerRadius(10)
+                                        }
                                         
-                                        Button(action: {
-                                            if let file = card.audioWordFile {
-                                                audioManager.playAudio(named: file)
+                                        HStack {
+                                            Text(card.targetWord)
+                                                .font(.system(size: 40, weight: .bold))
+                                            
+                                            Button(action: {
+                                                if let file = card.audioWordFile {
+                                                    audioManager.playAudio(named: file, folderName: deck.baseFolderName)
+                                                }
+                                            }) {
+                                                Image(systemName: "speaker.wave.2.fill")
+                                                    .font(.title)
                                             }
-                                        }) {
-                                            Image(systemName: "speaker.wave.2.fill")
-                                                .font(.title)
+                                        }
+                                        
+                                        Divider()
+                                        
+                                        VStack {
+                                            Text(card.sentenceTarget)
+                                                .font(.headline)
+                                                .multilineTextAlignment(.center)
+                                                .padding(.horizontal)
+                                            
+                                            Button(action: {
+                                                 if let file = card.audioSentenceFile {
+                                                    audioManager.playAudio(named: file, folderName: deck.baseFolderName)
+                                                }
+                                            }) {
+                                                HStack {
+                                                    Image(systemName: "speaker.wave.2.circle.fill")
+                                                    Text("Play Sentence")
+                                                }
+                                                .font(.subheadline)
+                                                .padding(8)
+                                                .background(Color.blue.opacity(0.1))
+                                                .cornerRadius(10)
+                                            }
                                         }
                                     }
-                                    
-                                    Divider()
-                                    
-                                    VStack {
-                                        Text(card.sentenceTarget)
-                                            .font(.headline)
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal)
-                                        
-                                        Button(action: {
-                                             if let file = card.audioSentenceFile {
-                                                audioManager.playAudio(named: file)
-                                            }
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "speaker.wave.2.circle.fill")
-                                                Text("Play Sentence")
-                                            }
-                                            .font(.subheadline)
-                                            .padding(8)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(10)
-                                        }
-                                    }
-                                }
                             } else {
                                 // Back: Translations
                                 VStack(spacing: 15) {
@@ -470,6 +496,24 @@ struct GameView: View {
         withAnimation {
             gameState = .active
         }
+        
+        // Delay slightly to ensure view is ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            playCurrentCardAudio()
+        }
+    }
+    
+    func playCurrentCardAudio() {
+        guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < deck.cards.count else { return }
+        let card = deck.cards[currentCardIndex]
+        
+        var sequence: [String] = []
+        if let wordFile = card.audioWordFile { sequence.append(wordFile) }
+        if let sentenceFile = card.audioSentenceFile { sequence.append(sentenceFile) }
+        
+        if !sequence.isEmpty {
+            audioManager.playSequence(filenames: sequence, folderName: deck.baseFolderName)
+        }
     }
     
     func handleTimerTick() {
@@ -532,6 +576,38 @@ struct GameView: View {
     
     func relearnCard() {
         nextCard()
+    }
+    
+    func resolveImage(_ filename: String?, folder: String?) -> Image? {
+        guard let name = filename else { return nil }
+        
+        // 1. Try Bundle with subdirectory
+        if let folder = folder, let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "Data/\(folder)"),
+           let uiImage = UIImage(contentsOfFile: url.path) {
+            return Image(uiImage: uiImage)
+        }
+        
+        // 2. Try Bundle flattened
+        if let url = Bundle.main.url(forResource: name, withExtension: nil),
+           let uiImage = UIImage(contentsOfFile: url.path) {
+            return Image(uiImage: uiImage)
+        }
+        
+        // 3. Try Local Resources Path
+        if let folder = folder {
+            let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(name)"
+            if let uiImage = UIImage(contentsOfFile: localPath) {
+                return Image(uiImage: uiImage)
+            }
+        }
+        
+        // System fallback if name looks like a system icon (experimental)
+        if name.contains("system:") {
+            let systemName = name.replacingOccurrences(of: "system:", with: "")
+            return Image(systemName: systemName)
+        }
+        
+        return nil
     }
 }
 

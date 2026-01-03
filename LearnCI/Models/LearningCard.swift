@@ -42,6 +42,7 @@ struct LearningCard: Identifiable, Codable, Hashable {
     var sentenceNative: String
     var audioWordFile: String?
     var audioSentenceFile: String?
+    var imageFile: String?
     
     // For local tracking if needed, though mostly handled by DataManager/Game logic
     // We make this optional so it doesn't fail JSON decoding if missing
@@ -59,4 +60,5 @@ struct CardDeck: Codable, Identifiable {
     var level: LearningLevel
     var title: String
     var cards: [LearningCard]
+    var baseFolderName: String? // Added to track resource folder
 }

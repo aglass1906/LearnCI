@@ -1,0 +1,1008 @@
+{
+    "id": "ko_beg_001",
+    "language": "Korean",
+    "level": "Beginner",
+    "title": "Korean Beginner Essentials",
+    "cards": [
+        {
+            "id": "ko_b_c1",
+            "targetWord": "저 / 나",
+            "nativeTranslation": "I / Me",
+            "sentenceTarget": "저는 학생입니다.",
+            "sentenceNative": "I am a student.",
+            "audioWordFile": "ko_jeo_word.mp3",
+            "audioSentenceFile": "ko_jeo_sentence.mp3",
+            "imageFile": "ko_jeo.jpg"
+        },
+        {
+            "id": "ko_b_c2",
+            "targetWord": "너 / 당신",
+            "nativeTranslation": "You",
+            "sentenceTarget": "너는 누구니?",
+            "sentenceNative": "Who are you?",
+            "audioWordFile": "ko_neo_word.mp3",
+            "audioSentenceFile": "ko_neo_sentence.mp3",
+            "imageFile": "ko_neo.jpg"
+        },
+        {
+            "id": "ko_b_c3",
+            "targetWord": "그",
+            "nativeTranslation": "He",
+            "sentenceTarget": "그는 내 친구예요.",
+            "sentenceNative": "He is my friend.",
+            "audioWordFile": "ko_geu_word.mp3",
+            "audioSentenceFile": "ko_geu_sentence.mp3",
+            "imageFile": "ko_geu.jpg"
+        },
+        {
+            "id": "ko_b_c4",
+            "targetWord": "그녀",
+            "nativeTranslation": "She",
+            "sentenceTarget": "그녀는 아주 예뻐요.",
+            "sentenceNative": "She is very pretty.",
+            "audioWordFile": "ko_geunyeo_word.mp3",
+            "audioSentenceFile": "ko_geunyeo_sentence.mp3",
+            "imageFile": "ko_geunyeo.jpg"
+        },
+        {
+            "id": "ko_b_c5",
+            "targetWord": "사람",
+            "nativeTranslation": "Person",
+            "sentenceTarget": "여기에 사람이 많아요.",
+            "sentenceNative": "There are many people here.",
+            "audioWordFile": "ko_saram_word.mp3",
+            "audioSentenceFile": "ko_saram_sentence.mp3",
+            "imageFile": "ko_saram.jpg"
+        },
+        {
+            "id": "ko_b_c6",
+            "targetWord": "남자",
+            "nativeTranslation": "Man",
+            "sentenceTarget": "저 남자는 누구예요?",
+            "sentenceNative": "Who is that man?",
+            "audioWordFile": "ko_namja_word.mp3",
+            "audioSentenceFile": "ko_namja_sentence.mp3",
+            "imageFile": "ko_namja.jpg"
+        },
+        {
+            "id": "ko_b_c7",
+            "targetWord": "여자",
+            "nativeTranslation": "Woman",
+            "sentenceTarget": "여자가 노래를 불러요.",
+            "sentenceNative": "The woman is singing.",
+            "audioWordFile": "ko_yeoja_word.mp3",
+            "audioSentenceFile": "ko_yeoja_sentence.mp3",
+            "imageFile": "ko_yeoja.jpg"
+        },
+        {
+            "id": "ko_b_c8",
+            "targetWord": "아이",
+            "nativeTranslation": "Child",
+            "sentenceTarget": "아이가 웃고 있어요.",
+            "sentenceNative": "The child is laughing.",
+            "audioWordFile": "ko_ai_word.mp3",
+            "audioSentenceFile": "ko_ai_sentence.mp3",
+            "imageFile": "ko_ai.jpg"
+        },
+        {
+            "id": "ko_b_c9",
+            "targetWord": "아버지",
+            "nativeTranslation": "Father",
+            "sentenceTarget": "아버지는 회사원이에요.",
+            "sentenceNative": "Father is an office worker.",
+            "audioWordFile": "ko_abeoji_word.mp3",
+            "audioSentenceFile": "ko_abeoji_sentence.mp3",
+            "imageFile": "ko_abeoji.jpg"
+        },
+        {
+            "id": "ko_b_c10",
+            "targetWord": "어머니",
+            "nativeTranslation": "Mother",
+            "sentenceTarget": "어머니는 요리를 잘하세요.",
+            "sentenceNative": "Mother is good at cooking.",
+            "audioWordFile": "ko_eomeoni_word.mp3",
+            "audioSentenceFile": "ko_eomeoni_sentence.mp3",
+            "imageFile": "ko_eomeoni.jpg"
+        },
+        {
+            "id": "ko_b_c11",
+            "targetWord": "동생",
+            "nativeTranslation": "Younger sibling",
+            "sentenceTarget": "동생이 숙제를 해요.",
+            "sentenceNative": "The younger sibling does homework.",
+            "audioWordFile": "ko_dongsaeng_word.mp3",
+            "audioSentenceFile": "ko_dongsaeng_sentence.mp3",
+            "imageFile": "ko_dongsaeng.jpg"
+        },
+        {
+            "id": "ko_b_c12",
+            "targetWord": "형 / 오빠",
+            "nativeTranslation": "Older brother",
+            "sentenceTarget": "형은 키가 커요.",
+            "sentenceNative": "Older brother is tall.",
+            "audioWordFile": "ko_hyeong_word.mp3",
+            "audioSentenceFile": "ko_hyeong_sentence.mp3",
+            "imageFile": "ko_hyeong.jpg"
+        },
+        {
+            "id": "ko_b_c13",
+            "targetWord": "누나 / 언니",
+            "nativeTranslation": "Older sister",
+            "sentenceTarget": "누나는 대학생이에요.",
+            "sentenceNative": "Older sister is a college student.",
+            "audioWordFile": "ko_nuna_word.mp3",
+            "audioSentenceFile": "ko_nuna_sentence.mp3",
+            "imageFile": "ko_nuna.jpg"
+        },
+        {
+            "id": "ko_b_c14",
+            "targetWord": "친구",
+            "nativeTranslation": "Friend",
+            "sentenceTarget": "친구가 선물을 줬어요.",
+            "sentenceNative": "The friend gave a gift.",
+            "audioWordFile": "ko_chingu_word.mp3",
+            "audioSentenceFile": "ko_chingu_sentence.mp3",
+            "imageFile": "ko_chingu.jpg"
+        },
+        {
+            "id": "ko_b_c15",
+            "targetWord": "학교",
+            "nativeTranslation": "School",
+            "sentenceTarget": "학교에 일찍 가요.",
+            "sentenceNative": "I go to school early.",
+            "audioWordFile": "ko_hakgyo_word.mp3",
+            "audioSentenceFile": "ko_hakgyo_sentence.mp3",
+            "imageFile": "ko_hakgyo.jpg"
+        },
+        {
+            "id": "ko_b_c16",
+            "targetWord": "회사",
+            "nativeTranslation": "Company / Office",
+            "sentenceTarget": "회사가 서울에 있어요.",
+            "sentenceNative": "The company is in Seoul.",
+            "audioWordFile": "ko_hoesa_word.mp3",
+            "audioSentenceFile": "ko_hoesa_sentence.mp3",
+            "imageFile": "ko_hoesa.jpg"
+        },
+        {
+            "id": "ko_b_c17",
+            "targetWord": "병원",
+            "nativeTranslation": "Hospital",
+            "sentenceTarget": "병원에 가야 해요.",
+            "sentenceNative": "I have to go to the hospital.",
+            "audioWordFile": "ko_byeongwon_word.mp3",
+            "audioSentenceFile": "ko_byeongwon_sentence.mp3",
+            "imageFile": "ko_byeongwon.jpg"
+        },
+        {
+            "id": "ko_b_c18",
+            "targetWord": "시장",
+            "nativeTranslation": "Market",
+            "sentenceTarget": "시장에서 과일을 샀어요.",
+            "sentenceNative": "I bought fruit at the market.",
+            "audioWordFile": "ko_sijang_word.mp3",
+            "audioSentenceFile": "ko_sijang_sentence.mp3",
+            "imageFile": "ko_sijang.jpg"
+        },
+        {
+            "id": "ko_b_c19",
+            "targetWord": "식당",
+            "nativeTranslation": "Restaurant",
+            "sentenceTarget": "이 식당은 비빔밥이 맛있어요.",
+            "sentenceNative": "This restaurant's bibimbap is delicious.",
+            "audioWordFile": "ko_sikdang_word.mp3",
+            "audioSentenceFile": "ko_sikdang_sentence.mp3",
+            "imageFile": "ko_sikdang.jpg"
+        },
+        {
+            "id": "ko_b_c20",
+            "targetWord": "커피숍",
+            "nativeTranslation": "Coffee shop",
+            "sentenceTarget": "커피숍에서 친구를 만나요.",
+            "sentenceNative": "I meet a friend at the coffee shop.",
+            "audioWordFile": "ko_keopisyop_word.mp3",
+            "audioSentenceFile": "ko_keopisyop_sentence.mp3",
+            "imageFile": "ko_keopisyop.jpg"
+        },
+        {
+            "id": "ko_b_c21",
+            "targetWord": "집",
+            "nativeTranslation": "House",
+            "sentenceTarget": "집이 아주 깨끗해요.",
+            "sentenceNative": "The house is very clean.",
+            "audioWordFile": "ko_jip_word.mp3",
+            "audioSentenceFile": "ko_jip_sentence.mp3",
+            "imageFile": "ko_jip.jpg"
+        },
+        {
+            "id": "ko_b_c22",
+            "targetWord": "방",
+            "nativeTranslation": "Room",
+            "sentenceTarget": "방이 따뜻해요.",
+            "sentenceNative": "The room is warm.",
+            "audioWordFile": "ko_bang_word.mp3",
+            "audioSentenceFile": "ko_bang_sentence.mp3",
+            "imageFile": "ko_bang.jpg"
+        },
+        {
+            "id": "ko_b_c23",
+            "targetWord": "화장실",
+            "nativeTranslation": "Bathroom",
+            "sentenceTarget": "화장실이 어디예요?",
+            "sentenceNative": "Where is the bathroom?",
+            "audioWordFile": "ko_hwajangsil_word.mp3",
+            "audioSentenceFile": "ko_hwajangsil_sentence.mp3",
+            "imageFile": "ko_hwajangsil.jpg"
+        },
+        {
+            "id": "ko_b_c24",
+            "targetWord": "주방",
+            "nativeTranslation": "Kitchen",
+            "sentenceTarget": "주방에서 물을 마셔요.",
+            "sentenceNative": "I drink water in the kitchen.",
+            "audioWordFile": "ko_jubang_word.mp3",
+            "audioSentenceFile": "ko_jubang_sentence.mp3",
+            "imageFile": "ko_jubang.jpg"
+        },
+        {
+            "id": "ko_b_c25",
+            "targetWord": "침대",
+            "nativeTranslation": "Bed",
+            "sentenceTarget": "침대가 아주 편해요.",
+            "sentenceNative": "The bed is very comfortable.",
+            "audioWordFile": "ko_chimdae_word.mp3",
+            "audioSentenceFile": "ko_chimdae_sentence.mp3",
+            "imageFile": "ko_chimdae.jpg"
+        },
+        {
+            "id": "ko_b_c26",
+            "targetWord": "책상",
+            "nativeTranslation": "Desk",
+            "sentenceTarget": "책상 위에 책이 있어요.",
+            "sentenceNative": "There is a book on the desk.",
+            "audioWordFile": "ko_chaeksang_word.mp3",
+            "audioSentenceFile": "ko_chaeksang_sentence.mp3",
+            "imageFile": "ko_chaeksang.jpg"
+        },
+        {
+            "id": "ko_b_c27",
+            "targetWord": "의자",
+            "nativeTranslation": "Chair",
+            "sentenceTarget": "의자에 앉으세요.",
+            "sentenceNative": "Please sit in the chair.",
+            "audioWordFile": "ko_uija_word.mp3",
+            "audioSentenceFile": "ko_uija_sentence.mp3",
+            "imageFile": "ko_uija.jpg"
+        },
+        {
+            "id": "ko_b_c28",
+            "targetWord": "전화",
+            "nativeTranslation": "Phone",
+            "sentenceTarget": "전화번호가 뭐예요?",
+            "sentenceNative": "What is your phone number?",
+            "audioWordFile": "ko_jeonhwa_word.mp3",
+            "audioSentenceFile": "ko_jeonhwa_sentence.mp3",
+            "imageFile": "ko_jeonhwa.jpg"
+        },
+        {
+            "id": "ko_b_c29",
+            "targetWord": "컴퓨터",
+            "nativeTranslation": "Computer",
+            "sentenceTarget": "컴퓨터로 게임을 해요.",
+            "sentenceNative": "I play games on the computer.",
+            "audioWordFile": "ko_keompyuteo_word.mp3",
+            "audioSentenceFile": "ko_keompyuteo_sentence.mp3",
+            "imageFile": "ko_keompyuteo.jpg"
+        },
+        {
+            "id": "ko_b_c30",
+            "targetWord": "책",
+            "nativeTranslation": "Book",
+            "sentenceTarget": "매일 책을 읽어요.",
+            "sentenceNative": "I read books every day.",
+            "audioWordFile": "ko_chaek_word.mp3",
+            "audioSentenceFile": "ko_chaek_sentence.mp3",
+            "imageFile": "ko_chaek.jpg"
+        },
+        {
+            "id": "ko_b_c31",
+            "targetWord": "연필",
+            "nativeTranslation": "Pencil",
+            "sentenceTarget": "연필을 빌려주세요.",
+            "sentenceNative": "Please lend me a pencil.",
+            "audioWordFile": "ko_yeonpil_word.mp3",
+            "audioSentenceFile": "ko_yeonpil_sentence.mp3",
+            "imageFile": "ko_yeonpil.jpg"
+        },
+        {
+            "id": "ko_b_c32",
+            "targetWord": "종이",
+            "nativeTranslation": "Paper",
+            "sentenceTarget": "종이에 이름을 쓰세요.",
+            "sentenceNative": "Please write your name on the paper.",
+            "audioWordFile": "ko_jong_i_word.mp3",
+            "audioSentenceFile": "ko_jong_i_sentence.mp3",
+            "imageFile": "ko_jong_i.jpg"
+        },
+        {
+            "id": "ko_b_c33",
+            "targetWord": "돈",
+            "nativeTranslation": "Money",
+            "sentenceTarget": "돈을 많이 벌고 싶어요.",
+            "sentenceNative": "I want to earn a lot of money.",
+            "audioWordFile": "ko_don_word.mp3",
+            "audioSentenceFile": "ko_don_sentence.mp3",
+            "imageFile": "ko_don.jpg"
+        },
+        {
+            "id": "ko_b_c34",
+            "targetWord": "옷",
+            "nativeTranslation": "Clothes",
+            "sentenceTarget": "두꺼운 옷을 입으세요.",
+            "sentenceNative": "Please wear thick clothes.",
+            "audioWordFile": "ko_ot_word.mp3",
+            "audioSentenceFile": "ko_ot_sentence.mp3",
+            "imageFile": "ko_ot.jpg"
+        },
+        {
+            "id": "ko_b_c35",
+            "targetWord": "신발",
+            "nativeTranslation": "Shoes",
+            "sentenceTarget": "신발을 벗고 들어오세요.",
+            "sentenceNative": "Please take off your shoes and come in.",
+            "audioWordFile": "ko_sinbal_word.mp3",
+            "audioSentenceFile": "ko_sinbal_sentence.mp3",
+            "imageFile": "ko_sinbal.jpg"
+        },
+        {
+            "id": "ko_b_c36",
+            "targetWord": "가방",
+            "nativeTranslation": "Bag",
+            "sentenceTarget": "가방이 너무 무거워요.",
+            "sentenceNative": "The bag is too heavy.",
+            "audioWordFile": "ko_gabang_word.mp3",
+            "audioSentenceFile": "ko_gabang_sentence.mp3",
+            "imageFile": "ko_gabang.jpg"
+        },
+        {
+            "id": "ko_b_c37",
+            "targetWord": "시간",
+            "nativeTranslation": "Time",
+            "sentenceTarget": "시간이 벌써 이렇게 됐네요.",
+            "sentenceNative": "Time has passed so quickly.",
+            "audioWordFile": "ko_sigan_word.mp3",
+            "audioSentenceFile": "ko_sigan_sentence.mp3",
+            "imageFile": "ko_sigan.jpg"
+        },
+        {
+            "id": "ko_b_c38",
+            "targetWord": "오늘",
+            "nativeTranslation": "Today",
+            "sentenceTarget": "오늘은 파티가 있어요.",
+            "sentenceNative": "There is a party today.",
+            "audioWordFile": "ko_oneul_word.mp3",
+            "audioSentenceFile": "ko_oneul_sentence.mp3",
+            "imageFile": "ko_oneul.jpg"
+        },
+        {
+            "id": "ko_b_c39",
+            "targetWord": "어제",
+            "nativeTranslation": "Yesterday",
+            "sentenceTarget": "어제 영화를 봤어요.",
+            "sentenceNative": "I watched a movie yesterday.",
+            "audioWordFile": "ko_eoje_word.mp3",
+            "audioSentenceFile": "ko_eoje_sentence.mp3",
+            "imageFile": "ko_eoje.jpg"
+        },
+        {
+            "id": "ko_b_c40",
+            "targetWord": "내일",
+            "nativeTranslation": "Tomorrow",
+            "sentenceTarget": "내일 바다에 갈 거예요.",
+            "sentenceNative": "I'm going to the sea tomorrow.",
+            "audioWordFile": "ko_naeil_word.mp3",
+            "audioSentenceFile": "ko_naeil_sentence.mp3",
+            "imageFile": "ko_naeil.jpg"
+        },
+        {
+            "id": "ko_b_c41",
+            "targetWord": "아침",
+            "nativeTranslation": "Morning / Breakfast",
+            "sentenceTarget": "아침 일찍 일어나요.",
+            "sentenceNative": "I wake up early in the morning.",
+            "audioWordFile": "ko_achim_word.mp3",
+            "audioSentenceFile": "ko_achim_sentence.mp3",
+            "imageFile": "ko_achim.jpg"
+        },
+        {
+            "id": "ko_b_c42",
+            "targetWord": "점심",
+            "nativeTranslation": "Lunch",
+            "sentenceTarget": "점심 메뉴가 뭐예요?",
+            "sentenceNative": "What's the lunch menu?",
+            "audioWordFile": "ko_jeomsim_word.mp3",
+            "audioSentenceFile": "ko_jeomsim_sentence.mp3",
+            "imageFile": "ko_jeomsim.jpg"
+        },
+        {
+            "id": "ko_b_c43",
+            "targetWord": "저녁",
+            "nativeTranslation": "Evening / Dinner",
+            "sentenceTarget": "저녁에 외식을 해요.",
+            "sentenceNative": "We are eating out in the evening.",
+            "audioWordFile": "ko_jeonyeok_word.mp3",
+            "audioSentenceFile": "ko_jeonyeok_sentence.mp3",
+            "imageFile": "ko_jeonyeok.jpg"
+        },
+        {
+            "id": "ko_b_c44",
+            "targetWord": "밤",
+            "nativeTranslation": "Night",
+            "sentenceTarget": "밤에 라면을 먹으면 안 돼요.",
+            "sentenceNative": "You shouldn't eat ramen at night.",
+            "audioWordFile": "ko_bam_word.mp3",
+            "audioSentenceFile": "ko_bam_sentence.mp3",
+            "imageFile": "ko_bam.jpg"
+        },
+        {
+            "id": "ko_b_c45",
+            "targetWord": "음식",
+            "nativeTranslation": "Food",
+            "sentenceTarget": "매운 음식을 좋아하세요?",
+            "sentenceNative": "Do you like spicy food?",
+            "audioWordFile": "ko_eumsik_word.mp3",
+            "audioSentenceFile": "ko_eumsik_sentence.mp3",
+            "imageFile": "ko_eumsik.jpg"
+        },
+        {
+            "id": "ko_b_c46",
+            "targetWord": "물",
+            "nativeTranslation": "Water",
+            "sentenceTarget": "물을 많이 마시세요.",
+            "sentenceNative": "Please drink a lot of water.",
+            "audioWordFile": "ko_mul_word.mp3",
+            "audioSentenceFile": "ko_mul_sentence.mp3",
+            "imageFile": "ko_mul.jpg"
+        },
+        {
+            "id": "ko_b_c47",
+            "targetWord": "밥",
+            "nativeTranslation": "Rice / Meal",
+            "sentenceTarget": "밥 먹었어?",
+            "sentenceNative": "Did you eat? (Have you had your meal?)",
+            "audioWordFile": "ko_bap_word.mp3",
+            "audioSentenceFile": "ko_bap_sentence.mp3",
+            "imageFile": "ko_bap.jpg"
+        },
+        {
+            "id": "ko_b_c48",
+            "targetWord": "고기",
+            "nativeTranslation": "Meat",
+            "sentenceTarget": "불고기는 소고기로 만들어요.",
+            "sentenceNative": "Bulgogi is made with beef.",
+            "audioWordFile": "ko_gogi_word.mp3",
+            "audioSentenceFile": "ko_gogi_sentence.mp3",
+            "imageFile": "ko_gogi.jpg"
+        },
+        {
+            "id": "ko_b_c49",
+            "targetWord": "생선",
+            "nativeTranslation": "Fish (edible)",
+            "sentenceTarget": "시장에서 싱싱한 생선을 샀어요.",
+            "sentenceNative": "I bought fresh fish at the market.",
+            "audioWordFile": "ko_saengseon_word.mp3",
+            "audioSentenceFile": "ko_saengseon_sentence.mp3",
+            "imageFile": "ko_saengseon.jpg"
+        },
+        {
+            "id": "ko_b_c50",
+            "targetWord": "야채",
+            "nativeTranslation": "Vegetable",
+            "sentenceTarget": "야채를 골고루 먹어야 해요.",
+            "sentenceNative": "You must eat a variety of vegetables.",
+            "audioWordFile": "ko_yachae_word.mp3",
+            "audioSentenceFile": "ko_yachae_sentence.mp3",
+            "imageFile": "ko_yachae.jpg"
+        },
+        {
+            "id": "ko_b_c51",
+            "targetWord": "과일",
+            "nativeTranslation": "Fruit",
+            "sentenceTarget": "어떤 과일을 제일 좋아해요?",
+            "sentenceNative": "Which fruit do you like best?",
+            "audioWordFile": "ko_gwail_word.mp3",
+            "audioSentenceFile": "ko_gwail_sentence.mp3",
+            "imageFile": "ko_gwail.jpg"
+        },
+        {
+            "id": "ko_b_c52",
+            "targetWord": "우유",
+            "nativeTranslation": "Milk",
+            "sentenceTarget": "우유가 상했어요.",
+            "sentenceNative": "The milk has gone bad.",
+            "audioWordFile": "ko_uyu_word.mp3",
+            "audioSentenceFile": "ko_uyu_sentence.mp3",
+            "imageFile": "ko_uyu.jpg"
+        },
+        {
+            "id": "ko_b_c53",
+            "targetWord": "빵",
+            "nativeTranslation": "Bread",
+            "sentenceTarget": "빵집에서 갓 구운 빵을 샀어요.",
+            "sentenceNative": "I bought freshly baked bread from the bakery.",
+            "audioWordFile": "ko_ppang_word.mp3",
+            "audioSentenceFile": "ko_ppang_sentence.mp3",
+            "imageFile": "ko_ppang.jpg"
+        },
+        {
+            "id": "ko_b_c54",
+            "targetWord": "계란",
+            "nativeTranslation": "Egg",
+            "sentenceTarget": "계란 후라이를 해 줄게요.",
+            "sentenceNative": "I'll make you a fried egg.",
+            "audioWordFile": "ko_gyeran_word.mp3",
+            "audioSentenceFile": "ko_gyeran_sentence.mp3",
+            "imageFile": "ko_gyeran.jpg"
+        },
+        {
+            "id": "ko_b_c55",
+            "targetWord": "차",
+            "nativeTranslation": "Tea / Car",
+            "sentenceTarget": "따뜻한 차 한 잔 하실래요?",
+            "sentenceNative": "Would you like a cup of warm tea?",
+            "audioWordFile": "ko_cha_word.mp3",
+            "audioSentenceFile": "ko_cha_sentence.mp3",
+            "imageFile": "ko_cha.jpg"
+        },
+        {
+            "id": "ko_b_c56",
+            "targetWord": "커피",
+            "nativeTranslation": "Coffee",
+            "sentenceTarget": "커피에 설탕을 넣으세요?",
+            "sentenceNative": "Do you put sugar in your coffee?",
+            "audioWordFile": "ko_keopi_word.mp3",
+            "audioSentenceFile": "ko_keopi_sentence.mp3",
+            "imageFile": "ko_keopi.jpg"
+        },
+        {
+            "id": "ko_b_c57",
+            "targetWord": "술",
+            "nativeTranslation": "Alcohol",
+            "sentenceTarget": "술을 적당히 마시세요.",
+            "sentenceNative": "Please drink alcohol in moderation.",
+            "audioWordFile": "ko_sul_word.mp3",
+            "audioSentenceFile": "ko_sul_sentence.mp3",
+            "imageFile": "ko_sul.jpg"
+        },
+        {
+            "id": "ko_b_c58",
+            "targetWord": "공부",
+            "nativeTranslation": "Study",
+            "sentenceTarget": "한국어 공부가 재미있어요.",
+            "sentenceNative": "Studying Korean is fun.",
+            "audioWordFile": "ko_gongbu_word.mp3",
+            "audioSentenceFile": "ko_gongbu_sentence.mp3",
+            "imageFile": "ko_gongbu.jpg"
+        },
+        {
+            "id": "ko_b_c59",
+            "targetWord": "일 / 직업",
+            "nativeTranslation": "Work / Job",
+            "sentenceTarget": "무슨 일을 하세요?",
+            "sentenceNative": "What kind of work do you do?",
+            "audioWordFile": "ko_il_word.mp3",
+            "audioSentenceFile": "ko_il_sentence.mp3",
+            "imageFile": "ko_il.jpg"
+        },
+        {
+            "id": "ko_b_c60",
+            "targetWord": "운동",
+            "nativeTranslation": "Exercise / Sports",
+            "sentenceTarget": "건강을 위해 운동을 해요.",
+            "sentenceNative": "I exercise for my health.",
+            "audioWordFile": "ko_undong_word.mp3",
+            "audioSentenceFile": "ko_undong_sentence.mp3",
+            "imageFile": "ko_undong.jpg"
+        },
+        {
+            "id": "ko_b_c61",
+            "targetWord": "여행",
+            "nativeTranslation": "Travel",
+            "sentenceTarget": "이번 휴가 때 여행을 가요.",
+            "sentenceNative": "I'm going on a trip during this vacation.",
+            "audioWordFile": "ko_yeohaeng_word.mp3",
+            "audioSentenceFile": "ko_yeohaeng_sentence.mp3",
+            "imageFile": "ko_yeohaeng.jpg"
+        },
+        {
+            "id": "ko_b_c62",
+            "targetWord": "노래",
+            "nativeTranslation": "Song",
+            "sentenceTarget": "이 노래는 내가 좋아하는 노래예요.",
+            "sentenceNative": "This is a song I like.",
+            "audioWordFile": "ko_norae_word.mp3",
+            "audioSentenceFile": "ko_norae_sentence.mp3",
+            "imageFile": "ko_norae.jpg"
+        },
+        {
+            "id": "ko_b_c63",
+            "targetWord": "영화",
+            "nativeTranslation": "Movie",
+            "sentenceTarget": "어떤 영화 장르를 좋아하세요?",
+            "sentenceNative": "What kind of movie genre do you like?",
+            "audioWordFile": "ko_yeonghwa_word.mp3",
+            "audioSentenceFile": "ko_yeonghwa_sentence.mp3",
+            "imageFile": "ko_yeonghwa.jpg"
+        },
+        {
+            "id": "ko_b_c64",
+            "targetWord": "날씨",
+            "nativeTranslation": "Weather",
+            "sentenceTarget": "오늘 날씨가 정말 화창해요.",
+            "sentenceNative": "The weather is really sunny today.",
+            "audioWordFile": "ko_nalssi_word.mp3",
+            "audioSentenceFile": "ko_nalssi_sentence.mp3",
+            "imageFile": "ko_nalssi.jpg"
+        },
+        {
+            "id": "ko_b_c65",
+            "targetWord": "비",
+            "nativeTranslation": "Rain",
+            "sentenceTarget": "비가 오니까 우산을 챙기세요.",
+            "sentenceNative": "It's raining, so take an umbrella.",
+            "audioWordFile": "ko_bi_word.mp3",
+            "audioSentenceFile": "ko_bi_sentence.mp3",
+            "imageFile": "ko_bi.jpg"
+        },
+        {
+            "id": "ko_b_c66",
+            "targetWord": "눈",
+            "nativeTranslation": "Snow / Eye",
+            "sentenceTarget": "하얀 눈이 내려요.",
+            "sentenceNative": "White snow is falling.",
+            "audioWordFile": "ko_nun_word.mp3",
+            "audioSentenceFile": "ko_nun_sentence.mp3",
+            "imageFile": "ko_nun.jpg"
+        },
+        {
+            "id": "ko_b_c67",
+            "targetWord": "바람",
+            "nativeTranslation": "Wind",
+            "sentenceTarget": "시원한 바람이 불어요.",
+            "sentenceNative": "A cool breeze is blowing.",
+            "audioWordFile": "ko_baram_word.mp3",
+            "audioSentenceFile": "ko_baram_sentence.mp3",
+            "imageFile": "ko_baram.jpg"
+        },
+        {
+            "id": "ko_b_c68",
+            "targetWord": "하늘",
+            "nativeTranslation": "Sky",
+            "sentenceTarget": "하늘이 아주 높고 푸르네요.",
+            "sentenceNative": "The sky is very high and blue.",
+            "audioWordFile": "ko_haneul_word.mp3",
+            "audioSentenceFile": "ko_haneul_sentence.mp3",
+            "imageFile": "ko_haneul.jpg"
+        },
+        {
+            "id": "ko_b_c69",
+            "targetWord": "구름",
+            "nativeTranslation": "Cloud",
+            "sentenceTarget": "하늘에 구름이 많아요.",
+            "sentenceNative": "There are many clouds in the sky.",
+            "audioWordFile": "ko_gureum_word.mp3",
+            "audioSentenceFile": "ko_gureum_sentence.mp3",
+            "imageFile": "ko_gureum.jpg"
+        },
+        {
+            "id": "ko_b_c70",
+            "targetWord": "해 / 태양",
+            "nativeTranslation": "Sun",
+            "sentenceTarget": "해가 지고 있어요.",
+            "sentenceNative": "The sun is setting.",
+            "audioWordFile": "ko_hae_word.mp3",
+            "audioSentenceFile": "ko_hae_sentence.mp3",
+            "imageFile": "ko_hae.jpg"
+        },
+        {
+            "id": "ko_b_c71",
+            "targetWord": "달",
+            "nativeTranslation": "Moon",
+            "sentenceTarget": "보름달이 떴어요.",
+            "sentenceNative": "A full moon has risen.",
+            "audioWordFile": "ko_dal_word.mp3",
+            "audioSentenceFile": "ko_dal_sentence.mp3",
+            "imageFile": "ko_dal.jpg"
+        },
+        {
+            "id": "ko_b_c72",
+            "targetWord": "별",
+            "nativeTranslation": "Star",
+            "sentenceTarget": "밤하늘에 별이 반짝여요.",
+            "sentenceNative": "Stars twinkle in the night sky.",
+            "audioWordFile": "ko_byeol_word.mp3",
+            "audioSentenceFile": "ko_byeol_sentence.mp3",
+            "imageFile": "ko_byeol.jpg"
+        },
+        {
+            "id": "ko_b_c73",
+            "targetWord": "산",
+            "nativeTranslation": "Mountain",
+            "sentenceTarget": "주말에 산에 가요.",
+            "sentenceNative": "I go to the mountain on weekends.",
+            "audioWordFile": "ko_san_word.mp3",
+            "audioSentenceFile": "ko_san_sentence.mp3",
+            "imageFile": "ko_san.jpg"
+        },
+        {
+            "id": "ko_b_c74",
+            "targetWord": "바다",
+            "nativeTranslation": "Sea / Ocean",
+            "sentenceTarget": "여름에는 바다가 최고예요.",
+            "sentenceNative": "In summer, the sea is the best.",
+            "audioWordFile": "ko_bada_word.mp3",
+            "audioSentenceFile": "ko_bada_sentence.mp3",
+            "imageFile": "ko_bada.jpg"
+        },
+        {
+            "id": "ko_b_c75",
+            "targetWord": "강",
+            "nativeTranslation": "River",
+            "sentenceTarget": "한강에서 자전거를 타요.",
+            "sentenceNative": "I ride a bicycle at the Han River.",
+            "audioWordFile": "ko_gang_word.mp3",
+            "audioSentenceFile": "ko_gang_sentence.mp3",
+            "imageFile": "ko_gang.jpg"
+        },
+        {
+            "id": "ko_b_c76",
+            "targetWord": "나무",
+            "nativeTranslation": "Tree",
+            "sentenceTarget": "나무 아래에서 쉬어요.",
+            "sentenceNative": "Rest under the tree.",
+            "audioWordFile": "ko_namu_word.mp3",
+            "audioSentenceFile": "ko_namu_sentence.mp3",
+            "imageFile": "ko_namu.jpg"
+        },
+        {
+            "id": "ko_b_c77",
+            "targetWord": "꽃",
+            "nativeTranslation": "Flower",
+            "sentenceTarget": "꽃이 활짝 피었네요.",
+            "sentenceNative": "The flowers are in full bloom.",
+            "audioWordFile": "ko_kkot_word.mp3",
+            "audioSentenceFile": "ko_kkot_sentence.mp3",
+            "imageFile": "ko_kkot.jpg"
+        },
+        {
+            "id": "ko_b_c78",
+            "targetWord": "크다",
+            "nativeTranslation": "Big / Large",
+            "sentenceTarget": "이 수박은 정말 크네요.",
+            "sentenceNative": "This watermelon is really big.",
+            "audioWordFile": "ko_keuda_word.mp3",
+            "audioSentenceFile": "ko_keuda_sentence.mp3",
+            "imageFile": "ko_keuda.jpg"
+        },
+        {
+            "id": "ko_b_c79",
+            "targetWord": "작다",
+            "nativeTranslation": "Small / Little",
+            "sentenceTarget": "방이 너무 작아요.",
+            "sentenceNative": "The room is too small.",
+            "audioWordFile": "ko_jakda_word.mp3",
+            "audioSentenceFile": "ko_jakda_sentence.mp3",
+            "imageFile": "ko_jakda.jpg"
+        },
+        {
+            "id": "ko_b_c80",
+            "targetWord": "많다",
+            "nativeTranslation": "Many / Much",
+            "sentenceTarget": "숙제가 너무 많아요.",
+            "sentenceNative": "There is too much homework.",
+            "audioWordFile": "ko_manta_word.mp3",
+            "audioSentenceFile": "ko_manta_sentence.mp3",
+            "imageFile": "ko_manta.jpg"
+        },
+        {
+            "id": "ko_b_c81",
+            "targetWord": "적다",
+            "nativeTranslation": "Few / Little",
+            "sentenceTarget": "사람이 별로 없네요. (적네요)",
+            "sentenceNative": "There aren't many people. (There are few people)",
+            "audioWordFile": "ko_jeokda_word.mp3",
+            "audioSentenceFile": "ko_jeokda_sentence.mp3",
+            "imageFile": "ko_jeokda.jpg"
+        },
+        {
+            "id": "ko_b_c82",
+            "targetWord": "비싸다",
+            "nativeTranslation": "Expensive",
+            "sentenceTarget": "이 옷은 너무 비싸요.",
+            "sentenceNative": "This clothing is too expensive.",
+            "audioWordFile": "ko_bissada_word.mp3",
+            "audioSentenceFile": "ko_bissada_sentence.mp3",
+            "imageFile": "ko_bissada.jpg"
+        },
+        {
+            "id": "ko_b_c83",
+            "targetWord": "싸다",
+            "nativeTranslation": "Cheap / Inexpensive",
+            "sentenceTarget": "이 시장은 물건이 싸요.",
+            "sentenceNative": "Items are cheap in this market.",
+            "audioWordFile": "ko_ssada_word.mp3",
+            "audioSentenceFile": "ko_ssada_sentence.mp3",
+            "imageFile": "ko_ssada.jpg"
+        },
+        {
+            "id": "ko_b_c84",
+            "targetWord": "좋다",
+            "nativeTranslation": "Good / Nice",
+            "sentenceTarget": "성격이 아주 좋으세요.",
+            "sentenceNative": "You have a very good personality.",
+            "audioWordFile": "ko_jota_word.mp3",
+            "audioSentenceFile": "ko_jota_sentence.mp3",
+            "imageFile": "ko_jota.jpg"
+        },
+        {
+            "id": "ko_b_c85",
+            "targetWord": "나쁘다",
+            "nativeTranslation": "Bad",
+            "sentenceTarget": "기분이 아주 나빠요.",
+            "sentenceNative": "I feel very bad.",
+            "audioWordFile": "ko_nappeuda_word.mp3",
+            "audioSentenceFile": "ko_nappeuda_sentence.mp3",
+            "imageFile": "ko_nappeuda.jpg"
+        },
+        {
+            "id": "ko_b_c86",
+            "targetWord": "어렵다",
+            "nativeTranslation": "Difficult / Hard",
+            "sentenceTarget": "문제가 너무 어려워요.",
+            "sentenceNative": "The problem is too difficult.",
+            "audioWordFile": "ko_eoryeopda_word.mp3",
+            "audioSentenceFile": "ko_eoryeopda_sentence.mp3",
+            "imageFile": "ko_eoryeopda.jpg"
+        },
+        {
+            "id": "ko_b_c87",
+            "targetWord": "쉽다",
+            "nativeTranslation": "Easy",
+            "sentenceTarget": "이 게임은 정말 쉬워요.",
+            "sentenceNative": "This game is really easy.",
+            "audioWordFile": "ko_swipda_word.mp3",
+            "audioSentenceFile": "ko_swipda_sentence.mp3",
+            "imageFile": "ko_swipda.jpg"
+        },
+        {
+            "id": "ko_b_c88",
+            "targetWord": "재미있다",
+            "nativeTranslation": "Fun / Interesting",
+            "sentenceTarget": "영화를 재미있게 봤어요.",
+            "sentenceNative": "I enjoyed watching the movie.",
+            "audioWordFile": "ko_jaemiitda_word.mp3",
+            "audioSentenceFile": "ko_jaemiitda_sentence.mp3",
+            "imageFile": "ko_jaemiitda.jpg"
+        },
+        {
+            "id": "ko_b_c89",
+            "targetWord": "재미없다",
+            "nativeTranslation": "Boring / Not fun",
+            "sentenceTarget": "수업이 재미없어요.",
+            "sentenceNative": "The class is not fun (boring).",
+            "audioWordFile": "ko_jaemieopda_word.mp3",
+            "audioSentenceFile": "ko_jaemieopda_sentence.mp3",
+            "imageFile": "ko_jaemieopda.jpg"
+        },
+        {
+            "id": "ko_b_c90",
+            "targetWord": "멀다",
+            "nativeTranslation": "Far",
+            "sentenceTarget": "여기에서 집까지 멀어요.",
+            "sentenceNative": "It's far from here to my house.",
+            "audioWordFile": "ko_meolda_word.mp3",
+            "audioSentenceFile": "ko_meolda_sentence.mp3",
+            "imageFile": "ko_meolda.jpg"
+        },
+        {
+            "id": "ko_b_c91",
+            "targetWord": "가깝다",
+            "nativeTranslation": "Near / Close",
+            "sentenceTarget": "역이 아주 가까워요.",
+            "sentenceNative": "The station is very near.",
+            "audioWordFile": "ko_gakkapda_word.mp3",
+            "audioSentenceFile": "ko_gakkapda_sentence.mp3",
+            "imageFile": "ko_gakkapda.jpg"
+        },
+        {
+            "id": "ko_b_c92",
+            "targetWord": "덥다",
+            "nativeTranslation": "Hot (Weather)",
+            "sentenceTarget": "여름은 너무 더워요.",
+            "sentenceNative": "Summer is too hot.",
+            "audioWordFile": "ko_deopda_word.mp3",
+            "audioSentenceFile": "ko_deopda_sentence.mp3",
+            "imageFile": "ko_deopda.jpg"
+        },
+        {
+            "id": "ko_b_c93",
+            "targetWord": "춥다",
+            "nativeTranslation": "Cold (Weather)",
+            "sentenceTarget": "겨울은 아주 추워요.",
+            "sentenceNative": "Winter is very cold.",
+            "audioWordFile": "ko_chupda_word.mp3",
+            "audioSentenceFile": "ko_chupda_sentence.mp3",
+            "imageFile": "ko_chupda.jpg"
+        },
+        {
+            "id": "ko_b_c94",
+            "targetWord": "바쁘다",
+            "nativeTranslation": "Busy",
+            "sentenceTarget": "요즘 정말 바빠요.",
+            "sentenceNative": "I'm really busy these days.",
+            "audioWordFile": "ko_bappeuda_word.mp3",
+            "audioSentenceFile": "ko_bappeuda_sentence.mp3",
+            "imageFile": "ko_bappeuda.jpg"
+        },
+        {
+            "id": "ko_b_c95",
+            "targetWord": "한가하다",
+            "nativeTranslation": "Free (not busy)",
+            "sentenceTarget": "이번 주말은 한가해요.",
+            "sentenceNative": "I'm free this weekend.",
+            "audioWordFile": "ko_hangahada_word.mp3",
+            "audioSentenceFile": "ko_hangahada_sentence.mp3",
+            "imageFile": "ko_hangahada.jpg"
+        },
+        {
+            "id": "ko_b_c96",
+            "targetWord": "맛있다",
+            "nativeTranslation": "Delicious / Tasty",
+            "sentenceTarget": "이 케이크 정말 맛있네요!",
+            "sentenceNative": "This cake is really delicious!",
+            "audioWordFile": "ko_masitda_word.mp3",
+            "audioSentenceFile": "ko_masitda_sentence.mp3",
+            "imageFile": "ko_masitda.jpg"
+        },
+        {
+            "id": "ko_b_c97",
+            "targetWord": "맛없다",
+            "nativeTranslation": "Not delicious / Tastes bad",
+            "sentenceTarget": "국이 너무 싱거워서 맛없어요.",
+            "sentenceNative": "The soup is too bland, so it doesn't taste good.",
+            "audioWordFile": "ko_madeopda_word.mp3",
+            "audioSentenceFile": "ko_madeopda_sentence.mp3",
+            "imageFile": "ko_madeopda.jpg"
+        },
+        {
+            "id": "ko_b_c98",
+            "targetWord": "가다",
+            "nativeTranslation": "To go",
+            "sentenceTarget": "어디에 가세요?",
+            "sentenceNative": "Where are you going?",
+            "audioWordFile": "ko_gada_word.mp3",
+            "audioSentenceFile": "ko_gada_sentence.mp3",
+            "imageFile": "ko_gada.jpg"
+        },
+        {
+            "id": "ko_b_c99",
+            "targetWord": "오다",
+            "nativeTranslation": "To come",
+            "sentenceTarget": "빨리 오세요.",
+            "sentenceNative": "Please come quickly.",
+            "audioWordFile": "ko_oda_word.mp3",
+            "audioSentenceFile": "ko_oda_sentence.mp3",
+            "imageFile": "ko_oda.jpg"
+        },
+        {
+            "id": "ko_b_c100",
+            "targetWord": "먹다",
+            "nativeTranslation": "To eat",
+            "sentenceTarget": "점심을 맛있게 먹었어요.",
+            "sentenceNative": "I had a delicious lunch.",
+            "audioWordFile": "ko_meokda_word.mp3",
+            "audioSentenceFile": "ko_meokda_sentence.mp3",
+            "imageFile": "ko_meokda.jpg"
+        }
+    ]
+}

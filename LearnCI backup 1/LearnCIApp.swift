@@ -11,7 +11,6 @@ import SwiftData
 @main
 struct LearnCIApp: App {
     @State private var dataManager = DataManager()
-    @State private var youtubeManager = YouTubeManager()
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -31,7 +30,6 @@ struct LearnCIApp: App {
         WindowGroup {
             ContentView()
                 .environment(dataManager)
-                .environment(youtubeManager)
         }
         .modelContainer(sharedModelContainer)
     }

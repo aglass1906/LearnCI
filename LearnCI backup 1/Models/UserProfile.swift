@@ -8,7 +8,6 @@ final class UserProfile {
     var currentLanguageRaw: String
     var currentLevelRaw: String
     var dailyGoalMinutes: Int
-    var dailyCardGoal: Int?
     
     var currentLanguage: Language {
         get { Language(rawValue: currentLanguageRaw) ?? .spanish }
@@ -20,13 +19,12 @@ final class UserProfile {
         set { levelRawUpdate(newValue) }
     }
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30) {
         self.id = UUID()
         self.name = name
         self.currentLanguageRaw = currentLanguage.rawValue
         self.currentLevelRaw = currentLevel.rawValue
         self.dailyGoalMinutes = dailyGoalMinutes
-        self.dailyCardGoal = dailyCardGoal
     }
     
     private func languageRawUpdate(_ newValue: Language) {

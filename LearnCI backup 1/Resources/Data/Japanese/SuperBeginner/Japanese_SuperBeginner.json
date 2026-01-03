@@ -1,0 +1,44 @@
+{
+    "id": "deck_jp_sb_001",
+    "language": "Japanese",
+    "level": "Super Beginner",
+    "title": "Essential Greetings & Basics",
+    "cards": [
+        {
+            "id": "card_jp_001",
+            "targetWord": "こんにちは",
+            "nativeTranslation": "Hello",
+            "sentenceTarget": "こんにちは、元気ですか？",
+            "sentenceNative": "Hello, how are you?",
+            "audioWordFile": "jp_konnichiwa.mp3",
+            "audioSentenceFile": "jp_sentence_konnichiwa.mp3"
+        },
+        {
+            "id": "card_jp_002",
+            "targetWord": "おはよう",
+            "nativeTranslation": "Good morning",
+            "sentenceTarget": "おはようございます。",
+            "sentenceNative": "Good morning (polite).",
+            "audioWordFile": "jp_ohayou.mp3",
+            "audioSentenceFile": "jp_sentence_ohayou.mp3"
+        },
+        {
+            "id": "card_jp_003",
+            "targetWord": "猫",
+            "nativeTranslation": "Cat",
+            "sentenceTarget": "猫が好きです。",
+            "sentenceNative": "I like cats.",
+            "audioWordFile": "jp_neko.mp3",
+            "audioSentenceFile": "jp_sentence_neko.mp3"
+        },
+        {
+            "id": "card_jp_004",
+            "targetWord": "水",
+            "nativeTranslation": "Water",
+            "sentenceTarget": "水をください。",
+            "sentenceNative": "Water please.",
+            "audioWordFile": "jp_mizu.mp3",
+            "audioSentenceFile": "jp_sentence_mizu.mp3"
+        }
+    ]
+}

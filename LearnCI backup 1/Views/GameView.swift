@@ -16,9 +16,6 @@ struct GameView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var sessionStartTime: Date?
     @State private var elapsedSeconds: Int = 0
-    @State private var isPaused: Bool = false
-    @State private var learnedCount: Int = 0
-    @State private var showCompletionView: Bool = false
     static let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var userProfile: UserProfile? {
@@ -54,85 +51,6 @@ struct GameView: View {
                     } else {
                         let card = deck.cards[currentCardIndex]
                         
-                        // Deck Selection & Progress Header
-                        VStack(spacing: 12) {
-                            // Deck Selection (Language & Level)
-                            if let profile = userProfile {
-                                HStack {
-                                    Menu {
-                                        ForEach(Language.allCases) { lang in
-                                            Button(action: { profile.currentLanguage = lang }) {
-                                                HStack {
-                                                    Text("\(lang.flag) \(lang.rawValue)")
-                                                    if profile.currentLanguage == lang {
-                                                        Image(systemName: "checkmark")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        HStack {
-                                            Text("\(profile.currentLanguage.flag) \(profile.currentLanguage.rawValue)")
-                                            Image(systemName: "chevron.down")
-                                                .font(.caption)
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(8)
-                                    }
-                                    
-                                    Menu {
-                                        ForEach(LearningLevel.allCases) { level in
-                                            Button(action: { profile.currentLevel = level }) {
-                                                HStack {
-                                                    Text(level.rawValue)
-                                                    if profile.currentLevel == level {
-                                                        Image(systemName: "checkmark")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
-                                        HStack {
-                                            Text(profile.currentLevel.rawValue)
-                                            Image(systemName: "chevron.down")
-                                                .font(.caption)
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color.gray.opacity(0.1))
-                                        .cornerRadius(8)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Button(action: { loadDeckIfNeeded() }) {
-                                        Image(systemName: "arrow.clockwise")
-                                    }
-                                }
-                                .padding(.bottom, 4)
-                            }
-                            
-                            // Goal Progress
-                            HStack {
-                                Text("Daily Goal Progress")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text("\(learnedCount) / \(userProfile?.dailyCardGoal ?? 20) cards")
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(.blue)
-                            }
-                            
-                            ProgressView(value: Double(learnedCount), total: Double(userProfile?.dailyCardGoal ?? 20))
-                                .tint(.blue)
-                        }
-                        .padding()
-                        .background(Color.blue.opacity(0.05))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-
                         // Card View
                         ZStack {
                             RoundedRectangle(cornerRadius: 20)
@@ -209,13 +127,11 @@ struct GameView: View {
                                             .foregroundColor(.secondary)
                                             .multilineTextAlignment(.center)
                                     }
-                                    .scaleEffect(x: -1, y: 1)
                                 }
                             }
                             .padding()
                         }
-                        .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
-                        .frame(height: 350)
+                        .frame(height: 400)
                         .padding()
                         .onTapGesture {
                             withAnimation(.spring()) {
@@ -223,85 +139,30 @@ struct GameView: View {
                             }
                         }
                         
-                        // Learning Success Controls
-                        if isFlipped {
-                            HStack(spacing: 20) {
-                                Button(action: relearnCard) {
-                                    VStack {
-                                        Image(systemName: "arrow.counterclockwise.circle.fill")
-                                            .font(.system(size: 44))
-                                        Text("Relearn")
-                                            .font(.caption.bold())
-                                    }
-                                    .foregroundColor(.orange)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.orange.opacity(0.1))
-                                    .cornerRadius(12)
-                                }
-                                
-                                Button(action: learnedCard) {
-                                    VStack {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 44))
-                                        Text("Learned")
-                                            .font(.caption.bold())
-                                    }
-                                    .foregroundColor(.green)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.green.opacity(0.1))
-                                    .cornerRadius(12)
-                                }
+                        // Controls
+                        HStack {
+                            Button(action: prevCard) {
+                                Image(systemName: "arrow.left.circle")
+                                    .font(.system(size: 50))
                             }
-                            .padding(.horizontal, 40)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                        } else {
-                            // Navigation Controls
-                            HStack {
-                                Button(action: prevCard) {
-                                    Image(systemName: "arrow.left.circle")
-                                        .font(.system(size: 50))
-                                }
-                                .disabled(currentCardIndex == 0)
-                                
-                                Spacer()
-                                
-                                Button(action: nextCard) {
-                                    Image(systemName: "arrow.right.circle")
-                                        .font(.system(size: 50))
-                                }
-                                .disabled(currentCardIndex >= deck.cards.count - 1)
+                            .disabled(currentCardIndex == 0)
+                            
+                            Spacer()
+                            
+                            Button(action: nextCard) {
+                                Image(systemName: "arrow.right.circle")
+                                    .font(.system(size: 50))
                             }
-                            .padding(.horizontal, 40)
+                            .disabled(currentCardIndex >= deck.cards.count - 1)
                         }
+                        .padding(.horizontal, 40)
                     }
                 } else {
                     ProgressView("Loading Deck...")
                 }
             }
             .navigationTitle(deck?.title ?? "Learning")
-            .overlay {
-                if showCompletionView {
-                    completionOverlay
-                        .transition(.opacity)
-                }
-            }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    HStack {
-                        Button(action: { isPaused.toggle() }) {
-                            Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                                .foregroundColor(isPaused ? .green : .orange)
-                        }
-                        
-                        Button(action: stopSession) {
-                            Image(systemName: "stop.fill")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-                
                 ToolbarItem(placement: .topBarTrailing) {
                      HStack {
                          Text(formatTime(elapsedSeconds))
@@ -309,14 +170,8 @@ struct GameView: View {
                              .fixedSize()
                              .padding(6)
                              .frame(minWidth: 60)
-                             .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
+                             .background(Color.blue.opacity(0.1))
                              .cornerRadius(8)
-                             .overlay {
-                                 if isPaused {
-                                     RoundedRectangle(cornerRadius: 8)
-                                         .stroke(Color.orange, lineWidth: 1)
-                                 }
-                             }
                              
                          Text(userProfile?.currentLevel.rawValue ?? "")
                             .font(.caption)
@@ -334,7 +189,7 @@ struct GameView: View {
                 saveSession()
             }
             .onReceive(GameView.timer) { _ in
-                if scenePhase == .active && sessionStartTime != nil && !isPaused && !showCompletionView {
+                if scenePhase == .active && sessionStartTime != nil {
                      elapsedSeconds += 1
                 }
             }
@@ -347,9 +202,9 @@ struct GameView: View {
             }
             .onChange(of: userProfile?.currentLanguage) { _, _ in
                 loadDeckIfNeeded()
-            }
-            .onChange(of: userProfile?.currentLevel) { _, _ in
-                loadDeckIfNeeded()
+                // If language changes, maybe save previous session? 
+                // Simple version: just keep tracking as "App Learning" regardless of minute-by-minute language switch, 
+                // but ideally we split. For now, keep simple.
             }
         }
     }
@@ -412,6 +267,7 @@ struct GameView: View {
             withAnimation {
                 currentCardIndex += 1
                 isFlipped = false
+
             }
         }
     }
@@ -421,66 +277,8 @@ struct GameView: View {
             withAnimation {
                 currentCardIndex -= 1
                 isFlipped = false
+
             }
         }
-    }
-    
-    func learnedCard() {
-        learnedCount += 1
-        
-        let goal = userProfile?.dailyCardGoal ?? 20
-        if learnedCount >= goal {
-            withAnimation {
-                showCompletionView = true
-            }
-            saveSession()
-        } else {
-            nextCard()
-        }
-    }
-    
-    func relearnCard() {
-        // Just move to next card for now, maybe reshuffle or move to end of pile in future
-        nextCard()
-    }
-    
-    func stopSession() {
-        saveSession()
-        learnedCount = 0
-        currentCardIndex = 0
-        isPaused = false
-        sessionStartTime = nil
-        elapsedSeconds = 0
-    }
-    
-    var completionOverlay: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 80))
-                .foregroundColor(.yellow)
-            
-            Text("Goal Reached!")
-                .font(.largeTitle.bold())
-            
-            Text("You've learned \(learnedCount) cards today.")
-                .font(.headline)
-                .foregroundColor(.secondary)
-            
-            Button("Keep Going") {
-                withAnimation {
-                    showCompletionView = false
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .padding(.top)
-            
-            Button("Finish Session") {
-                stopSession()
-                showCompletionView = false
-            }
-            .buttonStyle(.bordered)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.ultraThinMaterial)
     }
 }

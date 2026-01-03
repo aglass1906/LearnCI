@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,16 +12,6 @@ struct DashboardView: View {
     
     var totalMinutes: Int {
         activities.reduce(0) { $0 + $1.minutes }
-    }
-    
-    var activityByType: [ActivityTypeData] {
-        let grouped = Dictionary(grouping: activities, by: { $0.activityType })
-        return grouped.map { type, activities in
-            ActivityTypeData(
-                type: type,
-                minutes: activities.reduce(0) { $0 + $1.minutes }
-            )
-        }.sorted { $0.minutes > $1.minutes }
     }
     
     var body: some View {
@@ -57,39 +46,7 @@ struct DashboardView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
                     
-                    // Activity Breakdown Chart
-                    if !activities.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Activity Breakdown")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal)
-                            
-                            Chart(activityByType) { data in
-                                BarMark(
-                                    x: .value("Minutes", data.minutes),
-                                    y: .value("Type", data.type.rawValue)
-                                )
-                                .foregroundStyle(data.type.color)
-                                .annotation(position: .trailing) {
-                                    Text("\(data.minutes) min")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .frame(height: CGFloat(activityByType.count) * 44)
-                            .chartXAxis {
-                                AxisMarks(position: .bottom)
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.vertical)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                    }
-                    
-                    // Recent Activity
+                    // Interactive placeholder for charts
                     HStack {
                         Text("Recent Activity")
                             .font(.title2)
@@ -129,35 +86,6 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Dashboard")
-        }
-    }
-}
-
-struct ActivityTypeData: Identifiable {
-    let id = UUID()
-    let type: ActivityType
-    let minutes: Int
-}
-
-extension ActivityType {
-    var color: Color {
-        switch self {
-        case .appLearning:
-            return .blue
-        case .watchingVideos:
-            return .red
-        case .listeningPodcasts:
-            return .green
-        case .reading:
-            return .cyan
-        case .crossTalk:
-            return .orange
-        case .tutoring:
-            return .purple
-        case .speaking:
-            return .pink
-        case .writing:
-            return .indigo
         }
     }
 }

@@ -73,6 +73,30 @@ struct DashboardView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
                     
+                    // Leaderboard Entry
+                    NavigationLink(destination: LeaderboardView()) {
+                        HStack {
+                            Image(systemName: "trophy.fill")
+                                .foregroundStyle(.yellow)
+                                .font(.title2)
+                            VStack(alignment: .leading) {
+                                Text("Global Leaderboard")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("See where you rank!")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding()
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                    }
+                    
                     // Word of the Day
                     wordOfDaySection
                     

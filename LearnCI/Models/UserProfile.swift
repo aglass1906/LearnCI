@@ -11,6 +11,7 @@ final class UserProfile {
     var dailyGoalMinutes: Int
     var dailyCardGoal: Int?
     var isPublic: Bool = false
+    var totalMinutes: Int = 0
     var updatedAt: Date = Date()
     
     var currentLanguage: Language {
@@ -23,7 +24,7 @@ final class UserProfile {
         set { levelRawUpdate(newValue) }
     }
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0) {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -32,6 +33,7 @@ final class UserProfile {
         self.dailyGoalMinutes = dailyGoalMinutes
         self.dailyCardGoal = dailyCardGoal
         self.isPublic = false
+        self.totalMinutes = totalMinutes
         self.updatedAt = Date()
     }
     

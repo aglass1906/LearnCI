@@ -94,7 +94,7 @@ class SyncManager {
             return
         }
         
-        let profileDTO = ProfileDTO(
+        let profileDTO = ProfileUploadDTO(
             user_id: uuid, 
             name: profile.name,
             current_language: profile.currentLanguageRaw,
@@ -143,18 +143,29 @@ class SyncManager {
             .execute()
         
         // Mark as synced locally
-        // Note: In a robust app, we'd use the returned IDs to confirm exactly which succeeded
         for activity in unSyncedActivities {
             activity.isSynced = true
         }
         
         try context.save()
     }
+    
+    @MainActor
+    func fetchLeaderboard() async throws -> [ProfileDTO] {
+        let response: [ProfileDTO] = try await authManager.supabase.from("profiles")
+            .select()
+            .order("total_minutes", ascending: false)
+            .limit(50)
+            .execute()
+            .value
+        
+        return response
+    }
 }
 
 // MARK: - DTOs
 
-struct ProfileDTO: Encodable {
+struct ProfileUploadDTO: Encodable {
     let user_id: UUID
     let name: String
     let current_language: String
@@ -162,6 +173,19 @@ struct ProfileDTO: Encodable {
     let daily_goal_minutes: Int
     let daily_card_goal: Int?
     let is_public: Bool
+    let updated_at: Date
+}
+
+struct ProfileDTO: Codable, Identifiable {
+    var id: UUID { user_id }
+    let user_id: UUID
+    let name: String
+    let current_language: String
+    let current_level: String
+    let daily_goal_minutes: Int
+    let daily_card_goal: Int?
+    let is_public: Bool
+    let total_minutes: Int?
     let updated_at: Date
 }
 

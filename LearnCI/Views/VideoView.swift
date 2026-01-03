@@ -290,4 +290,5 @@ struct LogWatchTimeSheet: View {
 #Preview {
     VideoView()
         .environment(YouTubeManager())
+        .environment(DataManager())
 }

@@ -147,4 +147,6 @@ struct FilterChip: View {
 
 #Preview {
     HistoryView()
+        .environment(DataManager())
+        .environment(YouTubeManager())
 }

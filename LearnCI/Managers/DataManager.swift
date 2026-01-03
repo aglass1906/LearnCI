@@ -20,22 +20,19 @@ class DataManager {
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
     
-    // Discover decks for a specific Language and Level
-    func discoverDecks(language: Language, level: LearningLevel) {
-        self.availableDecks = []
-        
+    // Discover decks and return them
+    @discardableResult
+    func discoverDecks(language: Language, level: LearningLevel) -> [DeckMetadata] {
         // 1. Check local resources directory first (development)
         let localDataPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data"
         var discoveredDecks: [DeckMetadata] = []
         
-        if let enumerator = FileManager.default.enumerator(atPath: localDataPath) {
+        let fm = FileManager.default
+        if fm.fileExists(atPath: localDataPath), let enumerator = fm.enumerator(atPath: localDataPath) {
             while let path = enumerator.nextObject() as? String {
-                // Look for any JSON file in subdirectories
                 if path.hasSuffix(".json") {
                     let fullPath = (localDataPath as NSString).appendingPathComponent(path)
                     let fileURL = URL(fileURLWithPath: fullPath)
-                    
-                    // The folder name is the immediate parent directory of the JSON
                     let folderName = fileURL.deletingLastPathComponent().lastPathComponent
                     
                     if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
@@ -48,8 +45,6 @@ class DataManager {
         }
         
         // 2. Check Bundle (Fallback/Release)
-        // In Bundle, we might need to be more specific if enumerator is restricted
-        // For common naming patterns, we try a direct check if discovery was empty
         if discoveredDecks.isEmpty {
             let langLower = language.rawValue.lowercased()
             let levelLower = level.rawValue.lowercased().replacingOccurrences(of: " ", with: "_")
@@ -62,16 +57,20 @@ class DataManager {
             }
         }
         
-        DispatchQueue.main.async {
-            // Remove duplicates by ID
-            self.availableDecks = discoveredDecks.reduce(into: [DeckMetadata]()) { result, deck in
-                if !result.contains(where: { $0.id == deck.id }) {
-                    result.append(deck)
-                }
+        let uniqueDecks = discoveredDecks.reduce(into: [DeckMetadata]()) { result, deck in
+            if !result.contains(where: { $0.id == deck.id }) {
+                result.append(deck)
             }
         }
+        
+        // Update the observable property on the main thread for the UI
+        DispatchQueue.main.async {
+            self.availableDecks = uniqueDecks
+        }
+        
+        return uniqueDecks
     }
-    
+
     private func peekDeckMetadata(at url: URL, folderName: String) -> DeckMetadata? {
         do {
             let data = try Data(contentsOf: url)
@@ -118,15 +117,12 @@ class DataManager {
     // Legacy/Convenience: Load cards for a specific Language and Level (picks first available)
     func loadCards(language: Language, level: LearningLevel) {
         self.errorMessage = nil
-        discoverDecks(language: language, level: level)
+        let decks = discoverDecks(language: language, level: level)
         
-        // Usually called after discovery, but if called directly we need to wait or use fallback
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if let first = self.availableDecks.first {
-                self.loadDeck(metadata: first)
-            } else {
-                self.loadedDeck = self.createFallbackDeck(language: language, level: level)
-            }
+        if let first = decks.first {
+            self.loadDeck(metadata: first)
+        } else {
+            self.loadedDeck = self.createFallbackDeck(language: language, level: level)
         }
     }
     
@@ -146,6 +142,43 @@ class DataManager {
             DispatchQueue.main.async {
                 self.errorMessage = "Failed to load \(url.lastPathComponent): \(error.localizedDescription)"
             }
+        }
+    }
+    
+    // Fetch a deterministic Word of the Day based on language and level
+    func fetchWordOfDay(language: Language, level: LearningLevel) async -> (card: LearningCard, folder: String)? {
+        // Ensure discovery is done and get results immediately
+        let decks = discoverDecks(language: language, level: level)
+        
+        guard let metadata = decks.first else { 
+            print("Word of Day: No decks found for \(language.rawValue) \(level.rawValue)")
+            return nil 
+        }
+        
+        // Load the deck data
+        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(metadata.folderName)/\(metadata.filename)"
+        let url = FileManager.default.fileExists(atPath: localPath) 
+            ? URL(fileURLWithPath: localPath)
+            : Bundle.main.url(forResource: metadata.folderName, withExtension: "json", subdirectory: "Data/\(metadata.folderName)")
+            
+        guard let finalURL = url else { return nil }
+        
+        do {
+            let data = try Data(contentsOf: finalURL)
+            let deck = try JSONDecoder().decode(CardDeck.self, from: data)
+            guard !deck.cards.isEmpty else { return nil }
+            
+            // Seed based on current date
+            let calendar = Calendar.current
+            let day = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+            let year = calendar.component(.year, from: Date())
+            let seed = day + year
+            
+            let index = seed % deck.cards.count
+            return (deck.cards[index], metadata.folderName)
+        } catch {
+            print("Error fetching word of day: \(error)")
+            return nil
         }
     }
     

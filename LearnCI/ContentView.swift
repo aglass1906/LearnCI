@@ -15,4 +15,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(DataManager())
+        .environment(YouTubeManager())
 }

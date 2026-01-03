@@ -3,9 +3,15 @@ import SwiftData
 import Charts
 
 struct DashboardView: View {
+    @Environment(DataManager.self) private var dataManager
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \UserActivity.date, order: .reverse) private var activities: [UserActivity]
     @Query private var profiles: [UserProfile]
+    
+    @State private var audioManager = AudioManager()
+    @State private var wordOfDay: LearningCard?
+    @State private var wordOfDayFolder: String?
+    @State private var isLoadingWordOfDay = false
     
     var userProfile: UserProfile? {
         profiles.first
@@ -56,6 +62,9 @@ struct DashboardView: View {
                     .background(Color.blue.opacity(0.1))
                     .cornerRadius(12)
                     .padding(.horizontal)
+                    
+                    // Word of the Day
+                    wordOfDaySection
                     
                     // Activity Breakdown Chart
                     if !activities.isEmpty {
@@ -129,8 +138,98 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Dashboard")
+            .task {
+                if let profile = userProfile, wordOfDay == nil {
+                    isLoadingWordOfDay = true
+                    if let result = await dataManager.fetchWordOfDay(language: profile.currentLanguage, level: profile.currentLevel) {
+                        wordOfDay = result.card
+                        wordOfDayFolder = result.folder
+                    }
+                    isLoadingWordOfDay = false
+                }
+            }
         }
     }
+    
+    private var wordOfDaySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Word of the Day")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                Spacer()
+                Image(systemName: "sparkles")
+                    .foregroundColor(.yellow)
+            }
+            .padding(.horizontal)
+            
+            if let word = wordOfDay {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(word.targetWord)
+                                .font(.title)
+                                .fontWeight(.bold)
+                            Text(word.nativeTranslation)
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            if let file = word.audioWordFile {
+                                audioManager.playAudio(named: file, folderName: wordOfDayFolder)
+                            }
+                        }) {
+                            Image(systemName: "speaker.wave.2.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(word.sentenceTarget)
+                            .font(.subheadline.italic())
+                        Text(word.sentenceNative)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(15)
+                .padding(.horizontal)
+            } else if isLoadingWordOfDay {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Text("Selecting daily word...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding()
+            } else {
+                HStack {
+                    Spacer()
+                    Text("No daily word found for your current level.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding()
+            }
+        }
+    }
+}
+
+#Preview {
+    DashboardView()
+        .environment(DataManager())
+        .environment(YouTubeManager())
 }
 
 struct ActivityTypeData: Identifiable {

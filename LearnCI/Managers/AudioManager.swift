@@ -9,44 +9,57 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     func playAudio(named filename: String, folderName: String? = nil, completion: (() -> Void)? = nil) {
         self.onCompletion = completion
         
-        // 1. Try Bundle Resource in specific subdirectory if folderName provided
-        if let folder = folderName {
-            if let url = Bundle.main.url(forResource: filename, withExtension: nil, subdirectory: "Data/\(folder)") {
-                play(url: url)
-                return
-            }
-        }
-        
-        // 2. Try Bundle Resource (flattened or fallback)
-        if let url = Bundle.main.url(forResource: filename, withExtension: nil) {
+        if let url = resolveAudioURL(filename: filename, folderName: folderName) {
             play(url: url)
-            return
+        } else {
+            print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
+            onCompletion?()
         }
+    }
+
+    private func resolveAudioURL(filename: String, folderName: String?) -> URL? {
+        let fm = FileManager.default
+        let name = (filename as NSString).deletingPathExtension
+        let ext = (filename as NSString).pathExtension.isEmpty ? nil : (filename as NSString).pathExtension
         
-        // 3. Try looking in the specific Resources/Audio path (Legacy)
-        if let url = Bundle.main.url(forResource: "Audio/\(filename)", withExtension: nil) {
-             play(url: url)
-             return
-        }
-        
-        // 4. Fallback for local development files in the new structure
+        // 1. Try local dev paths (Simulator/Mac only)
         if let folder = folderName {
             let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(filename)"
-            if FileManager.default.fileExists(atPath: localPath) {
-                 play(url: URL(fileURLWithPath: localPath))
-                 return
+            if fm.fileExists(atPath: localPath) {
+                return URL(fileURLWithPath: localPath)
+            }
+        }
+        let localLegacyPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Audio/\(filename)"
+        if fm.fileExists(atPath: localLegacyPath) {
+            return URL(fileURLWithPath: localLegacyPath)
+        }
+
+        // 2. Try Bundle with subdirectories
+        if let folder = folderName {
+            if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Data/\(folder)") ??
+                        Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Resources/Data/\(folder)") {
+                return url
             }
         }
         
-        // 5. Legacy Fallback
-        let localLegacyPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Audio/\(filename)"
-        if FileManager.default.fileExists(atPath: localLegacyPath) {
-             play(url: URL(fileURLWithPath: localLegacyPath))
-             return
+        // 3. Try Bundle standard locations
+        if let url = Bundle.main.url(forResource: name, withExtension: ext) ??
+                    Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Audio") ??
+                    Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Resources/Audio") {
+            return url
+        }
+
+        // 4. Robust recursive search in bundle (fallback for complex deployment)
+        let bundleURL = Bundle.main.bundleURL
+        if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                if fileURL.lastPathComponent == filename {
+                    return fileURL
+                }
+            }
         }
         
-        print("Audio file not found: \(filename) in folder: \(folderName ?? "nil")")
-        onCompletion?()
+        return nil
     }
     
     func playSequence(filenames: [String], folderName: String? = nil) {

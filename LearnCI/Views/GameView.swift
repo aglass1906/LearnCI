@@ -654,20 +654,9 @@ struct GameView: View {
     
     func resolveImage(_ filename: String?, folder: String?) -> Image? {
         guard let name = filename else { return nil }
-        
-        // 1. Try Bundle with subdirectory
-        if let folder = folder, let url = Bundle.main.url(forResource: name, withExtension: nil, subdirectory: "Data/\(folder)"),
-           let uiImage = UIImage(contentsOfFile: url.path) {
-            return Image(uiImage: uiImage)
-        }
-        
-        // 2. Try Bundle flattened
-        if let url = Bundle.main.url(forResource: name, withExtension: nil),
-           let uiImage = UIImage(contentsOfFile: url.path) {
-            return Image(uiImage: uiImage)
-        }
-        
-        // 3. Try Local Resources Path
+        let fm = FileManager.default
+
+        // 1. Try Local Resources Path (Developer/Mac Only)
         if let folder = folder {
             let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(name)"
             if let uiImage = UIImage(contentsOfFile: localPath) {
@@ -675,7 +664,39 @@ struct GameView: View {
             }
         }
         
-        // System fallback if name looks like a system icon (experimental)
+        // 2. Try Bundle with subdirectories
+        let baseName = (name as NSString).deletingPathExtension
+        let ext = (name as NSString).pathExtension.isEmpty ? nil : (name as NSString).pathExtension
+        
+        if let folder = folder {
+            if let url = Bundle.main.url(forResource: baseName, withExtension: ext, subdirectory: "Data/\(folder)") ??
+                        Bundle.main.url(forResource: baseName, withExtension: ext, subdirectory: "Resources/Data/\(folder)") {
+                if let uiImage = UIImage(contentsOfFile: url.path) {
+                    return Image(uiImage: uiImage)
+                }
+            }
+        }
+        
+        // 3. Try Bundle standard locations
+        if let url = Bundle.main.url(forResource: baseName, withExtension: ext) {
+            if let uiImage = UIImage(contentsOfFile: url.path) {
+                return Image(uiImage: uiImage)
+            }
+        }
+        
+        // 4. Robust recursive search in bundle
+        let bundleURL = Bundle.main.bundleURL
+        if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                if fileURL.lastPathComponent == name {
+                    if let uiImage = UIImage(contentsOfFile: fileURL.path) {
+                        return Image(uiImage: uiImage)
+                    }
+                }
+            }
+        }
+        
+        // System fallback if name looks like a system icon
         if name.contains("system:") {
             let systemName = name.replacingOccurrences(of: "system:", with: "")
             return Image(systemName: systemName)

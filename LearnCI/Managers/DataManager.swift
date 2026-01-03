@@ -23,11 +23,11 @@ class DataManager {
     // Discover decks and return them
     @discardableResult
     func discoverDecks(language: Language, level: LearningLevel) -> [DeckMetadata] {
+        var discoveredDecks: [DeckMetadata] = []
+        let fm = FileManager.default
+        
         // 1. Check local resources directory first (development)
         let localDataPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data"
-        var discoveredDecks: [DeckMetadata] = []
-        
-        let fm = FileManager.default
         if fm.fileExists(atPath: localDataPath), let enumerator = fm.enumerator(atPath: localDataPath) {
             while let path = enumerator.nextObject() as? String {
                 if path.hasSuffix(".json") {
@@ -44,19 +44,25 @@ class DataManager {
             }
         }
         
-        // 2. Check Bundle (Fallback/Release)
-        if discoveredDecks.isEmpty {
-            let langLower = language.rawValue.lowercased()
-            let levelLower = level.rawValue.lowercased().replacingOccurrences(of: " ", with: "_")
-            let folderPrefix = "\(langLower)_\(levelLower)"
-            
-            if let url = Bundle.main.url(forResource: folderPrefix, withExtension: "json", subdirectory: "Data/\(folderPrefix)") {
-                 if let deck = peekDeckMetadata(at: url, folderName: folderPrefix) {
-                     discoveredDecks.append(deck)
-                 }
+        // 2. Check Bundle robustly (Fallback/Production)
+        let bundleURL = Bundle.main.bundleURL
+        if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                if fileURL.pathExtension == "json" {
+                    let folderName = fileURL.deletingLastPathComponent().lastPathComponent
+                    if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
+                        if metadata.language == language && metadata.level == level {
+                            // Ensure we don't add duplicates if already found in local path
+                            if !discoveredDecks.contains(where: { $0.id == metadata.id }) {
+                                discoveredDecks.append(metadata)
+                            }
+                        }
+                    }
+                }
             }
         }
         
+        // Deduplicate just in case
         let uniqueDecks = discoveredDecks.reduce(into: [DeckMetadata]()) { result, deck in
             if !result.contains(where: { $0.id == deck.id }) {
                 result.append(deck)
@@ -75,7 +81,7 @@ class DataManager {
         do {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
-            // We only need the basic info
+            // We only need the basic info. If it's not a valid CardDeck JSON, it will fail here.
             let deck = try decoder.decode(CardDeck.self, from: data)
             return DeckMetadata(
                 id: deck.id,
@@ -86,7 +92,7 @@ class DataManager {
                 filename: url.lastPathComponent
             )
         } catch {
-            print("Error peeking at deck: \(error)")
+            // Ignore files that are not CardDecks
             return nil
         }
     }
@@ -101,17 +107,44 @@ class DataManager {
             return
         }
         
-        // Try local path first
-        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(metadata.folderName)/\(metadata.filename)"
-        let url = FileManager.default.fileExists(atPath: localPath) 
-            ? URL(fileURLWithPath: localPath)
-            : Bundle.main.url(forResource: metadata.folderName, withExtension: "json", subdirectory: "Data/\(metadata.folderName)")
-            
-        if let url = url {
+        if let url = resolveURL(folderName: metadata.folderName, filename: metadata.filename) {
             decodeAndSet(from: url, key: key, folderName: metadata.folderName)
         } else {
             self.errorMessage = "Could not find deck file for \(metadata.title)"
         }
+    }
+
+    // Helper to resolve the URL for a resource, trying local development path first, then bundle.
+    private func resolveURL(folderName: String, filename: String) -> URL? {
+        let fm = FileManager.default
+        
+        // 1. Try local dev path
+        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folderName)/\(filename)"
+        if fm.fileExists(atPath: localPath) {
+            return URL(fileURLWithPath: localPath)
+        }
+        
+        // 2. Try Bundle with subdirectory
+        if let url = Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
+                                     withExtension: (filename as NSString).pathExtension, 
+                                     subdirectory: "Resources/Data/\(folderName)") ?? 
+                    Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
+                                     withExtension: (filename as NSString).pathExtension, 
+                                     subdirectory: "Data/\(folderName)") {
+            return url
+        }
+        
+        // 3. Robust recursive search in bundle
+        let bundleURL = Bundle.main.bundleURL
+        if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                if fileURL.lastPathComponent == filename {
+                    return fileURL
+                }
+            }
+        }
+        
+        return nil
     }
 
     // Legacy/Convenience: Load cards for a specific Language and Level (picks first available)
@@ -155,13 +188,7 @@ class DataManager {
             return nil 
         }
         
-        // Load the deck data
-        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(metadata.folderName)/\(metadata.filename)"
-        let url = FileManager.default.fileExists(atPath: localPath) 
-            ? URL(fileURLWithPath: localPath)
-            : Bundle.main.url(forResource: metadata.folderName, withExtension: "json", subdirectory: "Data/\(metadata.folderName)")
-            
-        guard let finalURL = url else { return nil }
+        guard let finalURL = resolveURL(folderName: metadata.folderName, filename: metadata.filename) else { return nil }
         
         do {
             let data = try Data(contentsOf: finalURL)

@@ -14,6 +14,7 @@ struct LearnCIApp: App {
     @State private var youtubeManager = YouTubeManager()
     @State private var authManager: AuthManager
     @State private var syncManager: SyncManager
+    @State private var locationManager = LocationManager()
     
     init() {
         let auth = AuthManager()
@@ -42,6 +43,7 @@ struct LearnCIApp: App {
                 .environment(youtubeManager)
                 .environment(authManager)
                 .environment(syncManager)
+                .environment(locationManager)
         }
         .modelContainer(sharedModelContainer)
     }

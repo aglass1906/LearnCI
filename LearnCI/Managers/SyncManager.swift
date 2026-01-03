@@ -102,7 +102,11 @@ class SyncManager {
             daily_goal_minutes: profile.dailyGoalMinutes,
             daily_card_goal: profile.dailyCardGoal,
             is_public: profile.isPublic,
-            updated_at: profile.updatedAt
+            updated_at: profile.updatedAt,
+            email: profile.email,
+            full_name: profile.fullName,
+            location: profile.location,
+            avatar_url: profile.avatarUrl
         )
         
         // Upsert to Supabase
@@ -131,7 +135,8 @@ class SyncManager {
                 date: activity.date,
                 minutes: activity.minutes,
                 activity_type: activity.activityTypeRaw,
-                language: activity.languageRaw
+                language: activity.languageRaw,
+                comment: activity.comment
             )
         }
         
@@ -174,6 +179,10 @@ struct ProfileUploadDTO: Encodable {
     let daily_card_goal: Int?
     let is_public: Bool
     let updated_at: Date
+    let email: String?
+    let full_name: String?
+    let location: String?
+    let avatar_url: String?
 }
 
 struct ProfileDTO: Codable, Identifiable {
@@ -187,6 +196,10 @@ struct ProfileDTO: Codable, Identifiable {
     let is_public: Bool
     let total_minutes: Int?
     let updated_at: Date
+    let email: String?
+    let full_name: String?
+    let location: String?
+    let avatar_url: String?
 }
 
 struct ActivityDTO: Encodable {
@@ -195,4 +208,5 @@ struct ActivityDTO: Encodable {
     let minutes: Int
     let activity_type: String
     let language: String
+    let comment: String?
 }

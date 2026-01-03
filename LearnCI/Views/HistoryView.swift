@@ -87,13 +87,26 @@ struct HistoryView: View {
                 } else {
                     List {
                         ForEach(filteredActivities) { activity in
-                            HStack {
-                                VStack(alignment: .leading) {
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: activity.activityType.icon)
+                                    .font(.title2)
+                                    .foregroundStyle(activity.activityType.isInput ? .green : .blue)
+                                    .frame(width: 32)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(activity.activityTypeRaw)
                                         .font(.headline)
                                     Text(activity.date.formatted(date: .abbreviated, time: .shortened))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
+                                    
+                                    if let comment = activity.comment, !comment.isEmpty {
+                                        Text(comment)
+                                            .font(.caption)
+                                            .foregroundStyle(.primary.opacity(0.7))
+                                            .italic()
+                                            .lineLimit(2)
+                                    }
                                 }
                                 
                                 Spacer()

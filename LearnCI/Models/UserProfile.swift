@@ -14,6 +14,12 @@ final class UserProfile {
     var totalMinutes: Int = 0
     var updatedAt: Date = Date()
     
+    // New Profile Fields
+    var email: String?
+    var fullName: String?
+    var location: String?
+    var avatarUrl: String?
+    
     var currentLanguage: Language {
         get { Language(rawValue: currentLanguageRaw) ?? .spanish }
         set { languageRawUpdate(newValue) }

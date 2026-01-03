@@ -31,6 +31,15 @@ struct DashboardView: View {
         activities.reduce(0) { $0 + $1.minutes }
     }
     
+    var todayActivities: [UserActivity] {
+        let calendar = Calendar.current
+        return activities.filter { calendar.isDateInToday($0.date) }
+    }
+    
+    var todayMinutes: Int {
+        todayActivities.reduce(0) { $0 + $1.minutes }
+    }
+    
     var activityByType: [ActivityTypeData] {
         let grouped = Dictionary(grouping: activities, by: { $0.activityType })
         return grouped.map { type, activities in
@@ -58,14 +67,47 @@ struct DashboardView: View {
                         .padding()
                     }
                     
-                    // Stats Card
-                    VStack {
-                        Text("Total Learning Time")
+                    // Today's Stats Card
+                    VStack(spacing: 8) {
+                        Text("Today's Progress")
                             .font(.headline)
                             .foregroundColor(.secondary)
-                        Text("\(totalMinutes) min")
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundColor(.blue)
+                        
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text("\(todayMinutes)")
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundColor(.blue)
+                            
+                            Text("/ \(userProfile?.dailyGoalMinutes ?? 30)")
+                                .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                .foregroundColor(.secondary)
+                            
+                            Text("min")
+                                .font(.title2)
+                                .foregroundColor(.secondary)
+                            
+                            if todayMinutes >= (userProfile?.dailyGoalMinutes ?? 30) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                        
+                        // Progress bar
+                        if let goal = userProfile?.dailyGoalMinutes, goal > 0 {
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(height: 8)
+                                    
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(todayMinutes >= goal ? Color.green : Color.blue)
+                                        .frame(width: min(CGFloat(todayMinutes) / CGFloat(goal) * geometry.size.width, geometry.size.width), height: 8)
+                                }
+                            }
+                            .frame(height: 8)
+                        }
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -278,6 +320,8 @@ extension ActivityType {
         switch self {
         case .appLearning:
             return .blue
+        case .flashcards:
+            return .teal
         case .watchingVideos:
             return .red
         case .listeningPodcasts:

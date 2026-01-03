@@ -10,6 +10,7 @@ struct VideoView: View {
     @State private var selectedVideo: YouTubeVideo?
     @State private var showWatchTimePrompt = false
     @State private var watchMinutes: Double = 10
+    @State private var watchComment: String = ""
     
     var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
@@ -48,10 +49,14 @@ struct VideoView: View {
                     onWatch: {
                         openInYouTube(video)
                         selectedVideo = nil
+                        // Pre-fill comment with video context
+                        watchComment = "\(video.channelTitle) - \(video.title)"
                         showWatchTimePrompt = true
                     },
                     onLogTime: {
                         selectedVideo = video
+                        // Pre-fill comment with video context
+                        watchComment = "\(video.channelTitle) - \(video.title)"
                         showWatchTimePrompt = true
                     }
                 )
@@ -59,10 +64,12 @@ struct VideoView: View {
             .sheet(isPresented: $showWatchTimePrompt) {
                 LogWatchTimeSheet(
                     minutes: $watchMinutes,
+                    comment: $watchComment,
                     onSave: {
                         logWatchTime(Int(watchMinutes))
                         showWatchTimePrompt = false
                         watchMinutes = 10
+                        watchComment = ""
                     }
                 )
             }
@@ -125,12 +132,17 @@ struct VideoView: View {
         guard minutes > 0 else { return }
         
         let language = userProfile?.currentLanguage ?? .spanish
+        
+        // Use the comment edited by user (or auto-generated default)
+        let finalComment = watchComment.isEmpty ? nil : watchComment
+        
         let activity = UserActivity(
             date: Date(),
             minutes: minutes,
             activityType: .watchingVideos,
             language: language,
-            userID: authManager.currentUser
+            userID: authManager.currentUser,
+            comment: finalComment
         )
         modelContext.insert(activity)
     }
@@ -255,6 +267,7 @@ struct VideoDetailSheet: View {
 
 struct LogWatchTimeSheet: View {
     @Binding var minutes: Double
+    @Binding var comment: String
     let onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
     
@@ -267,6 +280,11 @@ struct LogWatchTimeSheet: View {
                             .foregroundStyle(.secondary)
                         Slider(value: $minutes, in: 1...120, step: 1)
                     }
+                }
+                
+                Section(header: Text("Notes (Optional)")) {
+                    TextField("Add or edit comment...", text: $comment, axis: .vertical)
+                        .lineLimit(3, reservesSpace: true)
                 }
             }
             .navigationTitle("Log Watch Time")
@@ -286,6 +304,7 @@ struct LogWatchTimeSheet: View {
                 }
             }
         }
+        .presentationDetents([.medium])
     }
 }
 

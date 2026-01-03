@@ -11,6 +11,7 @@ struct AddActivityView: View {
     @State private var minutes: Double = 15
     @State private var selectedDate: Date = Date()
     @State private var selectedLanguage: Language = .spanish
+    @State private var comment: String = ""
     
     var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
@@ -22,7 +23,7 @@ struct AddActivityView: View {
                 Section(header: Text("Activity Details")) {
                     Picker("Activity Type", selection: $selectedActivity) {
                         ForEach(ActivityType.allCases) { type in
-                            Text(type.rawValue).tag(type)
+                            Label(type.rawValue, systemImage: type.icon).tag(type)
                         }
                     }
                     
@@ -40,6 +41,11 @@ struct AddActivityView: View {
                             Text(lang.rawValue).tag(lang)
                         }
                     }
+                }
+                
+                Section(header: Text("Notes (Optional)")) {
+                    TextField("Add a comment...", text: $comment, axis: .vertical)
+                        .lineLimit(3, reservesSpace: true)
                 }
             }
             .navigationTitle("Log Activity")
@@ -66,7 +72,15 @@ struct AddActivityView: View {
     }
     
     func saveActivity() {
-        let newActivity = UserActivity(date: selectedDate, minutes: Int(minutes), activityType: selectedActivity, language: selectedLanguage, userID: authManager.currentUser)
+        let activityComment = comment.isEmpty ? nil : comment
+        let newActivity = UserActivity(
+            date: selectedDate, 
+            minutes: Int(minutes), 
+            activityType: selectedActivity, 
+            language: selectedLanguage, 
+            userID: authManager.currentUser,
+            comment: activityComment
+        )
         modelContext.insert(newActivity)
         dismiss()
     }

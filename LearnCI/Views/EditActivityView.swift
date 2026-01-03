@@ -24,7 +24,7 @@ struct EditActivityView: View {
                 Section(header: Text("Activity Type")) {
                     Picker("Type", selection: $activity.activityType) {
                         ForEach(ActivityType.allCases) { type in
-                            Text(type.rawValue).tag(type)
+                            Label(type.rawValue, systemImage: type.icon).tag(type)
                         }
                     }
                     .pickerStyle(.navigationLink)
@@ -36,6 +36,14 @@ struct EditActivityView: View {
                             Text(lang.rawValue).tag(lang)
                         }
                     }
+                }
+                
+                Section(header: Text("Notes (Optional)")) {
+                    TextField("Add a comment...", text: Binding(
+                        get: { activity.comment ?? "" },
+                        set: { activity.comment = $0.isEmpty ? nil : $0 }
+                    ), axis: .vertical)
+                        .lineLimit(3, reservesSpace: true)
                 }
             }
             .navigationTitle("Edit Activity")

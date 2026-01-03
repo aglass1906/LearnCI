@@ -612,7 +612,22 @@ struct GameView: View {
     func saveActivity() {
         let minutes = max(1, elapsedSeconds / 60)
         let language = sessionLanguage
-        let activity = UserActivity(date: Date(), minutes: minutes, activityType: .appLearning, language: language, userID: authManager.currentUser)
+        
+        // Build comment with deck name and stats
+        var comment: String?
+        if let deckTitle = selectedDeck?.title {
+            let totalCards = deck?.cards.count ?? 0
+            comment = "\(deckTitle) · \(learnedCount)/\(totalCards) cards"
+        }
+        
+        let activity = UserActivity(
+            date: Date(), 
+            minutes: minutes, 
+            activityType: .flashcards, 
+            language: language, 
+            userID: authManager.currentUser,
+            comment: comment
+        )
         modelContext.insert(activity)
     }
     

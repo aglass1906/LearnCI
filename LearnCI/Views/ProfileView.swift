@@ -5,6 +5,7 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(YouTubeManager.self) private var youtubeManager
     @Environment(AuthManager.self) private var authManager
+    @Environment(LocationManager.self) private var locationManager
     @Query private var allProfiles: [UserProfile]
     
     var profiles: [UserProfile] {
@@ -12,6 +13,7 @@ struct ProfileView: View {
     }
     
     @State private var name: String = ""
+    @State private var location: String = ""
     @State private var selectedLanguage: Language = .spanish
     @State private var selectedLevel: LearningLevel = .superBeginner
     @State private var dailyGoal: Double = 30
@@ -20,8 +22,42 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("User Info")) {
-                    TextField("Name", text: $name)
+                // Google Account Info (Read-Only)
+                if let email = authManager.currentUserEmail {
+                    Section(header: Text("Google Account")) {
+                        LabeledContent("Email", value: email)
+                        if let fullName = authManager.currentUserFullName {
+                            LabeledContent("Full Name", value: fullName)
+                        }
+                    }
+                }
+                
+                Section(header: Text("Public Profile")) {
+                    TextField("Display Name", text: $name)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            TextField("Location", text: $location)
+                                .textContentType(.location)
+                            
+                            Button(action: {
+                                locationManager.requestLocationAndAddress()
+                            }) {
+                                Image(systemName: "location.fill")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        
+                        if locationManager.isLoading {
+                            Text("Locating...")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else if let error = locationManager.errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
                     
                     Picker("Target Language", selection: $selectedLanguage) {
                         ForEach(Language.allCases) { lang in
@@ -82,9 +118,7 @@ struct ProfileView: View {
                                     .foregroundColor(.secondary)
                                 
                                 Button(action: { 
-                                    Task {
-                                        await youtubeManager.signInWithGoogle()
-                                    }
+                                    youtubeManager.signInWithGoogle()
                                 }) {
                                     HStack {
                                         Image(systemName: "play.rectangle.fill")
@@ -120,9 +154,15 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .onChange(of: locationManager.locationString) { _, newLocation in
+                if let loc = newLocation {
+                    location = loc
+                }
+            }
             .onAppear {
                 if let profile = profiles.first {
                     name = profile.name
+                    location = profile.location ?? ""
                     selectedLanguage = profile.currentLanguage
                     selectedLevel = profile.currentLevel
                     dailyGoal = Double(profile.dailyGoalMinutes)
@@ -131,6 +171,14 @@ struct ProfileView: View {
                     // Create profile associated with current user
                     if let userID = authManager.currentUser {
                         let newProfile = UserProfile(userID: userID)
+                        newProfile.fullName = authManager.currentUserFullName
+                        newProfile.email = authManager.currentUserEmail
+                        newProfile.avatarUrl = authManager.currentUserAvatar
+                        if let googleName = authManager.currentUserFullName {
+                            newProfile.name = googleName // Default display name to full name
+                            name = googleName
+                        }
+                        
                         modelContext.insert(newProfile)
                     }
                 }
@@ -141,10 +189,17 @@ struct ProfileView: View {
     func saveProfile() {
         if let profile = profiles.first {
             profile.name = name
+            profile.location = location
             profile.currentLanguage = selectedLanguage
             profile.currentLevel = selectedLevel
             profile.dailyGoalMinutes = Int(dailyGoal)
             profile.dailyCardGoal = Int(dailyCardGoal)
+            
+            // Update auth fields if they were missing
+            if profile.email == nil { profile.email = authManager.currentUserEmail }
+            if profile.fullName == nil { profile.fullName = authManager.currentUserFullName }
+            if profile.avatarUrl == nil { profile.avatarUrl = authManager.currentUserAvatar }
+            
             profile.updatedAt = Date() // Mark for sync
         }
     }

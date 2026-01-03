@@ -9,15 +9,29 @@ import CryptoKit
 class AuthManager {
     enum AuthState {
         case checking
-        case authenticated(userID: String)
+        case authenticated(userID: String, email: String?, fullName: String?, avatarURL: String?)
         case unauthenticated
     }
     
     var state: AuthState = .checking
+    
     var currentUser: String? {
-        if case .authenticated(let id) = state {
-            return id
-        }
+        if case .authenticated(let id, _, _, _) = state { return id }
+        return nil
+    }
+    
+    var currentUserEmail: String? {
+        if case .authenticated(_, let email, _, _) = state { return email }
+        return nil
+    }
+    
+    var currentUserFullName: String? {
+        if case .authenticated(_, _, let name, _) = state { return name }
+        return nil
+    }
+    
+    var currentUserAvatar: String? {
+        if case .authenticated(_, _, _, let avatar) = state { return avatar }
         return nil
     }
     
@@ -43,7 +57,18 @@ class AuthManager {
             do {
                 let session = try await supabase.auth.session
                 await MainActor.run {
-                    self.state = .authenticated(userID: session.user.id.uuidString)
+                    // Extract metadata if available (providers like Google store it here)
+                    let metadata = session.user.userMetadata
+                    let fullName = metadata["full_name"]?.value as? String
+                    let avatarUrl = metadata["avatar_url"]?.value as? String
+                    let email = session.user.email
+                    
+                    self.state = .authenticated(
+                        userID: session.user.id.uuidString,
+                        email: email,
+                        fullName: fullName,
+                        avatarURL: avatarUrl
+                    )
                 }
             } catch {
                 await MainActor.run {
@@ -96,8 +121,19 @@ class AuthManager {
                 do {
                     // 3. Pass raw nonce to Supabase credentials
                     let session = try await self.supabase.auth.signInWithIdToken(credentials: .init(provider: .google, idToken: idToken, nonce: nonce))
+                    
                     await MainActor.run {
-                        self.state = .authenticated(userID: session.user.id.uuidString)
+                        // Extract profile from Google User object directly for freshness
+                        let email = user.profile?.email
+                        let fullName = user.profile?.name
+                        let avatar = user.profile?.imageURL(withDimension: 200)?.absoluteString
+                        
+                        self.state = .authenticated(
+                            userID: session.user.id.uuidString, 
+                            email: email, 
+                            fullName: fullName, 
+                            avatarURL: avatar
+                        )
                     }
                 } catch {
                     print("Supabase Auth Error: \(error)")

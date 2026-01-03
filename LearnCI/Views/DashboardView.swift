@@ -18,7 +18,7 @@ struct DashboardView: View {
         allProfiles.filter { $0.userID == authManager.currentUser }
     }
     
-    @State private var audioManager = AudioManager()
+    @Environment(AudioManager.self) private var audioManager
     @State private var wordOfDay: LearningCard?
     @State private var wordOfDayFolder: String?
     @State private var isLoadingWordOfDay = false

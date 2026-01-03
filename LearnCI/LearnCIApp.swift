@@ -15,6 +15,7 @@ struct LearnCIApp: App {
     @State private var authManager: AuthManager
     @State private var syncManager: SyncManager
     @State private var locationManager = LocationManager()
+    @State private var audioManager = AudioManager()
     
     init() {
         let auth = AuthManager()
@@ -44,6 +45,7 @@ struct LearnCIApp: App {
                 .environment(authManager)
                 .environment(syncManager)
                 .environment(locationManager)
+                .environment(audioManager)
         }
         .modelContainer(sharedModelContainer)
     }

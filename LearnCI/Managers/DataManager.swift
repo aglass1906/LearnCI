@@ -20,6 +20,9 @@ class DataManager {
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
     
+    // Cache for resource URLs to avoid repeated recursive searches
+    private var resourceURLCache: [String: URL] = [:]
+    
     // Discover decks and return them
     @discardableResult
     func discoverDecks(language: Language, level: LearningLevel) -> [DeckMetadata] {
@@ -115,30 +118,50 @@ class DataManager {
     }
 
     // Helper to resolve the URL for a resource, trying local development path first, then bundle.
-    private func resolveURL(folderName: String, filename: String) -> URL? {
+    func resolveURL(folderName: String?, filename: String) -> URL? {
+        let cacheKey = "\(folderName ?? "root")/\(filename)"
+        if let cached = resourceURLCache[cacheKey] {
+            return cached
+        }
+        
         let fm = FileManager.default
         
         // 1. Try local dev path
-        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folderName)/\(filename)"
-        if fm.fileExists(atPath: localPath) {
-            return URL(fileURLWithPath: localPath)
+        if let folder = folderName {
+            let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(filename)"
+            if fm.fileExists(atPath: localPath) {
+                let url = URL(fileURLWithPath: localPath)
+                resourceURLCache[cacheKey] = url
+                return url
+            }
         }
         
         // 2. Try Bundle with subdirectory
+        if let folder = folderName {
+            if let url = Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
+                                         withExtension: (filename as NSString).pathExtension, 
+                                         subdirectory: "Resources/Data/\(folder)") ?? 
+                        Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
+                                         withExtension: (filename as NSString).pathExtension, 
+                                         subdirectory: "Data/\(folder)") {
+                resourceURLCache[cacheKey] = url
+                return url
+            }
+        }
+        
+        // 3. Try standard Bundle locations (no folder)
         if let url = Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
-                                     withExtension: (filename as NSString).pathExtension, 
-                                     subdirectory: "Resources/Data/\(folderName)") ?? 
-                    Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
-                                     withExtension: (filename as NSString).pathExtension, 
-                                     subdirectory: "Data/\(folderName)") {
+                                     withExtension: (filename as NSString).pathExtension) {
+            resourceURLCache[cacheKey] = url
             return url
         }
         
-        // 3. Robust recursive search in bundle
+        // 4. Robust recursive search in bundle (Slow fallback - only once per file due to cache)
         let bundleURL = Bundle.main.bundleURL
         if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
             for case let fileURL as URL in enumerator {
                 if fileURL.lastPathComponent == filename {
+                    resourceURLCache[cacheKey] = fileURL
                     return fileURL
                 }
             }

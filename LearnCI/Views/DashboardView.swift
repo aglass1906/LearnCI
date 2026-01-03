@@ -190,22 +190,45 @@ struct DashboardView: View {
                     } else {
                         VStack(spacing: 0) {
                             ForEach(activities.prefix(5)) { activity in
-                                HStack {
-                                    VStack(alignment: .leading) {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Image(systemName: activity.activityType.icon)
+                                        .font(.title3)
+                                        .foregroundStyle(activity.activityType.isInput ? .green : .blue)
+                                        .frame(width: 24, height: 24)
+                                        .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
+                                        .clipShape(Circle())
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
                                         Text(activity.activityType.rawValue)
-                                            .font(.headline)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                        
+                                        if let comment = activity.comment, !comment.isEmpty {
+                                            Text(comment)
+                                                .font(.caption)
+                                                .foregroundStyle(.primary.opacity(0.8))
+                                                .lineLimit(1)
+                                        }
+                                        
                                         Text(activity.date.formatted(date: .abbreviated, time: .shortened))
-                                            .font(.caption)
+                                            .font(.caption2)
                                             .foregroundColor(.secondary)
                                     }
+                                    
                                     Spacer()
-                                    Text("\(activity.minutes) min")
+                                    
+                                    Text("\(activity.minutes)m")
+                                        .font(.caption)
                                         .fontWeight(.bold)
-                                        .foregroundColor(.green)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
+                                        .clipShape(Capsule())
                                 }
                                 .padding()
                                 .background(Color(UIColor.secondarySystemGroupedBackground))
-                                .cornerRadius(10)
+                                .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
                                 .padding(.horizontal)
                                 .padding(.vertical, 4)
                             }

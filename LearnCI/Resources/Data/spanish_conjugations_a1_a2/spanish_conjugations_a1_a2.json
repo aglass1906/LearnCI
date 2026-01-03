@@ -1,0 +1,908 @@
+{
+    "id": "es_conj_001",
+    "language": "Spanish",
+    "level": "Beginner",
+    "title": "Spanish A1/A2 Conjugations",
+    "cards": [
+        {
+            "id": "es_c_1",
+            "targetWord": "Hablo",
+            "nativeTranslation": "I speak",
+            "sentenceTarget": "Yo hablo un poco de español.",
+            "sentenceNative": "I speak a little Spanish.",
+            "audioWordFile": "es_hablo_word.mp3",
+            "audioSentenceFile": "es_hablo_sentence.mp3"
+        },
+        {
+            "id": "es_c_2",
+            "targetWord": "Hablas",
+            "nativeTranslation": "You speak",
+            "sentenceTarget": "¿Hablas inglés?",
+            "sentenceNative": "Do you speak English?",
+            "audioWordFile": "es_hablas_word.mp3",
+            "audioSentenceFile": "es_hablas_sentence.mp3"
+        },
+        {
+            "id": "es_c_3",
+            "targetWord": "Habla",
+            "nativeTranslation": "He/She speaks",
+            "sentenceTarget": "Él habla muy rápido.",
+            "sentenceNative": "He speaks very fast.",
+            "audioWordFile": "es_habla_word.mp3",
+            "audioSentenceFile": "es_habla_sentence.mp3"
+        },
+        {
+            "id": "es_c_4",
+            "targetWord": "Hablamos",
+            "nativeTranslation": "We speak",
+            "sentenceTarget": "Nosotros hablamos todos los días.",
+            "sentenceNative": "We speak every day.",
+            "audioWordFile": "es_hablamos_word.mp3",
+            "audioSentenceFile": "es_hablamos_sentence.mp3"
+        },
+        {
+            "id": "es_c_5",
+            "targetWord": "Hablan",
+            "nativeTranslation": "They speak",
+            "sentenceTarget": "Ellos hablan francés.",
+            "sentenceNative": "They speak French.",
+            "audioWordFile": "es_hablan_word.mp3",
+            "audioSentenceFile": "es_hablan_sentence.mp3"
+        },
+        {
+            "id": "es_c_6",
+            "targetWord": "Como",
+            "nativeTranslation": "I eat",
+            "sentenceTarget": "Yo como una manzana.",
+            "sentenceNative": "I eat an apple.",
+            "audioWordFile": "es_como_word.mp3",
+            "audioSentenceFile": "es_como_sentence.mp3"
+        },
+        {
+            "id": "es_c_7",
+            "targetWord": "Comes",
+            "nativeTranslation": "You eat",
+            "sentenceTarget": "¿Qué comes hoy?",
+            "sentenceNative": "What are you eating today?",
+            "audioWordFile": "es_comes_word.mp3",
+            "audioSentenceFile": "es_comes_sentence.mp3"
+        },
+        {
+            "id": "es_c_8",
+            "targetWord": "Come",
+            "nativeTranslation": "He/She eats",
+            "sentenceTarget": "Ella come mucha fruta.",
+            "sentenceNative": "She eats a lot of fruit.",
+            "audioWordFile": "es_come_word.mp3",
+            "audioSentenceFile": "es_come_sentence.mp3"
+        },
+        {
+            "id": "es_c_9",
+            "targetWord": "Comemos",
+            "nativeTranslation": "We eat",
+            "sentenceTarget": "Comemos juntos los domingos.",
+            "sentenceNative": "We eat together on Sundays.",
+            "audioWordFile": "es_comemos_word.mp3",
+            "audioSentenceFile": "es_comemos_sentence.mp3"
+        },
+        {
+            "id": "es_c_10",
+            "targetWord": "Comen",
+            "nativeTranslation": "They eat",
+            "sentenceTarget": "Ellos comen carne.",
+            "sentenceNative": "They eat meat.",
+            "audioWordFile": "es_comen_word.mp3",
+            "audioSentenceFile": "es_comen_sentence.mp3"
+        },
+        {
+            "id": "es_c_11",
+            "targetWord": "Vivo",
+            "nativeTranslation": "I live",
+            "sentenceTarget": "Vivo en Madrid.",
+            "sentenceNative": "I live in Madrid.",
+            "audioWordFile": "es_vivo_word.mp3",
+            "audioSentenceFile": "es_vivo_sentence.mp3"
+        },
+        {
+            "id": "es_c_12",
+            "targetWord": "Vives",
+            "nativeTranslation": "You live",
+            "sentenceTarget": "¿Dónde vives?",
+            "sentenceNative": "Where do you live?",
+            "audioWordFile": "es_vives_word.mp3",
+            "audioSentenceFile": "es_vives_sentence.mp3"
+        },
+        {
+            "id": "es_c_13",
+            "targetWord": "Vive",
+            "nativeTranslation": "He/She lives",
+            "sentenceTarget": "Mi amigo vive lejos.",
+            "sentenceNative": "My friend lives far away.",
+            "audioWordFile": "es_vive_word.mp3",
+            "audioSentenceFile": "es_vive_sentence.mp3"
+        },
+        {
+            "id": "es_c_14",
+            "targetWord": "Vivimos",
+            "nativeTranslation": "We live",
+            "sentenceTarget": "Vivimos en una casa pequeña.",
+            "sentenceNative": "We live in a small house.",
+            "audioWordFile": "es_vivimos_word.mp3",
+            "audioSentenceFile": "es_vivimos_sentence.mp3"
+        },
+        {
+            "id": "es_c_15",
+            "targetWord": "Viven",
+            "nativeTranslation": "They live",
+            "sentenceTarget": "Ellos viven en el campo.",
+            "sentenceNative": "They live in the country.",
+            "audioWordFile": "es_viven_word.mp3",
+            "audioSentenceFile": "es_viven_sentence.mp3"
+        },
+        {
+            "id": "es_c_16",
+            "targetWord": "Soy",
+            "nativeTranslation": "I am (permanent)",
+            "sentenceTarget": "Yo soy estudiante.",
+            "sentenceNative": "I am a student.",
+            "audioWordFile": "es_soy_word.mp3",
+            "audioSentenceFile": "es_soy_sentence.mp3"
+        },
+        {
+            "id": "es_c_17",
+            "targetWord": "Eres",
+            "nativeTranslation": "You are (permanent)",
+            "sentenceTarget": "Tú eres muy simpático.",
+            "sentenceNative": "You are very nice.",
+            "audioWordFile": "es_eres_word.mp3",
+            "audioSentenceFile": "es_eres_sentence.mp3"
+        },
+        {
+            "id": "es_c_18",
+            "targetWord": "Es",
+            "nativeTranslation": "He/She/It is (permanent)",
+            "sentenceTarget": "Él es de España.",
+            "sentenceNative": "He is from Spain.",
+            "audioWordFile": "es_es_word.mp3",
+            "audioSentenceFile": "es_es_sentence.mp3"
+        },
+        {
+            "id": "es_c_19",
+            "targetWord": "Somos",
+            "nativeTranslation": "We are (permanent)",
+            "sentenceTarget": "Nosotros somos amigos.",
+            "sentenceNative": "We are friends.",
+            "audioWordFile": "es_somos_word.mp3",
+            "audioSentenceFile": "es_somos_sentence.mp3"
+        },
+        {
+            "id": "es_c_20",
+            "targetWord": "Son",
+            "nativeTranslation": "They are (permanent)",
+            "sentenceTarget": "Ellos son profesores.",
+            "sentenceNative": "They are teachers.",
+            "audioWordFile": "es_son_word.mp3",
+            "audioSentenceFile": "es_son_sentence.mp3"
+        },
+        {
+            "id": "es_c_21",
+            "targetWord": "Estoy",
+            "nativeTranslation": "I am (temporary)",
+            "sentenceTarget": "Estoy muy feliz.",
+            "sentenceNative": "I am very happy.",
+            "audioWordFile": "es_estoy_word.mp3",
+            "audioSentenceFile": "es_estoy_sentence.mp3"
+        },
+        {
+            "id": "es_c_22",
+            "targetWord": "Estás",
+            "nativeTranslation": "You are (temporary)",
+            "sentenceTarget": "¿Cómo estás?",
+            "sentenceNative": "How are you?",
+            "audioWordFile": "es_estas_word.mp3",
+            "audioSentenceFile": "es_estas_sentence.mp3"
+        },
+        {
+            "id": "es_c_23",
+            "targetWord": "Está",
+            "nativeTranslation": "He/She/It is (temporary)",
+            "sentenceTarget": "El gato está en la mesa.",
+            "sentenceNative": "The cat is on the table.",
+            "audioWordFile": "es_esta_word.mp3",
+            "audioSentenceFile": "es_esta_sentence.mp3"
+        },
+        {
+            "id": "es_c_24",
+            "targetWord": "Estamos",
+            "nativeTranslation": "We are (temporary)",
+            "sentenceTarget": "Estamos en clase.",
+            "sentenceNative": "We are in class.",
+            "audioWordFile": "es_estamos_word.mp3",
+            "audioSentenceFile": "es_estamos_sentence.mp3"
+        },
+        {
+            "id": "es_c_25",
+            "targetWord": "Están",
+            "nativeTranslation": "They are (temporary)",
+            "sentenceTarget": "Ellos están cansados.",
+            "sentenceNative": "They are tired.",
+            "audioWordFile": "es_estan_word.mp3",
+            "audioSentenceFile": "es_estan_sentence.mp3"
+        },
+        {
+            "id": "es_c_26",
+            "targetWord": "Tengo",
+            "nativeTranslation": "I have",
+            "sentenceTarget": "Tengo dos hermanos.",
+            "sentenceNative": "I have two brothers.",
+            "audioWordFile": "es_tengo_word.mp3",
+            "audioSentenceFile": "es_tengo_sentence.mp3"
+        },
+        {
+            "id": "es_c_27",
+            "targetWord": "Tienes",
+            "nativeTranslation": "You have",
+            "sentenceTarget": "¿Tienes un lápiz?",
+            "sentenceNative": "Do you have a pencil?",
+            "audioWordFile": "es_tienes_word.mp3",
+            "audioSentenceFile": "es_tienes_sentence.mp3"
+        },
+        {
+            "id": "es_c_28",
+            "targetWord": "Tiene",
+            "nativeTranslation": "He/She has",
+            "sentenceTarget": "Ella tiene un coche azul.",
+            "sentenceNative": "She has a blue car.",
+            "audioWordFile": "es_tiene_word.mp3",
+            "audioSentenceFile": "es_tiene_sentence.mp3"
+        },
+        {
+            "id": "es_c_29",
+            "targetWord": "Tenemos",
+            "nativeTranslation": "We have",
+            "sentenceTarget": "Tenemos mucho tiempo.",
+            "sentenceNative": "We have a lot of time.",
+            "audioWordFile": "es_tenemos_word.mp3",
+            "audioSentenceFile": "es_tenemos_sentence.mp3"
+        },
+        {
+            "id": "es_c_30",
+            "targetWord": "Tienen",
+            "nativeTranslation": "They have",
+            "sentenceTarget": "Ellos tienen hambre.",
+            "sentenceNative": "They are hungry (They have hunger).",
+            "audioWordFile": "es_tienen_word.mp3",
+            "audioSentenceFile": "es_tienen_sentence.mp3"
+        },
+        {
+            "id": "es_c_31",
+            "targetWord": "Voy",
+            "nativeTranslation": "I go",
+            "sentenceTarget": "Voy al mercado.",
+            "sentenceNative": "I am going to the market.",
+            "audioWordFile": "es_voy_word.mp3",
+            "audioSentenceFile": "es_voy_sentence.mp3"
+        },
+        {
+            "id": "es_c_32",
+            "targetWord": "Vas",
+            "nativeTranslation": "You go",
+            "sentenceTarget": "¿Adónde vas?",
+            "sentenceNative": "Where are you going?",
+            "audioWordFile": "es_vas_word.mp3",
+            "audioSentenceFile": "es_vas_sentence.mp3"
+        },
+        {
+            "id": "es_c_33",
+            "targetWord": "Va",
+            "nativeTranslation": "He/She goes",
+            "sentenceTarget": "Él va a la escuela en bus.",
+            "sentenceNative": "He goes to school by bus.",
+            "audioWordFile": "es_va_word.mp3",
+            "audioSentenceFile": "es_va_sentence.mp3"
+        },
+        {
+            "id": "es_c_34",
+            "targetWord": "Vamos",
+            "nativeTranslation": "We go",
+            "sentenceTarget": "Vamos a la playa hoy.",
+            "sentenceNative": "We are going to the beach today.",
+            "audioWordFile": "es_vamos_word.mp3",
+            "audioSentenceFile": "es_vamos_sentence.mp3"
+        },
+        {
+            "id": "es_c_35",
+            "targetWord": "Van",
+            "nativeTranslation": "They go",
+            "sentenceTarget": "Ellos van al parque.",
+            "sentenceNative": "They are going to the park.",
+            "audioWordFile": "es_van_word.mp3",
+            "audioSentenceFile": "es_van_sentence.mp3"
+        },
+        {
+            "id": "es_c_36",
+            "targetWord": "Hago",
+            "nativeTranslation": "I do / I make",
+            "sentenceTarget": "Hago mi tarea por la tarde.",
+            "sentenceNative": "I do my homework in the afternoon.",
+            "audioWordFile": "es_hago_word.mp3",
+            "audioSentenceFile": "es_hago_sentence.mp3"
+        },
+        {
+            "id": "es_c_37",
+            "targetWord": "Haces",
+            "nativeTranslation": "You do / You make",
+            "sentenceTarget": "¿Qué haces ahora?",
+            "sentenceNative": "What are you doing now?",
+            "audioWordFile": "es_haces_word.mp3",
+            "audioSentenceFile": "es_haces_sentence.mp3"
+        },
+        {
+            "id": "es_c_38",
+            "targetWord": "Hace",
+            "nativeTranslation": "He/She does",
+            "sentenceTarget": "Ella hace mucho ejercicio.",
+            "sentenceNative": "She exercises a lot.",
+            "audioWordFile": "es_hace_word.mp3",
+            "audioSentenceFile": "es_hace_sentence.mp3"
+        },
+        {
+            "id": "es_c_39",
+            "targetWord": "Hacemos",
+            "nativeTranslation": "We do",
+            "sentenceTarget": "Hacemos la cena juntos.",
+            "sentenceNative": "We make dinner together.",
+            "audioWordFile": "es_hacemos_word.mp3",
+            "audioSentenceFile": "es_hacemos_sentence.mp3"
+        },
+        {
+            "id": "es_c_40",
+            "targetWord": "Hacen",
+            "nativeTranslation": "They do",
+            "sentenceTarget": "Ellos hacen mucho ruido.",
+            "sentenceNative": "They make a lot of noise.",
+            "audioWordFile": "es_hacen_word.mp3",
+            "audioSentenceFile": "es_hacen_sentence.mp3"
+        },
+        {
+            "id": "es_c_41",
+            "targetWord": "Hablé",
+            "nativeTranslation": "I spoke",
+            "sentenceTarget": "Ayer hablé con mi madre.",
+            "sentenceNative": "Yesterday I spoke with my mother.",
+            "audioWordFile": "es_hable_word.mp3",
+            "audioSentenceFile": "es_hable_sentence.mp3"
+        },
+        {
+            "id": "es_c_42",
+            "targetWord": "Hablaste",
+            "nativeTranslation": "You spoke",
+            "sentenceTarget": "¿Hablaste con él ayer?",
+            "sentenceNative": "Did you speak with him yesterday?",
+            "audioWordFile": "es_hablaste_word.mp3",
+            "audioSentenceFile": "es_hablaste_sentence.mp3"
+        },
+        {
+            "id": "es_c_43",
+            "targetWord": "Habló",
+            "nativeTranslation": "He/She spoke",
+            "sentenceTarget": "Ella habló en la reunión.",
+            "sentenceNative": "She spoke at the meeting.",
+            "audioWordFile": "es_hablo_past_word.mp3",
+            "audioSentenceFile": "es_hablo_past_sentence.mp3"
+        },
+        {
+            "id": "es_c_44",
+            "targetWord": "Hablamos",
+            "nativeTranslation": "We spoke (Past)",
+            "sentenceTarget": "Hablamos por teléfono anoche.",
+            "sentenceNative": "We spoke on the phone last night.",
+            "audioWordFile": "es_hablamos_past_word.mp3",
+            "audioSentenceFile": "es_hablamos_past_sentence.mp3"
+        },
+        {
+            "id": "es_c_45",
+            "targetWord": "Hablaron",
+            "nativeTranslation": "They spoke",
+            "sentenceTarget": "Ellos hablaron sobre el plan.",
+            "sentenceNative": "They spoke about the plan.",
+            "audioWordFile": "es_hablaron_word.mp3",
+            "audioSentenceFile": "es_hablaron_sentence.mp3"
+        },
+        {
+            "id": "es_c_46",
+            "targetWord": "Comí",
+            "nativeTranslation": "I ate",
+            "sentenceTarget": "Comí una pizza deliciosa.",
+            "sentenceNative": "I ate a delicious pizza.",
+            "audioWordFile": "es_comi_word.mp3",
+            "audioSentenceFile": "es_comi_sentence.mp3"
+        },
+        {
+            "id": "es_c_47",
+            "targetWord": "Comiste",
+            "nativeTranslation": "You ate",
+            "sentenceTarget": "¿Qué comiste al mediodía?",
+            "sentenceNative": "What did you eat at noon?",
+            "audioWordFile": "es_comiste_word.mp3",
+            "audioSentenceFile": "es_comiste_sentence.mp3"
+        },
+        {
+            "id": "es_c_48",
+            "targetWord": "Comió",
+            "nativeTranslation": "He/She ate",
+            "sentenceTarget": "Él comió muy poco.",
+            "sentenceNative": "He ate very little.",
+            "audioWordFile": "es_comio_word.mp3",
+            "audioSentenceFile": "es_comio_sentence.mp3"
+        },
+        {
+            "id": "es_c_49",
+            "targetWord": "Comimos",
+            "nativeTranslation": "We ate",
+            "sentenceTarget": "Comimos en un restaurante nuevo.",
+            "sentenceNative": "We ate at a new restaurant.",
+            "audioWordFile": "es_comimos_past_word.mp3",
+            "audioSentenceFile": "es_comimos_past_sentence.mp3"
+        },
+        {
+            "id": "es_c_50",
+            "targetWord": "Comieron",
+            "nativeTranslation": "They ate",
+            "sentenceTarget": "Ellos comieron todo el pastel.",
+            "sentenceNative": "They ate all the cake.",
+            "audioWordFile": "es_comieron_word.mp3",
+            "audioSentenceFile": "es_comieron_sentence.mp3"
+        },
+        {
+            "id": "es_c_51",
+            "targetWord": "Viví",
+            "nativeTranslation": "I lived",
+            "sentenceTarget": "Viví en Barcelona por un año.",
+            "sentenceNative": "I lived in Barcelona for a year.",
+            "audioWordFile": "es_vivi_word.mp3",
+            "audioSentenceFile": "es_vivi_sentence.mp3"
+        },
+        {
+            "id": "es_c_52",
+            "targetWord": "Viviste",
+            "nativeTranslation": "You lived",
+            "sentenceTarget": "¿Viviste alguna vez en el extranjero?",
+            "sentenceNative": "Did you ever live abroad?",
+            "audioWordFile": "es_viviste_word.mp3",
+            "audioSentenceFile": "es_viviste_sentence.mp3"
+        },
+        {
+            "id": "es_c_53",
+            "targetWord": "Vivió",
+            "nativeTranslation": "He/She lived",
+            "sentenceTarget": "Ella vivió una vida larga.",
+            "sentenceNative": "She lived a long life.",
+            "audioWordFile": "es_vivio_word.mp3",
+            "audioSentenceFile": "es_vivio_sentence.mp3"
+        },
+        {
+            "id": "es_c_54",
+            "targetWord": "Vivimos",
+            "nativeTranslation": "We lived (Past)",
+            "sentenceTarget": "Vivimos felices allí.",
+            "sentenceNative": "We lived happily there.",
+            "audioWordFile": "es_vivimos_past_word.mp3",
+            "audioSentenceFile": "es_vivimos_past_sentence.mp3"
+        },
+        {
+            "id": "es_c_55",
+            "targetWord": "Vivieron",
+            "nativeTranslation": "They lived",
+            "sentenceTarget": "Ellos vivieron en esa casa.",
+            "sentenceNative": "They lived in that house.",
+            "audioWordFile": "es_vivieron_word.mp3",
+            "audioSentenceFile": "es_vivieron_sentence.mp3"
+        },
+        {
+            "id": "es_c_56",
+            "targetWord": "Fui",
+            "nativeTranslation": "I went / I was",
+            "sentenceTarget": "Fui al cine el sábado.",
+            "sentenceNative": "I went to the cinema on Saturday.",
+            "audioWordFile": "es_fui_word.mp3",
+            "audioSentenceFile": "es_fui_sentence.mp3"
+        },
+        {
+            "id": "es_c_57",
+            "targetWord": "Fuiste",
+            "nativeTranslation": "You went / You were",
+            "sentenceTarget": "¿Fuiste a la fiesta?",
+            "sentenceNative": "Did you go to the party?",
+            "audioWordFile": "es_fuiste_word.mp3",
+            "audioSentenceFile": "es_fuiste_sentence.mp3"
+        },
+        {
+            "id": "es_c_58",
+            "targetWord": "Fue",
+            "nativeTranslation": "He/She/It went / was",
+            "sentenceTarget": "Fue un día increíble.",
+            "sentenceNative": "It was an incredible day.",
+            "audioWordFile": "es_fue_word.mp3",
+            "audioSentenceFile": "es_fue_sentence.mp3"
+        },
+        {
+            "id": "es_c_59",
+            "targetWord": "Fuimos",
+            "nativeTranslation": "We went / We were",
+            "sentenceTarget": "Fuimos mejores amigos.",
+            "sentenceNative": "We were best friends.",
+            "audioWordFile": "es_fuimos_word.mp3",
+            "audioSentenceFile": "es_fuimos_sentence.mp3"
+        },
+        {
+            "id": "es_c_60",
+            "targetWord": "Fueron",
+            "nativeTranslation": "They went / They were",
+            "sentenceTarget": "Ellos fueron de vacaciones.",
+            "sentenceNative": "They went on vacation.",
+            "audioWordFile": "es_fueron_word.mp3",
+            "audioSentenceFile": "es_fueron_sentence.mp3"
+        },
+        {
+            "id": "es_c_61",
+            "targetWord": "Llamo",
+            "nativeTranslation": "I call",
+            "sentenceTarget": "Llamo a mi abuela cada semana.",
+            "sentenceNative": "I call my grandmother every week.",
+            "audioWordFile": "es_llamo_word.mp3",
+            "audioSentenceFile": "es_llamo_sentence.mp3"
+        },
+        {
+            "id": "es_c_62",
+            "targetWord": "Llamas",
+            "nativeTranslation": "You call",
+            "sentenceTarget": "¿Me llamas más tarde?",
+            "sentenceNative": "Will you call me later?",
+            "audioWordFile": "es_llamas_word.mp3",
+            "audioSentenceFile": "es_llamas_sentence.mp3"
+        },
+        {
+            "id": "es_c_63",
+            "targetWord": "Llama",
+            "nativeTranslation": "He/She calls",
+            "sentenceTarget": "Ella llama a su jefe.",
+            "sentenceNative": "She calls her boss.",
+            "audioWordFile": "es_llama_word.mp3",
+            "audioSentenceFile": "es_llama_sentence.mp3"
+        },
+        {
+            "id": "es_c_64",
+            "targetWord": "Llamamos",
+            "nativeTranslation": "We call",
+            "sentenceTarget": "Llamamos al servicio de atención.",
+            "sentenceNative": "We call customer service.",
+            "audioWordFile": "es_llamamos_word.mp3",
+            "audioSentenceFile": "es_llamamos_sentence.mp3"
+        },
+        {
+            "id": "es_c_65",
+            "targetWord": "Llaman",
+            "nativeTranslation": "They call",
+            "sentenceTarget": "Ellos llaman a la policía.",
+            "sentenceNative": "They call the police.",
+            "audioWordFile": "es_llaman_word.mp3",
+            "audioSentenceFile": "es_llaman_sentence.mp3"
+        },
+        {
+            "id": "es_c_66",
+            "targetWord": "Entiendo",
+            "nativeTranslation": "I understand",
+            "sentenceTarget": "Entiendo perfectamente lo que dices.",
+            "sentenceNative": "I perfectly understand what you say.",
+            "audioWordFile": "es_entiendo_word.mp3",
+            "audioSentenceFile": "es_entiendo_sentence.mp3"
+        },
+        {
+            "id": "es_c_67",
+            "targetWord": "Entiendes",
+            "nativeTranslation": "You understand",
+            "sentenceTarget": "¿Entiendes el problema?",
+            "sentenceNative": "Do you understand the problem?",
+            "audioWordFile": "es_entiendes_word.mp3",
+            "audioSentenceFile": "es_entiendes_sentence.mp3"
+        },
+        {
+            "id": "es_c_68",
+            "targetWord": "Entiende",
+            "nativeTranslation": "He/She understands",
+            "sentenceTarget": "Ella no entiende nada.",
+            "sentenceNative": "She doesn't understand anything.",
+            "audioWordFile": "es_entiende_word.mp3",
+            "audioSentenceFile": "es_entiende_sentence.mp3"
+        },
+        {
+            "id": "es_c_69",
+            "targetWord": "Entendemos",
+            "nativeTranslation": "We understand",
+            "sentenceTarget": "Entendemos tu posición.",
+            "sentenceNative": "We understand your position.",
+            "audioWordFile": "es_entendemos_word.mp3",
+            "audioSentenceFile": "es_entendemos_sentence.mp3"
+        },
+        {
+            "id": "es_c_70",
+            "targetWord": "Entienden",
+            "nativeTranslation": "They understand",
+            "sentenceTarget": "Ellos entienden las reglas.",
+            "sentenceNative": "They understand the rules.",
+            "audioWordFile": "es_entienden_word.mp3",
+            "audioSentenceFile": "es_entienden_sentence.mp3"
+        },
+        {
+            "id": "es_c_71",
+            "targetWord": "Quiero",
+            "nativeTranslation": "I want",
+            "sentenceTarget": "Quiero aprender español.",
+            "sentenceNative": "I want to learn Spanish.",
+            "audioWordFile": "es_quiero_word.mp3",
+            "audioSentenceFile": "es_quiero_sentence.mp3"
+        },
+        {
+            "id": "es_c_72",
+            "targetWord": "Quieres",
+            "nativeTranslation": "You want",
+            "sentenceTarget": "¿Quieres un poco de agua?",
+            "sentenceNative": "Do you want some water?",
+            "audioWordFile": "es_quieres_word.mp3",
+            "audioSentenceFile": "es_quieres_sentence.mp3"
+        },
+        {
+            "id": "es_c_73",
+            "targetWord": "Quiere",
+            "nativeTranslation": "He/She wants",
+            "sentenceTarget": "Ella quiere estudiar arte.",
+            "sentenceNative": "She wants to study art.",
+            "audioWordFile": "es_quiere_word.mp3",
+            "audioSentenceFile": "es_quiere_sentence.mp3"
+        },
+        {
+            "id": "es_c_74",
+            "targetWord": "Queremos",
+            "nativeTranslation": "We want",
+            "sentenceTarget": "Queremos viajar por el mundo.",
+            "sentenceNative": "We want to travel the world.",
+            "audioWordFile": "es_queremos_word.mp3",
+            "audioSentenceFile": "es_queremos_sentence.mp3"
+        },
+        {
+            "id": "es_c_75",
+            "targetWord": "Quieren",
+            "nativeTranslation": "They want",
+            "sentenceTarget": "Ellos quieren comprar una casa.",
+            "sentenceNative": "They want to buy a house.",
+            "audioWordFile": "es_quieren_word.mp3",
+            "audioSentenceFile": "es_quieren_sentence.mp3"
+        },
+        {
+            "id": "es_c_76",
+            "targetWord": "Hice",
+            "nativeTranslation": "I did",
+            "sentenceTarget": "Hice mi cama esta mañana.",
+            "sentenceNative": "I made my bed this morning.",
+            "audioWordFile": "es_hice_word.mp3",
+            "audioSentenceFile": "es_hice_sentence.mp3"
+        },
+        {
+            "id": "es_c_77",
+            "targetWord": "Hiciste",
+            "nativeTranslation": "You did",
+            "sentenceTarget": "¿Hiciste la tarea?",
+            "sentenceNative": "Did you do the homework?",
+            "audioWordFile": "es_hiciste_word.mp3",
+            "audioSentenceFile": "es_hiciste_sentence.mp3"
+        },
+        {
+            "id": "es_c_78",
+            "targetWord": "Hizo",
+            "nativeTranslation": "He/She did",
+            "sentenceTarget": "Él hizo un gran esfuerzo.",
+            "sentenceNative": "He made a great effort.",
+            "audioWordFile": "es_hizo_word.mp3",
+            "audioSentenceFile": "es_hizo_sentence.mp3"
+        },
+        {
+            "id": "es_c_79",
+            "targetWord": "Hicimos",
+            "nativeTranslation": "We did",
+            "sentenceTarget": "Hicimos un pastel para el postre.",
+            "sentenceNative": "We made a cake for dessert.",
+            "audioWordFile": "es_hicimos_word.mp3",
+            "audioSentenceFile": "es_hicimos_sentence.mp3"
+        },
+        {
+            "id": "es_c_80",
+            "targetWord": "Hicieron",
+            "nativeTranslation": "They did",
+            "sentenceTarget": "Ellos hicieron una fiesta sorpresa.",
+            "sentenceNative": "They threw a surprise party.",
+            "audioWordFile": "es_hicieron_word.mp3",
+            "audioSentenceFile": "es_hicieron_sentence.mp3"
+        },
+        {
+            "id": "es_c_81",
+            "targetWord": "Pensé",
+            "nativeTranslation": "I thought",
+            "sentenceTarget": "Pensé que eras mi amigo.",
+            "sentenceNative": "I thought you were my friend.",
+            "audioWordFile": "es_pense_word.mp3",
+            "audioSentenceFile": "es_pense_sentence.mp3"
+        },
+        {
+            "id": "es_c_82",
+            "targetWord": "Pensaste",
+            "nativeTranslation": "You thought",
+            "sentenceTarget": "¿Qué pensaste de la película?",
+            "sentenceNative": "What did you think of the movie?",
+            "audioWordFile": "es_pensaste_word.mp3",
+            "audioSentenceFile": "es_pensaste_sentence.mp3"
+        },
+        {
+            "id": "es_c_83",
+            "targetWord": "Pensó",
+            "nativeTranslation": "He/She thought",
+            "sentenceTarget": "Ella pensó mucho la respuesta.",
+            "sentenceNative": "She thought about the answer a lot.",
+            "audioWordFile": "es_penso_word.mp3",
+            "audioSentenceFile": "es_penso_sentence.mp3"
+        },
+        {
+            "id": "es_c_84",
+            "targetWord": "Pensamos",
+            "nativeTranslation": "We thought",
+            "sentenceTarget": "Pensamos que era tarde.",
+            "sentenceNative": "We thought it was late.",
+            "audioWordFile": "es_pensamos_past_word.mp3",
+            "audioSentenceFile": "es_pensamos_past_sentence.mp3"
+        },
+        {
+            "id": "es_c_85",
+            "targetWord": "Pensaron",
+            "nativeTranslation": "They thought",
+            "sentenceTarget": "Ellos pensaron que no vendrías.",
+            "sentenceNative": "They thought you wouldn't come.",
+            "audioWordFile": "es_pensaron_word.mp3",
+            "audioSentenceFile": "es_pensaron_sentence.mp3"
+        },
+        {
+            "id": "es_c_86",
+            "targetWord": "Hablaré",
+            "nativeTranslation": "I will speak",
+            "sentenceTarget": "Hablaré con él mañana.",
+            "sentenceNative": "I will speak with him tomorrow.",
+            "audioWordFile": "es_hablare_word.mp3",
+            "audioSentenceFile": "es_hablare_sentence.mp3"
+        },
+        {
+            "id": "es_c_87",
+            "targetWord": "Hablarás",
+            "nativeTranslation": "You will speak",
+            "sentenceTarget": "Hablarás muy bien pronto.",
+            "sentenceNative": "You will speak very well soon.",
+            "audioWordFile": "es_hablaras_word.mp3",
+            "audioSentenceFile": "es_hablaras_sentence.mp3"
+        },
+        {
+            "id": "es_c_88",
+            "targetWord": "Hablará",
+            "nativeTranslation": "He/She will speak",
+            "sentenceTarget": "Él hablará en la conferencia.",
+            "sentenceNative": "He will speak at the conference.",
+            "audioWordFile": "es_hablara_word.mp3",
+            "audioSentenceFile": "es_hablara_sentence.mp3"
+        },
+        {
+            "id": "es_c_89",
+            "targetWord": "Hablaremos",
+            "nativeTranslation": "We will speak",
+            "sentenceTarget": "Hablaremos del tema el lunes.",
+            "sentenceNative": "We will speak about the topic on Monday.",
+            "audioWordFile": "es_hablaremos_future_word.mp3",
+            "audioSentenceFile": "es_hablaremos_future_sentence.mp3"
+        },
+        {
+            "id": "es_c_90",
+            "targetWord": "Hablarán",
+            "nativeTranslation": "They will speak",
+            "sentenceTarget": "Ellos hablarán con nosotros.",
+            "sentenceNative": "They will speak with us.",
+            "audioWordFile": "es_hablaran_word.mp3",
+            "audioSentenceFile": "es_hablaran_sentence.mp3"
+        },
+        {
+            "id": "es_c_91",
+            "targetWord": "Comeré",
+            "nativeTranslation": "I will eat",
+            "sentenceTarget": "Comeré algo ligero esta noche.",
+            "sentenceNative": "I will eat something light tonight.",
+            "audioWordFile": "es_comere_word.mp3",
+            "audioSentenceFile": "es_comere_sentence.mp3"
+        },
+        {
+            "id": "es_c_92",
+            "targetWord": "Comerás",
+            "nativeTranslation": "You will eat",
+            "sentenceTarget": "¿Comerás en casa hoy?",
+            "sentenceNative": "Will you eat at home today?",
+            "audioWordFile": "es_comeras_word.mp3",
+            "audioSentenceFile": "es_comeras_sentence.mp3"
+        },
+        {
+            "id": "es_c_93",
+            "targetWord": "Comerá",
+            "nativeTranslation": "He/She will eat",
+            "sentenceTarget": "Ella comerá con su equipo.",
+            "sentenceNative": "She will eat with her team.",
+            "audioWordFile": "es_comera_word.mp3",
+            "audioSentenceFile": "es_comera_sentence.mp3"
+        },
+        {
+            "id": "es_c_94",
+            "targetWord": "Comeremos",
+            "nativeTranslation": "We will eat",
+            "sentenceTarget": "Comeremos a las tres.",
+            "sentenceNative": "We will eat at three.",
+            "audioWordFile": "es_comeremos_word.mp3",
+            "audioSentenceFile": "es_comeremos_sentence.mp3"
+        },
+        {
+            "id": "es_c_95",
+            "targetWord": "Comerán",
+            "nativeTranslation": "They will eat",
+            "sentenceTarget": "Ellos comerán en el restaurante.",
+            "sentenceNative": "They will eat at the restaurant.",
+            "audioWordFile": "es_comeran_word.mp3",
+            "audioSentenceFile": "es_comeran_sentence.mp3"
+        },
+        {
+            "id": "es_c_96",
+            "targetWord": "Veré",
+            "nativeTranslation": "I will see",
+            "sentenceTarget": "Veré la película más tarde.",
+            "sentenceNative": "I will see the movie later.",
+            "audioWordFile": "es_vere_word.mp3",
+            "audioSentenceFile": "es_vere_sentence.mp3"
+        },
+        {
+            "id": "es_c_97",
+            "targetWord": "Verás",
+            "nativeTranslation": "You will see",
+            "sentenceTarget": "Lo verás cuando llegues.",
+            "sentenceNative": "You will see it when you arrive.",
+            "audioWordFile": "es_veras_word.mp3",
+            "audioSentenceFile": "es_veras_sentence.mp3"
+        },
+        {
+            "id": "es_c_98",
+            "targetWord": "Verá",
+            "nativeTranslation": "He/She will see",
+            "sentenceTarget": "Él verá a su médico pronto.",
+            "sentenceNative": "He will see his doctor soon.",
+            "audioWordFile": "es_vera_word.mp3",
+            "audioSentenceFile": "es_vera_sentence.mp3"
+        },
+        {
+            "id": "es_c_99",
+            "targetWord": "Veremos",
+            "nativeTranslation": "We will see",
+            "sentenceTarget": "Ya veremos qué pasa.",
+            "sentenceNative": "We'll see what happens.",
+            "audioWordFile": "es_veremos_word.mp3",
+            "audioSentenceFile": "es_veremos_sentence.mp3"
+        },
+        {
+            "id": "es_c_100",
+            "targetWord": "Verán",
+            "nativeTranslation": "They will see",
+            "sentenceTarget": "Ellos verán el espectáculo mañama.",
+            "sentenceNative": "They will see the show tomorrow.",
+            "audioWordFile": "es_veran_word.mp3",
+            "audioSentenceFile": "es_veran_sentence.mp3"
+        }
+    ]
+}

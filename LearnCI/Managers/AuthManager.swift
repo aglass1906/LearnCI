@@ -95,9 +95,9 @@ class AuthManager {
             Task {
                 do {
                     // 3. Pass raw nonce to Supabase credentials
-                    _ = try await self.supabase.auth.signInWithIdToken(credentials: .init(provider: .google, idToken: idToken, nonce: nonce))
+                    let session = try await self.supabase.auth.signInWithIdToken(credentials: .init(provider: .google, idToken: idToken, nonce: nonce))
                     await MainActor.run {
-                        self.state = .authenticated(userID: user.userID ?? UUID().uuidString)
+                        self.state = .authenticated(userID: session.user.id.uuidString)
                     }
                 } catch {
                     print("Supabase Auth Error: \(error)")

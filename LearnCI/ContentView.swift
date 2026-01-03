@@ -6,10 +6,26 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(SyncManager.self) private var syncManager
+    @Environment(AuthManager.self) private var authManager
+    
     var body: some View {
         MainTabView()
+            .task {
+                // Initial sync if already logged in
+                await syncManager.syncNow(modelContext: modelContext)
+            }
+            .onChange(of: authManager.currentUser) { _, newValue in
+                if newValue != nil {
+                    Task {
+                        await syncManager.syncNow(modelContext: modelContext)
+                    }
+                }
+            }
     }
 }
 
@@ -18,4 +34,5 @@ struct ContentView: View {
         .environment(DataManager())
         .environment(YouTubeManager())
         .environment(AuthManager())
+        .environment(SyncManager(authManager: AuthManager()))
 }

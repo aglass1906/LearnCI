@@ -12,7 +12,14 @@ import SwiftData
 struct LearnCIApp: App {
     @State private var dataManager = DataManager()
     @State private var youtubeManager = YouTubeManager()
-    @State private var authManager = AuthManager()
+    @State private var authManager: AuthManager
+    @State private var syncManager: SyncManager
+    
+    init() {
+        let auth = AuthManager()
+        _authManager = State(initialValue: auth)
+        _syncManager = State(initialValue: SyncManager(authManager: auth))
+    }
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -34,6 +41,7 @@ struct LearnCIApp: App {
                 .environment(dataManager)
                 .environment(youtubeManager)
                 .environment(authManager)
+                .environment(syncManager)
         }
         .modelContainer(sharedModelContainer)
     }

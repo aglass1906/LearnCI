@@ -34,6 +34,9 @@ struct GameView: View {
     @State private var isPaused: Bool = false
     @State private var learnedCount: Int = 0
     
+    // New selective deck flow
+    @State private var selectedDeck: DeckMetadata?
+    
     static let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var userProfile: UserProfile? {
@@ -102,7 +105,17 @@ struct GameView: View {
             .onAppear {
                 if gameState == .configuration {
                     setupConfiguration()
+                    // Initial discovery
+                    dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
                 }
+            }
+            .onChange(of: sessionLanguage) { _, newValue in
+                dataManager.discoverDecks(language: newValue, level: sessionLevel)
+                selectedDeck = nil // Reset selection when language changes
+            }
+            .onChange(of: sessionLevel) { _, newValue in
+                dataManager.discoverDecks(language: sessionLanguage, level: newValue)
+                selectedDeck = nil // Reset selection when level changes
             }
             .onReceive(GameView.timer) { _ in
                 handleTimerTick()
@@ -147,80 +160,9 @@ struct GameView: View {
     var configurationView: some View {
         ScrollView {
             VStack(spacing: 25) {
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Session Focus")
-                        .font(.headline)
-                    
-                    HStack {
-                        Menu {
-                            ForEach(Language.allCases) { lang in
-                                Button(action: { sessionLanguage = lang }) {
-                                    HStack {
-                                        Text("\(lang.flag) \(lang.rawValue)")
-                                        if sessionLanguage == lang { Image(systemName: "checkmark") }
-                                    }
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text("\(sessionLanguage.flag) \(sessionLanguage.rawValue)")
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(10)
-                        }
-                        
-                        Menu {
-                            ForEach(LearningLevel.allCases) { level in
-                                Button(action: { sessionLevel = level }) {
-                                    HStack {
-                                        Text(level.rawValue)
-                                        if sessionLevel == level { Image(systemName: "checkmark") }
-                                    }
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(sessionLevel.rawValue)
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                            }
-                            .padding()
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(10)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Time Limit")
-                        .font(.headline)
-                    
-                    HStack {
-                        Image(systemName: "clock")
-                        Slider(value: Binding(get: { Double(sessionDuration) }, set: { sessionDuration = Int($0) }), in: 1...60, step: 1)
-                        Text("\(sessionDuration) min")
-                            .font(.subheadline.monospacedDigit())
-                            .frame(width: 60)
-                    }
-                }
-                .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Card Goal")
-                        .font(.headline)
-                    
-                    Stepper(value: $sessionCardGoal, in: 5...100, step: 5) {
-                        HStack {
-                            Image(systemName: "square.stack.3d.up.fill")
-                            Text("\(sessionCardGoal) cards")
-                        }
-                    }
-                }
-                .padding(.horizontal)
+                focusSelectionSection
+                deckSelectionSection
+                adjustmentsSection
                 
                 Spacer()
                 
@@ -230,16 +172,146 @@ struct GameView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.blue)
+                        .background(selectedDeck == nil ? Color.gray : Color.blue)
                         .cornerRadius(15)
-                        .shadow(radius: 5)
+                        .shadow(radius: selectedDeck == nil ? 0 : 5)
                 }
+                .disabled(selectedDeck == nil)
                 .padding(.horizontal)
                 .padding(.top, 40)
             }
             .padding(.vertical)
         }
     }
+    
+    private var focusSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Session Focus")
+                .font(.headline)
+            
+            HStack {
+                Menu {
+                    ForEach(Language.allCases) { lang in
+                        Button(action: { sessionLanguage = lang }) {
+                            HStack {
+                                Text("\(lang.flag) \(lang.rawValue)")
+                                if sessionLanguage == lang { Image(systemName: "checkmark") }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text("\(sessionLanguage.flag) \(sessionLanguage.rawValue)")
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                
+                Menu {
+                    ForEach(LearningLevel.allCases) { level in
+                        Button(action: { sessionLevel = level }) {
+                            HStack {
+                                Text(level.rawValue)
+                                if sessionLevel == level { Image(systemName: "checkmark") }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(sessionLevel.rawValue)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var deckSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Select Deck")
+                .font(.headline)
+            
+            if dataManager.availableDecks.isEmpty {
+                Text("No decks found for this selection.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(10)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(dataManager.availableDecks) { deck in
+                        Button(action: { selectedDeck = deck }) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(deck.title)
+                                        .font(.subheadline.bold())
+                                    Text("\(deck.language.rawValue) • \(deck.level.rawValue)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                if selectedDeck?.id == deck.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .padding()
+                            .background(selectedDeck?.id == deck.id ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(selectedDeck?.id == deck.id ? Color.blue : Color.clear, lineWidth: 2)
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var adjustmentsSection: some View {
+        VStack(spacing: 25) {
+            VStack(alignment: .leading, spacing: 15) {
+                Text("Time Limit")
+                    .font(.headline)
+                
+                HStack {
+                    Image(systemName: "clock")
+                    Slider(value: Binding(get: { Double(sessionDuration) }, set: { sessionDuration = Int($0) }), in: 1...60, step: 1)
+                    Text("\(sessionDuration) min")
+                        .font(.subheadline.monospacedDigit())
+                        .frame(width: 60)
+                }
+            }
+            .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 15) {
+                Text("Card Goal")
+                    .font(.headline)
+                
+                Stepper(value: $sessionCardGoal, in: 5...100, step: 5) {
+                    HStack {
+                        Image(systemName: "square.stack.3d.up.fill")
+                        Text("\(sessionCardGoal) cards")
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+
     
     var activeGameView: some View {
         VStack {
@@ -484,7 +556,9 @@ struct GameView: View {
     }
     
     func startActiveSession() {
-        dataManager.loadCards(language: sessionLanguage, level: sessionLevel)
+        guard let metDeck = selectedDeck else { return }
+        dataManager.loadDeck(metadata: metDeck)
+        
         currentCardIndex = 0
         learnedCount = 0
         elapsedSeconds = 0

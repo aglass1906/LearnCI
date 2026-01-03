@@ -1,53 +1,131 @@
 import Foundation
 import SwiftData
+import Observation
+
+struct DeckMetadata: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let language: Language
+    let level: LearningLevel
+    let folderName: String
+    let filename: String
+}
 
 @Observable
 class DataManager {
     var loadedDeck: CardDeck?
     var errorMessage: String?
+    var availableDecks: [DeckMetadata] = []
     
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
     
-    // Load cards for a specific Language and Level
-    func loadCards(language: Language, level: LearningLevel) {
+    // Discover decks for a specific Language and Level
+    func discoverDecks(language: Language, level: LearningLevel) {
+        self.availableDecks = []
+        
+        // 1. Check local resources directory first (development)
+        let localDataPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data"
+        var discoveredDecks: [DeckMetadata] = []
+        
+        if let enumerator = FileManager.default.enumerator(atPath: localDataPath) {
+            while let path = enumerator.nextObject() as? String {
+                // Look for any JSON file in subdirectories
+                if path.hasSuffix(".json") {
+                    let fullPath = (localDataPath as NSString).appendingPathComponent(path)
+                    let fileURL = URL(fileURLWithPath: fullPath)
+                    
+                    // The folder name is the immediate parent directory of the JSON
+                    let folderName = fileURL.deletingLastPathComponent().lastPathComponent
+                    
+                    if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
+                        if metadata.language == language && metadata.level == level {
+                            discoveredDecks.append(metadata)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 2. Check Bundle (Fallback/Release)
+        // In Bundle, we might need to be more specific if enumerator is restricted
+        // For common naming patterns, we try a direct check if discovery was empty
+        if discoveredDecks.isEmpty {
+            let langLower = language.rawValue.lowercased()
+            let levelLower = level.rawValue.lowercased().replacingOccurrences(of: " ", with: "_")
+            let folderPrefix = "\(langLower)_\(levelLower)"
+            
+            if let url = Bundle.main.url(forResource: folderPrefix, withExtension: "json", subdirectory: "Data/\(folderPrefix)") {
+                 if let deck = peekDeckMetadata(at: url, folderName: folderPrefix) {
+                     discoveredDecks.append(deck)
+                 }
+            }
+        }
+        
+        DispatchQueue.main.async {
+            // Remove duplicates by ID
+            self.availableDecks = discoveredDecks.reduce(into: [DeckMetadata]()) { result, deck in
+                if !result.contains(where: { $0.id == deck.id }) {
+                    result.append(deck)
+                }
+            }
+        }
+    }
+    
+    private func peekDeckMetadata(at url: URL, folderName: String) -> DeckMetadata? {
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            // We only need the basic info
+            let deck = try decoder.decode(CardDeck.self, from: data)
+            return DeckMetadata(
+                id: deck.id,
+                title: deck.title,
+                language: deck.language,
+                level: deck.level,
+                folderName: folderName,
+                filename: url.lastPathComponent
+            )
+        } catch {
+            print("Error peeking at deck: \(error)")
+            return nil
+        }
+    }
+    
+    // Load a specific deck
+    func loadDeck(metadata: DeckMetadata) {
         self.errorMessage = nil
-        let key = "\(language.rawValue)_\(level.rawValue)"
+        let key = metadata.id
         
         if let cached = deckCache[key] {
             self.loadedDeck = cached
             return
         }
         
-        // Construct structured folder and filename
-        // Example: spanish_super_beginner/spanish_super_beginner.json
-        let langLower = language.rawValue.lowercased()
-        let levelLower = level.rawValue.lowercased().replacingOccurrences(of: " ", with: "_")
-        let folderName = "\(langLower)_\(levelLower)"
-        let filename = "\(folderName).json"
-        
-        // Try Bundle lookup in the specific Data/{folderName} subdirectory
-        if let fileURL = Bundle.main.url(forResource: folderName, withExtension: "json", subdirectory: "Data/\(folderName)") {
-            decodeAndSet(from: fileURL, key: key, folderName: folderName)
-        } else if let fileURL = Bundle.main.url(forResource: folderName, withExtension: "json") {
-            // Fallback for flattened bundle
-            decodeAndSet(from: fileURL, key: key, folderName: folderName)
-        } else {
-            // 2. Fallback: check exact path in our presumed local structure
-            let deepPath = "Data/\(folderName)/\(filename)"
-            let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/\(deepPath)"
-            let localURL = URL(fileURLWithPath: localPath)
+        // Try local path first
+        let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(metadata.folderName)/\(metadata.filename)"
+        let url = FileManager.default.fileExists(atPath: localPath) 
+            ? URL(fileURLWithPath: localPath)
+            : Bundle.main.url(forResource: metadata.folderName, withExtension: "json", subdirectory: "Data/\(metadata.folderName)")
             
-            if FileManager.default.fileExists(atPath: localPath) {
-                 decodeAndSet(from: localURL, key: key, folderName: folderName)
+        if let url = url {
+            decodeAndSet(from: url, key: key, folderName: metadata.folderName)
+        } else {
+            self.errorMessage = "Could not find deck file for \(metadata.title)"
+        }
+    }
+
+    // Legacy/Convenience: Load cards for a specific Language and Level (picks first available)
+    func loadCards(language: Language, level: LearningLevel) {
+        self.errorMessage = nil
+        discoverDecks(language: language, level: level)
+        
+        // Usually called after discovery, but if called directly we need to wait or use fallback
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let first = self.availableDecks.first {
+                self.loadDeck(metadata: first)
             } else {
-                 let err = "Error: Could not find card file at \(localPath). \n\nMake sure the folder \(folderName) exists in Resources/Data/"
-                 print(err)
-                 
-                 DispatchQueue.main.async {
-                     self.errorMessage = err
-                     self.loadedDeck = self.createFallbackDeck(language: language, level: level)
-                 }
+                self.loadedDeck = self.createFallbackDeck(language: language, level: level)
             }
         }
     }
@@ -57,7 +135,7 @@ class DataManager {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             var deck = try decoder.decode(CardDeck.self, from: data)
-            deck.baseFolderName = folderName // Track which folder assets are in
+            deck.baseFolderName = folderName
             
             DispatchQueue.main.async {
                 self.deckCache[key] = deck
@@ -65,24 +143,8 @@ class DataManager {
             }
         } catch {
             print("Error loading deck: \(error)")
-            // If it's a decoding error, print more details
-            if let decodingError = error as? DecodingError {
-                switch decodingError {
-                case .keyNotFound(let key, let context):
-                    print("Key not found: \(key.stringValue) in \(context.codingPath)")
-                case .valueNotFound(let type, let context):
-                    print("Value not found type: \(type) in \(context.codingPath)")
-                case .typeMismatch(let type, let context):
-                    print("Type mismatch type: \(type) in \(context.codingPath)")
-                case .dataCorrupted(let context):
-                     print("Data corrupted: \(context.debugDescription)")
-                @unknown default:
-                    print("Unknown decoding error")
-                }
-            }
-            
             DispatchQueue.main.async {
-                self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
+                self.errorMessage = "Failed to load \(url.lastPathComponent): \(error.localizedDescription)"
             }
         }
     }
@@ -92,10 +154,12 @@ class DataManager {
             id: "fallback",
             language: language,
             level: level,
-            title: "Fallback Deck (Files Not Found)",
+            title: "No Decks Found",
             cards: [
-                LearningCard(id: "f1", targetWord: "File Not Found", nativeTranslation: "Please add Info", sentenceTarget: "Add Resources folder to Xcode", sentenceNative: "See instructions", audioWordFile: nil, audioSentenceFile: nil)
-            ]
+                LearningCard(id: "f1", targetWord: "Add Data", nativeTranslation: "Please add JSON", sentenceTarget: "Add resources to Data folder", sentenceNative: "No matching decks found for \(language.rawValue) (\(level.rawValue))", audioWordFile: nil, audioSentenceFile: nil)
+            ],
+            baseFolderName: nil
         )
     }
 }
+

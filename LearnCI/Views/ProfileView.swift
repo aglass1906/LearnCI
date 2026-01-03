@@ -4,7 +4,12 @@ import SwiftData
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(YouTubeManager.self) private var youtubeManager
-    @Query private var profiles: [UserProfile]
+    @Environment(AuthManager.self) private var authManager
+    @Query private var allProfiles: [UserProfile]
+    
+    var profiles: [UserProfile] {
+        allProfiles.filter { $0.userID == authManager.currentUser }
+    }
     
     @State private var name: String = ""
     @State private var selectedLanguage: Language = .spanish
@@ -107,6 +112,12 @@ struct ProfileView: View {
                     }
                     .disabled(profiles.isEmpty)
                 }
+                
+                Section(header: Text("Account")) {
+                    Button("Sign Out", role: .destructive) {
+                        authManager.signOut()
+                    }
+                }
             }
             .navigationTitle("Profile")
             .onAppear {
@@ -117,11 +128,11 @@ struct ProfileView: View {
                     dailyGoal = Double(profile.dailyGoalMinutes)
                     dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
                 } else {
-                    // Create default if none exists
-                    let newProfile = UserProfile()
-                    modelContext.insert(newProfile)
-                    // We'll let the query update refresh the view on next loop or manually set it?
-                    // SwiftData query updates immediately usually.
+                    // Create profile associated with current user
+                    if let userID = authManager.currentUser {
+                        let newProfile = UserProfile(userID: userID)
+                        modelContext.insert(newProfile)
+                    }
                 }
             }
         }
@@ -134,8 +145,13 @@ struct ProfileView: View {
             profile.currentLevel = selectedLevel
             profile.dailyGoalMinutes = Int(dailyGoal)
             profile.dailyCardGoal = Int(dailyCardGoal)
-            
-            // Should auto-save context in SwiftData, but explicit sometimes helps debugging.
+            profile.updatedAt = Date() // Mark for sync
         }
     }
+}
+
+#Preview {
+    ProfileView()
+        .environment(YouTubeManager())
+        .environment(AuthManager())
 }

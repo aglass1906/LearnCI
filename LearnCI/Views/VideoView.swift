@@ -4,14 +4,15 @@ import SwiftData
 struct VideoView: View {
     @Environment(YouTubeManager.self) private var youtubeManager
     @Environment(\.modelContext) private var modelContext
-    @Query private var profiles: [UserProfile]
+    @Environment(AuthManager.self) private var authManager
+    @Query private var allProfiles: [UserProfile]
     
     @State private var selectedVideo: YouTubeVideo?
     @State private var showWatchTimePrompt = false
     @State private var watchMinutes: Double = 10
     
     var userProfile: UserProfile? {
-        profiles.first
+        allProfiles.first { $0.userID == authManager.currentUser }
     }
     
     var body: some View {
@@ -26,7 +27,7 @@ struct VideoView: View {
                         "No Videos",
                         systemImage: "play.rectangle",
                         description: Text("Connect your YouTube account to see videos")
-                    )
+        )
                 } else {
                     videoListView
                 }
@@ -128,7 +129,8 @@ struct VideoView: View {
             date: Date(),
             minutes: minutes,
             activityType: .watchingVideos,
-            language: language
+            language: language,
+            userID: authManager.currentUser
         )
         modelContext.insert(activity)
     }
@@ -291,4 +293,5 @@ struct LogWatchTimeSheet: View {
     VideoView()
         .environment(YouTubeManager())
         .environment(DataManager())
+        .environment(AuthManager())
 }

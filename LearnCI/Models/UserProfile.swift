@@ -4,11 +4,14 @@ import SwiftData
 @Model
 final class UserProfile {
     var id: UUID
+    var userID: String? // Supabase Auth ID
     var name: String
     var currentLanguageRaw: String
     var currentLevelRaw: String
     var dailyGoalMinutes: Int
     var dailyCardGoal: Int?
+    var isPublic: Bool = false
+    var updatedAt: Date = Date()
     
     var currentLanguage: Language {
         get { Language(rawValue: currentLanguageRaw) ?? .spanish }
@@ -20,13 +23,16 @@ final class UserProfile {
         set { levelRawUpdate(newValue) }
     }
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil) {
         self.id = UUID()
+        self.userID = userID
         self.name = name
         self.currentLanguageRaw = currentLanguage.rawValue
         self.currentLevelRaw = currentLevel.rawValue
         self.dailyGoalMinutes = dailyGoalMinutes
         self.dailyCardGoal = dailyCardGoal
+        self.isPublic = false
+        self.updatedAt = Date()
     }
     
     private func languageRawUpdate(_ newValue: Language) {

@@ -5,8 +5,18 @@ import Charts
 struct DashboardView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \UserActivity.date, order: .reverse) private var activities: [UserActivity]
-    @Query private var profiles: [UserProfile]
+    @Environment(AuthManager.self) private var authManager
+    
+    @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
+    @Query private var allProfiles: [UserProfile]
+    
+    var activities: [UserActivity] {
+        allActivities.filter { $0.userID == authManager.currentUser }
+    }
+    
+    var profiles: [UserProfile] {
+        allProfiles.filter { $0.userID == authManager.currentUser }
+    }
     
     @State private var audioManager = AudioManager()
     @State private var wordOfDay: LearningCard?
@@ -230,6 +240,7 @@ struct DashboardView: View {
     DashboardView()
         .environment(DataManager())
         .environment(YouTubeManager())
+        .environment(AuthManager())
 }
 
 struct ActivityTypeData: Identifiable {

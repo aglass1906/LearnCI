@@ -2,7 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
-    @Query(sort: \UserActivity.date, order: .reverse) private var activities: [UserActivity]
+    @Environment(AuthManager.self) private var authManager
+    @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
+    
+    var activities: [UserActivity] {
+        allActivities.filter { $0.userID == authManager.currentUser }
+    }
     
     @State private var selectedTimeRange: TimeRange = .week
     @State private var selectedActivityType: ActivityType? = nil
@@ -149,4 +154,5 @@ struct FilterChip: View {
     HistoryView()
         .environment(DataManager())
         .environment(YouTubeManager())
+        .environment(AuthManager())
 }

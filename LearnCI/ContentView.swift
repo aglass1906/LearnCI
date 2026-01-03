@@ -17,4 +17,5 @@ struct ContentView: View {
     ContentView()
         .environment(DataManager())
         .environment(YouTubeManager())
+        .environment(AuthManager())
 }

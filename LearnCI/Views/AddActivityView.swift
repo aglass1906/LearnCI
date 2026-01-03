@@ -4,7 +4,8 @@ import SwiftData
 struct AddActivityView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query private var profiles: [UserProfile]
+    @Environment(AuthManager.self) private var authManager
+    @Query private var allProfiles: [UserProfile]
     
     @State private var selectedActivity: ActivityType = .appLearning
     @State private var minutes: Double = 15
@@ -12,7 +13,7 @@ struct AddActivityView: View {
     @State private var selectedLanguage: Language = .spanish
     
     var userProfile: UserProfile? {
-        profiles.first
+        allProfiles.first { $0.userID == authManager.currentUser }
     }
     
     var body: some View {
@@ -65,8 +66,13 @@ struct AddActivityView: View {
     }
     
     func saveActivity() {
-        let newActivity = UserActivity(date: selectedDate, minutes: Int(minutes), activityType: selectedActivity, language: selectedLanguage)
+        let newActivity = UserActivity(date: selectedDate, minutes: Int(minutes), activityType: selectedActivity, language: selectedLanguage, userID: authManager.currentUser)
         modelContext.insert(newActivity)
         dismiss()
     }
+}
+
+#Preview {
+    AddActivityView()
+        .environment(AuthManager())
 }

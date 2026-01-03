@@ -5,7 +5,8 @@ import Combine
 struct GameView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(\.modelContext) private var modelContext
-    @Query private var profiles: [UserProfile]
+    @Environment(AuthManager.self) private var authManager
+    @Query private var allProfiles: [UserProfile]
     
     @State private var audioManager = AudioManager()
     
@@ -40,7 +41,7 @@ struct GameView: View {
     static let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var userProfile: UserProfile? {
-        profiles.first
+        allProfiles.first { $0.userID == authManager.currentUser }
     }
     
     var deck: CardDeck? {
@@ -611,7 +612,7 @@ struct GameView: View {
     func saveActivity() {
         let minutes = max(1, elapsedSeconds / 60)
         let language = sessionLanguage
-        let activity = UserActivity(date: Date(), minutes: minutes, activityType: .appLearning, language: language)
+        let activity = UserActivity(date: Date(), minutes: minutes, activityType: .appLearning, language: language, userID: authManager.currentUser)
         modelContext.insert(activity)
     }
     
@@ -726,4 +727,11 @@ struct StatRow: View {
                 .fontWeight(.bold)
         }
     }
+}
+
+#Preview {
+    GameView()
+        .environment(DataManager())
+        .environment(YouTubeManager())
+        .environment(AuthManager())
 }

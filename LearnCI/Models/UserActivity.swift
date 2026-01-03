@@ -28,6 +28,8 @@ final class UserActivity {
     var minutes: Int
     var activityTypeRaw: String
     var languageRaw: String
+    var userID: String? // Supabase Auth ID
+    var isSynced: Bool = false
     
     var activityType: ActivityType {
         get { ActivityType(rawValue: activityTypeRaw) ?? .appLearning }
@@ -39,11 +41,13 @@ final class UserActivity {
         set { languageRaw = newValue.rawValue }
     }
     
-    init(date: Date = Date(), minutes: Int, activityType: ActivityType, language: Language) {
+    init(date: Date = Date(), minutes: Int, activityType: ActivityType, language: Language, userID: String? = nil) {
         self.id = UUID()
         self.date = date
         self.minutes = minutes
         self.activityTypeRaw = activityType.rawValue
         self.languageRaw = language.rawValue
+        self.userID = userID
+        self.isSynced = false
     }
 }

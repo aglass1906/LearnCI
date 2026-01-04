@@ -384,13 +384,13 @@ struct GameView: View {
                                             Text(card.targetWord)
                                                 .font(.system(size: 40, weight: .bold))
                                             
-                                            Button(action: {
-                                                if let file = card.audioWordFile {
+                                            if let file = card.audioWordFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
+                                                Button(action: {
                                                     audioManager.playAudio(named: file, folderName: deck.baseFolderName)
+                                                }) {
+                                                    Image(systemName: "speaker.wave.2.fill")
+                                                        .font(.title)
                                                 }
-                                            }) {
-                                                Image(systemName: "speaker.wave.2.fill")
-                                                    .font(.title)
                                             }
                                         }
                                         
@@ -402,19 +402,19 @@ struct GameView: View {
                                                 .multilineTextAlignment(.center)
                                                 .padding(.horizontal)
                                             
-                                            Button(action: {
-                                                 if let file = card.audioSentenceFile {
+                                            if let file = card.audioSentenceFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
+                                                Button(action: {
                                                     audioManager.playAudio(named: file, folderName: deck.baseFolderName)
+                                                }) {
+                                                    HStack {
+                                                        Image(systemName: "speaker.wave.2.circle.fill")
+                                                        Text("Play Sentence")
+                                                    }
+                                                    .font(.subheadline)
+                                                    .padding(8)
+                                                    .background(Color.blue.opacity(0.1))
+                                                    .cornerRadius(10)
                                                 }
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: "speaker.wave.2.circle.fill")
-                                                    Text("Play Sentence")
-                                                }
-                                                .font(.subheadline)
-                                                .padding(8)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(10)
                                             }
                                         }
                                     }

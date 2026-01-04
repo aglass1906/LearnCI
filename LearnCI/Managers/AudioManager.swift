@@ -20,8 +20,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     private func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            // Keep it active as long as the app is in the game context
+            // Using .mixWithOthers allows us to play even if background music is already running
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Failed to setup audio session: \(error)")
@@ -42,8 +42,17 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             play(url: url)
         } else {
             print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
-            onCompletion?()
+            // Try one more time with exact filename in root bundle if folder was provided
+            if folderName != nil, let fallbackUrl = resolveAudioURL(filename: filename, folderName: nil) {
+                play(url: fallbackUrl)
+            } else {
+                onCompletion?()
+            }
         }
+    }
+    
+    func audioExists(named filename: String, folderName: String? = nil) -> Bool {
+        return resolveAudioURL(filename: filename, folderName: folderName) != nil
     }
 
     private func resolveAudioURL(filename: String, folderName: String?) -> URL? {
@@ -56,7 +65,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         let name = (filename as NSString).deletingPathExtension
         let ext = (filename as NSString).pathExtension.isEmpty ? nil : (filename as NSString).pathExtension
         
-        // 1. Try local dev paths (Simulator/Mac only)
+        // 1. Try local dev paths (Simulator only)
+        #if targetEnvironment(simulator)
         if let folder = folderName {
             let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(filename)"
             if fm.fileExists(atPath: localPath) {
@@ -71,6 +81,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             audioURLCache[cacheKey] = url
             return url
         }
+        #endif
 
         // 2. Try Bundle with subdirectories
         if let folder = folderName {
@@ -90,10 +101,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         }
 
         // 4. Robust recursive search in bundle (fallback)
+        // Physical devices are case-sensitive. We do a case-insensitive match here for resilience.
         let bundleURL = Bundle.main.bundleURL
         if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
             for case let fileURL as URL in enumerator {
-                if fileURL.lastPathComponent == filename {
+                if fileURL.lastPathComponent.lowercased() == filename.lowercased() {
                     audioURLCache[cacheKey] = fileURL
                     return fileURL
                 }

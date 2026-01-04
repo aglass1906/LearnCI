@@ -11,11 +11,18 @@ struct DeckMetadata: Identifiable, Equatable {
     let filename: String
 }
 
+struct InspirationalQuote: Codable, Identifiable {
+    var id: String { text }
+    let text: String
+    let author: String
+}
+
 @Observable
 class DataManager {
     var loadedDeck: CardDeck?
     var errorMessage: String?
     var availableDecks: [DeckMetadata] = []
+    var inspirationalQuotes: [InspirationalQuote] = []
     
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
@@ -126,7 +133,8 @@ class DataManager {
         
         let fm = FileManager.default
         
-        // 1. Try local dev path
+        // 1. Try local dev path (Simulator only)
+        #if targetEnvironment(simulator)
         if let folder = folderName {
             let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(filename)"
             if fm.fileExists(atPath: localPath) {
@@ -135,32 +143,36 @@ class DataManager {
                 return url
             }
         }
+        #endif
+        
+        let name = (filename as NSString).deletingPathExtension
+        let ext = (filename as NSString).pathExtension
         
         // 2. Try Bundle with subdirectory
         if let folder = folderName {
-            if let url = Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
-                                         withExtension: (filename as NSString).pathExtension, 
+            if let url = Bundle.main.url(forResource: name, 
+                                         withExtension: ext, 
                                          subdirectory: "Resources/Data/\(folder)") ?? 
-                        Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
-                                         withExtension: (filename as NSString).pathExtension, 
+                        Bundle.main.url(forResource: name, 
+                                         withExtension: ext, 
                                          subdirectory: "Data/\(folder)") {
                 resourceURLCache[cacheKey] = url
                 return url
             }
         }
         
-        // 3. Try standard Bundle locations (no folder)
-        if let url = Bundle.main.url(forResource: (filename as NSString).deletingPathExtension, 
-                                     withExtension: (filename as NSString).pathExtension) {
+        // 3. Try standard Bundle locations (flattened or root)
+        if let url = Bundle.main.url(forResource: name, withExtension: ext) {
             resourceURLCache[cacheKey] = url
             return url
         }
         
-        // 4. Robust recursive search in bundle (Slow fallback - only once per file due to cache)
+        // 4. Robust recursive search in bundle (fallback)
+        // Case-insensitive for resilience on device
         let bundleURL = Bundle.main.bundleURL
         if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
             for case let fileURL as URL in enumerator {
-                if fileURL.lastPathComponent == filename {
+                if fileURL.lastPathComponent.lowercased() == filename.lowercased() {
                     resourceURLCache[cacheKey] = fileURL
                     return fileURL
                 }
@@ -230,6 +242,29 @@ class DataManager {
             print("Error fetching word of day: \(error)")
             return nil
         }
+    }
+    
+    // Inspirational Quotes support
+    func loadQuotes() {
+        guard let url = resolveURL(folderName: nil, filename: "quotes.json") else {
+            print("Quotes file not found")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            self.inspirationalQuotes = try decoder.decode([InspirationalQuote].self, from: data)
+        } catch {
+            print("Error loading quotes: \(error)")
+        }
+    }
+    
+    func getRandomQuote() -> InspirationalQuote? {
+        if inspirationalQuotes.isEmpty {
+            loadQuotes()
+        }
+        return inspirationalQuotes.randomElement()
     }
     
     private func createFallbackDeck(language: Language, level: LearningLevel) -> CardDeck {

@@ -22,6 +22,7 @@ struct DashboardView: View {
     @State private var wordOfDay: LearningCard?
     @State private var wordOfDayFolder: String?
     @State private var isLoadingWordOfDay = false
+    @State private var inspirationalQuote: InspirationalQuote?
     
     var userProfile: UserProfile? {
         profiles.first
@@ -142,6 +143,32 @@ struct DashboardView: View {
                     // Word of the Day
                     wordOfDaySection
                     
+                    // Inspirational Quote
+                    if let quote = inspirationalQuote {
+                        VStack(spacing: 8) {
+                            Text("\"\(quote.text)\"")
+                                .font(.system(.body, design: .serif))
+                                .italic()
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.primary)
+                            
+                            Text("- \(quote.author)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.blue.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.blue.opacity(0.1), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal)
+                    }
+                    
                     // Activity Breakdown Chart
                     if !activities.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -238,6 +265,10 @@ struct DashboardView: View {
             }
             .navigationTitle("Dashboard")
             .task {
+                if inspirationalQuote == nil {
+                    inspirationalQuote = dataManager.getRandomQuote()
+                }
+                
                 if let profile = userProfile, wordOfDay == nil {
                     isLoadingWordOfDay = true
                     if let result = await dataManager.fetchWordOfDay(language: profile.currentLanguage, level: profile.currentLevel) {
@@ -276,14 +307,14 @@ struct DashboardView: View {
                         
                         Spacer()
                         
-                        Button(action: {
-                            if let file = word.audioWordFile {
+                        if let file = word.audioWordFile, audioManager.audioExists(named: file, folderName: wordOfDayFolder) {
+                            Button(action: {
                                 audioManager.playAudio(named: file, folderName: wordOfDayFolder)
+                            }) {
+                                Image(systemName: "speaker.wave.2.circle.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.blue)
                             }
-                        }) {
-                            Image(systemName: "speaker.wave.2.circle.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.blue)
                         }
                     }
                     

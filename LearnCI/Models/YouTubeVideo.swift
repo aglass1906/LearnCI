@@ -9,6 +9,10 @@ struct YouTubeVideo: Identifiable, Codable {
     let duration: String
     let publishedAt: Date
     
+    // Optional tagging for discovery
+    var language: Language?
+    var level: LearningLevel?
+    
     var durationInMinutes: Int {
         // Parse ISO 8601 duration (PT1H30M15S) to minutes
         parseDuration(duration)

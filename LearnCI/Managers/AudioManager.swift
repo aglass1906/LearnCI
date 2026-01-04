@@ -29,27 +29,47 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
     
     func playAudio(named filename: String, folderName: String? = nil, completion: (() -> Void)? = nil) {
-        // Avoid restarting if this specific file is already playing
+        // Avoid restarting if this specific file is already playing as a single intent
         if let player = player, player.isPlaying, currentSequence == [filename] {
             return
         }
         
-        self.stopAudio()
+        stopAudio()
         self.currentSequence = [filename]
-        self.onCompletion = completion
         
-        if let url = resolveAudioURL(filename: filename, folderName: folderName) {
-            play(url: url)
-        } else {
-            print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
-            // Try one more time with exact filename in root bundle if folder was provided
-            if folderName != nil, let fallbackUrl = resolveAudioURL(filename: filename, folderName: nil) {
-                play(url: fallbackUrl)
-            } else {
-                onCompletion?()
+        playInternal(filename: filename, folderName: folderName, completion: completion)
+    }
+    
+    func playSequence(filenames: [String], folderName: String? = nil) {
+        // Avoid restarting if the same sequence is already playing
+        guard filenames != currentSequence else { return }
+        
+        stopAudio() // Ensure clean state before new sequence
+        
+        guard !filenames.isEmpty else { 
+            currentSequence = []
+            return 
+        }
+        
+        currentSequence = filenames
+        playNextInSequence(filenames: filenames, folderName: folderName)
+    }
+    
+    private func playNextInSequence(filenames: [String], folderName: String?) {
+        var remaining = filenames
+        guard !remaining.isEmpty else { return }
+        let first = remaining.removeFirst()
+        
+        playInternal(filename: first, folderName: folderName) { [weak self] in
+            let workItem = DispatchWorkItem {
+                self?.playNextInSequence(filenames: remaining, folderName: folderName)
             }
+            self?.sequenceWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
         }
     }
+    
+
     
     func audioExists(named filename: String, folderName: String? = nil) -> Bool {
         return resolveAudioURL(filename: filename, folderName: folderName) != nil
@@ -115,36 +135,26 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         return nil
     }
     
-    func playSequence(filenames: [String], folderName: String? = nil) {
-        // Avoid restarting if the same sequence is already playing/scheduled
-        guard filenames != currentSequence else { return }
+    private func playInternal(filename: String, folderName: String?, completion: (() -> Void)? = nil) {
+        self.onCompletion = completion
         
-        stopAudio() // Ensure clean state before new sequence
-        
-        guard !filenames.isEmpty else { 
-            currentSequence = []
-            return 
-        }
-        
-        currentSequence = filenames
-        var remaining = filenames
-        let first = remaining.removeFirst()
-        
-        playAudio(named: first, folderName: folderName) { [weak self] in
-            let workItem = DispatchWorkItem {
-                self?.playSequence(filenames: remaining, folderName: folderName)
+        if let url = resolveAudioURL(filename: filename, folderName: folderName) {
+            play(url: url)
+        } else {
+            print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
+            // Try one more time with exact filename in root bundle if folder was provided
+            if folderName != nil, let fallbackUrl = resolveAudioURL(filename: filename, folderName: nil) {
+                play(url: fallbackUrl)
+            } else {
+                onCompletion?()
             }
-            self?.sequenceWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
         }
     }
     
     private func play(url: URL) {
         do {
-            // Re-activating session only if necessary (usually once is enough)
-            if !AVAudioSession.sharedInstance().isOtherAudioPlaying {
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
+            // Ensure session is active for playback
+            try AVAudioSession.sharedInstance().setActive(true)
             
             player = try AVAudioPlayer(contentsOf: url)
             player?.delegate = self

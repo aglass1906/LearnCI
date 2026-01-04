@@ -42,7 +42,7 @@ struct DashboardView: View {
     }
     
     var activityByType: [ActivityTypeData] {
-        let grouped = Dictionary(grouping: activities, by: { $0.activityType })
+        let grouped = Dictionary(grouping: todayActivities, by: { $0.activityType })
         return grouped.map { type, activities in
             ActivityTypeData(
                 type: type,
@@ -170,36 +170,7 @@ struct DashboardView: View {
                     }
                     
                     // Activity Breakdown Chart
-                    if !activities.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Activity Breakdown")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal)
-                            
-                            Chart(activityByType) { data in
-                                BarMark(
-                                    x: .value("Minutes", data.minutes),
-                                    y: .value("Type", data.type.rawValue)
-                                )
-                                .foregroundStyle(data.type.color)
-                                .annotation(position: .trailing) {
-                                    Text("\(data.minutes) min")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .frame(height: CGFloat(activityByType.count) * 44)
-                            .chartXAxis {
-                                AxisMarks(position: .bottom)
-                            }
-                            .padding(.horizontal)
-                        }
-                        .padding(.vertical)
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                    }
+                    ActivityBreakdownChart(activityByType: activityByType)
                     
                     // Recent Activity
                     HStack {
@@ -361,35 +332,4 @@ struct DashboardView: View {
         .environment(DataManager())
         .environment(YouTubeManager())
         .environment(AuthManager())
-}
-
-struct ActivityTypeData: Identifiable {
-    let id = UUID()
-    let type: ActivityType
-    let minutes: Int
-}
-
-extension ActivityType {
-    var color: Color {
-        switch self {
-        case .appLearning:
-            return .blue
-        case .flashcards:
-            return .teal
-        case .watchingVideos:
-            return .red
-        case .listeningPodcasts:
-            return .green
-        case .reading:
-            return .cyan
-        case .crossTalk:
-            return .orange
-        case .tutoring:
-            return .purple
-        case .speaking:
-            return .pink
-        case .writing:
-            return .indigo
-        }
-    }
 }

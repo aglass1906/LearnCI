@@ -3,6 +3,7 @@ import SwiftData
 
 struct HistoryView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
     var activities: [UserActivity] {
@@ -86,6 +87,16 @@ struct HistoryView: View {
         guard !filteredActivities.isEmpty else { return 0 }
         let inputMins = filteredActivities.filter { $0.activityType.isInput }.reduce(0) { $0 + $1.minutes }
         return Double(inputMins) / Double(totalMinutes)
+    }
+    
+    var activityByType: [ActivityTypeData] {
+        let grouped = Dictionary(grouping: filteredActivities, by: { $0.activityType })
+        return grouped.map { type, activities in
+            ActivityTypeData(
+                type: type,
+                minutes: activities.reduce(0) { $0 + $1.minutes }
+            )
+        }.sorted { $0.minutes > $1.minutes }
     }
     
     var body: some View {
@@ -203,6 +214,16 @@ struct HistoryView: View {
                         }
                         .listRowBackground(Color.blue.opacity(0.05))
                         
+                        // Activity Breakdown Chart
+                        if !filteredActivities.isEmpty {
+                            Section {
+                                ActivityBreakdownChart(activityByType: activityByType)
+                                    .padding(.horizontal, -16) // Offset list padding for chart
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                        }
+                        
                         // Grouped Activities
                         ForEach(groupedActivities) { group in
                             Section(header: Text(group.date.formatted(date: .complete, time: .omitted))) {
@@ -242,6 +263,9 @@ struct HistoryView: View {
                                         editingActivity = activity
                                     }
                                 }
+                                .onDelete { indexSet in
+                                    deleteActivities(at: indexSet, from: group.activities)
+                                }
                             }
                         }
                     }
@@ -267,6 +291,13 @@ struct HistoryView: View {
                     }
                 }
             }
+        }
+    }
+    
+    private func deleteActivities(at offsets: IndexSet, from groupActivities: [UserActivity]) {
+        for index in offsets {
+            let activityToDelete = groupActivities[index]
+            modelContext.delete(activityToDelete)
         }
     }
 }

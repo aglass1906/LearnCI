@@ -285,7 +285,7 @@ class YouTubeManager {
             var request = URLRequest(url: url)
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             
-            URLSession.shared.dataTask(with: request) { data, response, error in
+            URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
                 if let httpResponse = response as? HTTPURLResponse {
                     print("DEBUG: [YouTubeManager] Channel \(channelId) response: \(httpResponse.statusCode)")
                 }

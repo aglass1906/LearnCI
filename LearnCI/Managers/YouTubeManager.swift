@@ -8,10 +8,12 @@ class YouTubeManager {
     var isAuthenticated: Bool = false
     var youtubeAccount: String?
     var videos: [YouTubeVideo] = []
+    var channelVideos: [YouTubeVideo] = [] // Dedicated list for selected channel
     var discoveryVideos: [YouTubeVideo] = []
     var recommendedVideos: [YouTubeVideo] = []
     var channels: [YouTubeChannel] = []
     var isLoading: Bool = false
+    var isChannelLoading: Bool = false // Separate loading state for channel details
     var isDiscoveryLoading: Bool = false
     var isRecommendedLoading: Bool = false
     var errorMessage: String?
@@ -42,8 +44,39 @@ class YouTubeManager {
             isAuthenticated = true
         }
         
+        // Restore session to ensure token is fresh
+        restoreSession()
+        
         // Load from cache initially
         loadFromCache()
+    }
+    
+    private func restoreSession() {
+        let signInConfig = GIDConfiguration(clientID: getClientID())
+        GIDSignIn.sharedInstance.configuration = signInConfig
+        
+        GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, error in
+            if let error = error {
+                print("DEBUG: Session restore failed or no previous sign-in: \(error.localizedDescription)")
+                // Optionally handle specific errors, but for now we keep local state 
+                // allowing user to rely on cache or manually sign in if needed.
+                return
+            }
+            
+            guard let user = user else { return }
+            
+            DispatchQueue.main.async {
+                self?.youtubeAccount = user.profile?.email
+                self?.isAuthenticated = true
+                
+                // CRITICAL: Update the stored token with the potentially refreshed value
+                let accessToken = user.accessToken.tokenString
+                self?.defaults.set(accessToken, forKey: self?.tokenKey ?? "")
+                
+                // Refresh data with valid token
+                self?.loadVideosFromAPI()
+            }
+        }
     }
     
     // MARK: - OAuth Authentication
@@ -165,7 +198,7 @@ class YouTubeManager {
     
     // MARK: - YouTube API Data Fetching
     
-    func loadVideosFromAPI() {
+    func loadVideosFromAPI(isRefresh: Bool = false) {
         guard isAuthenticated, let token = accessToken else {
             print("Not authenticated or no access token")
             return
@@ -189,22 +222,84 @@ class YouTubeManager {
                     DispatchQueue.main.async { self?.isLoading = false }
                 }
             } else {
-                self?.fetchVideosFromChannels(token: token, channelIds: channelIds)
+                self?.fetchVideosFromChannels(token: token, channelIds: channelIds, isRefresh: isRefresh)
             }
         }
     }
     
     func fetchVideosForChannel(_ channelId: String) {
         guard let token = accessToken else { return }
-        isLoading = true
-        fetchVideosFromChannels(token: token, channelIds: [channelId])
+        channelVideos = [] // Clear previous results
+        isChannelLoading = true
+        fetchVideosFromChannels(token: token, channelIds: [channelId], target: .singleChannel)
     }
     
-    private func fetchSubscriptions(token: String, completion: @escaping ([String]) -> Void) {
-        let urlString = "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&maxResults=50"
+    func loadMoreChannelVideos() {
+        guard let token = accessToken,
+              let playlistId = channelUploadsPlaylistId,
+              let pageToken = channelNextPageToken,
+              !isChannelLoading else { return }
+        
+        isChannelLoading = true
+        
+        let urlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(playlistId)&maxResults=50&pageToken=\(pageToken)"
         
         guard let url = URL(string: urlString) else {
-            completion([])
+            isChannelLoading = false
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let items = json["items"] as? [[String: Any]] else {
+                DispatchQueue.main.async { self?.isChannelLoading = false }
+                return
+            }
+            
+            // Capture the NEXT page token
+            DispatchQueue.main.async {
+                self?.channelNextPageToken = json["nextPageToken"] as? String
+            }
+            
+            let ids = items.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
+            
+            if ids.isEmpty {
+                DispatchQueue.main.async { self?.isChannelLoading = false }
+                return
+            }
+            
+            self?.fetchVideoDetails(token: token, videoIds: ids, target: .singleChannelAppend)
+            
+        }.resume()
+    }
+    
+    func loadMoreFeedVideos() {
+        guard let token = accessToken, !isLoading else { return }
+        
+        // Fix: If activeFeedChannelIds is empty (e.g. valid cache but no API call yet), hydrate from cached channels
+        if activeFeedChannelIds.isEmpty && !channels.isEmpty {
+            activeFeedChannelIds = channels.map { $0.id }.shuffled()
+        }
+        
+        // Only load more if we haven't exhausted our channel list
+        guard feedChannelIndex < activeFeedChannelIds.count else { return }
+        
+        isLoading = true
+        fetchVideosFromChannels(token: token, channelIds: [], target: .feedAppend)
+    }
+    
+    private func fetchSubscriptions(token: String, pageToken: String? = nil, accumulatedChannels: [YouTubeChannel] = [], completion: @escaping ([String]) -> Void) {
+        var urlString = "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&maxResults=50"
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
+        }
+        
+        guard let url = URL(string: urlString) else {
+            completion(accumulatedChannels.map { $0.id })
             return
         }
         
@@ -214,16 +309,12 @@ class YouTubeManager {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if let error = error {
                 print("DEBUG: [YouTubeManager] Subscriptions fetch failed: \(error.localizedDescription)")
-                completion([])
+                completion(accumulatedChannels.map { $0.id })
                 return
             }
             
-            if let httpResponse = response as? HTTPURLResponse {
-                print("DEBUG: [YouTubeManager] Subscriptions response code: \(httpResponse.statusCode)")
-            }
-            
             guard let data = data else {
-                completion([])
+                completion(accumulatedChannels.map { $0.id })
                 return
             }
             
@@ -244,33 +335,90 @@ class YouTubeManager {
                         return YouTubeChannel(id: channelId, title: title, thumbnailURL: thumbnailURL)
                     }
                     
-                    let channelIds = fetchedChannels.map { $0.id }
+                    let newAccumulated = accumulatedChannels + fetchedChannels
+                    let nextPageToken = json["nextPageToken"] as? String
                     
                     DispatchQueue.main.async {
-                        self?.channels = fetchedChannels
-                        print("Found \(channelIds.count) subscribed channels and metadata")
+                        self?.channels = newAccumulated
+                        print("Fetched page. Total channels so far: \(newAccumulated.count)")
                     }
-                    completion(channelIds)
+                    
+                    if let nextToken = nextPageToken {
+                        // Recurse for next page
+                        self?.fetchSubscriptions(token: token, pageToken: nextToken, accumulatedChannels: newAccumulated, completion: completion)
+                    } else {
+                        // All done
+                        completion(newAccumulated.map { $0.id })
+                    }
                 } else {
-                    completion([])
+                    completion(accumulatedChannels.map { $0.id })
                 }
             } catch {
-                print("Error parsing subscriptions: \(error)")
-                completion([])
+                completion(accumulatedChannels.map { $0.id })
             }
         }.resume()
     }
     
-    private func fetchVideosFromChannels(token: String, channelIds: [String]) {
+    var channelNextPageToken: String?
+    var channelUploadsPlaylistId: String?
+    var feedChannelIndex: Int = 0 // Track which channels we've already fetched for the feed
+    var activeFeedChannelIds: [String] = [] // Store the shuffled order for the current feed session
+    
+    // Recs Pagination
+    var recsNextPageToken: String?
+    var recsUsingMostPopular: Bool = false
+    
+    enum FetchTarget {
+        case feed
+        case feedAppend
+        case singleChannel
+        case singleChannelAppend
+    }
+
+    private func fetchVideosFromChannels(token: String, channelIds: [String], isRefresh: Bool = false, target: FetchTarget = .feed) {
         // QUOTA OPTIMIZATION: Instead of searching (100 units), 
         // we fetch the "Uploads" playlist ID for each channel (1 unit)
         // and then fetch the playlist items (1 unit).
         
         var allVideoIds: [String] = []
         let dispatchGroup = DispatchGroup()
+        let lock = NSLock()
         
-        // Fetch up to 5 channels' videos (10 units vs 500 units)
-        let channelsToFetch = Array(channelIds.prefix(5))
+        // For single channel, we fetch up to 20. For feed, we fetch from 5 channels.
+        var channelsToFetch: [String] = []
+        
+        if target == .singleChannel {
+            channelsToFetch = channelIds // Should be just one
+        } else if target == .singleChannelAppend {
+             channelsToFetch = channelIds // We act on the stored playlist ID, so this list might be empty or ignored, 
+                                          // BUT for singleChannelAppend we actually skip this function usually and call fetchVideoDetails directly? 
+                                          // WAIT. loadMoreChannelVideos calls fetchVideoDetails DIRECTLY. 
+                                          // So this function is NOT used for singleChannelAppend. Correct.
+                                          // However, for consistency, let's leave it safe.
+             channelsToFetch = []
+        } else {
+             // Feed Logic
+             if target == .feed {
+                 // Reset / New Session
+                 if isRefresh || activeFeedChannelIds.isEmpty {
+                     activeFeedChannelIds = channelIds.shuffled()
+                 } else if activeFeedChannelIds.isEmpty && !channelIds.isEmpty {
+                     activeFeedChannelIds = channelIds // Initial load fallback
+                 }
+                 feedChannelIndex = 0
+             }
+             
+             // Safely batch next 5
+             let endIndex = min(feedChannelIndex + 5, activeFeedChannelIds.count)
+             if feedChannelIndex < endIndex {
+                 channelsToFetch = Array(activeFeedChannelIds[feedChannelIndex..<endIndex])
+                 feedChannelIndex = endIndex
+             } else {
+                 channelsToFetch = [] // No more channels to fetch
+             }
+        }
+        
+
         
         for channelId in channelsToFetch {
             dispatchGroup.enter()
@@ -278,6 +426,7 @@ class YouTubeManager {
             // Step 1: Get the 'uploads' playlist ID for the channel
             let channelUrl = "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=\(channelId)"
             guard let url = URL(string: channelUrl) else {
+
                 dispatchGroup.leave()
                 continue
             }
@@ -286,9 +435,7 @@ class YouTubeManager {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             
             URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    print("DEBUG: [YouTubeManager] Channel \(channelId) response: \(httpResponse.statusCode)")
-                }
+
                 
                 guard let data = data,
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -298,23 +445,20 @@ class YouTubeManager {
                       let relatedPlaylists = contentDetails["relatedPlaylists"] as? [String: Any],
                       let uploadsPlaylistId = relatedPlaylists["uploads"] as? String else {
                     
-                    if let rawData = data, let json = try? JSONSerialization.jsonObject(with: rawData) as? [String: Any],
-                       let error = json["error"] as? [String: Any],
-                       let message = error["message"] as? String,
-                       message.contains("Exceeded") || message.contains("quota") {
-                        print("DEBUG: [YouTubeManager] Quota exceeded for channel lookup")
-                        DispatchQueue.main.async {
-                            self?.errorMessage = "YouTube API Quota Exceeded. Using cached data."
-                        }
-                    }
-                    
+                    // Quota exceeded or channel not found
                     dispatchGroup.leave()
                     return
                 }
                 
-                // Step 2: Fetch latest 10 videos from that playlist
-                let playlistUrl = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(uploadsPlaylistId)&maxResults=10"
+
+                
+                // Step 2: Fetch videos from that playlist
+                // Fetch more results for a single channel view
+                let maxResults = target == .singleChannel ? 50 : 10
+                let playlistUrl = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(uploadsPlaylistId)&maxResults=\(maxResults)"
+                
                 guard let pUrl = URL(string: playlistUrl) else {
+
                     dispatchGroup.leave()
                     return
                 }
@@ -325,26 +469,44 @@ class YouTubeManager {
                 URLSession.shared.dataTask(with: pRequest) { pData, pResponse, pError in
                     defer { dispatchGroup.leave() }
                     
-                    if let httpResponse = pResponse as? HTTPURLResponse {
-                        print("DEBUG: [YouTubeManager] Playlist fetch code: \(httpResponse.statusCode)")
-                    }
+
                     
                     guard let pData = pData,
                           let pJson = try? JSONSerialization.jsonObject(with: pData) as? [String: Any],
                           let pItems = pJson["items"] as? [[String: Any]] else { return }
                           
-                    let ids = pItems.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
-                    print("DEBUG: [YouTubeManager] Found \(ids.count) videos in channel playlist")
-                    
-                    DispatchQueue.main.async {
-                        allVideoIds.append(contentsOf: ids)
+                    // Capture pagination info if this is a single channel fetch
+                    if target == .singleChannel {
+                        DispatchQueue.main.async {
+                            self?.channelUploadsPlaylistId = uploadsPlaylistId
+                            self?.channelNextPageToken = pJson["nextPageToken"] as? String
+                        }
                     }
+                          
+                    let ids = pItems.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
+                    
+                    lock.lock()
+                    allVideoIds.append(contentsOf: ids)
+                    lock.unlock()
+                    
                 }.resume()
             }.resume()
         }
         
         dispatchGroup.notify(queue: .main) { [weak self] in
             print("DEBUG: [YouTubeManager] Finished fetching channel IDs. Total collected: \(allVideoIds.count)")
+            
+            if target == .singleChannel {
+                if allVideoIds.isEmpty {
+                     // Leave channelVideos empty if nothing found
+                     self?.isChannelLoading = false
+                } else {
+                    self?.fetchVideoDetails(token: token, videoIds: allVideoIds, target: target)
+                }
+                return
+            }
+            
+            // Existing logic for feed
             if allVideoIds.isEmpty {
                 // Keep cached videos if we have them, only fallback to samples if totally empty
                 if self?.videos.isEmpty ?? true {
@@ -355,90 +517,107 @@ class YouTubeManager {
                 }
                 self?.isLoading = false
             } else {
-                self?.fetchVideoDetails(token: token, videoIds: allVideoIds)
+                self?.fetchVideoDetails(token: token, videoIds: allVideoIds, target: target)
             }
         }
     }
     
-    private func fetchVideoDetails(token: String, videoIds: [String]) {
-        let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(videoIds.joined(separator: ","))"
+    private func fetchVideoDetails(token: String, videoIds: [String], target: FetchTarget = .feed) {
+        // Chunk video IDs into groups of 50 to respect API limits
+        let chunks = videoIds.chunked(into: 50)
+        var allFetchedVideos: [YouTubeVideo] = []
+        let dispatchGroup = DispatchGroup()
         
-        guard let url = URL(string: urlString) else {
-            DispatchQueue.main.async {
-                self.isLoading = false
+        let lock = NSLock()
+        
+        for chunk in chunks {
+            dispatchGroup.enter()
+            
+            let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(chunk.joined(separator: ","))"
+            
+            guard let url = URL(string: urlString) else {
+                dispatchGroup.leave()
+                continue
             }
-            return
+            
+            var request = URLRequest(url: url)
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                defer { dispatchGroup.leave() }
+                
+                guard let data = data,
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let items = json["items"] as? [[String: Any]] else { return }
+                
+                let videos = items.compactMap { item -> YouTubeVideo? in
+                    guard let id = item["id"] as? String,
+                          let snippet = item["snippet"] as? [String: Any],
+                          let contentDetails = item["contentDetails"] as? [String: Any],
+                          let title = snippet["title"] as? String,
+                          let description = snippet["description"] as? String,
+                          let channelTitle = snippet["channelTitle"] as? String,
+                          let thumbnails = snippet["thumbnails"] as? [String: Any],
+                          let medium = thumbnails["medium"] as? [String: Any],
+                          let thumbnailURL = medium["url"] as? String,
+                          let duration = contentDetails["duration"] as? String,
+                          let publishedAtString = snippet["publishedAt"] as? String else {
+                        return nil
+                    }
+                    
+                    let dateFormatter = ISO8601DateFormatter()
+                    let publishedAt = dateFormatter.date(from: publishedAtString) 
+                        ?? ISO8601DateFormatter.fractionalSecondsFormatter.date(from: publishedAtString)
+                        ?? Date()
+                    
+                    return YouTubeVideo(
+                        id: id,
+                        title: title,
+                        description: description,
+                        thumbnailURL: thumbnailURL,
+                        channelTitle: channelTitle,
+                        duration: duration,
+                        publishedAt: publishedAt
+                    )
+                }
+                
+                lock.lock()
+                allFetchedVideos.append(contentsOf: videos)
+                lock.unlock()
+                
+            }.resume()
         }
         
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            if let error = error {
-                print("Error fetching video details: \(error)")
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                }
-                return
-            }
+        dispatchGroup.notify(queue: .main) { [weak self] in
+            // Sort merged results from all chunks
+            let sortedVideos = allFetchedVideos.sorted { $0.publishedAt > $1.publishedAt }
             
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                }
-                return
+            if target == .feed {
+                self?.videos = sortedVideos
+                self?.isLoading = false
+                self?.saveToCache()
+            } else if target == .singleChannel {
+                self?.channelVideos = sortedVideos
+                self?.isChannelLoading = false
+            } else if target == .singleChannelAppend {
+                // Append unique videos (avoiding duplicates)
+                let existingIds = Set(self?.channelVideos.map { $0.id } ?? [])
+                let newVideos = sortedVideos.filter { !existingIds.contains($0.id) }
+                
+                self?.channelVideos.append(contentsOf: newVideos)
+                // Re-sort the entire list just to be safe
+                self?.channelVideos.sort { $0.publishedAt > $1.publishedAt }
+                self?.isChannelLoading = false
+            } else if target == .feedAppend {
+                // Same logic for main feed
+                let existingIds = Set(self?.videos.map { $0.id } ?? [])
+                let newVideos = sortedVideos.filter { !existingIds.contains($0.id) }
+                
+                self?.videos.append(contentsOf: newVideos)
+                self?.videos.sort { $0.publishedAt > $1.publishedAt }
+                self?.isLoading = false
             }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let items = json["items"] as? [[String: Any]] {
-                    
-                    let videos = items.compactMap { item -> YouTubeVideo? in
-                        guard let id = item["id"] as? String,
-                              let snippet = item["snippet"] as? [String: Any],
-                              let contentDetails = item["contentDetails"] as? [String: Any],
-                              let title = snippet["title"] as? String,
-                              let description = snippet["description"] as? String,
-                              let channelTitle = snippet["channelTitle"] as? String,
-                              let thumbnails = snippet["thumbnails"] as? [String: Any],
-                              let medium = thumbnails["medium"] as? [String: Any],
-                              let thumbnailURL = medium["url"] as? String,
-                              let duration = contentDetails["duration"] as? String,
-                              let publishedAtString = snippet["publishedAt"] as? String else {
-                            return nil
-                        }
-                        
-                        let dateFormatter = ISO8601DateFormatter()
-                        let publishedAt = dateFormatter.date(from: publishedAtString) ?? Date()
-                        
-                        return YouTubeVideo(
-                            id: id,
-                            title: title,
-                            description: description,
-                            thumbnailURL: thumbnailURL,
-                            channelTitle: channelTitle,
-                            duration: duration,
-                            publishedAt: publishedAt
-                        )
-                    }
-                    
-                    DispatchQueue.main.async {
-                        self?.videos = videos
-                        self?.isLoading = false
-                        self?.saveToCache()
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        self?.isLoading = false
-                    }
-                }
-            } catch {
-                print("Error parsing video details: \(error)")
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                }
-            }
-        }.resume()
+        }
     }
     
     // MARK: - Discovery API
@@ -466,7 +645,7 @@ class YouTubeManager {
         isDiscoveryLoading = true
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         
-        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=20&type=video&videoCaption=closedCaption"
+        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption"
         
         guard let url = URL(string: urlString) else {
             isDiscoveryLoading = false
@@ -512,7 +691,7 @@ class YouTubeManager {
     private func searchVideosWithApiKey(query: String, apiKey: String, language: Language, level: LearningLevel) {
         isDiscoveryLoading = true
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=20&type=video&videoCaption=closedCaption&key=\(apiKey)"
+        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption&key=\(apiKey)"
         
         guard let url = URL(string: urlString) else {
             isDiscoveryLoading = false
@@ -662,9 +841,29 @@ class YouTubeManager {
         fetchRecommendedVideos()
     }
     
+    func refreshVideos() {
+        // Clear cache-related flags if necessary or just force API calls
+        // This is a user-initiated action, so we want to be aggressive
+        isLoading = true
+        loadVideosFromAPI(isRefresh: true)
+        fetchRecommendedVideos()
+    }
+    
     // MARK: - Recommended Videos API
     
-    func fetchRecommendedVideos() {
+    func loadMoreRecommendedVideos() {
+        guard !isRecommendedLoading else { return }
+        guard let token = recsNextPageToken else { return }
+        
+        isRecommendedLoading = true
+        if recsUsingMostPopular {
+            fetchMostPopularVideos(pageToken: token)
+        } else {
+            fetchRecommendedVideos(pageToken: token)
+        }
+    }
+    
+    func fetchRecommendedVideos(pageToken: String? = nil) {
         #if targetEnvironment(simulator)
         if !isAuthenticated && accessToken == nil {
             fetchRecommendedVideosMock()
@@ -679,8 +878,14 @@ class YouTubeManager {
         }
         
         isRecommendedLoading = true
+        if pageToken == nil {
+            recsUsingMostPopular = false // Reset source
+        }
         
-        let urlString = "https://www.googleapis.com/youtube/v3/activities?part=snippet,contentDetails&mine=true&maxResults=50"
+        var urlString = "https://www.googleapis.com/youtube/v3/activities?part=snippet,contentDetails&mine=true&maxResults=50"
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
+        }
         
         guard let url = URL(string: urlString) else {
             isRecommendedLoading = false
@@ -709,6 +914,11 @@ class YouTubeManager {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
+                    
+                    // Capture next page token
+                    DispatchQueue.main.async {
+                        self?.recsNextPageToken = json["nextPageToken"] as? String
+                    }
                     
                     // Filter for various video-related activities
                     let videoIds = items.compactMap { item -> String? in
@@ -754,24 +964,40 @@ class YouTubeManager {
                     
                     let uniqueIds = Array(Set(videoIds))
                     if !uniqueIds.isEmpty {
-                        self?.fetchRecommendedDetails(token: token, videoIds: uniqueIds)
+                        self?.fetchRecommendedDetails(token: token, videoIds: uniqueIds, isAppend: pageToken != nil)
                     } else {
-                        self?.fetchMostPopularVideos()
+                        // If no videos found in activities (e.g. only comments), try popular fallback 
+                        // ONLY if this was the initial load. If appending, just stop.
+                        if pageToken == nil {
+                            self?.fetchMostPopularVideos()
+                        } else {
+                            DispatchQueue.main.async { self?.isRecommendedLoading = false }
+                        }
                     }
                 } else {
-                    self?.fetchMostPopularVideos()
+                    if pageToken == nil { self?.fetchMostPopularVideos() }
+                    else { DispatchQueue.main.async { self?.isRecommendedLoading = false } }
                 }
             } catch {
                 print("DEBUG: [YouTubeManager] JSON Parse Error (Activities): \(error)")
-                self?.fetchMostPopularVideos()
+                if pageToken == nil { self?.fetchMostPopularVideos() }
+                else { DispatchQueue.main.async { self?.isRecommendedLoading = false } }
             }
         }.resume()
     }
     
-    private func fetchMostPopularVideos() {
-        var urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&chart=mostPopular&maxResults=20"
+    private func fetchMostPopularVideos(pageToken: String? = nil) {
+        // Mark that we are using most popular source
+        if pageToken == nil {
+            recsUsingMostPopular = true
+        }
+        
+        var urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&chart=mostPopular&maxResults=50"
         if let key = publicApiKey {
             urlString += "&key=\(key)"
+        }
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
         }
         
         guard let url = URL(string: urlString) else {
@@ -794,9 +1020,23 @@ class YouTubeManager {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
+                    
+                    // Capture next page token for Most Popular
+                    DispatchQueue.main.async {
+                        self?.recsNextPageToken = json["nextPageToken"] as? String
+                    }
+                    
                     let videos = self?.parseVideos(items: items) ?? []
                     DispatchQueue.main.async {
-                        self?.recommendedVideos = videos
+                        if pageToken != nil {
+                            // Append if loading more
+                            let existingIds = Set(self?.recommendedVideos.map { $0.id } ?? [])
+                            let newVideos = videos.filter { !existingIds.contains($0.id) }
+                            self?.recommendedVideos.append(contentsOf: newVideos)
+                        } else {
+                            self?.recommendedVideos = videos
+                        }
+                        
                         self?.saveToCache()
                     }
                 }
@@ -806,7 +1046,7 @@ class YouTubeManager {
         }.resume()
     }
     
-    private func fetchRecommendedDetails(token: String, videoIds: [String]) {
+    private func fetchRecommendedDetails(token: String, videoIds: [String], isAppend: Bool = false) {
         let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(videoIds.joined(separator: ","))"
         
         guard let url = URL(string: urlString) else {
@@ -825,14 +1065,21 @@ class YouTubeManager {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
+                    
                     let videos = self?.parseVideos(items: items) ?? []
                     DispatchQueue.main.async {
-                        self?.recommendedVideos = videos
+                        if isAppend {
+                            let existingIds = Set(self?.recommendedVideos.map { $0.id } ?? [])
+                            let newVideos = videos.filter { !existingIds.contains($0.id) }
+                            self?.recommendedVideos.append(contentsOf: newVideos)
+                        } else {
+                            self?.recommendedVideos = videos
+                        }
                         self?.saveToCache()
                     }
                 }
             } catch {
-                print("Error parsing recommended details: \(error)")
+                print("DEBUG: [YouTubeManager] JSON Parse Error (Rec Details): \(error)")
             }
         }.resume()
     }
@@ -891,3 +1138,23 @@ class YouTubeManager {
         ]
     }
 }
+
+// Helper for chunking array
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
+
+// Helper for date formatting
+extension ISO8601DateFormatter {
+    static var fractionalSecondsFormatter: ISO8601DateFormatter {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }
+}
+
+

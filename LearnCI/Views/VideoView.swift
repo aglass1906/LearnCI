@@ -42,6 +42,18 @@ struct VideoView: View {
                 .pickerStyle(.segmented)
                 .padding()
                 
+                // Count Header
+                if selectedChannel == nil {
+                    HStack {
+                        Text("\(countForMode(mode)) \(mode == .channels ? "Channels" : "Videos") Found")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                }
+                
                 // Category Scroll
                 if mode == .discovery {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -102,6 +114,18 @@ struct VideoView: View {
                     refreshDiscovery()
                 }
             }
+            .onChange(of: userProfile?.currentLanguage) { _, _ in
+                youtubeManager.discoveryVideos = [] // Invalidate old data
+                if mode == .discovery {
+                    refreshDiscovery()
+                }
+            }
+            .onChange(of: userProfile?.currentLevel) { _, _ in
+                youtubeManager.discoveryVideos = [] // Invalidate old data
+                if mode == .discovery {
+                    refreshDiscovery()
+                }
+            }
             .navigationTitle(selectedChannel?.title ?? "Videos")
             .toolbar {
                 if selectedChannel != nil {
@@ -117,7 +141,13 @@ struct VideoView: View {
                 
                 if youtubeManager.isAuthenticated {
                     ToolbarItem(placement: .primaryAction) {
-                        Button(action: { youtubeManager.loadVideos() }) {
+                        Button(action: {
+                            if mode == .discovery {
+                                refreshDiscovery()
+                            } else {
+                                youtubeManager.refreshVideos()
+                            }
+                        }) {
                             Image(systemName: "arrow.clockwise")
                         }
                     }
@@ -251,7 +281,7 @@ struct VideoView: View {
                 VStack(alignment: .leading) {
                     Text(channel.title)
                         .font(.headline)
-                    Text("Latest Videos")
+                    Text("Latest Videos (\(youtubeManager.channelVideos.count))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -260,12 +290,12 @@ struct VideoView: View {
             .padding()
             .background(Color.gray.opacity(0.05))
             
-            if youtubeManager.isLoading {
+            if youtubeManager.isChannelLoading && youtubeManager.channelVideos.isEmpty {
                 Spacer()
                 ProgressView("Loading videos...")
                 Spacer()
             } else {
-                videoGridView(videos: youtubeManager.videos)
+                videoGridView(videos: youtubeManager.channelVideos, isLoading: youtubeManager.isChannelLoading, onLoadMore: youtubeManager.loadMoreChannelVideos)
             }
         }
     }
@@ -274,7 +304,7 @@ struct VideoView: View {
         Group {
             if !youtubeManager.isAuthenticated {
                 notConnectedView
-            } else if youtubeManager.isLoading {
+            } else if youtubeManager.isLoading && youtubeManager.videos.isEmpty {
                 ProgressView("Loading subscriptions...")
             } else if youtubeManager.videos.isEmpty {
                 ContentUnavailableView(
@@ -283,7 +313,7 @@ struct VideoView: View {
                     description: Text("Connect your YouTube account to see your subscriptions")
                 )
             } else {
-                videoGridView(videos: youtubeManager.videos)
+                videoGridView(videos: youtubeManager.videos, isLoading: youtubeManager.isLoading, onLoadMore: youtubeManager.loadMoreFeedVideos)
             }
         }
     }
@@ -320,7 +350,7 @@ struct VideoView: View {
                     .buttonStyle(.bordered)
                 }
             } else {
-                videoGridView(videos: youtubeManager.recommendedVideos)
+                videoGridView(videos: youtubeManager.recommendedVideos, isLoading: youtubeManager.isRecommendedLoading, onLoadMore: youtubeManager.loadMoreRecommendedVideos)
             }
         }
     }
@@ -348,7 +378,7 @@ struct VideoView: View {
         }
     }
     
-    func videoGridView(videos: [YouTubeVideo]) -> some View {
+    func videoGridView(videos: [YouTubeVideo], isLoading: Bool = false, onLoadMore: (() -> Void)? = nil) -> some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                 ForEach(videos) { video in
@@ -359,6 +389,17 @@ struct VideoView: View {
                     .onTapGesture {
                         selectedVideo = video
                     }
+                    .onAppear {
+                        if let onLoadMore = onLoadMore, video.id == videos.last?.id {
+                            onLoadMore()
+                        }
+                    }
+                }
+                
+                if onLoadMore != nil && isLoading {
+                    ProgressView()
+                         .gridCellColumns(2)
+                         .padding()
                 }
             }
             .padding()
@@ -395,6 +436,7 @@ struct VideoView: View {
     }
     
     func logWatchTime(_ minutes: Int) {
+        // ... (existing implementation)
         guard minutes > 0 else { return }
         
         let language = userProfile?.currentLanguage ?? .spanish
@@ -415,6 +457,19 @@ struct VideoView: View {
             comment: finalComment.isEmpty ? nil : finalComment
         )
         modelContext.insert(activity)
+    }
+    
+    func countForMode(_ mode: VideoTabMode) -> Int {
+        switch mode {
+        case .recommended:
+            return youtubeManager.recommendedVideos.count
+        case .subscriptions:
+            return youtubeManager.videos.count
+        case .channels:
+            return youtubeManager.channels.count
+        case .discovery:
+            return youtubeManager.discoveryVideos.count
+        }
     }
 }
 
@@ -470,13 +525,18 @@ struct VideoCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
-                // Channel info
+                // Channel info & Date
                 HStack {
                     Text(video.channelTitle)
-                        .font(.caption2)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                    
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    
+                    Text(video.publishedAt, style: .relative)
+                        .foregroundColor(.secondary)
                     
                     Spacer()
                     
@@ -490,6 +550,7 @@ struct VideoCard: View {
                             .clipShape(Capsule())
                     }
                 }
+                .font(.caption2)
             }
             .padding(.horizontal, 4)
         }

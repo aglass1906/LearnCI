@@ -39,8 +39,10 @@ final class UserProfile {
     }
     
     var lastSelectedDeckId: String?
+    var lastCheckInHours: Int = 0 // Tracks the last milestone (0, 25, 50...)
+    var startingHours: Int = 0 // Manual offset for previous experience
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastSelectedDeckId: String? = nil) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0) {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -53,6 +55,8 @@ final class UserProfile {
         self.updatedAt = Date()
         self.defaultGamePresetRaw = defaultPreset.rawValue
         self.lastSelectedDeckId = lastSelectedDeckId
+        self.lastCheckInHours = lastCheckInHours
+        self.startingHours = startingHours
     }
     
     private func languageRawUpdate(_ newValue: Language) {

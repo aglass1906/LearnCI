@@ -26,7 +26,9 @@ struct LearnCIApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             UserActivity.self,
-            UserProfile.self
+            UserProfile.self,
+            DailyFeedback.self,
+            CoachingCheckIn.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

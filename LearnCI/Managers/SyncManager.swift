@@ -15,6 +15,29 @@ class SyncManager {
         self.authManager = authManager
     }
     
+// MARK: - Coaching DTOs
+
+struct DailyFeedbackDTO: Encodable {
+    let id: UUID
+    let user_id: UUID
+    let date: Date
+    let rating: Int
+    let note: String?
+}
+
+struct CoachingCheckInDTO: Encodable {
+    let id: UUID
+    let user_id: UUID
+    let date: Date
+    let hours_milestone: Int
+    let activity_ratings: [String: Int]
+    let progress_sentiment: String
+    let next_cycle_plan: String
+    let notes: String?
+}
+
+    // MARK: - Sync Methods
+    
     @MainActor
     func syncNow(modelContext: ModelContext) async {
         guard let userID = authManager.currentUser else { 
@@ -38,12 +61,79 @@ class SyncManager {
             // 2. Sync Activities (Push new)
             try await syncActivities(context: modelContext, userID: userID)
             
+            // 3. Sync Daily Feedback (Push new)
+            try await syncDailyFeedback(context: modelContext, userID: userID)
+            
+            // 4. Sync Coaching Check-ins (Push new)
+            try await syncCheckIns(context: modelContext, userID: userID)
+            
             lastSync = Date()
             print("Sync completed successfully")
         } catch {
             errorMessage = "Sync failed: \(error.localizedDescription)"
             print("Sync Error: \(error)")
         }
+    }
+
+    @MainActor
+    private func syncDailyFeedback(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<DailyFeedback>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSyncedItems = try context.fetch(descriptor)
+        guard !unSyncedItems.isEmpty else { return }
+        
+        let dtos = unSyncedItems.compactMap { item -> DailyFeedbackDTO? in
+            guard let uid = UUID(uuidString: userID) else { return nil }
+            return DailyFeedbackDTO(
+                id: item.id,
+                user_id: uid,
+                date: item.date,
+                rating: item.rating,
+                note: item.note
+            )
+        }
+        
+        guard !dtos.isEmpty else { return }
+        
+        try await authManager.supabase.from("daily_feedback")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+            
+        for item in unSyncedItems { item.isSynced = true }
+        try context.save()
+    }
+    
+    @MainActor
+    private func syncCheckIns(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<CoachingCheckIn>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSyncedItems = try context.fetch(descriptor)
+        guard !unSyncedItems.isEmpty else { return }
+        
+        let dtos = unSyncedItems.compactMap { item -> CoachingCheckInDTO? in
+             guard let uid = UUID(uuidString: userID) else { return nil }
+             return CoachingCheckInDTO(
+                id: item.id,
+                user_id: uid,
+                date: item.date,
+                hours_milestone: item.hoursMilestone,
+                activity_ratings: item.activityRatings,
+                progress_sentiment: item.progressSentiment,
+                next_cycle_plan: item.nextCyclePlan,
+                notes: item.notes
+             )
+        }
+        
+        guard !dtos.isEmpty else { return }
+        
+        try await authManager.supabase.from("coaching_check_ins")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+            
+        for item in unSyncedItems { item.isSynced = true }
+        try context.save()
     }
     
     /// Migrates any local data with `nil` userID OR mismatching userID to the current logged-in user.
@@ -107,7 +197,9 @@ class SyncManager {
             full_name: profile.fullName,
             location: profile.location,
             avatar_url: profile.avatarUrl,
-            last_selected_deck_id: profile.lastSelectedDeckId
+            last_selected_deck_id: profile.lastSelectedDeckId,
+            last_check_in_hours: profile.lastCheckInHours,
+            starting_hours: profile.startingHours
         )
         
         // Upsert to Supabase
@@ -185,6 +277,8 @@ struct ProfileUploadDTO: Encodable {
     let location: String?
     let avatar_url: String?
     let last_selected_deck_id: String?
+    let last_check_in_hours: Int?
+    let starting_hours: Int?
 }
 
 struct ProfileDTO: Codable, Identifiable {
@@ -203,6 +297,8 @@ struct ProfileDTO: Codable, Identifiable {
     let location: String?
     let avatar_url: String?
     let last_selected_deck_id: String?
+    let last_check_in_hours: Int?
+    let starting_hours: Int?
 }
 
 struct ActivityDTO: Encodable {

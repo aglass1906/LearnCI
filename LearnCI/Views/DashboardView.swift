@@ -29,7 +29,9 @@ struct DashboardView: View {
     }
     
     var totalMinutes: Int {
-        activities.reduce(0) { $0 + $1.minutes }
+        let activityMinutes = activities.reduce(0) { $0 + $1.minutes }
+        let startingMinutes = (userProfile?.startingHours ?? 0) * 60
+        return activityMinutes + startingMinutes
     }
     
     var todayActivities: [UserActivity] {
@@ -50,6 +52,8 @@ struct DashboardView: View {
             )
         }.sorted { $0.minutes > $1.minutes }
     }
+    
+
     
     var body: some View {
         ZStack {
@@ -78,6 +82,12 @@ struct DashboardView: View {
                             }
                             .padding()
                         }
+                        
+                        // Daily Feedback (Coaching)
+                        dailyFeedbackCard
+                        
+                        // Roadmap (Coaching)
+                        roadmapSection
                         
                         // Today's Stats Card
                         VStack(spacing: 8) {
@@ -277,6 +287,246 @@ struct DashboardView: View {
         }
     }
     
+    @State private var showCheckInSheet = false
+    
+    // ... (Existing code)
+    
+    // MARK: - Daily Feedback Logic
+    
+    @Query(sort: \DailyFeedback.date, order: .reverse) private var feedbackHistory: [DailyFeedback]
+    
+    var todaysFeedback: DailyFeedback? {
+        let calendar = Calendar.current
+        return feedbackHistory.first { calendar.isDateInToday($0.date) && $0.userID == authManager.currentUser }
+    }
+    
+    // MARK: - Check-in Logic
+    
+    var isCheckInDue: Bool {
+        guard let profile = userProfile else { return false }
+        let currentHours = totalMinutes / 60
+        // Trigger every 25 hours
+        return currentHours >= (profile.lastCheckInHours + 25)
+    }
+    
+    var hoursToNextMilestone: Int {
+        guard let profile = userProfile else { return 25 }
+        let currentHours = totalMinutes / 60
+        let nextMilestone = profile.lastCheckInHours + 25
+        return max(0, nextMilestone - currentHours)
+    }
+    
+    // MARK: - Views
+    
+    private var dailyFeedbackCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Coaching")
+                    .font(.headline)
+                
+                if !isCheckInDue {
+                    Text("• Next Check-in: \(hoursToNextMilestone)h")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                NavigationLink(destination: CoachingHistoryView()) {
+                    Text("History")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                }
+            }
+            .padding(.horizontal)
+            
+            // Check-in Banner
+            if isCheckInDue, let profile = userProfile {
+                Button(action: { showCheckInSheet = true }) {
+                    HStack {
+                        Image(systemName: "trophy.fill")
+                            .font(.title)
+                            .foregroundStyle(.yellow)
+                        VStack(alignment: .leading) {
+                            Text("Milestone Reached!")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Text("It's time for your \(profile.lastCheckInHours + 25)h check-in.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .cornerRadius(12)
+                    .shadow(color: .yellow.opacity(0.3), radius: 5)
+                }
+                .padding(.horizontal)
+                .sheet(isPresented: $showCheckInSheet) {
+                    CoachingCheckInView(
+                        userProfile: profile,
+                        currentHours: totalMinutes / 60,
+                        milestone: profile.lastCheckInHours + 25
+                    )
+                }
+            }
+            
+            // Daily Feedback Content
+            VStack(alignment: .leading, spacing: 12) {
+                Text("How are you feeling today?")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                
+                if let feedback = todaysFeedback {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        VStack(alignment: .leading) {
+                            Text("Thanks for checking in!")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text(DailyFeedback.moodLabel(for: feedback.rating))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                        }
+                        Spacer()
+                        moodIcon(for: feedback.rating)
+                            .font(.title2)
+                    }
+                    .padding()
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(12)
+                } else {
+                    HStack(spacing: 0) {
+                        ForEach(1...5, id: \.self) { rating in
+                            Button(action: {
+                                saveDailyFeedback(rating: rating)
+                            }) {
+                                VStack(spacing: 4) {
+                                    moodIcon(for: rating)
+                                        .font(.title2)
+                                    Text(DailyFeedback.moodLabel(for: rating))
+                                        .font(.caption2)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
+                                        .foregroundStyle(.primary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                            }
+                        }
+                    }
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .cornerRadius(12)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    private func moodIcon(for rating: Int) -> some View {
+        let iconName: String
+        let color: Color
+        switch rating {
+        case 1: iconName = "cloud.rain.fill"; color = .gray
+        case 2: iconName = "cloud.fill"; color = .blue.opacity(0.6)
+        case 3: iconName = "cloud.sun.fill"; color = .orange.opacity(0.7)
+        case 4: iconName = "sun.max.fill"; color = .yellow
+        case 5: iconName = "sparkles"; color = .yellow
+        default: iconName = "questionmark.circle"; color = .gray
+        }
+        
+        return Image(systemName: iconName)
+            .foregroundStyle(color)
+    }
+    
+    private func saveDailyFeedback(rating: Int) {
+        print("Saving Daily Feedback: Rating \(rating), User: \(authManager.currentUser ?? "nil")")
+        let feedback = DailyFeedback(
+            rating: rating,
+            userID: authManager.currentUser
+        )
+        modelContext.insert(feedback)
+        do {
+            try modelContext.save()
+            print("Daily Feedback Saved Successfully!")
+        } catch {
+            print("Error saving daily feedback: \(error)")
+        }
+    }
+
+    private var roadmapSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Input Roadmap")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.horizontal)
+            
+            if let profile = userProfile {
+                let currentHours = totalMinutes / 60
+                
+                VStack(spacing: 0) {
+                    // Level 1: 0-50h
+                    roadmapLevel(level: 1, range: 0...50, current: currentHours, color: .teal)
+                    // Level 2: 50-150h
+                    roadmapLevel(level: 2, range: 50...150, current: currentHours, color: .green)
+                    // Level 3: 150-300h
+                    roadmapLevel(level: 3, range: 150...300, current: currentHours, color: .blue)
+                    // Level 4: 300-600h
+                    roadmapLevel(level: 4, range: 300...600, current: currentHours, color: .orange)
+                    // Level 5: 600-1000h
+                    roadmapLevel(level: 5, range: 600...1000, current: currentHours, color: .purple)
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+    
+    private func roadmapLevel(level: Int, range: ClosedRange<Int>, current: Int, color: Color) -> some View {
+        let isCompleted = current >= range.upperBound
+        let isInProgress = range.contains(current)
+        
+        // Progress within this specific level
+        let levelTotal = range.upperBound - range.lowerBound
+        let levelCurrent = max(0, min(current - range.lowerBound, levelTotal))
+        let progress = CGFloat(levelCurrent) / CGFloat(levelTotal)
+        
+        return HStack(spacing: 8) {
+            Text("L\(level)")
+                .font(.caption.bold())
+                .frame(width: 24)
+                .foregroundStyle(isCompleted || isInProgress ? color : .secondary)
+            
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(UIColor.secondarySystemFill))
+                        .frame(height: 8)
+                    
+                    if isCompleted {
+                        Capsule()
+                            .fill(color)
+                            .frame(height: 8)
+                    } else if isInProgress {
+                        Capsule()
+                            .fill(color)
+                            .frame(width: geo.size.width * progress, height: 8)
+                    }
+                }
+            }
+            .frame(height: 8)
+            
+            Text("\(range.upperBound)h")
+                .font(.caption)
+                .frame(width: 40, alignment: .trailing)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+        .opacity((isCompleted || isInProgress) ? 1.0 : 0.4)
+    }
+
     private var wordOfDaySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -342,8 +592,8 @@ struct DashboardView: View {
                 HStack {
                     Spacer()
                     Text("No daily word found for your current level.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                     Spacer()
                 }
                 .padding()

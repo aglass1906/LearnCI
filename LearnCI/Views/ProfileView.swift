@@ -19,6 +19,7 @@ struct ProfileView: View {
     @State private var dailyGoal: Double = 30
     @State private var dailyCardGoal: Double = 20
     @State private var selectedGamePreset: GameConfiguration.Preset = .inputFocus
+    @State private var startingHours: Int = 0
     
     var body: some View {
         NavigationStack {
@@ -150,6 +151,20 @@ struct ProfileView: View {
                     }
                 }
                 
+                Section(header: Text("Learning History")) {
+                    HStack {
+                        Text("Starting Hours")
+                        Spacer()
+                        TextField("Hours", value: $startingHours, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                    }
+                    Text("Add your previous learning time to your total.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
                 Section {
                     Button("Save Changes") {
                         saveProfile()
@@ -178,6 +193,7 @@ struct ProfileView: View {
                     dailyGoal = Double(profile.dailyGoalMinutes)
                     dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
                     selectedGamePreset = profile.defaultGamePreset
+                    startingHours = profile.startingHours
                 } else {
                     // Create profile associated with current user
                     if let userID = authManager.currentUser {
@@ -206,6 +222,7 @@ struct ProfileView: View {
             profile.dailyGoalMinutes = Int(dailyGoal)
             profile.dailyCardGoal = Int(dailyCardGoal)
             profile.defaultGamePreset = selectedGamePreset
+            profile.startingHours = startingHours
             
             // Update auth fields if they were missing
             if profile.email == nil { profile.email = authManager.currentUserEmail }

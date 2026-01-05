@@ -18,11 +18,12 @@ struct ProfileView: View {
     @State private var selectedLevel: LearningLevel = .superBeginner
     @State private var dailyGoal: Double = 30
     @State private var dailyCardGoal: Double = 20
+    @State private var selectedGamePreset: GameConfiguration.Preset = .inputFocus
     
     var body: some View {
         NavigationStack {
             Form {
-                // Google Account Info (Read-Only)
+                // ... (Existing Google Account Section)
                 if let email = authManager.currentUserEmail {
                     Section(header: Text("Google Account")) {
                         LabeledContent("Email", value: email)
@@ -81,7 +82,16 @@ struct ProfileView: View {
                     Stepper("Daily Card Goal: \(Int(dailyCardGoal))", value: $dailyCardGoal, in: 5...100, step: 5)
                 }
                 
+                Section(header: Text("Game Settings")) {
+                    Picker("Default Card Display", selection: $selectedGamePreset) {
+                        ForEach(GameConfiguration.Preset.allCases) { preset in
+                            Text(preset.rawValue).tag(preset)
+                        }
+                    }
+                }
+                
                 Section(header: Text("YouTube Connection")) {
+                    // ... (Existing YouTube Section)
                     if youtubeManager.isAuthenticated {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -167,6 +177,7 @@ struct ProfileView: View {
                     selectedLevel = profile.currentLevel
                     dailyGoal = Double(profile.dailyGoalMinutes)
                     dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
+                    selectedGamePreset = profile.defaultGamePreset
                 } else {
                     // Create profile associated with current user
                     if let userID = authManager.currentUser {
@@ -194,6 +205,7 @@ struct ProfileView: View {
             profile.currentLevel = selectedLevel
             profile.dailyGoalMinutes = Int(dailyGoal)
             profile.dailyCardGoal = Int(dailyCardGoal)
+            profile.defaultGamePreset = selectedGamePreset
             
             // Update auth fields if they were missing
             if profile.email == nil { profile.email = authManager.currentUserEmail }

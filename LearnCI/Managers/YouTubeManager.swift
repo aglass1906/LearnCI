@@ -882,7 +882,7 @@ class YouTubeManager {
             recsUsingMostPopular = false // Reset source
         }
         
-        var urlString = "https://www.googleapis.com/youtube/v3/activities?part=snippet,contentDetails&mine=true&maxResults=50"
+        var urlString = "https://www.googleapis.com/youtube/v3/activities?part=snippet,contentDetails&home=true&maxResults=50"
         if let pageToken = pageToken {
             urlString += "&pageToken=\(pageToken)"
         }
@@ -898,7 +898,7 @@ class YouTubeManager {
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if let error = error {
                 print("DEBUG: [YouTubeManager] Activity fetch failed: \(error.localizedDescription)")
-                self?.fetchMostPopularVideos()
+                DispatchQueue.main.async { self?.isRecommendedLoading = false }
                 return
             }
             
@@ -907,7 +907,7 @@ class YouTubeManager {
             }
             
             guard let data = data else {
-                self?.fetchMostPopularVideos()
+                DispatchQueue.main.async { self?.isRecommendedLoading = false }
                 return 
             }
             
@@ -966,22 +966,15 @@ class YouTubeManager {
                     if !uniqueIds.isEmpty {
                         self?.fetchRecommendedDetails(token: token, videoIds: uniqueIds, isAppend: pageToken != nil)
                     } else {
-                        // If no videos found in activities (e.g. only comments), try popular fallback 
-                        // ONLY if this was the initial load. If appending, just stop.
-                        if pageToken == nil {
-                            self?.fetchMostPopularVideos()
-                        } else {
-                            DispatchQueue.main.async { self?.isRecommendedLoading = false }
-                        }
+                        // If no videos found in activities (e.g. only comments), just stop.
+                        DispatchQueue.main.async { self?.isRecommendedLoading = false }
                     }
                 } else {
-                    if pageToken == nil { self?.fetchMostPopularVideos() }
-                    else { DispatchQueue.main.async { self?.isRecommendedLoading = false } }
+                    DispatchQueue.main.async { self?.isRecommendedLoading = false }
                 }
             } catch {
                 print("DEBUG: [YouTubeManager] JSON Parse Error (Activities): \(error)")
-                if pageToken == nil { self?.fetchMostPopularVideos() }
-                else { DispatchQueue.main.async { self?.isRecommendedLoading = false } }
+                DispatchQueue.main.async { self?.isRecommendedLoading = false }
             }
         }.resume()
     }

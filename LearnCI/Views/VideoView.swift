@@ -8,11 +8,6 @@ struct VideoView: View {
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
-    @State private var selectedVideo: YouTubeVideo?
-    @State private var showWatchTimePrompt = false
-    @State private var watchMinutes: Double = 10
-    @State private var watchComment: String = ""
-    
     enum VideoTabMode: String, CaseIterable {
         case recommended = "Recs"
         case subscriptions = "My Subs"
@@ -20,8 +15,22 @@ struct VideoView: View {
         case discovery = "Discovery"
     }
     
+    enum VideoFilter: String, CaseIterable, Identifiable {
+        case all = "All"
+        case regular = "Regular"
+        case shorts = "Shorts"
+        
+        var id: String { self.rawValue }
+    }
+    
     @State private var mode: VideoTabMode = .recommended
     @State private var selectedCategory: String = "All"
+    @State private var selectedVideo: YouTubeVideo?
+    @State private var showWatchTimePrompt = false
+    @State private var watchMinutes: Double = 10
+    @State private var watchComment: String = ""
+    @State private var isShowingLogSheet = false
+    @State private var shortsFilter: VideoFilter = .all
     @State private var selectedChannel: YouTubeChannel?
     
     let categories = ["All", "Vlogs", "Grammar", "Music", "Input"]
@@ -301,10 +310,26 @@ struct VideoView: View {
     }
     
     var subscriptionContentView: some View {
-        Group {
-            if !youtubeManager.isAuthenticated {
-                notConnectedView
-            } else if youtubeManager.isLoading && youtubeManager.videos.isEmpty {
+        VStack(spacing: 0) {
+            // Filter Picker
+            Picker("Filter", selection: $shortsFilter) {
+                ForEach(VideoFilter.allCases) { filter in
+                    Text(filter.rawValue).tag(filter)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+            
+            // Filtered List
+            let svideos = youtubeManager.videos.filter { video in // Changed from channelVideos to videos
+                switch shortsFilter {
+                case .all: return true
+                case .regular: return !video.isShort
+                case .shorts: return video.isShort
+                }
+            }
+            
+            if svideos.isEmpty && youtubeManager.isLoading && youtubeManager.videos.isEmpty {
                 ProgressView("Loading subscriptions...")
             } else if youtubeManager.videos.isEmpty {
                 ContentUnavailableView(
@@ -312,8 +337,14 @@ struct VideoView: View {
                     systemImage: "play.rectangle",
                     description: Text("Connect your YouTube account to see your subscriptions")
                 )
+            } else if svideos.isEmpty {
+                 ContentUnavailableView(
+                    shortsFilter == .all ? "No videos found" : "No \(shortsFilter.rawValue.lowercased()) found",
+                    systemImage: shortsFilter == .shorts ? "play.rectangle.on.rectangle.slash" : "video.slash",
+                    description: Text("Try changing the filter or scrolling down.")
+                )
             } else {
-                videoGridView(videos: youtubeManager.videos, isLoading: youtubeManager.isLoading, onLoadMore: youtubeManager.loadMoreFeedVideos)
+                videoGridView(videos: svideos, isLoading: youtubeManager.isLoading, onLoadMore: youtubeManager.loadMoreFeedVideos)
             }
         }
     }

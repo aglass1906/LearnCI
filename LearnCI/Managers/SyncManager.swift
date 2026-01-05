@@ -106,7 +106,8 @@ class SyncManager {
             email: profile.email,
             full_name: profile.fullName,
             location: profile.location,
-            avatar_url: profile.avatarUrl
+            avatar_url: profile.avatarUrl,
+            last_selected_deck_id: profile.lastSelectedDeckId
         )
         
         // Upsert to Supabase
@@ -183,6 +184,7 @@ struct ProfileUploadDTO: Encodable {
     let full_name: String?
     let location: String?
     let avatar_url: String?
+    let last_selected_deck_id: String?
 }
 
 struct ProfileDTO: Codable, Identifiable {
@@ -200,6 +202,7 @@ struct ProfileDTO: Codable, Identifiable {
     let full_name: String?
     let location: String?
     let avatar_url: String?
+    let last_selected_deck_id: String?
 }
 
 struct ActivityDTO: Encodable {

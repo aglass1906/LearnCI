@@ -13,25 +13,39 @@ struct YouTubeVideo: Identifiable, Codable {
     var language: Language?
     var level: LearningLevel?
     
-    var durationInMinutes: Int {
-        // Parse ISO 8601 duration (PT1H30M15S) to minutes
+    var durationInSeconds: Int {
         parseDuration(duration)
+    }
+    
+    var durationInMinutes: Int {
+        durationInSeconds / 60
+    }
+    
+    var isShort: Bool {
+        durationInSeconds <= 61
     }
     
     private func parseDuration(_ iso8601: String) -> Int {
         var result = 0
         let components = iso8601.dropFirst(2) // Remove "PT"
         
-        if let hRange = components.range(of: "H") {
-            if let hours = Int(components[..<hRange.lowerBound]) {
-                result += hours * 60
-            }
-        }
+        // Simple manual parsing for H, M, S
+        // PT1H2M10S
         
-        if let mRange = components.range(of: "M") {
-            let start = components.range(of: "H")?.upperBound ?? components.startIndex
-            if let minutes = Int(components[start..<mRange.lowerBound]) {
-                result += minutes
+        var currentNum = ""
+        for char in components {
+            if char.isNumber {
+                currentNum.append(char)
+            } else {
+                let val = Int(currentNum) ?? 0
+                currentNum = ""
+                
+                switch char {
+                case "H": result += val * 3600
+                case "M": result += val * 60
+                case "S": result += val
+                default: break
+                }
             }
         }
         

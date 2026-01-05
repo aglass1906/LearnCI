@@ -68,10 +68,12 @@ struct GameView: View {
                 }
                 .onAppear(perform: handleAppear)
                 .onChange(of: sessionLanguage) { _, newValue in
+                    print("DEBUG: sessionLanguage changed to \(newValue). Clearing selectedDeck.")
                     dataManager.discoverDecks(language: newValue, level: sessionLevel)
                     selectedDeck = nil
                 }
                 .onChange(of: sessionLevel) { _, newValue in
+                    print("DEBUG: sessionLevel changed to \(newValue). Clearing selectedDeck.")
                     dataManager.discoverDecks(language: sessionLanguage, level: newValue)
                     selectedDeck = nil
                 }
@@ -84,6 +86,38 @@ struct GameView: View {
                 .onChange(of: isFlipped, handleFlipState)
                 .onChange(of: dataManager.loadedDeck) { _, newDeck in
                     handleDeckLoaded(newDeck)
+                }
+                .onChange(of: selectedDeck) { _, newDeck in
+                    if let deck = newDeck {
+                        print("DEBUG: selectedDeck CHANGED to: \(deck.title). Saving to profile.")
+                        if let profile = userProfile {
+                            profile.lastSelectedDeckId = deck.id
+                            try? modelContext.save() // Explicitly save change
+                        }
+                    } else {
+                        print("DEBUG: selectedDeck CHANGED to NIL")
+                    }
+                }
+                .onChange(of: dataManager.availableDecks) { _, decks in
+                    print("DEBUG: availableDecks changed. Count: \(decks.count)")
+                    if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
+                        print("DEBUG: Trying restore from availableDecks for \(lastId)")
+                        if let match = decks.first(where: { $0.id == lastId }) {
+                            print("DEBUG: RESTORED deck from availableDecks: \(match.title)")
+                            selectedDeck = match
+                        }
+                    }
+                }
+                // Fix: Watch for profile availability (e.g. after auth restore) to trigger restore
+                .onChange(of: authManager.currentUser) { _, _ in
+                    print("DEBUG: authManager.currentUser changed. Profile available? \(userProfile != nil)")
+                    // If profile just became available and we have decks, try to restore
+                    if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
+                         print("DEBUG: Trying restore from auth change...")
+                         if let match = dataManager.availableDecks.first(where: { $0.id == lastId }) {
+                            selectedDeck = match
+                        }
+                    }
                 }
         }
     }
@@ -243,6 +277,7 @@ struct GameView: View {
     // MARK: - Logic
     
     func setupConfiguration() {
+        print("DEBUG: setupConfiguration called. Profile: \(userProfile?.name ?? "nil"), LastDeckID: \(userProfile?.lastSelectedDeckId ?? "nil")")
         if let profile = userProfile {
             sessionLanguage = profile.currentLanguage
             sessionLevel = profile.currentLevel
@@ -252,6 +287,24 @@ struct GameView: View {
             // Sync customConfig if needed
             if selectedPreset != .customize {
                 customConfig = GameConfiguration.from(preset: selectedPreset)
+            }
+            
+            // Attempt to restore last selected deck
+            // FIX: Wrap in async to prevent onChange(of: language) from clearing the restored deck immediately
+            if let lastId = profile.lastSelectedDeckId {
+                DispatchQueue.main.async {
+                    if self.selectedDeck == nil {
+                         print("DEBUG: Attempting delayed restore for \(lastId)")
+                         // If decks are already loaded, try to match immediately
+                         if let match = self.dataManager.availableDecks.first(where: { $0.id == lastId }) {
+                             print("DEBUG: Delayed restore SUCCESS: \(match.title)")
+                             self.selectedDeck = match
+                         } else {
+                             // If not found yet, we rely on onChange(of: availableDecks)
+                             print("DEBUG: Delayed restore deferring to availableDecks change...")
+                         }
+                    }
+                }
             }
         }
     }

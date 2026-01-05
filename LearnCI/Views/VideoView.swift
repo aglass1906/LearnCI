@@ -133,11 +133,15 @@ struct VideoView: View {
                         watchComment = "\(video.channelTitle) - \(video.title)"
                         showWatchTimePrompt = true
                     },
-                    onLogTime: {
+                    onLogTime: { minutes in
                         selectedVideo = video
-                        // Pre-fill comment with video context
-                        watchComment = "\(video.channelTitle) - \(video.title)"
-                        showWatchTimePrompt = true
+                        // Auto-log the activity
+                        watchComment = "\(video.channelTitle) - \(video.title) (Auto-Tracked)"
+                        logWatchTime(minutes)
+                        
+                        // We do NOT show the prompt, effectively auto-saving.
+                        // Reset simple state
+                        selectedVideo = nil
                     }
                 )
             }
@@ -499,15 +503,18 @@ struct VideoCard: View {
 struct VideoDetailSheet: View {
     let video: YouTubeVideo
     let onWatch: () -> Void
-    let onLogTime: () -> Void
+    let onLogTime: (Int) -> Void // Updated to accept minutes
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var watchDuration: TimeInterval = 0
+    @State private var hasLoggedTime = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    // Embedded Player
-                    YouTubePlayerView(videoID: video.id)
+                    // Embedded Player with Tracking
+                    YouTubePlayerView(videoID: video.id, watchDuration: $watchDuration)
                         .frame(height: 220)
                         .cornerRadius(12)
                         .shadow(radius: 5)
@@ -525,13 +532,30 @@ struct VideoDetailSheet: View {
                     }
                     .font(.subheadline)
                     
+                    // Live Watch Stats
+                    if watchDuration > 0 {
+                        HStack {
+                            Image(systemName: "timer")
+                            Text("Watching: \(Int(watchDuration))s")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
+                    
                     Text(video.description)
                         .font(.body)
                     
                     VStack(spacing: 12) {
-                        // Log Time Button (Primary Action now)
-                        Button(action: onLogTime) {
-                            Label("Log Watch Time", systemImage: "clock.fill")
+                        // Manual Log Button
+                        Button(action: {
+                            onLogTime(Int(max(1, watchDuration / 60)))
+                            hasLoggedTime = true
+                        }) {
+                            Label("Log Watch Time Now", systemImage: "clock.fill")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -540,7 +564,7 @@ struct VideoDetailSheet: View {
                                 .cornerRadius(10)
                         }
                         
-                        // Watch on YouTube (Backup / External)
+                        // User can still open external app if needed
                         Button(action: onWatch) {
                             Label("Open in YouTube App", systemImage: "arrow.up.right.video.fill")
                                 .font(.headline)
@@ -561,6 +585,13 @@ struct VideoDetailSheet: View {
                     Button("Close") {
                         dismiss()
                     }
+                }
+            }
+            .onDisappear {
+                // Auto-Log if significant time watched and not manually logged
+                if !hasLoggedTime && watchDuration > 10 {
+                    let minutes = Int(max(1, watchDuration / 60))
+                    onLogTime(minutes)
                 }
             }
         }

@@ -506,16 +506,11 @@ struct VideoDetailSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    AsyncImage(url: URL(string: video.thumbnailURL)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(16/9, contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .aspectRatio(16/9, contentMode: .fill)
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    // Embedded Player
+                    YouTubePlayerView(videoID: video.id)
+                        .frame(height: 220)
+                        .cornerRadius(12)
+                        .shadow(radius: 5)
                     
                     Text(video.title)
                         .font(.title2)
@@ -534,23 +529,25 @@ struct VideoDetailSheet: View {
                         .font(.body)
                     
                     VStack(spacing: 12) {
-                        Button(action: onWatch) {
-                            Label("Watch on YouTube", systemImage: "play.fill")
+                        // Log Time Button (Primary Action now)
+                        Button(action: onLogTime) {
+                            Label("Log Watch Time", systemImage: "clock.fill")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.red)
+                                .background(Color.blue)
                                 .cornerRadius(10)
                         }
                         
-                        Button(action: onLogTime) {
-                            Label("Log Watch Time", systemImage: "clock.fill")
+                        // Watch on YouTube (Backup / External)
+                        Button(action: onWatch) {
+                            Label("Open in YouTube App", systemImage: "arrow.up.right.video.fill")
                                 .font(.headline)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.red)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.blue.opacity(0.1))
+                                .background(Color.red.opacity(0.1))
                                 .cornerRadius(10)
                         }
                     }

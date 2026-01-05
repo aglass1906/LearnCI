@@ -14,6 +14,14 @@ enum Language: String, Codable, CaseIterable, Identifiable {
         case .korean: return "🇰🇷"
         }
     }
+    
+    var code: String {
+        switch self {
+        case .spanish: return "es"
+        case .japanese: return "ja"
+        case .korean: return "ko"
+        }
+    }
 }
 
 enum LearningLevel: String, Codable, CaseIterable, Identifiable {
@@ -54,11 +62,20 @@ struct LearningCard: Identifiable, Codable, Hashable {
     }
 }
 
-struct CardDeck: Codable, Identifiable {
+struct CardDeck: Codable, Identifiable, Equatable {
     var id: String
     var language: Language
     var level: LearningLevel
     var title: String
     var cards: [LearningCard]
     var baseFolderName: String? // Added to track resource folder
+    
+    static func == (lhs: CardDeck, rhs: CardDeck) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.language == rhs.language &&
+               lhs.level == rhs.level &&
+               lhs.title == rhs.title &&
+               lhs.cards == rhs.cards &&
+               lhs.baseFolderName == rhs.baseFolderName
+    }
 }

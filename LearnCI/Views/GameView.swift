@@ -38,6 +38,17 @@ struct GameView: View {
     // New selective deck flow
     @State private var selectedDeck: DeckMetadata?
     
+    // Game Configuration
+    @State private var selectedPreset: GameConfiguration.Preset = .inputFocus
+    @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
+    @State private var isRandomOrder: Bool = false
+    
+    // Runtime config (captured at start)
+    @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
+    @State private var sessionCards: [LearningCard] = []
+    
+
+    
     static let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var userProfile: UserProfile? {
@@ -50,108 +61,101 @@ struct GameView: View {
     
     var body: some View {
         NavigationView {
-            Group {
-                switch gameState {
-                case .configuration:
-                    configurationView
-                case .active:
-                    activeGameView
-                case .finished:
-                    finishView
+            mainContent
+                .navigationTitle(navigationTitle)
+                .toolbar {
+                    gameToolbar
                 }
-            }
-            .navigationTitle(navigationTitle)
-            .toolbar {
-                if gameState == .active {
-                    ToolbarItem(placement: .topBarLeading) {
-                        HStack {
-                            Button(action: { isPaused.toggle() }) {
-                                Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                                    .foregroundColor(isPaused ? .green : .orange)
-                            }
-                            
-                            Button(action: { finishSession() }) {
-                                Image(systemName: "stop.fill")
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                         HStack {
-                             Text(formatTime(remainingSeconds))
-                                 .font(.system(.body, design: .monospaced))
-                                 .foregroundColor(remainingSeconds < 30 ? .red : .primary)
-                                 .fixedSize()
-                                 .padding(6)
-                                 .frame(minWidth: 60)
-                                 .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
-                                 .cornerRadius(8)
-                                 .overlay {
-                                     if isPaused {
-                                         RoundedRectangle(cornerRadius: 8)
-                                             .stroke(Color.orange, lineWidth: 1)
-                                     }
-                                 }
-                             
-                             Text(sessionLevel.rawValue)
-                                .font(.caption)
-                                .padding(6)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                         }
-                    }
+                .onAppear(perform: handleAppear)
+                .onChange(of: sessionLanguage) { _, newValue in
+                    dataManager.discoverDecks(language: newValue, level: sessionLevel)
+                    selectedDeck = nil
                 }
-            }
-            .onAppear {
-                if gameState == .configuration {
-                    setupConfiguration()
-                    // Initial discovery
-                    dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
+                .onChange(of: sessionLevel) { _, newValue in
+                    dataManager.discoverDecks(language: sessionLanguage, level: newValue)
+                    selectedDeck = nil
                 }
-            }
-            .onChange(of: sessionLanguage) { _, newValue in
-                dataManager.discoverDecks(language: newValue, level: sessionLevel)
-                selectedDeck = nil // Reset selection when language changes
-            }
-            .onChange(of: sessionLevel) { _, newValue in
-                dataManager.discoverDecks(language: sessionLanguage, level: newValue)
-                selectedDeck = nil // Reset selection when level changes
-            }
-            .onReceive(GameView.timer) { _ in
-                handleTimerTick()
-            }
-            .onChange(of: scenePhase) { oldPhase, newPhase in
-                if gameState == .active {
-                    if newPhase == .background || newPhase == .inactive {
-                        isPaused = true
-                    }
+                .onReceive(GameView.timer) { _ in
+                    handleTimerTick()
                 }
-            }
-            .onChange(of: isPaused) { _, newValue in
-                if newValue {
-                    audioManager.stopAudio()
-                } else {
-                    playCurrentCardAudio()
+                .onChange(of: scenePhase, handleScenePhase)
+                .onChange(of: isPaused, handlePauseState)
+                .onChange(of: currentCardIndex, handleCardIndexChange)
+                .onChange(of: isFlipped, handleFlipState)
+                .onChange(of: dataManager.loadedDeck) { _, newDeck in
+                    handleDeckLoaded(newDeck)
                 }
-            }
-            .onChange(of: currentCardIndex) { _, _ in
-                // Consolidate triggers: only play if not flipped
-                if !isFlipped {
-                    playCurrentCardAudio()
-                }
-            }
-            .onChange(of: isFlipped) { _, newValue in
-                if !newValue { // When flipped back to front
-                    playCurrentCardAudio()
-                } else {
-                    audioManager.stopAudio() // Stop word/sentence audio when showing meaning
-                }
+        }
+    }
+
+    @ViewBuilder
+    var mainContent: some View {
+        switch gameState {
+        case .configuration:
+            configurationView
+        case .active:
+            ActiveSessionView(
+                errorMessage: dataManager.errorMessage,
+                deck: deck,
+                sessionCards: sessionCards,
+                currentCardIndex: currentCardIndex,
+                learnedCount: learnedCount,
+                sessionCardGoal: sessionCardGoal,
+                sessionConfig: sessionConfig,
+                isFlipped: $isFlipped,
+                onRelearn: relearnCard,
+                onLearned: learnedCard,
+                onNext: nextCard,
+                onPrev: prevCard
+            )
+        case .finished:
+            SessionFinishView(
+                learnedCount: learnedCount,
+                elapsedSeconds: elapsedSeconds,
+                gameState: $gameState,
+                selectedDeck: $selectedDeck
+            )
+        }
+    }
+    
+    // MARK: - Event Handlers
+    
+    func handleAppear() {
+        if gameState == .configuration {
+            setupConfiguration()
+            dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
+        }
+    }
+    
+    func handleScenePhase(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
+        if gameState == .active {
+            if newPhase == .background || newPhase == .inactive {
+                isPaused = true
             }
         }
     }
     
-    // MARK: - Subviews
+    func handlePauseState(_: Bool, newValue: Bool) {
+        if newValue {
+            audioManager.stopAudio()
+        } else {
+            playCurrentCardAudio()
+        }
+    }
+    
+    func handleCardIndexChange(_: Int, _: Int) {
+        if !isFlipped {
+            playCurrentCardAudio()
+        }
+    }
+    
+    func handleFlipState(_: Bool, newValue: Bool) {
+        if !newValue {
+            playCurrentCardAudio()
+        } else {
+            audioManager.stopAudio()
+        }
+    }
     
     var navigationTitle: String {
         switch gameState {
@@ -162,391 +166,66 @@ struct GameView: View {
     }
     
     var configurationView: some View {
-        ScrollView {
-            VStack(spacing: 25) {
-                focusSelectionSection
-                deckSelectionSection
-                adjustmentsSection
-                
-                Spacer()
-                
-                Button(action: startActiveSession) {
-                    Text("Start Learn Session")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedDeck == nil ? Color.gray : Color.blue)
-                        .cornerRadius(15)
-                        .shadow(radius: selectedDeck == nil ? 0 : 5)
-                }
-                .disabled(selectedDeck == nil)
-                .padding(.horizontal)
-                .padding(.top, 40)
-            }
-            .padding(.vertical)
-        }
+        GameConfigurationView(
+            sessionLanguage: $sessionLanguage,
+            sessionLevel: $sessionLevel,
+            selectedDeck: $selectedDeck,
+            sessionDuration: $sessionDuration,
+            sessionCardGoal: $sessionCardGoal,
+            isRandomOrder: $isRandomOrder,
+            selectedPreset: $selectedPreset,
+            customConfig: $customConfig,
+            availableDecks: dataManager.availableDecks,
+            startAction: startActiveSession
+        )
     }
+
     
-    private var focusSelectionSection: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Session Focus")
-                .font(.headline)
-            
-            HStack {
-                Menu {
-                    ForEach(Language.allCases) { lang in
-                        Button(action: { sessionLanguage = lang }) {
-                            HStack {
-                                Text("\(lang.flag) \(lang.rawValue)")
-                                if sessionLanguage == lang { Image(systemName: "checkmark") }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text("\(sessionLanguage.flag) \(sessionLanguage.rawValue)")
-                        Spacer()
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
-                }
-                
-                Menu {
-                    ForEach(LearningLevel.allCases) { level in
-                        Button(action: { sessionLevel = level }) {
-                            HStack {
-                                Text(level.rawValue)
-                                if sessionLevel == level { Image(systemName: "checkmark") }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(sessionLevel.rawValue)
-                        Spacer()
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
-                }
-            }
-        }
-        .padding(.horizontal)
-    }
+    // MARK: - Card Rendering Helpers
     
-    private var deckSelectionSection: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Select Deck")
-                .font(.headline)
-            
-            if dataManager.availableDecks.isEmpty {
-                Text("No decks found for this selection.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.05))
-                    .cornerRadius(10)
-            } else {
-                VStack(spacing: 10) {
-                    ForEach(dataManager.availableDecks) { deck in
-                        Button(action: { selectedDeck = deck }) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(deck.title)
-                                        .font(.subheadline.bold())
-                                    Text("\(deck.language.rawValue) • \(deck.level.rawValue)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
-                                if selectedDeck?.id == deck.id {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                            .padding()
-                            .background(selectedDeck?.id == deck.id ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(selectedDeck?.id == deck.id ? Color.blue : Color.clear, lineWidth: 2)
-                            )
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-            }
-        }
-        .padding(.horizontal)
-    }
+
     
-    private var adjustmentsSection: some View {
-        VStack(spacing: 25) {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("Time Limit")
-                    .font(.headline)
-                
+    @ToolbarContentBuilder
+    private var gameToolbar: some ToolbarContent {
+        if gameState == .active {
+            ToolbarItem(placement: .topBarLeading) {
                 HStack {
-                    Image(systemName: "clock")
-                    Slider(value: Binding(get: { Double(sessionDuration) }, set: { sessionDuration = Int($0) }), in: 1...60, step: 1)
-                    Text("\(sessionDuration) min")
-                        .font(.subheadline.monospacedDigit())
-                        .frame(width: 60)
-                }
-            }
-            .padding(.horizontal)
-            
-            VStack(alignment: .leading, spacing: 15) {
-                Text("Card Goal")
-                    .font(.headline)
-                
-                Stepper(value: $sessionCardGoal, in: 5...100, step: 5) {
-                    HStack {
-                        Image(systemName: "square.stack.3d.up.fill")
-                        Text("\(sessionCardGoal) cards")
+                    Button(action: { isPaused.toggle() }) {
+                        Image(systemName: isPaused ? "play.fill" : "pause.fill")
+                            .foregroundColor(isPaused ? .green : .orange)
+                    }
+                    
+                    Button(action: { finishSession() }) {
+                        Image(systemName: "stop.fill")
+                        .foregroundColor(.red)
                     }
                 }
             }
-            .padding(.horizontal)
-        }
-    }
-
-    
-    var activeGameView: some View {
-        VStack {
-            if let error = dataManager.errorMessage {
-                VStack {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.largeTitle)
-                        .foregroundColor(.orange)
-                    Text("Data Loading Issue")
-                        .font(.headline)
-                    Text(error)
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                 HStack {
+                     // Timer View
+                     Text(formatTime(remainingSeconds))
+                         .font(.system(.body, design: .monospaced))
+                         .foregroundColor(remainingSeconds < 30 ? .red : .primary)
+                         .fixedSize()
+                         .padding(6)
+                         .frame(minWidth: 60)
+                         .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
+                         .cornerRadius(8)
+                         .overlay(
+                             RoundedRectangle(cornerRadius: 8)
+                                .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
+                         )
+                     
+                     Text(sessionLevel.rawValue)
                         .font(.caption)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .foregroundColor(.secondary)
-                }
-                .padding()
+                        .padding(6)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(8)
+                 }
             }
-            
-            if let deck = deck {
-                if deck.cards.isEmpty {
-                    Text("No cards available.")
-                } else {
-                    let card = deck.cards[currentCardIndex]
-                    
-                    // Progress Header
-                    VStack(spacing: 12) {
-                        HStack {
-                            Text("Session Progress")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("\(learnedCount) / \(sessionCardGoal) cards")
-                                .font(.subheadline.bold())
-                                .foregroundColor(.blue)
-                        }
-                        
-                        ProgressView(value: Double(learnedCount), total: Double(sessionCardGoal))
-                            .tint(.blue)
-                    }
-                    .padding()
-                    .background(Color.blue.opacity(0.05))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-
-                    // Card View
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(isFlipped ? Color.blue.opacity(0.1) : Color.orange.opacity(0.1))
-                            .shadow(radius: 5)
-                        
-                        VStack(spacing: 20) {
-                            if !isFlipped {
-                                    // Front: Target Content
-                                    VStack(spacing: 15) {
-                                        // Optional Image
-                                        if let image = resolveImage(card.imageFile, folder: deck.baseFolderName) {
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(maxHeight: 180)
-                                                .cornerRadius(10)
-                                        }
-                                        
-                                        HStack {
-                                            Text(card.targetWord)
-                                                .font(.system(size: 40, weight: .bold))
-                                            
-                                            if let file = card.audioWordFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
-                                                Button(action: {
-                                                    audioManager.playAudio(named: file, folderName: deck.baseFolderName)
-                                                }) {
-                                                    Image(systemName: "speaker.wave.2.fill")
-                                                        .font(.title)
-                                                }
-                                            }
-                                        }
-                                        
-                                        Divider()
-                                        
-                                        VStack {
-                                            Text(card.sentenceTarget)
-                                                .font(.headline)
-                                                .multilineTextAlignment(.center)
-                                                .padding(.horizontal)
-                                            
-                                            if let file = card.audioSentenceFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
-                                                Button(action: {
-                                                    audioManager.playAudio(named: file, folderName: deck.baseFolderName)
-                                                }) {
-                                                    HStack {
-                                                        Image(systemName: "speaker.wave.2.circle.fill")
-                                                        Text("Play Sentence")
-                                                    }
-                                                    .font(.subheadline)
-                                                    .padding(8)
-                                                    .background(Color.blue.opacity(0.1))
-                                                    .cornerRadius(10)
-                                                }
-                                            }
-                                        }
-                                    }
-                            } else {
-                                // Back: Translations
-                                VStack(spacing: 15) {
-                                    Text("Meaning:")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                    
-                                    Text(card.nativeTranslation)
-                                        .font(.title)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Divider()
-                                    
-                                    Text("Sentence Meaning:")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                        
-                                    Text(card.sentenceNative)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .scaleEffect(x: -1, y: 1)
-                            }
-                        }
-                        .padding()
-                    }
-                    .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
-                    .frame(height: 350)
-                    .padding()
-                    .onTapGesture {
-                        withAnimation(.spring()) {
-                            isFlipped.toggle()
-                        }
-                    }
-                    
-                    // Learning Success Controls
-                    if isFlipped {
-                        HStack(spacing: 20) {
-                            Button(action: relearnCard) {
-                                VStack {
-                                    Image(systemName: "arrow.counterclockwise.circle.fill")
-                                        .font(.system(size: 44))
-                                    Text("Relearn")
-                                        .font(.caption.bold())
-                                }
-                                .foregroundColor(.orange)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(12)
-                            }
-                            
-                            Button(action: learnedCard) {
-                                VStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 44))
-                                    Text("Learned")
-                                        .font(.caption.bold())
-                                }
-                                .foregroundColor(.green)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.green.opacity(0.1))
-                                .cornerRadius(12)
-                            }
-                        }
-                        .padding(.horizontal, 40)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                    } else {
-                        // Navigation Controls
-                        HStack {
-                            Button(action: prevCard) {
-                                Image(systemName: "arrow.left.circle")
-                                    .font(.system(size: 50))
-                            }
-                            .disabled(currentCardIndex == 0)
-                            
-                            Spacer()
-                            
-                            Button(action: nextCard) {
-                                Image(systemName: "arrow.right.circle")
-                                    .font(.system(size: 50))
-                            }
-                            .disabled(currentCardIndex >= deck.cards.count - 1)
-                        }
-                        .padding(.horizontal, 40)
-                    }
-                }
-            } else {
-                ProgressView("Loading Deck...")
-            }
-        }
     }
-    
-    var finishView: some View {
-        VStack(spacing: 30) {
-            Image(systemName: "medal.fill")
-                .font(.system(size: 100))
-                .foregroundColor(.yellow)
-                .padding(.top, 40)
-            
-            Text("Sesión Terminada!")
-                .font(.largeTitle.bold())
-            
-            VStack(spacing: 20) {
-                StatRow(label: "Cards Learned", value: "\(learnedCount)", icon: "square.stack.3d.up.fill", color: .blue)
-                StatRow(label: "Time Spent", value: formatTime(elapsedSeconds), icon: "clock.fill", color: .orange)
-                StatRow(label: "Language", value: sessionLanguage.rawValue, icon: "globe", color: .green)
-            }
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(20)
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            Button(action: { gameState = .configuration }) {
-                Text("Start New Session")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(15)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 20)
-        }
     }
     
     // MARK: - Logic
@@ -571,6 +250,26 @@ struct GameView: View {
         isFlipped = false
         sessionStartTime = Date()
         
+        // Capture final config
+        if selectedPreset == .customize {
+            sessionConfig = customConfig
+        } else {
+            sessionConfig = GameConfiguration.from(preset: selectedPreset)
+        }
+        
+        sessionConfig.isRandomOrder = isRandomOrder
+        
+        // Prepare Cards
+        if let currentDeck = deck {
+            if sessionConfig.isRandomOrder {
+                sessionCards = currentDeck.cards.shuffled()
+            } else {
+                sessionCards = currentDeck.cards
+            }
+        } else {
+            sessionCards = []
+        }
+        
         withAnimation {
             gameState = .active
         }
@@ -582,12 +281,18 @@ struct GameView: View {
     }
     
     func playCurrentCardAudio() {
-        guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < deck.cards.count else { return }
-        let card = deck.cards[currentCardIndex]
+        guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
+        let card = sessionCards[currentCardIndex]
         
         var sequence: [String] = []
-        if let wordFile = card.audioWordFile { sequence.append(wordFile) }
-        if let sentenceFile = card.audioSentenceFile { sequence.append(sentenceFile) }
+        
+        // Only autoplay if visibility is 'visible'
+        if sessionConfig.word.audio == .visible, let wordFile = card.audioWordFile {
+             sequence.append(wordFile)
+        }
+        if sessionConfig.sentence.audio == .visible, let sentenceFile = card.audioSentenceFile {
+             sequence.append(sentenceFile)
+        }
         
         if !sequence.isEmpty {
             audioManager.playSequence(filenames: sequence, folderName: deck.baseFolderName)
@@ -621,6 +326,10 @@ struct GameView: View {
         if let deckTitle = selectedDeck?.title {
             let totalCards = deck?.cards.count ?? 0
             comment = "\(deckTitle) · \(learnedCount)/\(totalCards) cards"
+            comment? += " · \(selectedPreset.rawValue)"
+            if isRandomOrder {
+                comment? += " (Random)"
+            }
         }
         
         let activity = UserActivity(
@@ -671,25 +380,25 @@ struct GameView: View {
         nextCard()
     }
     
-    func resolveImage(_ filename: String?, folder: String?) -> Image? {
-        guard let name = filename, !name.isEmpty else { return nil }
-        
-        // System fallback if name looks like a system icon
-        if name.contains("system:") {
-            let systemName = name.replacingOccurrences(of: "system:", with: "")
-            return Image(systemName: systemName)
-        }
-
-        // Use DataManager's optimized lookup
-        if let url = dataManager.resolveURL(folderName: folder, filename: name) {
-            if let uiImage = UIImage(contentsOfFile: url.path) {
-                return Image(uiImage: uiImage)
+    func handleDeckLoaded(_ newDeck: CardDeck?) {
+        // Race condition fix: If we started session but deck wasn't ready,
+        // populate cards now that it is loaded.
+        if gameState == .active && sessionCards.isEmpty, let deck = newDeck, !deck.cards.isEmpty {
+            if sessionConfig.isRandomOrder {
+                sessionCards = deck.cards.shuffled()
+            } else {
+                sessionCards = deck.cards
+            }
+            
+            // Trigger audio now that we have cards
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                playCurrentCardAudio()
             }
         }
-        
-        return nil
     }
 }
+    
+
 
 // MARK: - Helpers
 
@@ -709,6 +418,172 @@ struct StatRow: View {
             Spacer()
             Text(value)
                 .fontWeight(.bold)
+        }
+    }
+}
+
+
+
+struct StudyLinksView: View {
+    let word: String
+    let sentence: String
+    let languageCode: String
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            LinkButton(
+                title: "Translate",
+                icon: "character.book.closed.fill",
+                color: .blue,
+                action: {
+                    // Google Translate (Deep link or web)
+                    let url = "https://translate.google.com/?sl=\(languageCode)&tl=en&text=\(sentence)&op=translate"
+                    openLink(url)
+                }
+            )
+            
+            LinkButton(
+                title: "Images",
+                icon: "photo.stack",
+                color: .purple,
+                action: {
+                    // Google Image Search
+                     let url = "https://www.google.com/search?tbm=isch&q=\(word)+\(languageName)"
+                     openLink(url)
+                }
+            )
+            
+            LinkButton(
+                title: "Search",
+                icon: "magnifyingglass",
+                color: .green,
+                action: {
+                    // Google Web Search
+                    let url = "https://www.google.com/search?q=\(word)+\(languageName)+meaning"
+                    openLink(url)
+                }
+            )
+        }
+        .padding(.top, 5)
+    }
+    
+    private var languageName: String {
+        // Simple mapping only for search context
+        switch languageCode {
+        case "es": return "spanish"
+        case "ja": return "japanese"
+        case "ko": return "korean"
+        default: return ""
+        }
+    }
+    
+    private func openLink(_ url: String) {
+         if let link = URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
+             UIApplication.shared.open(link)
+         }
+    }
+}
+
+struct LinkButton: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title2)
+                Text(title)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .foregroundColor(color)
+            .frame(width: 65, height: 60)
+            .background(color.opacity(0.1))
+            .cornerRadius(10)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+
+struct SessionSummaryView: View {
+    let deckTitle: String
+    let preset: GameConfiguration.Preset
+    let duration: Int
+    let cardGoal: Int
+    let isRandom: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Session Summary")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+            
+            VStack(spacing: 0) {
+                // Deck Row
+                HStack {
+                    Image(systemName: "menucard.fill")
+                        .foregroundColor(.blue)
+                        .frame(width: 24)
+                    Text(deckTitle)
+                        .fontWeight(.medium)
+                    Spacer()
+                }
+                .padding()
+                
+                Divider()
+                
+                // Mode Row
+                HStack {
+                    Image(systemName: "eye.fill")
+                        .foregroundColor(.purple)
+                        .frame(width: 24)
+                    Text(preset.rawValue)
+                        .fontWeight(.medium)
+                    if preset == .customize {
+                        Text("(Custom)")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+                    Spacer()
+                }
+                .padding()
+                
+                Divider()
+                
+                // Options Row
+                HStack {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundColor(.orange)
+                        .frame(width: 24)
+                    Text("\(duration) min")
+                    Text("·")
+                        .foregroundColor(.secondary)
+                    Text("\(cardGoal) cards")
+                    
+                    if isRandom {
+                        Text("·")
+                            .foregroundColor(.secondary)
+                        Image(systemName: "shuffle")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+            .background(Color.gray.opacity(0.1)) // Slightly darker for contrast
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+            )
         }
     }
 }

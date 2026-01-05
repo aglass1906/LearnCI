@@ -20,6 +20,9 @@ final class UserProfile {
     var location: String?
     var avatarUrl: String?
     
+    // Preferences
+    var defaultGamePresetRaw: String = GameConfiguration.Preset.inputFocus.rawValue
+    
     var currentLanguage: Language {
         get { Language(rawValue: currentLanguageRaw) ?? .spanish }
         set { languageRawUpdate(newValue) }
@@ -30,7 +33,12 @@ final class UserProfile {
         set { levelRawUpdate(newValue) }
     }
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0) {
+    var defaultGamePreset: GameConfiguration.Preset {
+        get { GameConfiguration.Preset(rawValue: defaultGamePresetRaw) ?? .inputFocus }
+        set { defaultGamePresetRaw = newValue.rawValue }
+    }
+    
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus) {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -41,6 +49,7 @@ final class UserProfile {
         self.isPublic = false
         self.totalMinutes = totalMinutes
         self.updatedAt = Date()
+        self.defaultGamePresetRaw = defaultPreset.rawValue
     }
     
     private func languageRawUpdate(_ newValue: Language) {

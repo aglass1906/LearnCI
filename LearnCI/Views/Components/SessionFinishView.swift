@@ -6,6 +6,15 @@ struct SessionFinishView: View {
     @Binding var gameState: GameView.GameState
     @Binding var selectedDeck: DeckMetadata?
     
+    // Config Stats
+    let deckTitle: String
+    let language: Language
+    let level: LearningLevel
+    let preset: GameConfiguration.Preset
+    let duration: Int
+    let cardGoal: Int
+    let isRandom: Bool
+    
     var body: some View {
         VStack(spacing: 30) {
             Image(systemName: "trophy.fill")
@@ -26,6 +35,17 @@ struct SessionFinishView: View {
             .padding()
             .background(Color.blue.opacity(0.1))
             .cornerRadius(20)
+            
+            SessionSummaryView(
+                deckTitle: deckTitle,
+                language: language,
+                level: level,
+                preset: preset,
+                duration: duration,
+                cardGoal: cardGoal,
+                isRandom: isRandom
+            )
+            .padding(.horizontal)
             
             VStack(spacing: 15) {
                 Button(action: {

@@ -113,7 +113,14 @@ struct GameView: View {
                 learnedCount: learnedCount,
                 elapsedSeconds: elapsedSeconds,
                 gameState: $gameState,
-                selectedDeck: $selectedDeck
+                selectedDeck: $selectedDeck,
+                deckTitle: selectedDeck?.title ?? "Unknown Deck",
+                language: sessionLanguage,
+                level: sessionLevel,
+                preset: selectedPreset,
+                duration: sessionDuration,
+                cardGoal: sessionCardGoal,
+                isRandom: isRandomOrder
             )
         }
     }
@@ -176,7 +183,12 @@ struct GameView: View {
             selectedPreset: $selectedPreset,
             customConfig: $customConfig,
             availableDecks: dataManager.availableDecks,
-            startAction: startActiveSession
+            startAction: startActiveSession,
+            onSavePreset: { newPreset in
+                if let profile = userProfile {
+                    profile.defaultGamePreset = newPreset
+                }
+            }
         )
     }
 
@@ -235,6 +247,12 @@ struct GameView: View {
             sessionLanguage = profile.currentLanguage
             sessionLevel = profile.currentLevel
             sessionCardGoal = profile.dailyCardGoal ?? 20
+            selectedPreset = profile.defaultGamePreset
+            
+            // Sync customConfig if needed
+            if selectedPreset != .customize {
+                customConfig = GameConfiguration.from(preset: selectedPreset)
+            }
         }
     }
     
@@ -511,6 +529,8 @@ struct LinkButton: View {
 
 struct SessionSummaryView: View {
     let deckTitle: String
+    let language: Language
+    let level: LearningLevel
     let preset: GameConfiguration.Preset
     let duration: Int
     let cardGoal: Int
@@ -525,6 +545,26 @@ struct SessionSummaryView: View {
                 .textCase(.uppercase)
             
             VStack(spacing: 0) {
+                // Focus Row (Language & Level)
+                HStack {
+                    Text(language.flag)
+                        .font(.title3)
+                    Text(language.rawValue)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                    
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    
+                    Text(level.rawValue)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                }
+                .padding()
+                
+                Divider()
+                
                 // Deck Row
                 HStack {
                     Image(systemName: "menucard.fill")
@@ -587,6 +627,7 @@ struct SessionSummaryView: View {
         }
     }
 }
+
 
 #Preview {
     GameView()

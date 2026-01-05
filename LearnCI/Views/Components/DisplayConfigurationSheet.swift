@@ -1,0 +1,146 @@
+import SwiftUI
+
+struct DisplayConfigurationSheet: View {
+    @Binding var selectedPreset: GameConfiguration.Preset
+    @Binding var customConfig: GameConfiguration
+    var onSave: () -> Void = {}
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Preset Mode")) {
+                    Picker("Mode", selection: $selectedPreset) {
+                        ForEach(GameConfiguration.Preset.allCases) { preset in
+                            Text(preset.rawValue).tag(preset)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedPreset) { _, newValue in
+                        if newValue != .customize {
+                            customConfig = GameConfiguration.from(preset: newValue)
+                        }
+                    }
+                }
+                
+                Section(header: Text("Custom Settings")) {
+                    customizationOptionsView
+                }
+                
+                Section(header: Text("Configuration Summary")) {
+                    HStack(spacing: 20) {
+                        // Use custom config directly since we always update relative to preset
+                        let config = customConfig
+                        
+                        VStack {
+                            Image(systemName: "textformat")
+                                .foregroundColor(.blue)
+                            Text(config.word.text == .visible ? "Visible" : (config.word.text == .hidden ? "Hidden" : "Hint"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        VStack {
+                            Image(systemName: "text.bubble")
+                                .foregroundColor(.purple)
+                            Text(config.sentence.text == .visible ? "Visible" : (config.sentence.text == .hidden ? "Hidden" : "Hint"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        VStack {
+                            Image(systemName: "photo")
+                                .foregroundColor(.orange)
+                            Text(config.image == .visible ? "Visible" : (config.image == .hidden ? "Hidden" : "Hint"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .padding(.vertical, 8)
+                }
+                
+                Section {
+                    Button(action: {
+                        onSave()
+                        dismiss()
+                    }) {
+                        Text("Done")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .navigationTitle("Card Display")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                 ToolbarItem(placement: .cancellationAction) {
+                     Button("Cancel") { dismiss() }
+                 }
+                 ToolbarItem(placement: .confirmationAction) {
+                     Button("Done") {
+                         onSave()
+                         dismiss()
+                     }
+                 }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var customizationOptionsView: some View {
+        // Word Settings
+        DisclosureGroup(
+            content: {
+                VStack(alignment: .leading) {
+                    Picker("Text Visibility", selection: $customConfig.word.text) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                    Picker("Audio Playback", selection: $customConfig.word.audio) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                }
+            },
+            label: { Label("Word", systemImage: "textformat") }
+        )
+        
+        // Sentence Settings
+        DisclosureGroup(
+            content: {
+                VStack(alignment: .leading) {
+                    Picker("Text Visibility", selection: $customConfig.sentence.text) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                    Picker("Audio Playback", selection: $customConfig.sentence.audio) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                }
+            },
+            label: { Label("Sentence", systemImage: "text.bubble") }
+        )
+        
+        // Image Settings
+        HStack {
+            Label("Image", systemImage: "photo")
+            Spacer()
+            Picker("", selection: $customConfig.image) {
+                ForEach(ElementVisibility.allCases) { vis in
+                    Text(vis.rawValue).tag(vis)
+                }
+            }
+            .labelsHidden()
+        }
+    }
+}

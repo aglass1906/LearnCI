@@ -7,11 +7,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var onCompletion: (() -> Void)?
     private var sequenceWorkItem: DispatchWorkItem?
     
-    // Tracking current sequence to avoid redundant starts
-    private var currentSequence: [String] = []
-    
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
+    
+    // TTS Synthesizer
+    private let synthesizer = AVSpeechSynthesizer()
     
     override init() {
         super.init()
@@ -27,49 +27,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             print("Failed to setup audio session: \(error)")
         }
     }
-    
-    func playAudio(named filename: String, folderName: String? = nil, completion: (() -> Void)? = nil) {
-        // Avoid restarting if this specific file is already playing as a single intent
-        if let player = player, player.isPlaying, currentSequence == [filename] {
-            return
-        }
-        
-        stopAudio()
-        self.currentSequence = [filename]
-        
-        playInternal(filename: filename, folderName: folderName, completion: completion)
-    }
-    
-    func playSequence(filenames: [String], folderName: String? = nil) {
-        // Avoid restarting if the same sequence is already playing
-        guard filenames != currentSequence else { return }
-        
-        stopAudio() // Ensure clean state before new sequence
-        
-        guard !filenames.isEmpty else { 
-            currentSequence = []
-            return 
-        }
-        
-        currentSequence = filenames
-        playNextInSequence(filenames: filenames, folderName: folderName)
-    }
-    
-    private func playNextInSequence(filenames: [String], folderName: String?) {
-        var remaining = filenames
-        guard !remaining.isEmpty else { return }
-        let first = remaining.removeFirst()
-        
-        playInternal(filename: first, folderName: folderName) { [weak self] in
-            let workItem = DispatchWorkItem {
-                self?.playNextInSequence(filenames: remaining, folderName: folderName)
-            }
-            self?.sequenceWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
-        }
-    }
-    
-
     
     func audioExists(named filename: String, folderName: String? = nil) -> Bool {
         return resolveAudioURL(filename: filename, folderName: folderName) != nil
@@ -135,20 +92,93 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         return nil
     }
     
-    private func playInternal(filename: String, folderName: String?, completion: (() -> Void)? = nil) {
+    private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, useFallback: Bool = false, completion: (() -> Void)? = nil) {
         self.onCompletion = completion
         
         if let url = resolveAudioURL(filename: filename, folderName: folderName) {
             play(url: url)
         } else {
             print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
+            
             // Try one more time with exact filename in root bundle if folder was provided
             if folderName != nil, let fallbackUrl = resolveAudioURL(filename: filename, folderName: nil) {
                 play(url: fallbackUrl)
+            } else if useFallback, let text = text, let language = language {
+                // FALLBACK: Use TTS
+                speak(text: text, language: language)
             } else {
                 onCompletion?()
             }
         }
+    }
+    
+    func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, useFallback: Bool = false, completion: (() -> Void)? = nil) {
+        // Avoid restarting if this specific file is already playing as a single intent
+        if let player = player, player.isPlaying, currentSequence == [AudioItem(filename: filename, text: text, language: language)] {
+            return
+        }
+        
+        // If speaking, checking synthesizer state might be needed, but usually we just stop and restart
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+        
+        stopAudio()
+        self.currentSequence = [AudioItem(filename: filename, text: text, language: language)]
+        
+        playInternal(filename: filename, folderName: folderName, text: text, language: language, useFallback: useFallback, completion: completion)
+    }
+    
+    // MARK: - Sequence Playback
+    
+    struct AudioItem: Equatable {
+        let filename: String
+        let text: String?
+        let language: Language?
+    }
+    
+    // Tracking current sequence
+    private var currentSequence: [AudioItem] = []
+    
+    func playSequence(items: [AudioItem], folderName: String? = nil, useFallback: Bool = false) {
+        // Avoid restarting if the same sequence is already playing
+        guard items != currentSequence else { return }
+        
+        stopAudio()
+        
+        guard !items.isEmpty else {
+            currentSequence = []
+            return
+        }
+        
+        currentSequence = items
+        playNextInSequence(items: items, folderName: folderName, useFallback: useFallback)
+    }
+    
+    private func playNextInSequence(items: [AudioItem], folderName: String?, useFallback: Bool) {
+        var remaining = items
+        guard !remaining.isEmpty else { return }
+        let first = remaining.removeFirst()
+        
+        playInternal(
+            filename: first.filename,
+            folderName: folderName,
+            text: first.text,
+            language: first.language,
+            useFallback: useFallback
+        ) { [weak self] in
+            let workItem = DispatchWorkItem {
+                self?.playNextInSequence(items: remaining, folderName: folderName, useFallback: useFallback)
+            }
+            self?.sequenceWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+        }
+    }
+    
+    // Deprecated string-only override for compatibility if needed, but we should migrate
+    func playSequence(filenames: [String], folderName: String? = nil) {
+        let items = filenames.map { AudioItem(filename: $0, text: nil, language: nil) }
+        playSequence(items: items, folderName: folderName, useFallback: false)
     }
     
     private func play(url: URL) {
@@ -166,16 +196,58 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         }
     }
     
+    private func speak(text: String, language: Language) {
+        let utterance = AVSpeechUtterance(string: text)
+        
+        // Configure voice based on language
+        let voiceCode: String
+        switch language {
+        case .spanish: voiceCode = "es-MX" // Mexican Spanish (Refold/Latin America focus)
+        case .japanese: voiceCode = "ja-JP"
+        case .korean: voiceCode = "ko-KR"
+        }
+        
+        utterance.voice = AVSpeechSynthesisVoice(language: voiceCode)
+        utterance.rate = 0.5 // Default rate
+        
+        // Ensure audio session is active
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        
+        synthesizer.speak(utterance)
+        
+        // Mock completion for TTS since AVSpeechSynthesizerDelegate is tricky to hook up dynamically
+        // Use the estimated duration or a fixed delay?
+        // Actually, without delegate, speak() is asyncfire-and-forget, but it blocks the synth.
+        // We need to know when it finishes to play the next item.
+        // We MUST use delegate.
+        
+        // For now, simpler workaround: Assume a rough duration based on text length?
+        // No, that breeds bugs.
+        // Let's set the delegate to self.
+        
+        synthesizer.delegate = self
+    }
+    
     func stopAudio() {
         sequenceWorkItem?.cancel()
         sequenceWorkItem = nil
         player?.stop()
+        synthesizer.stopSpeaking(at: .immediate)
         onCompletion = nil
         currentSequence = []
     }
     
-    // MARK: - AVAudioPlayerDelegate
+    // MARK: - AVAudioPlayerDelegate & AVSpeechSynthesizerDelegate
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onCompletion?()
+        onCompletion = nil
+    }
+    
+}
+
+extension AudioManager: AVSpeechSynthesizerDelegate {
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         onCompletion?()
         onCompletion = nil
     }

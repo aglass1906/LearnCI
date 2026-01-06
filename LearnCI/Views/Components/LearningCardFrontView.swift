@@ -70,13 +70,23 @@ struct LearningCardFrontView: View {
                             .font(.system(size: 40, weight: .bold))
                     }
                     
-                    if config.word.audio != .hidden, let file = card.audioWordFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
-                        Button(action: {
-                            audioManager.playAudio(named: file, folderName: deck.baseFolderName)
-                        }) {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .font(.title)
-                                .foregroundColor(config.word.audio == .visible ? .blue : .orange)
+                    if config.word.audio != .hidden, let file = card.audioWordFile {
+                        let canPlay = audioManager.audioExists(named: file, folderName: deck.baseFolderName) || config.useTTSFallback
+                        
+                        if canPlay {
+                            Button(action: {
+                                audioManager.playAudio(
+                                    named: file,
+                                    folderName: deck.baseFolderName,
+                                    text: card.targetWord,
+                                    language: deck.language,
+                                    useFallback: config.useTTSFallback
+                                )
+                            }) {
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .font(.title)
+                                    .foregroundColor(config.word.audio == .visible ? .blue : .orange)
+                            }
                         }
                     }
                 }
@@ -106,18 +116,28 @@ struct LearningCardFrontView: View {
                             .padding(.horizontal)
                     }
                     
-                    if config.sentence.audio != .hidden, let file = card.audioSentenceFile, audioManager.audioExists(named: file, folderName: deck.baseFolderName) {
-                        Button(action: {
-                            audioManager.playAudio(named: file, folderName: deck.baseFolderName)
-                        }) {
-                            HStack {
-                                Image(systemName: "speaker.wave.2.circle.fill")
-                                Text("Play Sentence")
+                    if config.sentence.audio != .hidden, let file = card.audioSentenceFile {
+                        let canPlay = audioManager.audioExists(named: file, folderName: deck.baseFolderName) || config.useTTSFallback
+                        
+                        if canPlay {
+                            Button(action: {
+                                audioManager.playAudio(
+                                    named: file,
+                                    folderName: deck.baseFolderName,
+                                    text: card.sentenceTarget,
+                                    language: deck.language,
+                                    useFallback: config.useTTSFallback
+                                )
+                            }) {
+                                HStack {
+                                    Image(systemName: "speaker.wave.2.circle.fill")
+                                    Text("Play Sentence")
+                                }
+                                .font(.subheadline)
+                                .padding(8)
+                                .background(config.sentence.audio == .visible ? Color.blue.opacity(0.1) : Color.orange.opacity(0.1))
+                                .cornerRadius(10)
                             }
-                            .font(.subheadline)
-                            .padding(8)
-                            .background(config.sentence.audio == .visible ? Color.blue.opacity(0.1) : Color.orange.opacity(0.1))
-                            .cornerRadius(10)
                         }
                     }
                 }

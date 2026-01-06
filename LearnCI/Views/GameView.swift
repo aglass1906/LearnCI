@@ -355,18 +355,21 @@ struct GameView: View {
         guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
         let card = sessionCards[currentCardIndex]
         
-        var sequence: [String] = []
+        var sequence: [AudioManager.AudioItem] = []
         
+        let useFallback = sessionConfig.useTTSFallback
+        let language = deck.language
+
         // Only autoplay if visibility is 'visible'
         if sessionConfig.word.audio == .visible, let wordFile = card.audioWordFile {
-             sequence.append(wordFile)
+             sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.targetWord, language: language))
         }
         if sessionConfig.sentence.audio == .visible, let sentenceFile = card.audioSentenceFile {
-             sequence.append(sentenceFile)
+             sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: language))
         }
         
         if !sequence.isEmpty {
-            audioManager.playSequence(filenames: sequence, folderName: deck.baseFolderName)
+            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: useFallback)
         }
     }
     

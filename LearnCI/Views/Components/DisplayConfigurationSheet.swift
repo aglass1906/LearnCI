@@ -175,5 +175,11 @@ struct DisplayConfigurationSheet: View {
             },
             label: { Label("Back of Card", systemImage: "arrow.triangle.2.circlepath") }
         )
+        
+        // Audio Settings
+        Toggle(isOn: $customConfig.useTTSFallback) {
+            Label("Use System Voice Fallback", systemImage: "waveform")
+        }
+        .toggleStyle(SwitchToggleStyle(tint: .blue))
     }
 }

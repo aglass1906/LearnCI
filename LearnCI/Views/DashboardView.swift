@@ -540,13 +540,23 @@ struct DashboardView: View {
                         
                         Spacer()
                         
-                        if let file = word.audioWordFile, audioManager.audioExists(named: file, folderName: wordOfDayFolder) {
-                            Button(action: {
-                                audioManager.playAudio(named: file, folderName: wordOfDayFolder)
-                            }) {
-                                Image(systemName: "speaker.wave.2.circle.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.blue)
+                        if let file = word.audioWordFile {
+                            let canPlay = audioManager.audioExists(named: file, folderName: wordOfDayFolder) || true // Always allow fallback for daily word
+                            
+                            if canPlay {
+                                Button(action: {
+                                    audioManager.playAudio(
+                                        named: file, 
+                                        folderName: wordOfDayFolder,
+                                        text: word.targetWord,
+                                        language: userProfile?.currentLanguage ?? .spanish,
+                                        useFallback: true
+                                    )
+                                }) {
+                                    Image(systemName: "speaker.wave.2.circle.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                     }

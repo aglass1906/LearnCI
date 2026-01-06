@@ -17,7 +17,7 @@ struct ActiveCardStack: View {
                 if !isFlipped {
                     LearningCardFrontView(card: card, deck: deck, config: config)
                 } else {
-                    LearningCardBackView(card: card, deck: deck)
+                    LearningCardBackView(card: card, deck: deck, config: config)
                 }
             }
             .padding()

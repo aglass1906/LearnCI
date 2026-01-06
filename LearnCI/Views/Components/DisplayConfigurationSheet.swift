@@ -22,6 +22,15 @@ struct DisplayConfigurationSheet: View {
                             customConfig = GameConfiguration.from(preset: newValue)
                         }
                     }
+                    .onChange(of: customConfig) { _, newConfig in
+                        // Auto-switch to customize if settings diverge from the selected preset's defaults
+                        if selectedPreset != .customize {
+                            let defaultForPreset = GameConfiguration.from(preset: selectedPreset)
+                            if newConfig != defaultForPreset {
+                                selectedPreset = .customize
+                            }
+                        }
+                    }
                 }
                 
                 Section(header: Text("Custom Settings")) {
@@ -142,5 +151,29 @@ struct DisplayConfigurationSheet: View {
             }
             .labelsHidden()
         }
+        
+        // Back of Card Settings
+        DisclosureGroup(
+            content: {
+                VStack(alignment: .leading) {
+                    Picker("Translation", selection: $customConfig.back.translation) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                    Picker("Sentence Meaning", selection: $customConfig.back.sentenceMeaning) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                    Picker("Study Tools", selection: $customConfig.back.studyLinks) {
+                        ForEach(ElementVisibility.allCases) { vis in
+                            Text(vis.rawValue).tag(vis)
+                        }
+                    }
+                }
+            },
+            label: { Label("Back of Card", systemImage: "arrow.triangle.2.circlepath") }
+        )
     }
 }

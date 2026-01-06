@@ -13,6 +13,12 @@ struct SectionConfiguration: Codable, Equatable {
     var audio: ElementVisibility
 }
 
+struct BackConfiguration: Codable, Equatable {
+    var translation: ElementVisibility
+    var sentenceMeaning: ElementVisibility
+    var studyLinks: ElementVisibility
+}
+
 struct GameConfiguration: Codable, Equatable {
     enum Preset: String, CaseIterable, Identifiable {
         case customize = "Customize"
@@ -27,12 +33,14 @@ struct GameConfiguration: Codable, Equatable {
     var word: SectionConfiguration
     var sentence: SectionConfiguration
     var image: ElementVisibility
+    var back: BackConfiguration
     var isRandomOrder: Bool = false
     
-    init(word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, isRandomOrder: Bool = false) {
+    init(word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false) {
         self.word = word
         self.sentence = sentence
         self.image = image
+        self.back = back
         self.isRandomOrder = isRandomOrder
     }
     
@@ -43,28 +51,32 @@ struct GameConfiguration: Codable, Equatable {
             return GameConfiguration(
                 word: SectionConfiguration(text: .visible, audio: .visible),
                 sentence: SectionConfiguration(text: .visible, audio: .visible),
-                image: .hint
+                image: .hint,
+                back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible)
             )
         case .audioCards:
             // Word Audio Only (Text Hidden), Sentence Audio Only (Text Hidden), No Image
             return GameConfiguration(
                 word: SectionConfiguration(text: .hidden, audio: .visible),
                 sentence: SectionConfiguration(text: .hidden, audio: .visible),
-                image: .hidden
+                image: .hidden,
+                back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible)
             )
         case .pictureCard:
             // Yes Word (No Audio), No Sentence (No Audio), Yes Image
             return GameConfiguration(
                 word: SectionConfiguration(text: .visible, audio: .hidden),
                 sentence: SectionConfiguration(text: .hidden, audio: .hidden),
-                image: .visible
+                image: .visible,
+                back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible)
             )
         case .flashcard:
             // Yes Word (No Audio), No Sentence, No Image
             return GameConfiguration(
                 word: SectionConfiguration(text: .visible, audio: .hidden),
                 sentence: SectionConfiguration(text: .hidden, audio: .hidden),
-                image: .hidden
+                image: .hidden,
+                back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible)
             )
         }
     }

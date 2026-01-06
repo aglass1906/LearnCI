@@ -33,6 +33,25 @@ class DataManager {
     // Discover decks and return them
     @discardableResult
     func discoverDecks(language: Language, level: LearningLevel) -> [DeckMetadata] {
+        let discovered = internalDiscover(language: language, level: level)
+        
+        // Deduplicate
+        let uniqueDecks = discovered.reduce(into: [DeckMetadata]()) { result, deck in
+            if !result.contains(where: { $0.id == deck.id }) {
+                result.append(deck)
+            }
+        }
+        
+        // Update the observable property on the main thread for the UI
+        DispatchQueue.main.async {
+            self.availableDecks = uniqueDecks
+        }
+        
+        return uniqueDecks
+    }
+    
+    // Internal helper to reuse logic
+    private func internalDiscover(language: Language?, level: LearningLevel?) -> [DeckMetadata] {
         var discoveredDecks: [DeckMetadata] = []
         let fm = FileManager.default
         
@@ -46,7 +65,10 @@ class DataManager {
                     let folderName = fileURL.deletingLastPathComponent().lastPathComponent
                     
                     if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
-                        if metadata.language == language && metadata.level == level {
+                        let langMatch = language == nil || metadata.language == language!
+                        let levelMatch = level == nil || metadata.level == level!
+                        
+                        if langMatch && levelMatch {
                             discoveredDecks.append(metadata)
                         }
                     }
@@ -61,7 +83,10 @@ class DataManager {
                 if fileURL.pathExtension == "json" {
                     let folderName = fileURL.deletingLastPathComponent().lastPathComponent
                     if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
-                        if metadata.language == language && metadata.level == level {
+                        let langMatch = language == nil || metadata.language == language!
+                        let levelMatch = level == nil || metadata.level == level!
+                        
+                        if langMatch && levelMatch {
                             // Ensure we don't add duplicates if already found in local path
                             if !discoveredDecks.contains(where: { $0.id == metadata.id }) {
                                 discoveredDecks.append(metadata)
@@ -72,19 +97,13 @@ class DataManager {
             }
         }
         
-        // Deduplicate just in case
-        let uniqueDecks = discoveredDecks.reduce(into: [DeckMetadata]()) { result, deck in
-            if !result.contains(where: { $0.id == deck.id }) {
-                result.append(deck)
-            }
-        }
-        
-        // Update the observable property on the main thread for the UI
-        DispatchQueue.main.async {
-            self.availableDecks = uniqueDecks
-        }
-        
-        return uniqueDecks
+        return discoveredDecks
+    }
+    
+    func findDeckMetadata(id: String) -> DeckMetadata? {
+        // Scan everything (nil filters) and find by ID
+        // Optimization: We could stop early, but reuse is cleaner for now.
+        return internalDiscover(language: nil, level: nil).first { $0.id == id }
     }
 
     private func peekDeckMetadata(at url: URL, folderName: String) -> DeckMetadata? {
@@ -116,6 +135,9 @@ class DataManager {
             self.loadedDeck = cached
             return
         }
+        
+        // Clear stale deck synchronously to prevent UI from reading old data during async load
+        self.loadedDeck = nil
         
         if let url = resolveURL(folderName: metadata.folderName, filename: metadata.filename) {
             decodeAndSet(from: url, key: key, folderName: metadata.folderName)

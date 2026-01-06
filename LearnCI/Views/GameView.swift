@@ -42,6 +42,7 @@ struct GameView: View {
     @State private var selectedPreset: GameConfiguration.Preset = .inputFocus
     @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
     @State private var isRandomOrder: Bool = false
+    @State private var hasInitialized: Bool = false
     
     // Runtime config (captured at start)
     @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
@@ -68,11 +69,19 @@ struct GameView: View {
                 }
                 .onAppear(perform: handleAppear)
                 .onChange(of: sessionLanguage) { _, newValue in
+                    // Only clear if the new language ACTUALLY differs from the currently selected deck.
+                    // This allows us to programmatically update sessionLanguage to match a restored deck without clearing it.
+                    if let deck = selectedDeck, deck.language == newValue {
+                        return
+                    }
                     print("DEBUG: sessionLanguage changed to \(newValue). Clearing selectedDeck.")
                     dataManager.discoverDecks(language: newValue, level: sessionLevel)
                     selectedDeck = nil
                 }
                 .onChange(of: sessionLevel) { _, newValue in
+                    if let deck = selectedDeck, deck.level == newValue {
+                        return
+                    }
                     print("DEBUG: sessionLevel changed to \(newValue). Clearing selectedDeck.")
                     dataManager.discoverDecks(language: sessionLanguage, level: newValue)
                     selectedDeck = nil
@@ -105,6 +114,9 @@ struct GameView: View {
                         if let match = decks.first(where: { $0.id == lastId }) {
                             print("DEBUG: RESTORED deck from availableDecks: \(match.title)")
                             selectedDeck = match
+                            // Update session state to match the restored deck
+                            if sessionLanguage != match.language { sessionLanguage = match.language }
+                            if sessionLevel != match.level { sessionLevel = match.level }
                         }
                     }
                 }
@@ -116,7 +128,17 @@ struct GameView: View {
                          print("DEBUG: Trying restore from auth change...")
                          if let match = dataManager.availableDecks.first(where: { $0.id == lastId }) {
                             selectedDeck = match
+                            if sessionLanguage != match.language { sessionLanguage = match.language }
+                            if sessionLevel != match.level { sessionLevel = match.level }
                         }
+                    }
+                }
+                .onChange(of: customConfig) { _, newConfig in
+                    if selectedPreset == .customize, let profile = userProfile {
+                         print("DEBUG: Saving custom config to profile")
+                         profile.customGameConfiguration = newConfig
+                         // Optimization: Don't call try? modelContext.save() on every change if autosave is enabled,
+                         // but explicitly saving ensures persistence on crash/exit.
                     }
                 }
         }
@@ -277,35 +299,53 @@ struct GameView: View {
     // MARK: - Logic
     
     func setupConfiguration() {
-        print("DEBUG: setupConfiguration called. Profile: \(userProfile?.name ?? "nil"), LastDeckID: \(userProfile?.lastSelectedDeckId ?? "nil")")
-        if let profile = userProfile {
-            sessionLanguage = profile.currentLanguage
-            sessionLevel = profile.currentLevel
-            sessionCardGoal = profile.dailyCardGoal ?? 20
-            selectedPreset = profile.defaultGamePreset
-            
-            // Sync customConfig if needed
-            if selectedPreset != .customize {
-                customConfig = GameConfiguration.from(preset: selectedPreset)
-            }
-            
-            // Attempt to restore last selected deck
-            // FIX: Wrap in async to prevent onChange(of: language) from clearing the restored deck immediately
-            if let lastId = profile.lastSelectedDeckId {
-                DispatchQueue.main.async {
-                    if self.selectedDeck == nil {
-                         print("DEBUG: Attempting delayed restore for \(lastId)")
-                         // If decks are already loaded, try to match immediately
-                         if let match = self.dataManager.availableDecks.first(where: { $0.id == lastId }) {
-                             print("DEBUG: Delayed restore SUCCESS: \(match.title)")
-                             self.selectedDeck = match
-                         } else {
-                             // If not found yet, we rely on onChange(of: availableDecks)
-                             print("DEBUG: Delayed restore deferring to availableDecks change...")
-                         }
+        print("DEBUG: setupConfiguration called. Profile: \(userProfile?.name ?? "nil"), Initialized: \(hasInitialized)")
+        
+        // Only initialize from profile ONCE to allow temporary overrides
+        guard let profile = userProfile, !hasInitialized else { return }
+        
+        sessionLanguage = profile.currentLanguage
+        sessionLevel = profile.currentLevel
+        sessionCardGoal = profile.dailyCardGoal ?? 20
+        selectedPreset = profile.defaultGamePreset
+        
+        // Sync customConfig if needed
+        if selectedPreset != .customize {
+             customConfig = GameConfiguration.from(preset: selectedPreset)
+        } else if let savedConfig = profile.customGameConfiguration {
+             customConfig = savedConfig
+        }
+        
+        hasInitialized = true
+        
+        // Restore deck robustly
+        if let lastId = profile.lastSelectedDeckId {
+            // Run on background to assume IO, then update on Main
+            DispatchQueue.global(qos: .userInitiated).async {
+                if let match = self.dataManager.findDeckMetadata(id: lastId) {
+                    DispatchQueue.main.async {
+                        // Found it! Force state to match this deck
+                        self.sessionLanguage = match.language
+                        self.sessionLevel = match.level
+                        
+                        // Populate the list for this context
+                        self.dataManager.discoverDecks(language: match.language, level: match.level)
+                        
+                        // Set the deck
+                        self.selectedDeck = match
+                        print("DEBUG: Force-restored last played deck: \(match.title)")
                     }
+                } else {
+                     print("DEBUG: Could not find last deck with ID: \(lastId)")
+                     // Fallback: Discover based on profile defaults
+                     DispatchQueue.main.async {
+                         self.dataManager.discoverDecks(language: self.sessionLanguage, level: self.sessionLevel)
+                     }
                 }
             }
+        } else {
+             // No last deck, just discover defaults
+             dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
         }
     }
     
@@ -331,23 +371,31 @@ struct GameView: View {
         sessionConfig.isRandomOrder = isRandomOrder
         
         // Prepare Cards
-        if let currentDeck = deck {
-            if sessionConfig.isRandomOrder {
-                sessionCards = currentDeck.cards.shuffled()
-            } else {
-                sessionCards = currentDeck.cards
-            }
-        } else {
-            sessionCards = []
+        // CRITICAL FIX: Do NOT try to read `deck` (loadedDeck) immediately here for the new session,
+        // because DataManager clears it (or it might be stale) and loads asynchronously.
+        // We set sessionCards to empty and rely on onChange(of: loadedDeck) -> handleDeckLoaded to populate them.
+        sessionCards = []
+        
+        // If we happen to hit the cache in DataManager, loadedDeck might ALREADY be set instantly.
+        // So we check:
+        if let currentDeck = deck, currentDeck.id == metDeck.id {
+             if sessionConfig.isRandomOrder {
+                 sessionCards = currentDeck.cards.shuffled()
+             } else {
+                 sessionCards = currentDeck.cards
+             }
         }
         
         withAnimation {
             gameState = .active
         }
         
-        // Delay slightly to ensure view is ready
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            playCurrentCardAudio()
+        // Audio will be triggered by handleDeckLoaded if we waited, 
+        // or we trigger it here if we hit cache.
+        if !sessionCards.isEmpty {
+             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                 self.playCurrentCardAudio()
+             }
         }
     }
     

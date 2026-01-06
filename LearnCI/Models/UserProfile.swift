@@ -22,6 +22,10 @@ final class UserProfile {
     
     // Preferences
     var defaultGamePresetRaw: String = GameConfiguration.Preset.inputFocus.rawValue
+    var customGameConfiguration: GameConfiguration? // Persisted custom settings
+    
+    // Legacy support or direct access
+    // var savedCustomConfig: GameConfiguration? { ... }
     
     var currentLanguage: Language {
         get { Language(rawValue: currentLanguageRaw) ?? .spanish }

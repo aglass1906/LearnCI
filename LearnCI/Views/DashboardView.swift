@@ -60,28 +60,8 @@ struct DashboardView: View {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Header
-                        if let profile = userProfile {
-                            HStack {
-                                Text("Hola, \(profile.name)!")
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
-                                Spacer()
-                                Text(profile.currentLanguage.flag)
-                                    .font(.largeTitle)
-                            }
-                            .padding()
-                        } else {
-                            // Invisible placeholder to prevent layout jumps
-                            HStack {
-                                Text("Hola!")
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
-                                    .opacity(0)
-                                Spacer()
-                            }
-                            .padding()
-                        }
+                        // Header removed (now global)
+
                         
                         // Daily Feedback (Coaching)
                         dailyFeedbackCard

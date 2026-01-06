@@ -190,10 +190,24 @@ struct GameView: View {
         }
     }
     
+    @State private var wasPlayingBeforeBackground: Bool = false
+    
     func handleScenePhase(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
         if gameState == .active {
             if newPhase == .background || newPhase == .inactive {
-                isPaused = true
+                // If we are leaving, check if we were playing.
+                // If !isPaused, we were playing.
+                // We only want to auto-resume if we were actually playing.
+                if oldPhase == .active {
+                    wasPlayingBeforeBackground = !isPaused
+                    isPaused = true
+                }
+            } else if newPhase == .active {
+                // Return to app: Resuming playback if we were playing before
+                if wasPlayingBeforeBackground {
+                    isPaused = false
+                    wasPlayingBeforeBackground = false
+                }
             }
         }
     }
@@ -223,7 +237,7 @@ struct GameView: View {
     var navigationTitle: String {
         switch gameState {
         case .configuration: return "Configure Session"
-        case .active: return deck?.title ?? "Learning"
+        case .active: return "" // Handled by toolbar principal
         case .finished: return "Session Complete"
         }
     }
@@ -267,6 +281,17 @@ struct GameView: View {
                         Image(systemName: "stop.fill")
                         .foregroundColor(.red)
                     }
+                }
+            }
+            
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 2) {
+                    Text(deck?.title ?? "Learning")
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.5)
+                        .frame(maxWidth: 200) // Constrain width to avoid hitting buttons
                 }
             }
             

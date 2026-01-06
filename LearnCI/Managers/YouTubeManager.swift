@@ -15,6 +15,8 @@ class YouTubeManager {
     var isLoading: Bool = false
     var isChannelLoading: Bool = false // Separate loading state for channel details
     var isDiscoveryLoading: Bool = false
+    var discoveryNextPageToken: String?
+    private var currentDiscoveryQuery: (language: Language, level: LearningLevel, category: String)?
     var isRecommendedLoading: Bool = false
     var errorMessage: String?
     
@@ -622,7 +624,17 @@ class YouTubeManager {
     
     // MARK: - Discovery API
     
-    func searchVideos(for language: Language, level: LearningLevel, category: String = "All") {
+    func loadMoreDiscoveryVideos() {
+        guard !isDiscoveryLoading, let token = discoveryNextPageToken, let query = currentDiscoveryQuery else { return }
+        searchVideos(for: query.language, level: query.level, category: query.category, pageToken: token)
+    }
+    
+    func searchVideos(for language: Language, level: LearningLevel, category: String = "All", pageToken: String? = nil) {
+        if pageToken == nil {
+            currentDiscoveryQuery = (language, level, category)
+            discoveryNextPageToken = nil
+        }
+        
         let categoryQuery = category == "All" ? "" : " \(category)"
         let query = "\(language.rawValue) \(level.rawValue) language learning\(categoryQuery)"
         
@@ -637,7 +649,7 @@ class YouTubeManager {
         guard let token = accessToken else {
             // If we have a public API key, we can use that instead of the bearer token for search
             if let apiKey = publicApiKey {
-                searchVideosWithApiKey(query: query, apiKey: apiKey, language: language, level: level)
+                searchVideosWithApiKey(query: query, apiKey: apiKey, language: language, level: level, pageToken: pageToken)
             }
             return
         }
@@ -645,7 +657,10 @@ class YouTubeManager {
         isDiscoveryLoading = true
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         
-        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption"
+        var urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption"
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
+        }
         
         guard let url = URL(string: urlString) else {
             isDiscoveryLoading = false
@@ -657,19 +672,31 @@ class YouTubeManager {
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             defer { 
-                DispatchQueue.main.async { self?.isDiscoveryLoading = false }
+               // logic moved to fetchDiscoveryDetails or explicit set to false on error
+               if self?.discoveryVideos.isEmpty == true && error != nil {
+                   DispatchQueue.main.async { self?.isDiscoveryLoading = false }
+               }
             }
             
             if let error = error {
                 print("Discovery search failed: \(error)")
+                DispatchQueue.main.async { self?.isDiscoveryLoading = false }
                 return
             }
             
-            guard let data = data else { return }
+            guard let data = data else { 
+                DispatchQueue.main.async { self?.isDiscoveryLoading = false }
+                return 
+            }
             
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
+                    
+                    let nextPageToken = json["nextPageToken"] as? String
+                    DispatchQueue.main.async {
+                        self?.discoveryNextPageToken = nextPageToken
+                    }
                     
                     let videoIds = items.compactMap { item -> String? in
                         if let id = item["id"] as? [String: Any] {
@@ -679,19 +706,27 @@ class YouTubeManager {
                     }
                     
                     if !videoIds.isEmpty {
-                        self?.fetchDiscoveryDetails(token: token, videoIds: videoIds, language: language, level: level)
+                        self?.fetchDiscoveryDetails(token: token, videoIds: videoIds, language: language, level: level, isAppend: pageToken != nil)
+                    } else {
+                        DispatchQueue.main.async { self?.isDiscoveryLoading = false }
                     }
+                } else {
+                    DispatchQueue.main.async { self?.isDiscoveryLoading = false }
                 }
             } catch {
                 print("Error parsing discovery results: \(error)")
+                DispatchQueue.main.async { self?.isDiscoveryLoading = false }
             }
         }.resume()
     }
     
-    private func searchVideosWithApiKey(query: String, apiKey: String, language: Language, level: LearningLevel) {
+    private func searchVideosWithApiKey(query: String, apiKey: String, language: Language, level: LearningLevel, pageToken: String? = nil) {
         isDiscoveryLoading = true
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption&key=\(apiKey)"
+        var urlString = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=\(encodedQuery)&maxResults=50&type=video&videoCaption=closedCaption&key=\(apiKey)"
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
+        }
         
         guard let url = URL(string: urlString) else {
             isDiscoveryLoading = false
@@ -699,35 +734,54 @@ class YouTubeManager {
         }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            defer { DispatchQueue.main.async { self?.isDiscoveryLoading = false } }
-            guard let data = data else { return }
+            if error != nil { DispatchQueue.main.async { self?.isDiscoveryLoading = false }; return }
+            guard let data = data else { DispatchQueue.main.async { self?.isDiscoveryLoading = false }; return }
             
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
+                   
+                    let nextPageToken = json["nextPageToken"] as? String
+                    DispatchQueue.main.async {
+                        self?.discoveryNextPageToken = nextPageToken
+                    }
+                    
                     let videoIds = items.compactMap { ($0["id"] as? [String: Any])?["videoId"] as? String }
                     if !videoIds.isEmpty {
-                        self?.fetchDiscoveryDetailsWithApiKey(apiKey: apiKey, videoIds: videoIds, language: language, level: level)
+                        self?.fetchDiscoveryDetailsWithApiKey(apiKey: apiKey, videoIds: videoIds, language: language, level: level, isAppend: pageToken != nil)
+                    } else {
+                        DispatchQueue.main.async { self?.isDiscoveryLoading = false }
                     }
+                } else {
+                    DispatchQueue.main.async { self?.isDiscoveryLoading = false }
                 }
             } catch {
                 print("API Key Search Error: \(error)")
+                DispatchQueue.main.async { self?.isDiscoveryLoading = false }
             }
         }.resume()
     }
     
-    private func fetchDiscoveryDetailsWithApiKey(apiKey: String, videoIds: [String], language: Language, level: LearningLevel) {
+    private func fetchDiscoveryDetailsWithApiKey(apiKey: String, videoIds: [String], language: Language, level: LearningLevel, isAppend: Bool = false) {
         let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(videoIds.joined(separator: ","))&key=\(apiKey)"
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString) else { 
+            DispatchQueue.main.async { self.isDiscoveryLoading = false }
+            return 
+        }
         
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            defer { DispatchQueue.main.async { self?.isDiscoveryLoading = false } }
             guard let data = data else { return }
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let items = json["items"] as? [[String: Any]] {
                     let videos = self?.parseVideos(items: items, language: language, level: level) ?? []
                     DispatchQueue.main.async { 
-                        self?.discoveryVideos = videos 
+                        if isAppend {
+                            self?.discoveryVideos.append(contentsOf: videos)
+                        } else {
+                            self?.discoveryVideos = videos 
+                        }
                         self?.saveToCache()
                     }
                 }
@@ -810,15 +864,19 @@ class YouTubeManager {
         }
     }
     
-    private func fetchDiscoveryDetails(token: String, videoIds: [String], language: Language, level: LearningLevel) {
+    private func fetchDiscoveryDetails(token: String, videoIds: [String], language: Language, level: LearningLevel, isAppend: Bool = false) {
         let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(videoIds.joined(separator: ","))"
         
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString) else { 
+            DispatchQueue.main.async { self.isDiscoveryLoading = false }
+            return 
+        }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            defer { DispatchQueue.main.async { self?.isDiscoveryLoading = false } }
             guard let data = data else { return }
             
             do {
@@ -826,7 +884,11 @@ class YouTubeManager {
                    let items = json["items"] as? [[String: Any]] {
                     let videos = self?.parseVideos(items: items, language: language, level: level) ?? []
                     DispatchQueue.main.async {
-                        self?.discoveryVideos = videos
+                        if isAppend {
+                            self?.discoveryVideos.append(contentsOf: videos)
+                        } else {
+                            self?.discoveryVideos = videos
+                        }
                         self?.saveToCache()
                     }
                 }

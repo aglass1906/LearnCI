@@ -91,7 +91,7 @@ struct DashboardView: View {
                         
                         // Today's Stats Card
                         NavigationLink(destination: HistoryView()) {
-                            VStack(spacing: 8) {
+                            VStack(spacing: 12) {
                                 HStack {
                                     Text("Today's Progress")
                                         .font(.headline)
@@ -356,7 +356,7 @@ struct DashboardView: View {
                             Text("Great")
                         }
                         .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
                     }
                 }

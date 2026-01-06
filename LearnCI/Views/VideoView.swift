@@ -72,11 +72,12 @@ struct VideoView: View {
                                     Text(category)
                                         .font(.subheadline)
                                         .fontWeight(.medium)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .frame(minHeight: 44)
                                         .background(selectedCategory == category ? Color.red : Color.gray.opacity(0.1))
                                         .foregroundColor(selectedCategory == category ? .white : .primary)
-                                        .cornerRadius(20)
+                                        .cornerRadius(22)
                                 }
                             }
                         }
@@ -379,6 +380,7 @@ struct VideoView: View {
                         youtubeManager.fetchRecommendedVideos()
                     }
                     .buttonStyle(.bordered)
+                    .controlSize(.large)
                 }
             } else {
                 videoGridView(videos: youtubeManager.recommendedVideos, isLoading: youtubeManager.isRecommendedLoading, onLoadMore: youtubeManager.loadMoreRecommendedVideos)
@@ -402,9 +404,14 @@ struct VideoView: View {
                         refreshDiscovery()
                     }
                     .buttonStyle(.bordered)
+                    .controlSize(.large)
                 }
             } else {
-                videoGridView(videos: youtubeManager.discoveryVideos)
+                videoGridView(
+                    videos: youtubeManager.discoveryVideos,
+                    isLoading: youtubeManager.isDiscoveryLoading,
+                    onLoadMore: youtubeManager.loadMoreDiscoveryVideos
+                )
             }
         }
     }
@@ -589,7 +596,7 @@ struct VideoCard: View {
                             .clipShape(Capsule())
                     }
                 }
-                .font(.caption2)
+                .font(.caption)
             }
             .padding(.horizontal, 4)
         }

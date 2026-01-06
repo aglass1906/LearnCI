@@ -428,9 +428,17 @@ struct VideoView: View {
                 }
                 
                 if onLoadMore != nil && isLoading {
-                    ProgressView()
-                         .gridCellColumns(2)
-                         .padding()
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.trailing, 4)
+                        Text("Loading more...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .gridCellColumns(2)
+                    .padding(.vertical, 20)
                 }
             }
             .padding()

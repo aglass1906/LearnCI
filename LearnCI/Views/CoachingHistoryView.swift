@@ -4,6 +4,7 @@ import SwiftData
 struct CoachingHistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
+    @Environment(DataManager.self) private var dataManager
     
     @Query(sort: \DailyFeedback.date, order: .reverse) private var allFeedback: [DailyFeedback]
     @Query(sort: \CoachingCheckIn.date, order: .reverse) private var allCheckIns: [CoachingCheckIn]
@@ -20,10 +21,37 @@ struct CoachingHistoryView: View {
     
     @State private var feedbackToEdit: DailyFeedback?
     @State private var checkInToEdit: CoachingCheckIn?
+    @State private var inspirationalQuote: InspirationalQuote?
     
     var body: some View {
         NavigationStack {
             VStack {
+                // Inspirational Quote
+                if let quote = inspirationalQuote {
+                    VStack(spacing: 8) {
+                        Text("\"\(quote.text)\"")
+                            .font(.system(.body, design: .serif))
+                            .italic()
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.primary)
+                        
+                        Text("- \(quote.author)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.blue.opacity(0.05))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.blue.opacity(0.1), lineWidth: 1)
+                            )
+                    )
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                }
                 Picker("Filter", selection: $selectedFilter) {
                     Text("Daily Moods").tag(0)
                     Text("Milestones").tag(1)
@@ -66,35 +94,78 @@ struct CoachingHistoryView: View {
                 }
             }
         }
+        .task {
+            if inspirationalQuote == nil {
+                inspirationalQuote = dataManager.getRandomQuote()
+            }
+        }
     }
     
     private var dailyFeedbackList: some View {
         List {
             if feedback.isEmpty {
-                ContentUnavailableView("No Daily Feedback", systemImage: "cloud", description: Text("Check in on the Dashboard to see entries here."))
+                ContentUnavailableView(
+                    "No Daily Feedback",
+                    systemImage: "cloud.sun",
+                    description: Text("Check in on the Dashboard to track your learning mood daily.")
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             } else {
                 ForEach(feedback) { item in
                     Button(action: { feedbackToEdit = item }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(item.date.formatted(date: .abbreviated, time: .omitted))
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
+                        HStack(spacing: 16) {
+                            // Date Column
+                            VStack(alignment: .center) {
+                                Text(item.date.formatted(.dateTime.day()))
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                Text(item.date.formatted(.dateTime.month(.abbreviated)))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(width: 40)
+                            
+                            Divider()
+                                .frame(height: 30)
+                            
+                            // Content
+                            VStack(alignment: .leading, spacing: 4) {
                                 if let note = item.note, !note.isEmpty {
                                     Text(note)
-                                        .font(.caption)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(2)
+                                } else {
+                                    Text("No notes")
+                                        .font(.subheadline)
                                         .foregroundStyle(.secondary)
+                                        .italic()
                                 }
+                                
+                                Text(item.date, format: .relative(presentation: .named))
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
                             }
+                            
                             Spacer()
+                            
+                            // Mood
                             VStack(alignment: .trailing) {
                                 moodIcon(for: item.rating)
+                                    .font(.title2)
                                 Text(item.moodDescription)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .padding()
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
+                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                     .swipeActions {
                         Button("Delete", role: .destructive) {
                             modelContext.delete(item)
@@ -104,6 +175,7 @@ struct CoachingHistoryView: View {
                 }
             }
         }
+        .listStyle(.plain)
     }
     
     private var checkInList: some View {
@@ -117,11 +189,11 @@ struct CoachingHistoryView: View {
                             HStack {
                                 Image(systemName: "trophy.fill")
                                     .foregroundStyle(.yellow)
-                                Text("\(item.hoursMilestone)h Mock Check-in")
+                                Text("\(item.hoursMilestone)h Check-in")
                                     .font(.headline)
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                Text(item.date.formatted(date: .abbreviated, time: .omitted))
+                                Text(item.date, format: .relative(presentation: .named))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }

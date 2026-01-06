@@ -10,7 +10,7 @@ struct HistoryView: View {
         allActivities.filter { $0.userID == authManager.currentUser }
     }
     
-    @State private var selectedTimeRange: TimeRange = .week
+    @State private var selectedTimeRange: TimeRange = .today
     @State private var selectedActivityType: ActivityType? = nil
     @State private var editingActivity: UserActivity?
     @State private var isAddingActivity: Bool = false

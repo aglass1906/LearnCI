@@ -22,7 +22,7 @@ struct DashboardView: View {
     @State private var wordOfDay: LearningCard?
     @State private var wordOfDayFolder: String?
     @State private var isLoadingWordOfDay = false
-    @State private var inspirationalQuote: InspirationalQuote?
+
     
     var userProfile: UserProfile? {
         profiles.first
@@ -90,52 +90,68 @@ struct DashboardView: View {
                         roadmapSection
                         
                         // Today's Stats Card
-                        VStack(spacing: 8) {
-                            Text("Today's Progress")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text("\(todayMinutes)")
-                                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                                    .foregroundColor(.blue)
-                                
-                                Text("/ \(userProfile?.dailyGoalMinutes ?? 30)")
-                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.secondary)
-                                
-                                Text("min")
-                                    .font(.title2)
-                                    .foregroundColor(.secondary)
-                                
-                                if todayMinutes >= (userProfile?.dailyGoalMinutes ?? 30) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.title)
-                                        .foregroundStyle(.green)
+                        NavigationLink(destination: HistoryView()) {
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text("Today's Progress")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                 }
-                            }
-                            
-                            // Progress bar
-                            if let goal = userProfile?.dailyGoalMinutes, goal > 0 {
-                                GeometryReader { geometry in
-                                    ZStack(alignment: .leading) {
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(Color.gray.opacity(0.2))
-                                            .frame(height: 8)
-                                        
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(todayMinutes >= goal ? Color.green : Color.blue)
-                                            .frame(width: min(CGFloat(todayMinutes) / CGFloat(goal) * geometry.size.width, geometry.size.width), height: 8)
+                                
+                                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                    Text("\(todayMinutes)")
+                                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                                        .foregroundColor(.blue)
+                                    
+                                    Text("/ \(userProfile?.dailyGoalMinutes ?? 30)")
+                                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("min")
+                                        .font(.title2)
+                                        .foregroundColor(.secondary)
+                                    
+                                    if todayMinutes >= (userProfile?.dailyGoalMinutes ?? 30) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.title)
+                                            .foregroundStyle(.green)
                                     }
                                 }
-                                .frame(height: 8)
+                                
+                                // Progress bar
+                                if let goal = userProfile?.dailyGoalMinutes, goal > 0 {
+                                    GeometryReader { geometry in
+                                        ZStack(alignment: .leading) {
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .fill(Color.gray.opacity(0.2))
+                                                .frame(height: 8)
+                                            
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .fill(todayMinutes >= goal ? Color.green : Color.blue)
+                                                .frame(width: min(CGFloat(todayMinutes) / CGFloat(goal) * geometry.size.width, geometry.size.width), height: 8)
+                                        }
+                                    }
+                                    .frame(height: 8)
+                                }
+                                
+                                // Activity Breakdown Chart
+                                if !activityByType.isEmpty {
+                                    Divider()
+                                        .padding(.vertical, 4)
+                                    ActivityBreakdownChart(activityByType: activityByType)
+                                }
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(12)
+                            .padding(.horizontal)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                        .buttonStyle(.plain)
                         
                         // Leaderboard Entry
                         NavigationLink(destination: LeaderboardView()) {
@@ -164,105 +180,17 @@ struct DashboardView: View {
                         // Word of the Day
                         wordOfDaySection
                         
-                        // Inspirational Quote
-                        if let quote = inspirationalQuote {
-                            VStack(spacing: 8) {
-                                Text("\"\(quote.text)\"")
-                                    .font(.system(.body, design: .serif))
-                                    .italic()
-                                    .multilineTextAlignment(.center)
-                                    .foregroundColor(.primary)
-                                
-                                Text("- \(quote.author)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.blue.opacity(0.05))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.blue.opacity(0.1), lineWidth: 1)
-                                    )
-                            )
-                            .padding(.horizontal)
-                        }
+
                         
-                        // Activity Breakdown Chart
-                        ActivityBreakdownChart(activityByType: activityByType)
-                        
-                        // Recent Activity
-                        HStack {
-                            Text("Recent Activity")
-                                .font(.title2)
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-                        .padding(.top)
-                        
-                        if activities.isEmpty {
-                            Text("No activities recorded yet.")
-                                .foregroundColor(.secondary)
-                                .padding()
-                        } else {
-                            VStack(spacing: 0) {
-                                ForEach(activities.prefix(5)) { activity in
-                                    HStack(alignment: .top, spacing: 12) {
-                                        Image(systemName: activity.activityType.icon)
-                                            .font(.title3)
-                                            .foregroundStyle(activity.activityType.isInput ? .green : .blue)
-                                            .frame(width: 24, height: 24)
-                                            .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
-                                            .clipShape(Circle())
-                                        
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(activity.activityType.rawValue)
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                            
-                                            if let comment = activity.comment, !comment.isEmpty {
-                                                Text(comment)
-                                                    .font(.caption)
-                                                    .foregroundStyle(.primary.opacity(0.8))
-                                                    .lineLimit(1)
-                                            }
-                                            
-                                            Text(activity.date.formatted(date: .abbreviated, time: .shortened))
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        Text("\(activity.minutes)m")
-                                            .font(.caption)
-                                            .fontWeight(.bold)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
-                                            .clipShape(Capsule())
-                                    }
-                                    .padding()
-                                    .background(Color(UIColor.secondarySystemGroupedBackground))
-                                    .cornerRadius(12)
-                                    .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 4)
-                                }
-                            }
-                        }
+
                     }
                 }
-                .navigationTitle("Dashboard")
+
                 .task {
                     // Start minimum loading duration logic if needed here, 
                     // but for now relying on data triggers.
                     
-                    if inspirationalQuote == nil {
-                        inspirationalQuote = dataManager.getRandomQuote()
-                    }
+
                     
                     // We need to wait for profile to be available (Async in SwiftData can be immediate but safe to check)
                     // If profile is missing, we might need to trigger creation or wait (ProfileView handles creation usually)
@@ -375,7 +303,7 @@ struct DashboardView: View {
             
             // Daily Feedback Content
             VStack(alignment: .leading, spacing: 12) {
-                Text("How are you feeling today?")
+                Text("How are you feeling today about your language learning?")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
@@ -399,27 +327,38 @@ struct DashboardView: View {
                     .background(Color.green.opacity(0.1))
                     .cornerRadius(12)
                 } else {
-                    HStack(spacing: 0) {
-                        ForEach(1...5, id: \.self) { rating in
-                            Button(action: {
-                                saveDailyFeedback(rating: rating)
-                            }) {
-                                VStack(spacing: 4) {
-                                    moodIcon(for: rating)
-                                        .font(.title2)
-                                    Text(DailyFeedback.moodLabel(for: rating))
-                                        .font(.caption2)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                        .foregroundStyle(.primary)
+                    VStack(spacing: 8) {
+                        HStack(spacing: 0) {
+                            ForEach(1...5, id: \.self) { rating in
+                                Button(action: {
+                                    saveDailyFeedback(rating: rating)
+                                }) {
+                                    VStack(spacing: 4) {
+                                        moodIcon(for: rating)
+                                            .font(.title2)
+                                        Text(DailyFeedback.moodLabel(for: rating))
+                                            .font(.caption2)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.8)
+                                            .foregroundStyle(.primary)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
                             }
                         }
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
+                        
+                        HStack {
+                            Text("Rough")
+                            Spacer()
+                            Text("Great")
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 4)
                     }
-                    .background(Color(UIColor.secondarySystemGroupedBackground))
-                    .cornerRadius(12)
                 }
             }
             .padding(.horizontal)
@@ -458,73 +397,121 @@ struct DashboardView: View {
     }
 
     private var roadmapSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Input Roadmap")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Input Roadmap")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                Spacer()
+                if let profile = userProfile {
+                    let currentHours = totalMinutes / 60
+                    Text("\(currentHours)h Total Input")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color(UIColor.secondarySystemFill))
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal)
             
             if let profile = userProfile {
-                let currentHours = totalMinutes / 60
+                let currentHours = Double(totalMinutes) / 60.0
+                let levels: [(id: Int, range: ClosedRange<Double>, color: Color)] = [
+                    (1, 0...50, .teal),
+                    (2, 50...150, .green),
+                    (3, 150...300, .blue),
+                    (4, 300...600, .orange),
+                    (5, 600...1000, .purple),
+                    (6, 1000...1500, .pink)
+                ]
                 
-                VStack(spacing: 0) {
-                    // Level 1: 0-50h
-                    roadmapLevel(level: 1, range: 0...50, current: currentHours, color: .teal)
-                    // Level 2: 50-150h
-                    roadmapLevel(level: 2, range: 50...150, current: currentHours, color: .green)
-                    // Level 3: 150-300h
-                    roadmapLevel(level: 3, range: 150...300, current: currentHours, color: .blue)
-                    // Level 4: 300-600h
-                    roadmapLevel(level: 4, range: 300...600, current: currentHours, color: .orange)
-                    // Level 5: 600-1000h
-                    roadmapLevel(level: 5, range: 600...1000, current: currentHours, color: .purple)
+                let maxHours: Double = 1500
+                
+                VStack(spacing: 4) {
+                    GeometryReader { geo in
+                        let rWidth = geo.size.width
+                        
+                        ZStack(alignment: .leading) {
+                            // Background Track (Segments)
+                            HStack(spacing: 1) {
+                                ForEach(levels, id: \.id) { level in
+                                    let levelDuration = level.range.upperBound - level.range.lowerBound
+                                    let widthRatio = levelDuration / maxHours
+                                    
+                                    Rectangle()
+                                        .fill(level.color.opacity(0.3))
+                                        .frame(width: rWidth * widthRatio)
+                                        .overlay(
+                                            Text("L\(level.id)")
+                                                .font(.system(size: 8, weight: .bold))
+                                                .foregroundStyle(level.color)
+                                                .opacity(0.8)
+                                        )
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            // User Progress Fill (Cumulative)
+                            // We need to mask this or build it similarly
+                            HStack(spacing: 1) {
+                                ForEach(levels, id: \.id) { level in
+                                    let levelDuration = level.range.upperBound - level.range.lowerBound
+                                    let widthRatio = levelDuration / maxHours
+                                    let segmentWidth = rWidth * widthRatio
+                                    
+                                    // Calculate fill for this specific segment
+                                    let hoursInLevel = max(0, min(currentHours - level.range.lowerBound, levelDuration))
+                                    let fillRatio = hoursInLevel / levelDuration
+                                    
+                                    ZStack(alignment: .leading) {
+                                        Rectangle()
+                                            .fill(Color.clear) // Placeholder for spacing
+                                            .frame(width: segmentWidth)
+                                        
+                                        if fillRatio > 0 {
+                                            Rectangle()
+                                                .fill(level.color)
+                                                .frame(width: segmentWidth * fillRatio)
+                                        }
+                                    }
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            // Current Position Indicator (Line)
+                            if currentHours > 0 && currentHours < maxHours {
+                                Rectangle()
+                                    .fill(Color.primary)
+                                    .frame(width: 2, height: 24)
+                                    .offset(x: min(rWidth, rWidth * (currentHours / maxHours)))
+                                    .shadow(radius: 1)
+                            }
+                        }
+                    }
+                    .frame(height: 24)
+                    
+                    // Legend / Labels for milestones
+                    GeometryReader { geo in
+                        let rWidth = geo.size.width
+                        ZStack(alignment: .leading) {
+                            ForEach(levels, id: \.id) { level in
+                                let positionRatio = level.range.upperBound / maxHours
+                                Text("\(Int(level.range.upperBound))h")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(.secondary)
+                                    .position(x: rWidth * positionRatio, y: 10)
+                                    // Offset slightly left to center on the break, unless it's the end
+                                    .offset(x: -10) 
+                            }
+                        }
+                    }
+                    .frame(height: 20)
                 }
                 .padding(.horizontal)
             }
         }
-    }
-    
-    private func roadmapLevel(level: Int, range: ClosedRange<Int>, current: Int, color: Color) -> some View {
-        let isCompleted = current >= range.upperBound
-        let isInProgress = range.contains(current)
-        
-        // Progress within this specific level
-        let levelTotal = range.upperBound - range.lowerBound
-        let levelCurrent = max(0, min(current - range.lowerBound, levelTotal))
-        let progress = CGFloat(levelCurrent) / CGFloat(levelTotal)
-        
-        return HStack(spacing: 8) {
-            Text("L\(level)")
-                .font(.caption.bold())
-                .frame(width: 24)
-                .foregroundStyle(isCompleted || isInProgress ? color : .secondary)
-            
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(UIColor.secondarySystemFill))
-                        .frame(height: 8)
-                    
-                    if isCompleted {
-                        Capsule()
-                            .fill(color)
-                            .frame(height: 8)
-                    } else if isInProgress {
-                        Capsule()
-                            .fill(color)
-                            .frame(width: geo.size.width * progress, height: 8)
-                    }
-                }
-            }
-            .frame(height: 8)
-            
-            Text("\(range.upperBound)h")
-                .font(.caption)
-                .frame(width: 40, alignment: .trailing)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 4)
-        .opacity((isCompleted || isInProgress) ? 1.0 : 0.4)
     }
 
     private var wordOfDaySection: some View {

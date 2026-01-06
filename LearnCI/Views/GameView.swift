@@ -482,7 +482,7 @@ struct GameView: View {
         let activity = UserActivity(
             date: Date(), 
             minutes: minutes, 
-            activityType: .flashcards, 
+            activityType: .appLearning, 
             language: language, 
             userID: authManager.currentUser,
             comment: comment
@@ -709,7 +709,7 @@ struct SessionSummaryView: View {
                 
                 // Mode Row
                 HStack {
-                    Image(systemName: "eye.fill")
+                    Image(systemName: "slider.horizontal.3")
                         .foregroundColor(.purple)
                         .frame(width: 24)
                     Text(preset.rawValue)

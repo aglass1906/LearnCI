@@ -44,6 +44,8 @@ struct GameView: View {
     @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
     @State private var isRandomOrder: Bool = false
     @State private var hasInitialized: Bool = false
+    @State private var useTTSFallback: Bool = true
+    @State private var ttsRate: Float = 0.5
     
     // Runtime config (captured at start)
     @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
@@ -134,12 +136,26 @@ struct GameView: View {
                         }
                     }
                 }
+                .onChange(of: ttsRate) { _, newRate in
+                    if let profile = userProfile {
+                         profile.ttsRate = newRate
+                         // Debounce save? For now explicit save is okay as slider settles
+                         try? modelContext.save()
+                    }
+                }
                 .onChange(of: customConfig) { _, newConfig in
                     if selectedPreset == .customize, let profile = userProfile {
                          print("DEBUG: Saving custom config to profile")
                          profile.customGameConfiguration = newConfig
                          // Optimization: Don't call try? modelContext.save() on every change if autosave is enabled,
                          // but explicitly saving ensures persistence on crash/exit.
+                    }
+                }
+                .onChange(of: selectedGameType) { _, newType in
+                    if let profile = userProfile {
+                        print("DEBUG: Saving selectedGameType \(newType.rawValue) to profile")
+                        profile.currentGameType = newType
+                         try? modelContext.save()
                     }
                 }
         }
@@ -162,6 +178,7 @@ struct GameView: View {
                 isFlipped: $isFlipped,
                 onRelearn: relearnCard,
                 onLearned: learnedCard,
+                onFinish: finishSession,
                 onNext: nextCard,
                 onPrev: prevCard
             )
@@ -174,6 +191,7 @@ struct GameView: View {
                 language: sessionLanguage,
                 level: sessionLevel,
                 preset: selectedPreset,
+                gameType: sessionConfig.gameType,
                 duration: sessionDuration,
                 cardGoal: sessionCardGoal,
                 isRandom: isRandomOrder
@@ -253,6 +271,8 @@ struct GameView: View {
             selectedPreset: $selectedPreset,
             customConfig: $customConfig,
             selectedGameType: $selectedGameType,
+            useTTSFallback: $useTTSFallback,
+            ttsRate: $ttsRate,
             availableDecks: dataManager.availableDecks,
             startAction: startActiveSession,
             onSavePreset: { newPreset in
@@ -334,6 +354,13 @@ struct GameView: View {
         sessionLevel = profile.currentLevel
         sessionCardGoal = profile.dailyCardGoal ?? 20
         selectedPreset = profile.defaultGamePreset
+        selectedGameType = profile.currentGameType // Restore last game type
+        // Load Global Audio Settings
+        ttsRate = profile.ttsRate
+        // useTTSFallback isn't in profile yet but is in GameConfig. 
+        // We should treat GameConfig.useTTSFallback as the source of truth if loading a preset, 
+        // OR we can add it to profile. For now, default true.
+        useTTSFallback = true 
         
         // Sync customConfig if needed
         if selectedPreset != .customize {
@@ -411,15 +438,9 @@ struct GameView: View {
         sessionConfig.isRandomOrder = isRandomOrder
         sessionConfig.gameType = selectedGameType
         
-        // Apply Global TTS Preference (Only if not customizing)
-        if selectedPreset != .customize {
-            if let profile = userProfile {
-                sessionConfig.ttsRate = profile.ttsRate
-            } else {
-                 sessionConfig.ttsRate = 0.5
-            }
-        }
-        // If .customize, sessionConfig.ttsRate is already set from customConfig (which user controlled)
+        // Apply Global Audio Settings
+        sessionConfig.ttsRate = ttsRate
+        sessionConfig.useTTSFallback = useTTSFallback
         
         // Prepare Cards
         // CRITICAL FIX: Do NOT try to read `deck` (loadedDeck) immediately here for the new session,
@@ -451,6 +472,10 @@ struct GameView: View {
     }
     
     func playCurrentCardAudio() {
+        // Only auto-play audio for Flashcards mode or if explicitly requested in card logic.
+        // Memory Match manages its own audio on tap.
+        guard sessionConfig.gameType == .flashcards else { return }
+        
         guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
         let card = sessionCards[currentCardIndex]
         
@@ -605,6 +630,7 @@ struct SessionSummaryView: View {
     let language: Language
     let level: LearningLevel
     let preset: GameConfiguration.Preset
+    let gameType: GameConfiguration.GameType
     let duration: Int
     let cardGoal: Int
     let isRandom: Bool
@@ -656,12 +682,18 @@ struct SessionSummaryView: View {
                     Image(systemName: "slider.horizontal.3")
                         .foregroundColor(.purple)
                         .frame(width: 24)
-                    Text(preset.rawValue)
-                        .fontWeight(.medium)
-                    if preset == .customize {
-                        Text("(Custom)")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
+                    if gameType == .flashcards {
+                        Text(preset.rawValue)
+                            .fontWeight(.medium)
+                        if preset == .customize {
+                            Text("(Custom)")
+                                .foregroundColor(.secondary)
+                                .font(.caption)
+                        }
+                    } else {
+                        // For non-flashcard games, show the Game Type Name
+                        Text(gameType.rawValue)
+                            .fontWeight(.medium)
                     }
                     Spacer()
                 }

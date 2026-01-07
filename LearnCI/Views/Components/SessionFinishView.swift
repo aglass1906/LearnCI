@@ -11,6 +11,7 @@ struct SessionFinishView: View {
     let language: Language
     let level: LearningLevel
     let preset: GameConfiguration.Preset
+    let gameType: GameConfiguration.GameType
     let duration: Int
     let cardGoal: Int
     let isRandom: Bool
@@ -48,6 +49,7 @@ struct SessionFinishView: View {
                     language: language,
                     level: level,
                     preset: preset,
+                    gameType: gameType,
                     duration: duration,
                     cardGoal: cardGoal,
                     isRandom: isRandom

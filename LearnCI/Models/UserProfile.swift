@@ -22,6 +22,7 @@ final class UserProfile {
     
     // Preferences
     var defaultGamePresetRaw: String = GameConfiguration.Preset.inputFocus.rawValue
+    var lastGameTypeRaw: String = GameConfiguration.GameType.flashcards.rawValue // Added persistence
     var customGameConfiguration: GameConfiguration? // Persisted custom settings
     
     // Legacy support or direct access
@@ -42,12 +43,17 @@ final class UserProfile {
         set { defaultGamePresetRaw = newValue.rawValue }
     }
     
+    var currentGameType: GameConfiguration.GameType {
+        get { GameConfiguration.GameType(rawValue: lastGameTypeRaw) ?? .flashcards }
+        set { lastGameTypeRaw = newValue.rawValue }
+    }
+    
     var lastSelectedDeckId: String?
     var lastCheckInHours: Int = 0 // Tracks the last milestone (0, 25, 50...)
     var startingHours: Int = 0 // Manual offset for previous experience
     var ttsRate: Float = 0.5 // Audio Speed Preference
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5) {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -59,6 +65,7 @@ final class UserProfile {
         self.totalMinutes = totalMinutes
         self.updatedAt = Date()
         self.defaultGamePresetRaw = defaultPreset.rawValue
+        self.lastGameTypeRaw = lastGameType.rawValue
         self.lastSelectedDeckId = lastSelectedDeckId
         self.lastCheckInHours = lastCheckInHours
         self.startingHours = startingHours

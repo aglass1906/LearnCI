@@ -12,6 +12,7 @@ struct ActiveSessionView: View {
     
     let onRelearn: () -> Void
     let onLearned: () -> Void
+    let onFinish: () -> Void
     let onNext: () -> Void
     let onPrev: () -> Void
     
@@ -51,10 +52,12 @@ struct ActiveSessionView: View {
                         onPrev: onPrev
                     )
                 case .memoryMatch:
-                    ContentUnavailableView(
-                        "Memory Match Coming Soon",
-                        systemImage: "square.grid.2x2.fill",
-                        description: Text("This game mode is under construction.")
+                    MemoryGameView(
+                        sessionCards: sessionCards,
+                        deck: deck,
+                        sessionConfig: sessionConfig,
+                        onGameComplete: onFinish,
+                        onMatchFound: onLearned
                     )
                 case .sentenceBuilder:
                      ContentUnavailableView(

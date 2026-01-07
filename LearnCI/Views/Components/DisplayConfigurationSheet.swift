@@ -148,35 +148,5 @@ struct DisplayConfigurationSheet: View {
             label: { Label("Back of Card", systemImage: "arrow.triangle.2.circlepath") }
         )
         
-        // Audio Settings
-        VStack(spacing: 8) {
-            Toggle(isOn: $customConfig.useTTSFallback) {
-                Label("Use System Voice Fallback", systemImage: "waveform")
-            }
-            .toggleStyle(SwitchToggleStyle(tint: .blue))
-            
-            Divider()
-                .padding(.vertical, 4)
-            
-            HStack {
-                Label("Override Speed", systemImage: "speedometer")
-                Spacer()
-                Text(String(format: "%.1fx", customConfig.ttsRate * 2)) // Assuming 0.5 is 1x (normal)
-                    .foregroundColor(.secondary)
-                    .font(.caption)
-            }
-            
-            Slider(value: $customConfig.ttsRate, in: 0.1...1.0, step: 0.1) {
-                Text("Rate")
-            } minimumValueLabel: {
-                Text("Slow")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            } maximumValueLabel: {
-                Text("Fast")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-        }
     }
 }

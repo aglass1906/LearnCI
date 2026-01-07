@@ -144,7 +144,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     // Tracking current sequence
     private var currentSequence: [AudioItem] = []
     
-    func playSequence(items: [AudioItem], folderName: String? = nil, useFallback: Bool = false) {
+    func playSequence(items: [AudioItem], folderName: String? = nil, useFallback: Bool = false, ttsRate: Float = 0.5) {
         // Avoid restarting if the same sequence is already playing
         guard items != currentSequence else { return }
         
@@ -156,10 +156,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         }
         
         currentSequence = items
-        playNextInSequence(items: items, folderName: folderName, useFallback: useFallback)
+        playNextInSequence(items: items, folderName: folderName, useFallback: useFallback, ttsRate: ttsRate)
     }
     
-    private func playNextInSequence(items: [AudioItem], folderName: String?, useFallback: Bool) {
+    private func playNextInSequence(items: [AudioItem], folderName: String?, useFallback: Bool, ttsRate: Float) {
         var remaining = items
         guard !remaining.isEmpty else { return }
         let first = remaining.removeFirst()
@@ -169,10 +169,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             folderName: folderName,
             text: first.text,
             language: first.language,
-            useFallback: useFallback
+            useFallback: useFallback,
+            ttsRate: ttsRate
         ) { [weak self] in
             let workItem = DispatchWorkItem {
-                self?.playNextInSequence(items: remaining, folderName: folderName, useFallback: useFallback)
+                self?.playNextInSequence(items: remaining, folderName: folderName, useFallback: useFallback, ttsRate: ttsRate)
             }
             self?.sequenceWorkItem = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
@@ -182,7 +183,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     // Deprecated string-only override for compatibility if needed, but we should migrate
     func playSequence(filenames: [String], folderName: String? = nil) {
         let items = filenames.map { AudioItem(filename: $0, text: nil, language: nil) }
-        playSequence(items: items, folderName: folderName, useFallback: false)
+        playSequence(items: items, folderName: folderName, useFallback: false, ttsRate: 0.5)
     }
 
     private func play(url: URL) {

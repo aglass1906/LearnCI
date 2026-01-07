@@ -1,0 +1,89 @@
+{
+    "id": "es_story_002",
+    "language": "Spanish",
+    "languageName": "Spanish",
+    "languageCode": "es",
+    "level": "Beginner",
+    "cefr": "A1",
+    "title": "Spanish Stories - My First Morning",
+    "type": "story",
+    "defaults": {
+        "audioAutoplay": true,
+        "replayCount": 1,
+        "nativeHiddenByDefault": true
+    },
+    "cards": [
+        {
+            "id": "es_story_002_c1",
+            "type": "intro",
+            "order": 1,
+            "wordTarget": "Mi primera mañana",
+            "wordNative": "My First Morning",
+            "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
+            "sentenceNative": "Click the Next Button to begin the story.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        },
+        {
+            "id": "es_story_002_c2",
+            "type": "story",
+            "order": 2,
+            "wordTarget": "Hombre",
+            "wordNative": "Man",
+            "sentenceTarget": "El hombre se despierta.",
+            "sentenceNative": "The man wakes up.",
+            "audioWordFile": "es_hombre_word.mp3",
+            "audioSentenceFile": "es_el_hombre_se_despierta.mp3",
+            "mediaFile": "es_hombre_despierta.jpg"
+        },
+        {
+            "id": "es_story_002_c3",
+            "type": "story",
+            "order": 3,
+            "wordTarget": "Café",
+            "wordNative": "Coffee",
+            "sentenceTarget": "El hombre bebe café.",
+            "sentenceNative": "The man drinks coffee.",
+            "audioWordFile": "es_cafe_word.mp3",
+            "audioSentenceFile": "es_el_hombre_bebe_cafe.mp3",
+            "mediaFile": "es_hombre_cafe.jpg"
+        },
+        {
+            "id": "es_story_002_c4",
+            "type": "story",
+            "order": 4,
+            "wordTarget": "Calle",
+            "wordNative": "Street",
+            "sentenceTarget": "El hombre camina por la calle.",
+            "sentenceNative": "The man walks down the street.",
+            "audioWordFile": "es_calle_word.mp3",
+            "audioSentenceFile": "es_el_hombre_camina_calle.mp3",
+            "mediaFile": "es_hombre_calle.jpg"
+        },
+        {
+            "id": "es_story_002_c5",
+            "type": "story",
+            "order": 5,
+            "wordTarget": "Amigo",
+            "wordNative": "Friend",
+            "sentenceTarget": "El hombre ve a su amigo.",
+            "sentenceNative": "The man sees his friend.",
+            "audioWordFile": "es_amigo_word.mp3",
+            "audioSentenceFile": "es_el_hombre_ve_amigo.mp3",
+            "mediaFile": "es_hombre_amigo.jpg"
+        },
+        {
+            "id": "es_story_002_c6",
+            "type": "outro",
+            "order": 6,
+            "wordTarget": "Mi mañana",
+            "wordNative": "My Morning",
+            "sentenceTarget": "Fin",
+            "sentenceNative": "The end",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        }
+    ]
+}

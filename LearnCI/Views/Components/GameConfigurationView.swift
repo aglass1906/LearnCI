@@ -10,6 +10,8 @@ struct GameConfigurationView: View {
     @Binding var selectedPreset: GameConfiguration.Preset
     @Binding var customConfig: GameConfiguration
     @Binding var selectedGameType: GameConfiguration.GameType
+    @Binding var useTTSFallback: Bool
+    @Binding var ttsRate: Float
     
     let availableDecks: [DeckMetadata]
     let startAction: () -> Void
@@ -65,18 +67,20 @@ struct GameConfigurationView: View {
                         .padding(.leading, 50)
 
                     // Row 2: Display Mode
-                    Button(action: { showDisplayConfig = true }) {
-                        SettingsRow(
-                            icon: "slider.horizontal.3",
-                            iconColor: .purple,
-                            text: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
-                        ) {
-                            DisplayConfigurationSummaryView(config: effectiveConfig)
+                    if selectedGameType == .flashcards {
+                        Button(action: { showDisplayConfig = true }) {
+                            SettingsRow(
+                                icon: "slider.horizontal.3",
+                                iconColor: .purple,
+                                text: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
+                            ) {
+                                DisplayConfigurationSummaryView(config: effectiveConfig)
+                            }
                         }
+                        
+                        Divider()
+                            .padding(.leading, 50)
                     }
-                    
-                    Divider()
-                        .padding(.leading, 50)
                     
                     // Row 3: Session Options
                     Button(action: { showSessionOptions = true }) {
@@ -137,7 +141,10 @@ struct GameConfigurationView: View {
             SessionOptionsSheet(
                 sessionDuration: $sessionDuration,
                 sessionCardGoal: $sessionCardGoal,
-                isRandomOrder: $isRandomOrder
+                isRandomOrder: $isRandomOrder,
+                useTTSFallback: $useTTSFallback,
+                ttsRate: $ttsRate,
+                gameType: selectedGameType
             )
         }
     }

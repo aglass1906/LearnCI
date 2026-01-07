@@ -1,21 +1,21 @@
 {
-    "id": "es_story_001",
+    "id": "es_video_001",
     "language": "Spanish",
     "level": "Beginner",
-    "title": "Spanish Stories - Pizza Gratis",
+    "title": "Spanish Video Stories - zza Gratis",
     "cards": [
         {
-            "id": "es_story_001_c1",
+            "id": "es_video_001_c1",
             "targetWord": "Pizza Gratis",
             "nativeTranslation": "Free Pizza",
-            "sentenceTarget": "Click the Next Button to begin the story.",
+            "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
             "sentenceNative": "Click the Next Button to begin the story.",
             "audioWordFile": "",
             "audioSentenceFile": "",
             "mediaFile": ""
         },
         {
-            "id": "es_story_001_c2",
+            "id": "es_video_001_c2",
             "targetWord": "Pizza Gratis",
             "nativeTranslation": "Free Pizza",
             "sentenceTarget": "",
@@ -25,7 +25,7 @@
             "mediaFile": "DUO_Pizza_Gratis.mov"
         },
         {
-            "id": "es_story_001_c1",
+            "id": "es_video_001_c3",
             "targetWord": "Pizza Gratis",
             "nativeTranslation": "Free Pizza",
             "sentenceTarget": "The end",

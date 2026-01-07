@@ -1,0 +1,88 @@
+{
+    "id": "es_story_003",
+    "languageName": "Spanish",
+    "languageCode": "es",
+    "level": "Intermediate",
+    "cefr": "A2",
+    "title": "Spanish Stories - My First Morning (A2)",
+    "type": "story",
+    "defaults": {
+        "audioAutoplay": true,
+        "replayCount": 1,
+        "nativeHiddenByDefault": true
+    },
+    "cards": [
+        {
+            "id": "es_story_003_c1",
+            "type": "intro",
+            "order": 1,
+            "wordTarget": "Mi primera mañana",
+            "wordNative": "My First Morning",
+            "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
+            "sentenceNative": "Click the Next Button to begin the story.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        },
+        {
+            "id": "es_story_003_c2",
+            "type": "story",
+            "order": 2,
+            "wordTarget": "Hombre",
+            "wordNative": "Man",
+            "sentenceTarget": "El hombre se despierta temprano porque tiene que trabajar.",
+            "sentenceNative": "The man wakes up early because he has to work.",
+            "audioWordFile": "es_hombre_word.mp3",
+            "audioSentenceFile": "es_el_hombre_se_despierta_temprano.mp3",
+            "mediaFile": "es_hombre_despierta.jpg"
+        },
+        {
+            "id": "es_story_003_c3",
+            "type": "story",
+            "order": 3,
+            "wordTarget": "Café",
+            "wordNative": "Coffee",
+            "sentenceTarget": "Después de levantarse, el hombre prepara café en la cocina.",
+            "sentenceNative": "After getting up, the man prepares coffee in the kitchen.",
+            "audioWordFile": "es_cafe_word.mp3",
+            "audioSentenceFile": "es_el_hombre_prepara_cafe.mp3",
+            "mediaFile": "es_hombre_cafe.jpg"
+        },
+        {
+            "id": "es_story_003_c4",
+            "type": "story",
+            "order": 4,
+            "wordTarget": "Calle",
+            "wordNative": "Street",
+            "sentenceTarget": "Con su café en la mano, el hombre camina por la calle y mira las tiendas.",
+            "sentenceNative": "With his coffee in hand, the man walks down the street and looks at the shops.",
+            "audioWordFile": "es_calle_word.mp3",
+            "audioSentenceFile": "es_el_hombre_camina_y_mira_tiendas.mp3",
+            "mediaFile": "es_hombre_calle.jpg"
+        },
+        {
+            "id": "es_story_003_c5",
+            "type": "story",
+            "order": 5,
+            "wordTarget": "Amigo",
+            "wordNative": "Friend",
+            "sentenceTarget": "En la calle, el hombre ve a un amigo y habla con él por unos minutos.",
+            "sentenceNative": "On the street, the man sees a friend and talks with him for a few minutes.",
+            "audioWordFile": "es_amigo_word.mp3",
+            "audioSentenceFile": "es_el_hombre_habla_con_amigo.mp3",
+            "mediaFile": "es_hombre_amigo.jpg"
+        },
+        {
+            "id": "es_story_003_c6",
+            "type": "outro",
+            "order": 6,
+            "wordTarget": "Mi mañana",
+            "wordNative": "My Morning",
+            "sentenceTarget": "Después de hablar con su amigo, el hombre continúa su mañana.",
+            "sentenceNative": "After talking with his friend, the man continues his morning.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        }
+    ]
+}

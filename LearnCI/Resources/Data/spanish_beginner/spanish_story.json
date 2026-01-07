@@ -1,0 +1,1009 @@
+{
+    "id": "es_beg_001",
+    "language": "Spanish",
+    "level": "Beginner",
+    "title": "Spanish Beginner Essentials",
+    "cards": [
+        {
+            "id": "es_b_c1",
+            "targetWord": "Hombre",
+            "nativeTranslation": "Man",
+            "sentenceTarget": "El hombre camina por la calle.",
+            "sentenceNative": "The man walks down the street.",
+            "audioWordFile": "es_hombre_word.mp3",
+            "audioSentenceFile": "es_hombre_sentence.mp3",
+            "imageFile-orig": "es_hombre.jpg",
+            "imageFile": "DUO_Pizza_Gratis.mov"
+        },
+        {
+            "id": "es_b_c2",
+            "targetWord": "Mujer",
+            "nativeTranslation": "Woman",
+            "sentenceTarget": "La mujer habla con su amiga.",
+            "sentenceNative": "The woman talks with her friend.",
+            "audioWordFile": "es_mujer_word.mp3",
+            "audioSentenceFile": "es_mujer_sentence.mp3",
+            "imageFile": "es_mujer.jpg"
+        },
+        {
+            "id": "es_b_c3",
+            "targetWord": "Niño",
+            "nativeTranslation": "Boy / Child",
+            "sentenceTarget": "El niño juega con la pelota.",
+            "sentenceNative": "The boy plays with the ball.",
+            "audioWordFile": "es_nino_word.mp3",
+            "audioSentenceFile": "es_nino_sentence.mp3",
+            "imageFile": "es_nino.jpg"
+        },
+        {
+            "id": "es_b_c4",
+            "targetWord": "Niña",
+            "nativeTranslation": "Girl / Child",
+            "sentenceTarget": "La niña baila en el jardín.",
+            "sentenceNative": "The girl dances in the garden.",
+            "audioWordFile": "es_nina_word.mp3",
+            "audioSentenceFile": "es_nina_sentence.mp3",
+            "imageFile": "es_nina.jpg"
+        },
+        {
+            "id": "es_b_c5",
+            "targetWord": "Hermano",
+            "nativeTranslation": "Brother",
+            "sentenceTarget": "Mi hermano vive en Madrid.",
+            "sentenceNative": "My brother lives in Madrid.",
+            "audioWordFile": "es_hermano_word.mp3",
+            "audioSentenceFile": "es_hermano_sentence.mp3",
+            "imageFile": "es_hermano.jpg"
+        },
+        {
+            "id": "es_b_c6",
+            "targetWord": "Hermana",
+            "nativeTranslation": "Sister",
+            "sentenceTarget": "Tengo una hermana mayor.",
+            "sentenceNative": "I have an older sister.",
+            "audioWordFile": "es_hermana_word.mp3",
+            "audioSentenceFile": "es_hermana_sentence.mp3",
+            "imageFile": "es_hermana.jpg"
+        },
+        {
+            "id": "es_b_c7",
+            "targetWord": "Padre",
+            "nativeTranslation": "Father",
+            "sentenceTarget": "Mi padre trabaja en un banco.",
+            "sentenceNative": "My father works in a bank.",
+            "audioWordFile": "es_padre_word.mp3",
+            "audioSentenceFile": "es_padre_sentence.mp3",
+            "imageFile": "es_padre.jpg"
+        },
+        {
+            "id": "es_b_c8",
+            "targetWord": "Madre",
+            "nativeTranslation": "Mother",
+            "sentenceTarget": "Mi madre es profesora.",
+            "sentenceNative": "My mother is a teacher.",
+            "audioWordFile": "es_madre_word.mp3",
+            "audioSentenceFile": "es_madre_sentence.mp3",
+            "imageFile": "es_madre.jpg"
+        },
+        {
+            "id": "es_b_c9",
+            "targetWord": "Abuelo",
+            "nativeTranslation": "Grandfather",
+            "sentenceTarget": "Mi abuelo cuenta historias.",
+            "sentenceNative": "My grandfather tells stories.",
+            "audioWordFile": "es_abuelo_word.mp3",
+            "audioSentenceFile": "es_abuelo_sentence.mp3",
+            "imageFile": "es_abuelo.jpg"
+        },
+        {
+            "id": "es_b_c10",
+            "targetWord": "Abuja",
+            "nativeTranslation": "Needle",
+            "sentenceTarget": "La aguja es muy pequeña.",
+            "sentenceNative": "The needle is very small.",
+            "audioWordFile": "es_aguja_word.mp3",
+            "audioSentenceFile": "es_aguja_sentence.mp3",
+            "imageFile": "es_aguja.jpg"
+        },
+        {
+            "id": "es_b_c11",
+            "targetWord": "Mesa",
+            "nativeTranslation": "Table",
+            "sentenceTarget": "La comida está en la mesa.",
+            "sentenceNative": "The food is on the table.",
+            "audioWordFile": "es_mesa_word.mp3",
+            "audioSentenceFile": "es_mesa_sentence.mp3",
+            "imageFile": "es_mesa.jpg"
+        },
+        {
+            "id": "es_b_c12",
+            "targetWord": "Silla",
+            "nativeTranslation": "Chair",
+            "sentenceTarget": "Siéntate en la silla, por favor.",
+            "sentenceNative": "Please sit in the chair.",
+            "audioWordFile": "es_silla_word.mp3",
+            "audioSentenceFile": "es_silla_sentence.mp3",
+            "imageFile": "es_silla.jpg"
+        },
+        {
+            "id": "es_b_c13",
+            "targetWord": "Cama",
+            "nativeTranslation": "Bed",
+            "sentenceTarget": "Voy a la cama ahora.",
+            "sentenceNative": "I'm going to bed now.",
+            "audioWordFile": "es_cama_word.mp3",
+            "audioSentenceFile": "es_cama_sentence.mp3",
+            "imageFile": "es_cama.jpg"
+        },
+        {
+            "id": "es_b_c14",
+            "targetWord": "Puerta",
+            "nativeTranslation": "Door",
+            "sentenceTarget": "Cierra la puerta al salir.",
+            "sentenceNative": "Close the door when you leave.",
+            "audioWordFile": "es_puerta_word.mp3",
+            "audioSentenceFile": "es_puerta_sentence.mp3",
+            "imageFile": "es_puerta.jpg"
+        },
+        {
+            "id": "es_b_c15",
+            "targetWord": "Ventana",
+            "nativeTranslation": "Window",
+            "sentenceTarget": "Abre la ventana, hace calor.",
+            "sentenceNative": "Open the window, it's hot.",
+            "audioWordFile": "es_ventana_word.mp3",
+            "audioSentenceFile": "es_ventana_sentence.mp3",
+            "imageFile": "es_ventana.jpg"
+        },
+        {
+            "id": "es_b_c16",
+            "targetWord": "Cocina",
+            "nativeTranslation": "Kitchen",
+            "sentenceTarget": "Estoy cocinando en la cocina.",
+            "sentenceNative": "I am cooking in the kitchen.",
+            "audioWordFile": "es_cocina_word.mp3",
+            "audioSentenceFile": "es_cocina_sentence.mp3",
+            "imageFile": "es_cocina.jpg"
+        },
+        {
+            "id": "es_b_c17",
+            "targetWord": "Comida",
+            "nativeTranslation": "Food",
+            "sentenceTarget": "Tengo mucha comida en casa.",
+            "sentenceNative": "I have a lot of food at home.",
+            "audioWordFile": "es_comida_word.mp3",
+            "audioSentenceFile": "es_comida_sentence.mp3",
+            "imageFile": "es_comida.jpg"
+        },
+        {
+            "id": "es_b_c18",
+            "targetWord": "Desayuno",
+            "nativeTranslation": "Breakfast",
+            "sentenceTarget": "El desayuno es muy importante.",
+            "sentenceNative": "Breakfast is very important.",
+            "audioWordFile": "es_desayuno_word.mp3",
+            "audioSentenceFile": "es_desayuno_sentence.mp3",
+            "imageFile": "es_desayuno.jpg"
+        },
+        {
+            "id": "es_b_c19",
+            "targetWord": "Almuerzo",
+            "nativeTranslation": "Lunch",
+            "sentenceTarget": "Comemos el almuerzo a las dos.",
+            "sentenceNative": "We eat lunch at two.",
+            "audioWordFile": "es_almuerzo_word.mp3",
+            "audioSentenceFile": "es_almuerzo_sentence.mp3",
+            "imageFile": "es_almuerzo.jpg"
+        },
+        {
+            "id": "es_b_c20",
+            "targetWord": "Cena",
+            "nativeTranslation": "Dinner",
+            "sentenceTarget": "La cena está lista.",
+            "sentenceNative": "Dinner is ready.",
+            "audioWordFile": "es_cena_word.mp3",
+            "audioSentenceFile": "es_cena_sentence.mp3",
+            "imageFile": "es_cena.jpg"
+        },
+        {
+            "id": "es_b_c21",
+            "targetWord": "Ropa",
+            "nativeTranslation": "Clothes",
+            "sentenceTarget": "Compré ropa nueva ayer.",
+            "sentenceNative": "I bought new clothes yesterday.",
+            "audioWordFile": "es_ropa_word.mp3",
+            "audioSentenceFile": "es_ropa_sentence.mp3",
+            "imageFile": "es_ropa.jpg"
+        },
+        {
+            "id": "es_b_c22",
+            "targetWord": "Zapatos",
+            "nativeTranslation": "Shoes",
+            "sentenceTarget": "Mis zapatos son negros.",
+            "sentenceNative": "My shoes are black.",
+            "audioWordFile": "es_zapatos_word.mp3",
+            "audioSentenceFile": "es_zapatos_sentence.mp3",
+            "imageFile": "es_zapatos.jpg"
+        },
+        {
+            "id": "es_b_c23",
+            "targetWord": "Sombrero",
+            "nativeTranslation": "Hat",
+            "sentenceTarget": "Lleva un sombrero rojo.",
+            "sentenceNative": "He's wearing a red hat.",
+            "audioWordFile": "es_sombrero_word.mp3",
+            "audioSentenceFile": "es_sombrero_sentence.mp3",
+            "imageFile": "es_sombrero.jpg"
+        },
+        {
+            "id": "es_b_c24",
+            "targetWord": "Reloj",
+            "nativeTranslation": "Watch / Clock",
+            "sentenceTarget": "Mi reloj no funciona.",
+            "sentenceNative": "My watch doesn't work.",
+            "audioWordFile": "es_reloj_word.mp3",
+            "audioSentenceFile": "es_reloj_sentence.mp3",
+            "imageFile": "es_reloj.jpg"
+        },
+        {
+            "id": "es_b_c25",
+            "targetWord": "Libro",
+            "nativeTranslation": "Book",
+            "sentenceTarget": "Este libro es muy largo.",
+            "sentenceNative": "This book is very long.",
+            "audioWordFile": "es_libro_word.mp3",
+            "audioSentenceFile": "es_libro_sentence.mp3",
+            "imageFile": "es_libro.jpg"
+        },
+        {
+            "id": "es_b_c26",
+            "targetWord": "Lápiz",
+            "nativeTranslation": "Pencil",
+            "sentenceTarget": "¿Tienes un lápiz?",
+            "sentenceNative": "Do you have a pencil?",
+            "audioWordFile": "es_lapiz_word.mp3",
+            "audioSentenceFile": "es_lapiz_sentence.mp3",
+            "imageFile": "es_lapiz.jpg"
+        },
+        {
+            "id": "es_b_c27",
+            "targetWord": "Papel",
+            "nativeTranslation": "Paper",
+            "sentenceTarget": "Escribe en el papel.",
+            "sentenceNative": "Write on the paper.",
+            "audioWordFile": "es_papel_word.mp3",
+            "audioSentenceFile": "es_papel_sentence.mp3",
+            "imageFile": "es_papel.jpg"
+        },
+        {
+            "id": "es_b_c28",
+            "targetWord": "Dinero",
+            "nativeTranslation": "Money",
+            "sentenceTarget": "No tengo dinero hoy.",
+            "sentenceNative": "I don't have money today.",
+            "audioWordFile": "es_dinero_word.mp3",
+            "audioSentenceFile": "es_dinero_sentence.mp3",
+            "imageFile": "es_dinero.jpg"
+        },
+        {
+            "id": "es_b_c29",
+            "targetWord": "Mercado",
+            "nativeTranslation": "Market",
+            "sentenceTarget": "Vamos al mercado juntos.",
+            "sentenceNative": "Let's go to the market together.",
+            "audioWordFile": "es_mercado_word.mp3",
+            "audioSentenceFile": "es_mercado_sentence.mp3",
+            "imageFile": "es_mercado.jpg"
+        },
+        {
+            "id": "es_b_c30",
+            "targetWord": "Tienda",
+            "nativeTranslation": "Shop / Store",
+            "sentenceTarget": "La tienda cierra tarde.",
+            "sentenceNative": "The shop closes late.",
+            "audioWordFile": "es_tienda_word.mp3",
+            "audioSentenceFile": "es_tienda_sentence.mp3",
+            "imageFile": "es_tienda.jpg"
+        },
+        {
+            "id": "es_b_c31",
+            "targetWord": "Trabajo",
+            "nativeTranslation": "Work / Job",
+            "sentenceTarget": "Tengo mucho trabajo hoy.",
+            "sentenceNative": "I have a lot of work today.",
+            "audioWordFile": "es_trabajo_word.mp3",
+            "audioSentenceFile": "es_trabajo_sentence.mp3",
+            "imageFile": "es_trabajo.jpg"
+        },
+        {
+            "id": "es_b_c32",
+            "targetWord": "Coche",
+            "nativeTranslation": "Car",
+            "sentenceTarget": "Mi coche es azul.",
+            "sentenceNative": "My car is blue.",
+            "audioWordFile": "es_coche_word.mp3",
+            "audioSentenceFile": "es_coche_sentence.mp3",
+            "imageFile": "es_coche.jpg"
+        },
+        {
+            "id": "es_b_c33",
+            "targetWord": "Bus",
+            "nativeTranslation": "Bus",
+            "sentenceTarget": "Tomo el bus cada día.",
+            "sentenceNative": "I take the bus every day.",
+            "audioWordFile": "es_bus_word.mp3",
+            "audioSentenceFile": "es_bus_sentence.mp3",
+            "imageFile": "es_bus.jpg"
+        },
+        {
+            "id": "es_b_c34",
+            "targetWord": "Tren",
+            "nativeTranslation": "Train",
+            "sentenceTarget": "El tren sale a las diez.",
+            "sentenceNative": "The train leaves at ten.",
+            "audioWordFile": "es_tren_word.mp3",
+            "audioSentenceFile": "es_tren_sentence.mp3",
+            "imageFile": "es_tren.jpg"
+        },
+        {
+            "id": "es_b_c35",
+            "targetWord": "Avión",
+            "nativeTranslation": "Plane",
+            "sentenceTarget": "El avión vuela alto.",
+            "sentenceNative": "The plane flies high.",
+            "audioWordFile": "es_avion_word.mp3",
+            "audioSentenceFile": "es_avion_sentence.mp3",
+            "imageFile": "es_avion.jpg"
+        },
+        {
+            "id": "es_b_c36",
+            "targetWord": "Calle",
+            "nativeTranslation": "Street",
+            "sentenceTarget": "Camina por la calle principal.",
+            "sentenceNative": "Walk down the main street.",
+            "audioWordFile": "es_calle_word.mp3",
+            "audioSentenceFile": "es_calle_sentence.mp3",
+            "imageFile": "es_calle.jpg"
+        },
+        {
+            "id": "es_b_c37",
+            "targetWord": "Parque",
+            "nativeTranslation": "Park",
+            "sentenceTarget": "Jugamos en el parque.",
+            "sentenceNative": "We play in the park.",
+            "audioWordFile": "es_parque_word.mp3",
+            "audioSentenceFile": "es_parque_sentence.mp3",
+            "imageFile": "es_parque.jpg"
+        },
+        {
+            "id": "es_b_c38",
+            "targetWord": "Cine",
+            "nativeTranslation": "Cinema",
+            "sentenceTarget": "Vamos al cine esta noche.",
+            "sentenceNative": "Let's go to the cinema tonight.",
+            "audioWordFile": "es_cine_word.mp3",
+            "audioSentenceFile": "es_cine_sentence.mp3",
+            "imageFile": "es_cine.jpg"
+        },
+        {
+            "id": "es_b_c39",
+            "targetWord": "Restaurante",
+            "nativeTranslation": "Restaurant",
+            "sentenceTarget": "El restaurante es gourmet.",
+            "sentenceNative": "The restaurant is gourmet.",
+            "audioWordFile": "es_restaurante_word.mp3",
+            "audioSentenceFile": "es_restaurante_sentence.mp3",
+            "imageFile": "es_restaurante.jpg"
+        },
+        {
+            "id": "es_b_c40",
+            "targetWord": "Hotel",
+            "nativeTranslation": "Hotel",
+            "sentenceTarget": "Dormimos en un hotel.",
+            "sentenceNative": "We slept in a hotel.",
+            "audioWordFile": "es_hotel_word.mp3",
+            "audioSentenceFile": "es_hotel_sentence.mp3",
+            "imageFile": "es_hotel.jpg"
+        },
+        {
+            "id": "es_b_c41",
+            "targetWord": "Play",
+            "nativeTranslation": "Beach",
+            "sentenceTarget": "La playa es muy hermosa.",
+            "sentenceNative": "The beach is very beautiful.",
+            "audioWordFile": "es_playa_word.mp3",
+            "audioSentenceFile": "es_playa_sentence.mp3",
+            "imageFile": "es_playa.jpg"
+        },
+        {
+            "id": "es_b_c42",
+            "targetWord": "Montaña",
+            "nativeTranslation": "Mountain",
+            "sentenceTarget": "Escalamos la montaña.",
+            "sentenceNative": "We climbed the mountain.",
+            "audioWordFile": "es_montana_word.mp3",
+            "audioSentenceFile": "es_montana_sentence.mp3",
+            "imageFile": "es_montana.jpg"
+        },
+        {
+            "id": "es_b_c43",
+            "targetWord": "Sol",
+            "nativeTranslation": "Sun",
+            "sentenceTarget": "El sol brilla mucho.",
+            "sentenceNative": "The sun shines a lot.",
+            "audioWordFile": "es_sol_word.mp3",
+            "audioSentenceFile": "es_sol_sentence.mp3",
+            "imageFile": "es_sol.jpg"
+        },
+        {
+            "id": "es_b_c44",
+            "targetWord": "Luna",
+            "nativeTranslation": "Moon",
+            "sentenceTarget": "La luna es redonda.",
+            "sentenceNative": "The moon is round.",
+            "audioWordFile": "es_luna_word.mp3",
+            "audioSentenceFile": "es_luna_sentence.mp3",
+            "imageFile": "es_luna.jpg"
+        },
+        {
+            "id": "es_b_c45",
+            "targetWord": "Estrella",
+            "nativeTranslation": "Star",
+            "sentenceTarget": "Veo una estrella fugaz.",
+            "sentenceNative": "I see a shooting star.",
+            "audioWordFile": "es_estrella_word.mp3",
+            "audioSentenceFile": "es_estrella_sentence.mp3",
+            "imageFile": "es_estrella.jpg"
+        },
+        {
+            "id": "es_b_c46",
+            "targetWord": "Cielo",
+            "nativeTranslation": "Sky",
+            "sentenceTarget": "El cielo está azul.",
+            "sentenceNative": "The sky is blue.",
+            "audioWordFile": "es_cielo_word.mp3",
+            "audioSentenceFile": "es_cielo_sentence.mp3",
+            "imageFile": "es_cielo.jpg"
+        },
+        {
+            "id": "es_b_c47",
+            "targetWord": "Mar",
+            "nativeTranslation": "Sea",
+            "sentenceTarget": "El mar está tranquilo.",
+            "sentenceNative": "The sea is calm.",
+            "audioWordFile": "es_mar_word.mp3",
+            "audioSentenceFile": "es_mar_sentence.mp3",
+            "imageFile": "es_mar.jpg"
+        },
+        {
+            "id": "es_b_c48",
+            "targetWord": "Flor",
+            "nativeTranslation": "Flower",
+            "sentenceTarget": "La flor huele bien.",
+            "sentenceNative": "The flower smells good.",
+            "audioWordFile": "es_flor_word.mp3",
+            "audioSentenceFile": "es_flor_sentence.mp3",
+            "imageFile": "es_flor.jpg"
+        },
+        {
+            "id": "es_b_c49",
+            "targetWord": "Árbol",
+            "nativeTranslation": "Tree",
+            "sentenceTarget": "El árbol es muy viejo.",
+            "sentenceNative": "The tree is very old.",
+            "audioWordFile": "es_arbol_word.mp3",
+            "audioSentenceFile": "es_arbol_sentence.mp3",
+            "imageFile": "es_arbol.jpg"
+        },
+        {
+            "id": "es_b_c50",
+            "targetWord": "Fruta",
+            "nativeTranslation": "Fruit",
+            "sentenceTarget": "Me gusta la fruta fresca.",
+            "sentenceNative": "I like fresh fruit.",
+            "audioWordFile": "es_fruta_word.mp3",
+            "audioSentenceFile": "es_fruta_sentence.mp3",
+            "imageFile": "es_fruta.jpg"
+        },
+        {
+            "id": "es_b_c51",
+            "targetWord": "Manzana",
+            "nativeTranslation": "Apple",
+            "sentenceTarget": "Como una manzana roja.",
+            "sentenceNative": "I eat a red apple.",
+            "audioWordFile": "es_manzana_word.mp3",
+            "audioSentenceFile": "es_manzana_sentence.mp3",
+            "imageFile": "es_manzana.jpg"
+        },
+        {
+            "id": "es_b_c52",
+            "targetWord": "Pera",
+            "nativeTranslation": "Pear",
+            "sentenceTarget": "La pera es dulce.",
+            "sentenceNative": "The pear is sweet.",
+            "audioWordFile": "es_pera_word.mp3",
+            "audioSentenceFile": "es_pera_sentence.mp3",
+            "imageFile": "es_pera.jpg"
+        },
+        {
+            "id": "es_b_c53",
+            "targetWord": "Leche",
+            "nativeTranslation": "Milk",
+            "sentenceTarget": "Bebo leche cada mañana.",
+            "sentenceNative": "I drink milk every morning.",
+            "audioWordFile": "es_leche_word.mp3",
+            "audioSentenceFile": "es_leche_sentence.mp3",
+            "imageFile": "es_leche.jpg"
+        },
+        {
+            "id": "es_b_c54",
+            "targetWord": "Pan",
+            "nativeTranslation": "Bread",
+            "sentenceTarget": "El pan está crujiente.",
+            "sentenceNative": "The bread is crunchy.",
+            "audioWordFile": "es_pan_word.mp3",
+            "audioSentenceFile": "es_pan_sentence.mp3",
+            "imageFile": "es_pan.jpg"
+        },
+        {
+            "id": "es_b_c55",
+            "targetWord": "Queso",
+            "nativeTranslation": "Cheese",
+            "sentenceTarget": "Me encanta el queso.",
+            "sentenceNative": "I love cheese.",
+            "audioWordFile": "es_queso_word.mp3",
+            "audioSentenceFile": "es_queso_sentence.mp3",
+            "imageFile": "es_queso.jpg"
+        },
+        {
+            "id": "es_b_c56",
+            "targetWord": "Carne",
+            "nativeTranslation": "Meat",
+            "sentenceTarget": "No como carne.",
+            "sentenceNative": "I don't eat meat.",
+            "audioWordFile": "es_carne_word.mp3",
+            "audioSentenceFile": "es_carne_sentence.mp3",
+            "imageFile": "es_carne.jpg"
+        },
+        {
+            "id": "es_b_c57",
+            "targetWord": "Pescado",
+            "nativeTranslation": "Fish",
+            "sentenceTarget": "El pescado es saludable.",
+            "sentenceNative": "Fish is healthy.",
+            "audioWordFile": "es_pescado_word.mp3",
+            "audioSentenceFile": "es_pescado_sentence.mp3",
+            "imageFile": "es_pescado.jpg"
+        },
+        {
+            "id": "es_b_c58",
+            "targetWord": "Arroz",
+            "nativeTranslation": "Rice",
+            "sentenceTarget": "El arroz es blanco.",
+            "sentenceNative": "The rice is white.",
+            "audioWordFile": "es_arroz_word.mp3",
+            "audioSentenceFile": "es_arroz_sentence.mp3",
+            "imageFile": "es_arroz.jpg"
+        },
+        {
+            "id": "es_b_c59",
+            "targetWord": "Huevo",
+            "nativeTranslation": "Egg",
+            "sentenceTarget": "Quiero un huevo frito.",
+            "sentenceNative": "I want a fried egg.",
+            "audioWordFile": "es_huevo_word.mp3",
+            "audioSentenceFile": "es_huevo_sentence.mp3",
+            "imageFile": "es_huevo.jpg"
+        },
+        {
+            "id": "es_b_c60",
+            "targetWord": "Sal",
+            "nativeTranslation": "Salt",
+            "sentenceTarget": "Añade un poco de sal.",
+            "sentenceNative": "Add a little bit of salt.",
+            "audioWordFile": "es_sal_word.mp3",
+            "audioSentenceFile": "es_sal_sentence.mp3",
+            "imageFile": "es_sal.jpg"
+        },
+        {
+            "id": "es_b_c61",
+            "targetWord": "Azúcar",
+            "nativeTranslation": "Sugar",
+            "sentenceTarget": "El azúcar es dulce.",
+            "sentenceNative": "Sugar is sweet.",
+            "audioWordFile": "es_azucar_word.mp3",
+            "audioSentenceFile": "es_azucar_sentence.mp3",
+            "imageFile": "es_azucar.jpg"
+        },
+        {
+            "id": "es_b_c62",
+            "targetWord": "Té",
+            "nativeTranslation": "Tea",
+            "sentenceTarget": "Bebe té verde.",
+            "sentenceNative": "Drink green tea.",
+            "audioWordFile": "es_te_word.mp3",
+            "audioSentenceFile": "es_te_sentence.mp3",
+            "imageFile": "es_te.jpg"
+        },
+        {
+            "id": "es_b_c63",
+            "targetWord": "Café",
+            "nativeTranslation": "Coffee",
+            "sentenceTarget": "Prefiero el café sólo.",
+            "sentenceNative": "I prefer black coffee.",
+            "audioWordFile": "es_cafe_word.mp3",
+            "audioSentenceFile": "es_cafe_sentence.mp3",
+            "imageFile": "es_cafe.jpg"
+        },
+        {
+            "id": "es_b_c64",
+            "targetWord": "Cerveza",
+            "nativeTranslation": "Beer",
+            "sentenceTarget": "La cerveza está fría.",
+            "sentenceNative": "The beer is cold.",
+            "audioWordFile": "es_cerveza_word.mp3",
+            "audioSentenceFile": "es_cerveza_sentence.mp3",
+            "imageFile": "es_cerveza.jpg"
+        },
+        {
+            "id": "es_b_c65",
+            "targetWord": "Vino",
+            "nativeTranslation": "Wine",
+            "sentenceTarget": "El vino tinto es rico.",
+            "sentenceNative": "Red wine is tasty.",
+            "audioWordFile": "es_vino_word.mp3",
+            "audioSentenceFile": "es_vino_sentence.mp3",
+            "imageFile": "es_vino.jpg"
+        },
+        {
+            "id": "es_b_c66",
+            "targetWord": "Cuerpo",
+            "nativeTranslation": "Body",
+            "sentenceTarget": "Cuida tu cuerpo.",
+            "sentenceNative": "Take care of your body.",
+            "audioWordFile": "es_cuerpo_word.mp3",
+            "audioSentenceFile": "es_cuerpo_sentence.mp3",
+            "imageFile": "es_cuerpo.jpg"
+        },
+        {
+            "id": "es_b_c67",
+            "targetWord": "Cabeza",
+            "nativeTranslation": "Head",
+            "sentenceTarget": "Me duele la cabeza.",
+            "sentenceNative": "My head hurts.",
+            "audioWordFile": "es_cabeza_word.mp3",
+            "audioSentenceFile": "es_cabeza_sentence.mp3",
+            "imageFile": "es_cabeza.jpg"
+        },
+        {
+            "id": "es_b_c68",
+            "targetWord": "Cara",
+            "nativeTranslation": "Face",
+            "sentenceTarget": "Lávate la cara.",
+            "sentenceNative": "Wash your face.",
+            "audioWordFile": "es_cara_word.mp3",
+            "audioSentenceFile": "es_cara_sentence.mp3",
+            "imageFile": "es_cara.jpg"
+        },
+        {
+            "id": "es_b_c69",
+            "targetWord": "Ojo",
+            "nativeTranslation": "Eye",
+            "sentenceTarget": "Tengo un ojo azul.",
+            "sentenceNative": "I have one blue eye.",
+            "audioWordFile": "es_ojo_word.mp3",
+            "audioSentenceFile": "es_ojo_sentence.mp3",
+            "imageFile": "es_ojo.jpg"
+        },
+        {
+            "id": "es_b_c70",
+            "targetWord": "Nariz",
+            "nativeTranslation": "Nose",
+            "sentenceTarget": "Respiro por la nariz.",
+            "sentenceNative": "I breathe through my nose.",
+            "audioWordFile": "es_nariz_word.mp3",
+            "audioSentenceFile": "es_nariz_sentence.mp3",
+            "imageFile": "es_nariz.jpg"
+        },
+        {
+            "id": "es_b_c71",
+            "targetWord": "Boca",
+            "nativeTranslation": "Mouth",
+            "sentenceTarget": "Cierra la boca.",
+            "sentenceNative": "Close your mouth.",
+            "audioWordFile": "es_boca_word.mp3",
+            "audioSentenceFile": "es_boca_sentence.mp3",
+            "imageFile": "es_boca.jpg"
+        },
+        {
+            "id": "es_b_c72",
+            "targetWord": "Oreja",
+            "nativeTranslation": "Ear",
+            "sentenceTarget": "Me pica la oreja.",
+            "sentenceNative": "My ear is itchy.",
+            "audioWordFile": "es_oreja_word.mp3",
+            "audioSentenceFile": "es_oreja_sentence.mp3",
+            "imageFile": "es_oreja.jpg"
+        },
+        {
+            "id": "es_b_c73",
+            "targetWord": "Pelo",
+            "nativeTranslation": "Hair",
+            "sentenceTarget": "Tiene el pelo largo.",
+            "sentenceNative": "She has long hair.",
+            "audioWordFile": "es_pelo_word.mp3",
+            "audioSentenceFile": "es_pelo_sentence.mp3",
+            "imageFile": "es_pelo.jpg"
+        },
+        {
+            "id": "es_b_c74",
+            "targetWord": "Mano",
+            "nativeTranslation": "Hand",
+            "sentenceTarget": "Dame la mano.",
+            "sentenceNative": "Give me your hand.",
+            "audioWordFile": "es_mano_word.mp3",
+            "audioSentenceFile": "es_mano_sentence.mp3",
+            "imageFile": "es_mano.jpg"
+        },
+        {
+            "id": "es_b_c75",
+            "targetWord": "Brazo",
+            "nativeTranslation": "Arm",
+            "sentenceTarget": "Mi brazo es fuerte.",
+            "sentenceNative": "My arm is strong.",
+            "audioWordFile": "es_brazo_word.mp3",
+            "audioSentenceFile": "es_brazo_sentence.mp3",
+            "imageFile": "es_brazo.jpg"
+        },
+        {
+            "id": "es_b_c76",
+            "targetWord": "Pierna",
+            "nativeTranslation": "Leg",
+            "sentenceTarget": "Corre con la pierna derecha.",
+            "sentenceNative": "Run with your right leg.",
+            "audioWordFile": "es_pierna_word.mp3",
+            "audioSentenceFile": "es_pierna_sentence.mp3",
+            "imageFile": "es_pierna.jpg"
+        },
+        {
+            "id": "es_b_c77",
+            "targetWord": "Pie",
+            "nativeTranslation": "Foot",
+            "sentenceTarget": "Me duele el pie.",
+            "sentenceNative": "My foot hurts.",
+            "audioWordFile": "es_pie_word.mp3",
+            "audioSentenceFile": "es_pie_sentence.mp3",
+            "imageFile": "es_pie.jpg"
+        },
+        {
+            "id": "es_b_c78",
+            "targetWord": "Médico",
+            "nativeTranslation": "Doctor",
+            "sentenceTarget": "Voy al médico.",
+            "sentenceNative": "I'm going to the doctor.",
+            "audioWordFile": "es_medico_word.mp3",
+            "audioSentenceFile": "es_medico_sentence.mp3",
+            "imageFile": "es_medico.jpg"
+        },
+        {
+            "id": "es_b_c79",
+            "targetWord": "Enfermo",
+            "nativeTranslation": "Sick",
+            "sentenceTarget": "Estoy muy enfermo.",
+            "sentenceNative": "I am very sick.",
+            "audioWordFile": "es_enfermo_word.mp3",
+            "audioSentenceFile": "es_enfermo_sentence.mp3",
+            "imageFile": "es_enfermo.jpg"
+        },
+        {
+            "id": "es_b_c80",
+            "targetWord": "Hospital",
+            "nativeTranslation": "Hospital",
+            "sentenceTarget": "El hospital es grande.",
+            "sentenceNative": "The hospital is big.",
+            "audioWordFile": "es_hospital_word.mp3",
+            "audioSentenceFile": "es_hospital_sentence.mp3",
+            "imageFile": "es_hospital.jpg"
+        },
+        {
+            "id": "es_b_c81",
+            "targetWord": "Policía",
+            "nativeTranslation": "Police",
+            "sentenceTarget": "Llama a la policía.",
+            "sentenceNative": "Call the police.",
+            "audioWordFile": "es_policia_word.mp3",
+            "audioSentenceFile": "es_policia_sentence.mp3",
+            "imageFile": "es_policia.jpg"
+        },
+        {
+            "id": "es_b_c82",
+            "targetWord": "Bombero",
+            "nativeTranslation": "Firefighter",
+            "sentenceTarget": "El bombero apaga el fuego.",
+            "sentenceNative": "The firefighter puts out the fire.",
+            "audioWordFile": "es_bombero_word.mp3",
+            "audioSentenceFile": "es_bombero_sentence.mp3",
+            "imageFile": "es_bombero.jpg"
+        },
+        {
+            "id": "es_b_c83",
+            "targetWord": "Ciudad",
+            "nativeTranslation": "City",
+            "sentenceTarget": "Barcelona es mi ciudad.",
+            "sentenceNative": "Barcelona is my city.",
+            "audioWordFile": "es_ciudad_word.mp3",
+            "audioSentenceFile": "es_ciudad_sentence.mp3",
+            "imageFile": "es_ciudad.jpg"
+        },
+        {
+            "id": "es_b_c84",
+            "targetWord": "Campo",
+            "nativeTranslation": "Country / Field",
+            "sentenceTarget": "Vivo en el campo.",
+            "sentenceNative": "I live in the countryside.",
+            "audioWordFile": "es_campo_word.mp3",
+            "audioSentenceFile": "es_campo_sentence.mp3",
+            "imageFile": "es_campo.jpg"
+        },
+        {
+            "id": "es_b_c85",
+            "targetWord": "Mundo",
+            "nativeTranslation": "World",
+            "sentenceTarget": "El mundo es pequeño.",
+            "sentenceNative": "The world is small.",
+            "audioWordFile": "es_mundo_word.mp3",
+            "audioSentenceFile": "es_mundo_sentence.mp3",
+            "imageFile": "es_mundo.jpg"
+        },
+        {
+            "id": "es_b_c86",
+            "targetWord": "Guerra",
+            "nativeTranslation": "War",
+            "sentenceTarget": "No queremos guerra.",
+            "sentenceNative": "We don't want war.",
+            "audioWordFile": "es_guerra_word.mp3",
+            "audioSentenceFile": "es_guerra_sentence.mp3",
+            "imageFile": "es_guerra.jpg"
+        },
+        {
+            "id": "es_b_c87",
+            "targetWord": "Paz",
+            "nativeTranslation": "Peace",
+            "sentenceTarget": "Queremos paz.",
+            "sentenceNative": "We want peace.",
+            "audioWordFile": "es_paz_word.mp3",
+            "audioSentenceFile": "es_paz_sentence.mp3",
+            "imageFile": "es_paz.jpg"
+        },
+        {
+            "id": "es_b_c88",
+            "targetWord": "Amor",
+            "nativeTranslation": "Love",
+            "sentenceTarget": "El amor es eterno.",
+            "sentenceNative": "Love is eternal.",
+            "audioWordFile": "es_amor_word.mp3",
+            "audioSentenceFile": "es_amor_sentence.mp3",
+            "imageFile": "es_amor.jpg"
+        },
+        {
+            "id": "es_b_c89",
+            "targetWord": "Odio",
+            "nativeTranslation": "Hate",
+            "sentenceTarget": "No sientas odio.",
+            "sentenceNative": "Don't feel hate.",
+            "audioWordFile": "es_odio_word.mp3",
+            "audioSentenceFile": "es_odio_sentence.mp3",
+            "imageFile": "es_odio.jpg"
+        },
+        {
+            "id": "es_b_c90",
+            "targetWord": "Verano",
+            "nativeTranslation": "Summer",
+            "sentenceTarget": "Hace calor en verano.",
+            "sentenceNative": "It's hot in summer.",
+            "audioWordFile": "es_verano_word.mp3",
+            "audioSentenceFile": "es_verano_sentence.mp3",
+            "imageFile": "es_verano.jpg"
+        },
+        {
+            "id": "es_b_c91",
+            "targetWord": "Invierno",
+            "nativeTranslation": "Winter",
+            "sentenceTarget": "Nieva en invierno.",
+            "sentenceNative": "It snows in winter.",
+            "audioWordFile": "es_invierno_word.mp3",
+            "audioSentenceFile": "es_invierno_sentence.mp3",
+            "imageFile": "es_invierno.jpg"
+        },
+        {
+            "id": "es_b_c92",
+            "targetWord": "Primavera",
+            "nativeTranslation": "Spring",
+            "sentenceTarget": "Las flores nacen en primavera.",
+            "sentenceNative": "Flowers bloom in spring.",
+            "audioWordFile": "es_primavera_word.mp3",
+            "audioSentenceFile": "es_primavera_sentence.mp3",
+            "imageFile": "es_primavera.jpg"
+        },
+        {
+            "id": "es_b_c93",
+            "targetWord": "Otoño",
+            "nativeTranslation": "Autumn",
+            "sentenceTarget": "Las hojas caen en otoño.",
+            "sentenceNative": "The leaves fall in autumn.",
+            "audioWordFile": "es_otono_word.mp3",
+            "audioSentenceFile": "es_otono_sentence.mp3",
+            "imageFile": "es_otono.jpg"
+        },
+        {
+            "id": "es_b_c94",
+            "targetWord": "Lunes",
+            "nativeTranslation": "Monday",
+            "sentenceTarget": "Hoy es lunes.",
+            "sentenceNative": "Today is Monday.",
+            "audioWordFile": "es_lunes_word.mp3",
+            "audioSentenceFile": "es_lunes_sentence.mp3",
+            "imageFile": "es_lunes.jpg"
+        },
+        {
+            "id": "es_b_c95",
+            "targetWord": "Martes",
+            "nativeTranslation": "Tuesday",
+            "sentenceTarget": "Mañana es martes.",
+            "sentenceNative": "Tomorrow is Tuesday.",
+            "audioWordFile": "es_martes_word.mp3",
+            "audioSentenceFile": "es_martes_sentence.mp3",
+            "imageFile": "es_martes.jpg"
+        },
+        {
+            "id": "es_b_c96",
+            "targetWord": "Sábado",
+            "nativeTranslation": "Saturday",
+            "sentenceTarget": "Me gusta el sábado.",
+            "sentenceNative": "I like Saturday.",
+            "audioWordFile": "es_sabado_word.mp3",
+            "audioSentenceFile": "es_sabado_sentence.mp3",
+            "imageFile": "es_sabado.jpg"
+        },
+        {
+            "id": "es_b_c97",
+            "targetWord": "Domingo",
+            "nativeTranslation": "Sunday",
+            "sentenceTarget": "El domingo es de descanso.",
+            "sentenceNative": "Sunday is for rest.",
+            "audioWordFile": "es_domingo_word.mp3",
+            "audioSentenceFile": "es_domingo_sentence.mp3",
+            "imageFile": "es_domingo.jpg"
+        },
+        {
+            "id": "es_b_c98",
+            "targetWord": "Color",
+            "nativeTranslation": "Color",
+            "sentenceTarget": "Me gusta este color.",
+            "sentenceNative": "I like this color.",
+            "audioWordFile": "es_color_word.mp3",
+            "audioSentenceFile": "es_color_sentence.mp3",
+            "imageFile": "es_color.jpg"
+        },
+        {
+            "id": "es_b_c99",
+            "targetWord": "Blanco",
+            "nativeTranslation": "White",
+            "sentenceTarget": "El papel es blanco.",
+            "sentenceNative": "The paper is white.",
+            "audioWordFile": "es_blanco_word.mp3",
+            "audioSentenceFile": "es_blanco_sentence.mp3",
+            "imageFile": "es_blanco.jpg"
+        },
+        {
+            "id": "es_b_c100",
+            "targetWord": "Negro",
+            "nativeTranslation": "Black",
+            "sentenceTarget": "La noche es negra.",
+            "sentenceNative": "The night is black.",
+            "audioWordFile": "es_negro_word.mp3",
+            "audioSentenceFile": "es_negro_sentence.mp3",
+            "imageFile": "es_negro.jpg"
+        }
+    ]
+}

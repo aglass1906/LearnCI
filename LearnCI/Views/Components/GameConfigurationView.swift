@@ -9,6 +9,7 @@ struct GameConfigurationView: View {
     @Binding var isRandomOrder: Bool
     @Binding var selectedPreset: GameConfiguration.Preset
     @Binding var customConfig: GameConfiguration
+    @Binding var selectedGameType: GameConfiguration.GameType
     
     let availableDecks: [DeckMetadata]
     let startAction: () -> Void
@@ -43,6 +44,26 @@ struct GameConfigurationView: View {
                     Divider()
                         .padding(.leading, 50)
                     
+                    // Row 1.5: Game Mode
+                    Menu {
+                        Picker("Game Mode", selection: $selectedGameType) {
+                            ForEach(GameConfiguration.GameType.allCases) { type in
+                                Label(type.rawValue, systemImage: type.icon)
+                                    .tag(type)
+                            }
+                        }
+                    } label: {
+                        SettingsRow(
+                            icon: selectedGameType.icon,
+                            iconColor: .indigo,
+                            text: selectedGameType.rawValue,
+                            subText: "Tap to change game mode"
+                        )
+                    }
+                    
+                    Divider()
+                        .padding(.leading, 50)
+
                     // Row 2: Display Mode
                     Button(action: { showDisplayConfig = true }) {
                         SettingsRow(

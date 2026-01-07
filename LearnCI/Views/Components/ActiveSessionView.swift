@@ -34,107 +34,38 @@ struct ActiveSessionView: View {
             }
             
             if let deck = deck {
-                loadedDeckView(deck: deck)
+                // Game Router
+                switch sessionConfig.gameType {
+                case .flashcards:
+                    FlashcardGameView(
+                        deck: deck,
+                        sessionCards: sessionCards,
+                        currentCardIndex: currentCardIndex,
+                        learnedCount: learnedCount,
+                        sessionCardGoal: sessionCardGoal,
+                        sessionConfig: sessionConfig,
+                        isFlipped: $isFlipped,
+                        onRelearn: onRelearn,
+                        onLearned: onLearned,
+                        onNext: onNext,
+                        onPrev: onPrev
+                    )
+                case .memoryMatch:
+                    ContentUnavailableView(
+                        "Memory Match Coming Soon",
+                        systemImage: "square.grid.2x2.fill",
+                        description: Text("This game mode is under construction.")
+                    )
+                case .sentenceBuilder:
+                     ContentUnavailableView(
+                        "Sentence Scramble Coming Soon",
+                        systemImage: "text.bubble.fill",
+                        description: Text("This game mode is under construction.")
+                     )
+                }
             } else {
                 ProgressView("Loading Deck...")
             }
         }
-    }
-    
-    @ViewBuilder
-    func loadedDeckView(deck: CardDeck) -> some View {
-        if sessionCards.isEmpty {
-            Text("No cards available.")
-        } else {
-            let card = sessionCards[currentCardIndex]
-            
-            // Progress Header
-            progressHeader
-            
-            // Card View
-            ActiveCardStack(card: card, deck: deck, config: sessionConfig, isFlipped: $isFlipped)
-            
-            // Learning Success Controls
-            if isFlipped {
-                successControls
-            } else {
-                // Navigation Controls
-                navigationControls(deck: deck)
-            }
-        }
-    }
-    
-    var progressHeader: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Session Progress")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(learnedCount) / \(sessionCardGoal) cards")
-                    .font(.subheadline.bold())
-                    .foregroundColor(.blue)
-            }
-            
-            ProgressView(value: Double(learnedCount), total: Double(sessionCardGoal))
-                .tint(.blue)
-        }
-        .padding()
-        .background(Color.blue.opacity(0.05))
-        .cornerRadius(12)
-        .padding(.horizontal)
-    }
-    
-    var successControls: some View {
-        HStack(spacing: 20) {
-            Button(action: onRelearn) {
-                VStack {
-                    Image(systemName: "arrow.counterclockwise.circle.fill")
-                        .font(.system(size: 44))
-                    Text("Relearn")
-                        .font(.caption.bold())
-                }
-                .foregroundColor(.orange)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(12)
-            }
-            
-            Button(action: onLearned) {
-                VStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 44))
-                    Text("Learned")
-                        .font(.caption.bold())
-                }
-                .foregroundColor(.green)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(12)
-            }
-        }
-        .padding(.horizontal, 40)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
-    
-    func navigationControls(deck: CardDeck) -> some View {
-        HStack {
-            Button(action: onPrev) {
-                Image(systemName: "arrow.left.circle")
-                    .font(.system(size: 50))
-            }
-            .disabled(currentCardIndex == 0)
-            
-            Spacer()
-            
-            Button(action: onNext) {
-                Image(systemName: "arrow.right.circle")
-                    .font(.system(size: 50))
-            }
-            .disabled(currentCardIndex >= deck.cards.count - 1)
-        }
-        .padding(.horizontal, 40)
     }
 }

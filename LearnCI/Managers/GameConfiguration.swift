@@ -30,6 +30,23 @@ struct GameConfiguration: Codable, Equatable {
         var id: String { rawValue }
     }
     
+    enum GameType: String, Codable, CaseIterable, Identifiable {
+        case flashcards = "Flashcards"
+        case memoryMatch = "Memory Match"
+        case sentenceBuilder = "Sentence Scramble" // Renamed for clarity
+        
+        var id: String { rawValue }
+        
+        var icon: String {
+            switch self {
+            case .flashcards: return "rectangle.stack.fill"
+            case .memoryMatch: return "square.grid.2x2.fill"
+            case .sentenceBuilder: return "text.bubble.fill"
+            }
+        }
+    }
+    
+    var gameType: GameType = .flashcards
     var word: SectionConfiguration
     var sentence: SectionConfiguration
     var image: ElementVisibility
@@ -38,7 +55,8 @@ struct GameConfiguration: Codable, Equatable {
     var useTTSFallback: Bool = true
     var ttsRate: Float = 0.5
     
-    init(word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true, ttsRate: Float = 0.5) {
+    init(gameType: GameType = .flashcards, word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true, ttsRate: Float = 0.5) {
+        self.gameType = gameType
         self.word = word
         self.sentence = sentence
         self.image = image

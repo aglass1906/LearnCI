@@ -40,6 +40,7 @@ struct GameView: View {
     
     // Game Configuration
     @State private var selectedPreset: GameConfiguration.Preset = .inputFocus
+    @State private var selectedGameType: GameConfiguration.GameType = .flashcards
     @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
     @State private var isRandomOrder: Bool = false
     @State private var hasInitialized: Bool = false
@@ -251,6 +252,7 @@ struct GameView: View {
             isRandomOrder: $isRandomOrder,
             selectedPreset: $selectedPreset,
             customConfig: $customConfig,
+            selectedGameType: $selectedGameType,
             availableDecks: dataManager.availableDecks,
             startAction: startActiveSession,
             onSavePreset: { newPreset in
@@ -407,6 +409,7 @@ struct GameView: View {
         }
         
         sessionConfig.isRandomOrder = isRandomOrder
+        sessionConfig.gameType = selectedGameType
         
         // Apply Global TTS Preference (Only if not customizing)
         if selectedPreset != .customize {

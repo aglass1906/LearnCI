@@ -169,7 +169,6 @@ struct GameView: View {
                 learnedCount: learnedCount,
                 elapsedSeconds: elapsedSeconds,
                 gameState: $gameState,
-                selectedDeck: $selectedDeck,
                 deckTitle: selectedDeck?.title ?? "Unknown Deck",
                 language: sessionLanguage,
                 level: sessionLevel,

@@ -4,7 +4,7 @@ struct SessionFinishView: View {
     let learnedCount: Int
     let elapsedSeconds: Int
     @Binding var gameState: GameView.GameState
-    @Binding var selectedDeck: DeckMetadata?
+    // Removed selectedDeck binding to persist selection
     
     // Config Stats
     let deckTitle: String
@@ -58,7 +58,7 @@ struct SessionFinishView: View {
                     Button(action: {
                         withAnimation {
                             gameState = .configuration
-                            selectedDeck = nil
+                            // Do NOT clear selectedDeck
                         }
                     }) {
                         HStack {
@@ -76,7 +76,7 @@ struct SessionFinishView: View {
                     Button(action: {
                         // Navigate back or close (Context dependent)
                         gameState = .configuration
-                        selectedDeck = nil
+                        // Do NOT clear selectedDeck
                     }) {
                         Text("Return to Menu")
                             .foregroundColor(.secondary)

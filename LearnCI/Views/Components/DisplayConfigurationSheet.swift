@@ -38,38 +38,8 @@ struct DisplayConfigurationSheet: View {
                 }
                 
                 Section(header: Text("Configuration Summary")) {
-                    HStack(spacing: 20) {
-                        // Use custom config directly since we always update relative to preset
-                        let config = customConfig
-                        
-                        VStack {
-                            Image(systemName: "textformat")
-                                .foregroundColor(.blue)
-                            Text(config.word.text == .visible ? "Visible" : (config.word.text == .hidden ? "Hidden" : "Hint"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        
-                        VStack {
-                            Image(systemName: "text.bubble")
-                                .foregroundColor(.purple)
-                            Text(config.sentence.text == .visible ? "Visible" : (config.sentence.text == .hidden ? "Hidden" : "Hint"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        
-                        VStack {
-                            Image(systemName: "photo")
-                                .foregroundColor(.orange)
-                            Text(config.image == .visible ? "Visible" : (config.image == .hidden ? "Hidden" : "Hint"))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.vertical, 8)
+                    // Use custom config directly since we always update relative to preset
+                    DisplayConfigurationSummaryView(config: customConfig)
                 }
                 
                 Section {

@@ -70,6 +70,14 @@ struct DashboardView: View {
                         roadmapSection
                         
                         // Today's Stats Card
+                        HStack {
+                            Text("Today")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        
                         NavigationLink(destination: HistoryView()) {
                             VStack(spacing: 12) {
                                 HStack {
@@ -415,6 +423,8 @@ struct DashboardView: View {
                 ]
                 
                 let maxHours: Double = 1500
+                let maxLevelDuration: Double = 500 // Level 6 is 500h (longest)
+                let graphHeight: CGFloat = 60
                 
                 VStack(spacing: 4) {
                     GeometryReader { geo in
@@ -422,31 +432,42 @@ struct DashboardView: View {
                         
                         ZStack(alignment: .leading) {
                             // Background Track (Segments)
-                            HStack(spacing: 1) {
+                            HStack(alignment: .bottom, spacing: 1) {
                                 ForEach(levels, id: \.id) { level in
                                     let levelDuration = level.range.upperBound - level.range.lowerBound
                                     let widthRatio = levelDuration / maxHours
                                     
+                                    // Height based on duration relative to max level duration
+                                    // Min height 20%, Max 100%
+                                    let heightRatio = 0.2 + (0.8 * (levelDuration / maxLevelDuration))
+                                    
                                     Rectangle()
                                         .fill(level.color.opacity(0.3))
-                                        .frame(width: rWidth * widthRatio)
+                                        .frame(width: rWidth * widthRatio, height: graphHeight * heightRatio)
                                         .overlay(
                                             Text("L\(level.id)")
                                                 .font(.system(size: 8, weight: .bold))
                                                 .foregroundStyle(level.color)
                                                 .opacity(0.8)
+                                                .padding(.bottom, 2),
+                                            alignment: .bottom
                                         )
                                 }
                             }
+                            // Align the entire HStack container to the bottom of the ZStack
+                            .frame(height: graphHeight, alignment: .bottom)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             
                             // User Progress Fill (Cumulative)
-                            // We need to mask this or build it similarly
-                            HStack(spacing: 1) {
+                            HStack(alignment: .bottom, spacing: 1) {
                                 ForEach(levels, id: \.id) { level in
                                     let levelDuration = level.range.upperBound - level.range.lowerBound
                                     let widthRatio = levelDuration / maxHours
                                     let segmentWidth = rWidth * widthRatio
+                                    
+                                    // Same height calculation
+                                    let heightRatio = 0.2 + (0.8 * (levelDuration / maxLevelDuration))
+                                    let segmentHeight = graphHeight * heightRatio
                                     
                                     // Calculate fill for this specific segment
                                     let hoursInLevel = max(0, min(currentHours - level.range.lowerBound, levelDuration))
@@ -455,29 +476,30 @@ struct DashboardView: View {
                                     ZStack(alignment: .leading) {
                                         Rectangle()
                                             .fill(Color.clear) // Placeholder for spacing
-                                            .frame(width: segmentWidth)
+                                            .frame(width: segmentWidth, height: segmentHeight)
                                         
                                         if fillRatio > 0 {
                                             Rectangle()
                                                 .fill(level.color)
-                                                .frame(width: segmentWidth * fillRatio)
+                                                .frame(width: segmentWidth * fillRatio, height: segmentHeight)
                                         }
                                     }
                                 }
                             }
+                            .frame(height: graphHeight, alignment: .bottom)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             
                             // Current Position Indicator (Line)
                             if currentHours > 0 && currentHours < maxHours {
                                 Rectangle()
                                     .fill(Color.primary)
-                                    .frame(width: 2, height: 24)
+                                    .frame(width: 2, height: graphHeight) // Full height
                                     .offset(x: min(rWidth, rWidth * (currentHours / maxHours)))
                                     .shadow(radius: 1)
                             }
                         }
                     }
-                    .frame(height: 24)
+                    .frame(height: graphHeight)
                     
                     // Legend / Labels for milestones
                     GeometryReader { geo in

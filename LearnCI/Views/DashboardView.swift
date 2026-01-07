@@ -9,6 +9,7 @@ struct DashboardView: View {
     
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     @Query private var allProfiles: [UserProfile]
+    @Query(sort: \CoachingCheckIn.date, order: .reverse) private var coachingHistory: [CoachingCheckIn]
     
     var activities: [UserActivity] {
         allActivities.filter { $0.userID == authManager.currentUser }
@@ -237,18 +238,29 @@ struct DashboardView: View {
     
     // MARK: - Check-in Logic
     
+    private var nextCheckInMilestone: Int {
+        guard let profile = userProfile else { return 25 }
+        // Determine the base: either the last check-in OR the starting hours (rounded down to nearest 25)
+        // whichever is greater, effectively ignoring "past" milestones covered by starting hours.
+        let startingBase = (profile.startingHours / 25) * 25
+        let base = max(profile.lastCheckInHours, startingBase)
+        return base + 25
+    }
+
     var isCheckInDue: Bool {
-        guard let profile = userProfile else { return false }
+        guard let _ = userProfile else { return false }
         let currentHours = totalMinutes / 60
-        // Trigger every 25 hours
-        return currentHours >= (profile.lastCheckInHours + 25)
+        return currentHours >= nextCheckInMilestone
     }
     
     var hoursToNextMilestone: Int {
-        guard let profile = userProfile else { return 25 }
+        guard let _ = userProfile else { return 25 }
         let currentHours = totalMinutes / 60
-        let nextMilestone = profile.lastCheckInHours + 25
-        return max(0, nextMilestone - currentHours)
+        return max(0, nextCheckInMilestone - currentHours)
+    }
+    
+    var hasCoachingHistory: Bool {
+        !coachingHistory.isEmpty
     }
     
     // MARK: - Views
@@ -274,18 +286,54 @@ struct DashboardView: View {
             }
             .padding(.horizontal)
             
+            .padding(.horizontal)
+            
             // Check-in Banner
-            if isCheckInDue, let profile = userProfile {
-                Button(action: { showCheckInSheet = true }) {
-                    HStack {
-                        Image(systemName: "trophy.fill")
-                            .font(.title)
-                            .foregroundStyle(.yellow)
-                        VStack(alignment: .leading) {
-                            Text("Milestone Reached!")
+            if let profile = userProfile {
+                if !hasCoachingHistory {
+                    // Initial Coaching Prompt
+                    Button(action: { showCheckInSheet = true }) {
+                        HStack {
+                            Image(systemName: "flag.checkered.2.crossed")
+                                .font(.title)
+                                .foregroundStyle(.blue)
+                            VStack(alignment: .leading) {
+                                Text("Start Coaching Journey")
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                Text("Set your baseline and goals.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding()
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
+                        .shadow(color: .blue.opacity(0.3), radius: 5)
+                    }
+                    .padding(.horizontal)
+                    .sheet(isPresented: $showCheckInSheet) {
+                        CoachingCheckInView(
+                            userProfile: profile,
+                            currentHours: totalMinutes / 60,
+                            milestone: totalMinutes / 60 // Initial baseline
+                        )
+                    }
+                } else if isCheckInDue {
+                    // Regular Milestone Prompt
+                    Button(action: { showCheckInSheet = true }) {
+                        HStack {
+                            Image(systemName: "trophy.fill")
+                                .font(.title)
+                                .foregroundStyle(.yellow)
+                            VStack(alignment: .leading) {
+                                Text("Milestone Reached!")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
-                            Text("It's time for your \(profile.lastCheckInHours + 25)h check-in.")
+                            Text("It's time for your \(nextCheckInMilestone)h check-in.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -303,9 +351,10 @@ struct DashboardView: View {
                     CoachingCheckInView(
                         userProfile: profile,
                         currentHours: totalMinutes / 60,
-                        milestone: profile.lastCheckInHours + 25
+                        milestone: nextCheckInMilestone
                     )
                 }
+            }
             }
             
             // Daily Feedback Content
@@ -398,7 +447,7 @@ struct DashboardView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                 Spacer()
-                if let profile = userProfile {
+                if userProfile != nil {
                     let currentHours = totalMinutes / 60
                     Text("\(currentHours)h Total Input")
                         .font(.subheadline)
@@ -411,7 +460,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal)
             
-            if let profile = userProfile {
+            if userProfile != nil {
                 let currentHours = Double(totalMinutes) / 60.0
                 let levels: [(id: Int, range: ClosedRange<Double>, color: Color)] = [
                     (1, 0...50, .teal),

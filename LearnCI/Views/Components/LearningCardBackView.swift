@@ -44,6 +44,6 @@ struct LearningCardBackView: View {
                     .opacity(config.back.studyLinks == .hint ? 0.3 : 1.0)
             }
         }
-        .scaleEffect(x: -1, y: 1) // Mirror effect for the back side of a 3D rotation
+        // Removed .scaleEffect(x: -1, y: 1) as it mirrors text; relying on correct rotation in parent instead
     }
 }

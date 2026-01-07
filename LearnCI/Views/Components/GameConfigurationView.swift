@@ -50,7 +50,6 @@ struct GameConfigurationView: View {
                             iconColor: .purple,
                             text: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
                         ) {
-                            let config = effectiveConfig
                             DisplayConfigurationSummaryView(config: effectiveConfig)
                         }
                     }

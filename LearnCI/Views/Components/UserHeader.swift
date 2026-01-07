@@ -44,7 +44,7 @@ struct UserHeader: View {
                     Image(systemName: "clock.fill")
                         .font(.subheadline)
                         .foregroundStyle(.blue)
-                    Text("\(todayMinutes)m")
+                    Text("\(todayMinutes) / \(profile.dailyGoalMinutes)m")
                         .font(.headline)
                         .monospacedDigit()
                 }

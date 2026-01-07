@@ -270,19 +270,19 @@ struct HistoryView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
-                    .sheet(item: $editingActivity) { activity in
-                        EditActivityView(activity: activity)
-                    }
-                    .sheet(isPresented: $isAddingActivity) {
-                        AddActivityView()
-                    }
-                    .sheet(isPresented: $showDateRangePicker) {
-                        DateRangePickerSheet(startDate: $startDate, endDate: $endDate) {
-                            selectedTimeRange = .custom
-                        }
                     }
                 }
-            }
+                .sheet(item: $editingActivity) { activity in
+                    EditActivityView(activity: activity)
+                }
+                .sheet(isPresented: $isAddingActivity) {
+                    AddActivityView()
+                }
+                .sheet(isPresented: $showDateRangePicker) {
+                    DateRangePickerSheet(startDate: $startDate, endDate: $endDate) {
+                        selectedTimeRange = .custom
+                    }
+                }
             .navigationTitle("Activity")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

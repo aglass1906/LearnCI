@@ -175,7 +175,26 @@ struct DashboardView: View {
                     // We need to wait for profile to be available (Async in SwiftData can be immediate but safe to check)
                     // If profile is missing, we might need to trigger creation or wait (ProfileView handles creation usually)
                     
-                    if let profile = userProfile, wordOfDay == nil {
+                    // Create default profile if missing (Self-healing for fresh app install)
+                    if userProfile == nil {
+                         print("DEBUG: No profile found on Dashboard. Creating default.")
+                         if let userID = authManager.currentUser {
+                             let newProfile = UserProfile(userID: userID)
+                             // Sync with auth data
+                             newProfile.fullName = authManager.currentUserFullName
+                             newProfile.email = authManager.currentUserEmail
+                             newProfile.avatarUrl = authManager.currentUserAvatar
+                             if let googleName = authManager.currentUserFullName {
+                                 newProfile.name = googleName
+                             }
+                             
+                             modelContext.insert(newProfile)
+                             try? modelContext.save()
+                         }
+                    }
+
+                    // Proceed with Word of Day using the (now potentially created) profile
+                    if let profile = profiles.first, wordOfDay == nil {
                         isLoadingWordOfDay = true
                         if let result = await dataManager.fetchWordOfDay(language: profile.currentLanguage, level: profile.currentLevel) {
                             wordOfDay = result.card
@@ -300,7 +319,8 @@ struct DashboardView: View {
                                 .fontWeight(.medium)
                         }
                         Spacer()
-                        moodIcon(for: feedback.rating)
+                        Image(systemName: DailyFeedback.moodIconName(for: feedback.rating))
+                            .foregroundStyle(DailyFeedback.moodColor(for: feedback.rating))
                             .font(.title2)
                     }
                     .padding()
@@ -314,7 +334,8 @@ struct DashboardView: View {
                                     saveDailyFeedback(rating: rating)
                                 }) {
                                     VStack(spacing: 4) {
-                                        moodIcon(for: rating)
+                                        Image(systemName: DailyFeedback.moodIconName(for: rating))
+                                            .foregroundStyle(DailyFeedback.moodColor(for: rating))
                                             .font(.title2)
                                         Text(DailyFeedback.moodLabel(for: rating))
                                             .font(.caption2)
@@ -345,21 +366,7 @@ struct DashboardView: View {
         }
     }
     
-    private func moodIcon(for rating: Int) -> some View {
-        let iconName: String
-        let color: Color
-        switch rating {
-        case 1: iconName = "cloud.rain.fill"; color = .gray
-        case 2: iconName = "cloud.fill"; color = .blue.opacity(0.6)
-        case 3: iconName = "cloud.sun.fill"; color = .orange.opacity(0.7)
-        case 4: iconName = "sun.max.fill"; color = .yellow
-        case 5: iconName = "sparkles"; color = .yellow
-        default: iconName = "questionmark.circle"; color = .gray
-        }
-        
-        return Image(systemName: iconName)
-            .foregroundStyle(color)
-    }
+
     
     private func saveDailyFeedback(rating: Int) {
         print("Saving Daily Feedback: Rating \(rating), User: \(authManager.currentUser ?? "nil")")

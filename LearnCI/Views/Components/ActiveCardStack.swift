@@ -12,23 +12,37 @@ struct ActiveCardStack: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(isFlipped ? Color.blue.opacity(0.1) : Color.orange.opacity(0.1))
                 .shadow(radius: 5)
-            
-            VStack(spacing: 20) {
-                if !isFlipped {
-                    LearningCardFrontView(card: card, deck: deck, config: config)
-                } else {
-                    LearningCardBackView(card: card, deck: deck, config: config)
+                .onTapGesture {
+                    withAnimation(.spring()) {
+                        isFlipped.toggle()
+                    }
                 }
+            
+            ZStack {
+                // Front View (Persisted)
+                LearningCardFrontView(card: card, deck: deck, config: config, isCardFlipped: isFlipped, onFlip: {
+                    withAnimation(.spring()) {
+                        isFlipped.toggle()
+                    }
+                })
+                .opacity(isFlipped ? 0 : 1)
+                .accessibilityHidden(isFlipped)
+                
+                // Back View (Persisted)
+                LearningCardBackView(card: card, deck: deck, config: config)
+                    .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
+                    .opacity(isFlipped ? 1 : 0)
+                    .accessibilityHidden(!isFlipped)
+                    .onTapGesture {
+                        withAnimation(.spring()) {
+                            isFlipped.toggle()
+                        }
+                    }
             }
             .padding()
         }
         .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
         .frame(height: 350)
         .padding()
-        .onTapGesture {
-            withAnimation(.spring()) {
-                isFlipped.toggle()
-            }
-        }
     }
 }

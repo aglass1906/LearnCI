@@ -12,7 +12,7 @@
             "sentenceNative": "I am a student.",
             "audioWordFile": "ja_watashi_word.mp3",
             "audioSentenceFile": "ja_watashi_sentence.mp3",
-            "imageFile": "ja_watashi.jpg"
+            "mediaFile": "ja_watashi.jpg"
         },
         {
             "id": "ja_b_c2",
@@ -22,7 +22,7 @@
             "sentenceNative": "What is your name?",
             "audioWordFile": "ja_anata_word.mp3",
             "audioSentenceFile": "ja_anata_sentence.mp3",
-            "imageFile": "ja_anata.jpg"
+            "mediaFile": "ja_anata.jpg"
         },
         {
             "id": "ja_b_c3",
@@ -32,7 +32,7 @@
             "sentenceNative": "He is my friend.",
             "audioWordFile": "ja_kare_word.mp3",
             "audioSentenceFile": "ja_kare_sentence.mp3",
-            "imageFile": "ja_kare.jpg"
+            "mediaFile": "ja_kare.jpg"
         },
         {
             "id": "ja_b_c4",
@@ -42,7 +42,7 @@
             "sentenceNative": "She is very kind.",
             "audioWordFile": "ja_kanojo_word.mp3",
             "audioSentenceFile": "ja_kanojo_sentence.mp3",
-            "imageFile": "ja_kanojo.jpg"
+            "mediaFile": "ja_kanojo.jpg"
         },
         {
             "id": "ja_b_c5",
@@ -52,7 +52,7 @@
             "sentenceNative": "What is this?",
             "audioWordFile": "ja_kore_word.mp3",
             "audioSentenceFile": "ja_kore_sentence.mp3",
-            "imageFile": "ja_kore.jpg"
+            "mediaFile": "ja_kore.jpg"
         },
         {
             "id": "ja_b_c6",
@@ -62,7 +62,7 @@
             "sentenceNative": "Please give me that.",
             "audioWordFile": "ja_sore_word.mp3",
             "audioSentenceFile": "ja_sore_sentence.mp3",
-            "imageFile": "ja_sore.jpg"
+            "mediaFile": "ja_sore.jpg"
         },
         {
             "id": "ja_b_c7",
@@ -72,7 +72,7 @@
             "sentenceNative": "That over there is a mountain.",
             "audioWordFile": "ja_are_word.mp3",
             "audioSentenceFile": "ja_are_sentence.mp3",
-            "imageFile": "ja_are.jpg"
+            "mediaFile": "ja_are.jpg"
         },
         {
             "id": "ja_b_c8",
@@ -82,7 +82,7 @@
             "sentenceNative": "Where is the station?",
             "audioWordFile": "ja_doko_word.mp3",
             "audioSentenceFile": "ja_doko_sentence.mp3",
-            "imageFile": "ja_doko.jpg"
+            "mediaFile": "ja_doko.jpg"
         },
         {
             "id": "ja_b_c9",
@@ -92,7 +92,7 @@
             "sentenceNative": "When did you come to Japan?",
             "audioWordFile": "ja_itsu_word.mp3",
             "audioSentenceFile": "ja_itsu_sentence.mp3",
-            "imageFile": "ja_itsu.jpg"
+            "mediaFile": "ja_itsu.jpg"
         },
         {
             "id": "ja_b_c10",
@@ -102,7 +102,7 @@
             "sentenceNative": "Who came?",
             "audioWordFile": "ja_dare_word.mp3",
             "audioSentenceFile": "ja_dare_sentence.mp3",
-            "imageFile": "ja_dare.jpg"
+            "mediaFile": "ja_dare.jpg"
         },
         {
             "id": "ja_b_c11",
@@ -112,7 +112,7 @@
             "sentenceNative": "This house is big.",
             "audioWordFile": "ja_okii_word.mp3",
             "audioSentenceFile": "ja_okii_sentence.mp3",
-            "imageFile": "ja_okii.jpg"
+            "mediaFile": "ja_okii.jpg"
         },
         {
             "id": "ja_b_c12",
@@ -122,7 +122,7 @@
             "sentenceNative": "There is a small cat.",
             "audioWordFile": "ja_chiisai_word.mp3",
             "audioSentenceFile": "ja_chiisai_sentence.mp3",
-            "imageFile": "ja_chiisai.jpg"
+            "mediaFile": "ja_chiisai.jpg"
         },
         {
             "id": "ja_b_c13",
@@ -132,7 +132,7 @@
             "sentenceNative": "I bought a new car.",
             "audioWordFile": "ja_atarashii_word.mp3",
             "audioSentenceFile": "ja_atarashii_sentence.mp3",
-            "imageFile": "ja_atarashii.jpg"
+            "mediaFile": "ja_atarashii.jpg"
         },
         {
             "id": "ja_b_c14",
@@ -142,7 +142,7 @@
             "sentenceNative": "This is an old book.",
             "audioWordFile": "ja_furui_word.mp3",
             "audioSentenceFile": "ja_furui_sentence.mp3",
-            "imageFile": "ja_furui.jpg"
+            "mediaFile": "ja_furui.jpg"
         },
         {
             "id": "ja_b_c15",
@@ -152,7 +152,7 @@
             "sentenceNative": "Today is very hot.",
             "audioWordFile": "ja_atsui_word.mp3",
             "audioSentenceFile": "ja_atsui_sentence.mp3",
-            "imageFile": "ja_atsui.jpg"
+            "mediaFile": "ja_atsui.jpg"
         },
         {
             "id": "ja_b_c16",
@@ -162,7 +162,7 @@
             "sentenceNative": "Yesterday was cold.",
             "audioWordFile": "ja_samui_word.mp3",
             "audioSentenceFile": "ja_samui_sentence.mp3",
-            "imageFile": "ja_samui.jpg"
+            "mediaFile": "ja_samui.jpg"
         },
         {
             "id": "ja_b_c17",
@@ -172,7 +172,7 @@
             "sentenceNative": "This watch is expensive.",
             "audioWordFile": "ja_takai_word.mp3",
             "audioSentenceFile": "ja_takai_sentence.mp3",
-            "imageFile": "ja_takai.jpg"
+            "mediaFile": "ja_takai.jpg"
         },
         {
             "id": "ja_b_c18",
@@ -182,7 +182,7 @@
             "sentenceNative": "It's a cheap and delicious restaurant.",
             "audioWordFile": "ja_yasui_word.mp3",
             "audioSentenceFile": "ja_yasui_sentence.mp3",
-            "imageFile": "ja_yasui.jpg"
+            "mediaFile": "ja_yasui.jpg"
         },
         {
             "id": "ja_b_c19",
@@ -192,7 +192,7 @@
             "sentenceNative": "I eat breakfast.",
             "audioWordFile": "ja_taberu_word.mp3",
             "audioSentenceFile": "ja_taberu_sentence.mp3",
-            "imageFile": "ja_taberu.jpg"
+            "mediaFile": "ja_taberu.jpg"
         },
         {
             "id": "ja_b_c20",
@@ -202,7 +202,7 @@
             "sentenceNative": "Do you drink tea?",
             "audioWordFile": "ja_nomu_word.mp3",
             "audioSentenceFile": "ja_nomu_sentence.mp3",
-            "imageFile": "ja_nomu.jpg"
+            "mediaFile": "ja_nomu.jpg"
         },
         {
             "id": "ja_b_c21",
@@ -212,7 +212,7 @@
             "sentenceNative": "I am going to school tomorrow.",
             "audioWordFile": "ja_iku_word.mp3",
             "audioSentenceFile": "ja_iku_sentence.mp3",
-            "imageFile": "ja_iku.jpg"
+            "mediaFile": "ja_iku.jpg"
         },
         {
             "id": "ja_b_c22",
@@ -222,7 +222,7 @@
             "sentenceNative": "My friend came to my house.",
             "audioWordFile": "ja_kuru_word.mp3",
             "audioSentenceFile": "ja_kuru_sentence.mp3",
-            "imageFile": "ja_kuru.jpg"
+            "mediaFile": "ja_kuru.jpg"
         },
         {
             "id": "ja_b_c23",
@@ -232,7 +232,7 @@
             "sentenceNative": "I watch TV.",
             "audioWordFile": "ja_miru_word.mp3",
             "audioSentenceFile": "ja_miru_sentence.mp3",
-            "imageFile": "ja_miru.jpg"
+            "mediaFile": "ja_miru.jpg"
         },
         {
             "id": "ja_b_c24",
@@ -242,7 +242,7 @@
             "sentenceNative": "I am listening to music.",
             "audioWordFile": "ja_kiku_word.mp3",
             "audioSentenceFile": "ja_kiku_sentence.mp3",
-            "imageFile": "ja_kiku.jpg"
+            "mediaFile": "ja_kiku.jpg"
         },
         {
             "id": "ja_b_c25",
@@ -252,7 +252,7 @@
             "sentenceNative": "I wrote a letter.",
             "audioWordFile": "ja_kaku_word.mp3",
             "audioSentenceFile": "ja_kaku_sentence.mp3",
-            "imageFile": "ja_kaku.jpg"
+            "mediaFile": "ja_kaku.jpg"
         },
         {
             "id": "ja_b_c26",
@@ -262,7 +262,7 @@
             "sentenceNative": "Let's read a book.",
             "audioWordFile": "ja_yomu_word.mp3",
             "audioSentenceFile": "ja_yomu_sentence.mp3",
-            "imageFile": "ja_yomu.jpg"
+            "mediaFile": "ja_yomu.jpg"
         },
         {
             "id": "ja_b_c27",
@@ -272,7 +272,7 @@
             "sentenceNative": "I speak in Japanese.",
             "audioWordFile": "ja_hanasu_word.mp3",
             "audioSentenceFile": "ja_hanasu_sentence.mp3",
-            "imageFile": "ja_hanasu.jpg"
+            "mediaFile": "ja_hanasu.jpg"
         },
         {
             "id": "ja_b_c28",
@@ -282,7 +282,7 @@
             "sentenceNative": "I don't understand the meaning.",
             "audioWordFile": "ja_wakaru_word.mp3",
             "audioSentenceFile": "ja_wakaru_sentence.mp3",
-            "imageFile": "ja_wakaru.jpg"
+            "mediaFile": "ja_wakaru.jpg"
         },
         {
             "id": "ja_b_c29",
@@ -292,7 +292,7 @@
             "sentenceNative": "I want to buy new clothes.",
             "audioWordFile": "ja_kau_word.mp3",
             "audioSentenceFile": "ja_kau_sentence.mp3",
-            "imageFile": "ja_kau.jpg"
+            "mediaFile": "ja_kau.jpg"
         },
         {
             "id": "ja_b_c30",
@@ -302,7 +302,7 @@
             "sentenceNative": "Please wait here.",
             "audioWordFile": "ja_matsu_word.mp3",
             "audioSentenceFile": "ja_matsu_sentence.mp3",
-            "imageFile": "ja_matsu.jpg"
+            "mediaFile": "ja_matsu.jpg"
         },
         {
             "id": "ja_b_c31",
@@ -312,7 +312,7 @@
             "sentenceNative": "I have no time.",
             "audioWordFile": "ja_jikan_word.mp3",
             "audioSentenceFile": "ja_jikan_sentence.mp3",
-            "imageFile": "ja_jikan.jpg"
+            "mediaFile": "ja_jikan.jpg"
         },
         {
             "id": "ja_b_c32",
@@ -322,7 +322,7 @@
             "sentenceNative": "Yesterday was a work day.",
             "audioWordFile": "ja_shigoto_word.mp3",
             "audioSentenceFile": "ja_shigoto_sentence.mp3",
-            "imageFile": "ja_shigoto.jpg"
+            "mediaFile": "ja_shigoto.jpg"
         },
         {
             "id": "ja_b_c33",
@@ -332,7 +332,7 @@
             "sentenceNative": "I paid the money.",
             "audioWordFile": "ja_okane_word.mp3",
             "audioSentenceFile": "ja_okane_sentence.mp3",
-            "imageFile": "ja_okane.jpg"
+            "mediaFile": "ja_okane.jpg"
         },
         {
             "id": "ja_b_c34",
@@ -342,7 +342,7 @@
             "sentenceNative": "Please make a phone call.",
             "audioWordFile": "ja_denwa_word.mp3",
             "audioSentenceFile": "ja_denwa_sentence.mp3",
-            "imageFile": "ja_denwa.jpg"
+            "mediaFile": "ja_denwa.jpg"
         },
         {
             "id": "ja_b_c35",
@@ -352,7 +352,7 @@
             "sentenceNative": "What is for lunch?",
             "audioWordFile": "ja_gohan_word.mp3",
             "audioSentenceFile": "ja_gohan_sentence.mp3",
-            "imageFile": "ja_gohan.jpg"
+            "mediaFile": "ja_gohan.jpg"
         },
         {
             "id": "ja_b_c36",
@@ -362,7 +362,7 @@
             "sentenceNative": "Let's drink tea.",
             "audioWordFile": "ja_ocha_word.mp3",
             "audioSentenceFile": "ja_ocha_sentence.mp3",
-            "imageFile": "ja_ocha.jpg"
+            "mediaFile": "ja_ocha.jpg"
         },
         {
             "id": "ja_b_c37",
@@ -372,7 +372,7 @@
             "sentenceNative": "I don't eat meat.",
             "audioWordFile": "ja_niku_word.mp3",
             "audioSentenceFile": "ja_niku_sentence.mp3",
-            "imageFile": "ja_niku.jpg"
+            "mediaFile": "ja_niku.jpg"
         },
         {
             "id": "ja_b_c38",
@@ -382,7 +382,7 @@
             "sentenceNative": "The fish is swimming.",
             "audioWordFile": "ja_sakana_word.mp3",
             "audioSentenceFile": "ja_sakana_sentence.mp3",
-            "imageFile": "ja_sakana.jpg"
+            "mediaFile": "ja_sakana.jpg"
         },
         {
             "id": "ja_b_c39",
@@ -392,7 +392,7 @@
             "sentenceNative": "I must eat vegetables.",
             "audioWordFile": "ja_yasai_word.mp3",
             "audioSentenceFile": "ja_yasai_sentence.mp3",
-            "imageFile": "ja_yasai.jpg"
+            "mediaFile": "ja_yasai.jpg"
         },
         {
             "id": "ja_b_c40",
@@ -402,7 +402,7 @@
             "sentenceNative": "I like fruit.",
             "audioWordFile": "ja_kudamono_word.mp3",
             "audioSentenceFile": "ja_kudamono_sentence.mp3",
-            "imageFile": "ja_kudamono.jpg"
+            "mediaFile": "ja_kudamono.jpg"
         },
         {
             "id": "ja_b_c41",
@@ -412,7 +412,7 @@
             "sentenceNative": "I bought two eggs.",
             "audioWordFile": "ja_tamago_word.mp3",
             "audioSentenceFile": "ja_tamago_sentence.mp3",
-            "imageFile": "ja_tamago.jpg"
+            "mediaFile": "ja_tamago.jpg"
         },
         {
             "id": "ja_b_c42",
@@ -422,7 +422,7 @@
             "sentenceNative": "I baked bread.",
             "audioWordFile": "ja_pan_word.mp3",
             "audioSentenceFile": "ja_pan_sentence.mp3",
-            "imageFile": "ja_pan.jpg"
+            "mediaFile": "ja_pan.jpg"
         },
         {
             "id": "ja_b_c43",
@@ -432,7 +432,7 @@
             "sentenceNative": "Let's go by car.",
             "audioWordFile": "ja_kuruma_word.mp3",
             "audioSentenceFile": "ja_kuruma_sentence.mp3",
-            "imageFile": "ja_kuruma.jpg"
+            "mediaFile": "ja_kuruma.jpg"
         },
         {
             "id": "ja_b_c44",
@@ -442,7 +442,7 @@
             "sentenceNative": "The train came.",
             "audioWordFile": "ja_densha_word.mp3",
             "audioSentenceFile": "ja_densha_sentence.mp3",
-            "imageFile": "ja_densha.jpg"
+            "mediaFile": "ja_densha.jpg"
         },
         {
             "id": "ja_b_c45",
@@ -452,7 +452,7 @@
             "sentenceNative": "I go to school by bicycle.",
             "audioWordFile": "ja_jitensha_word.mp3",
             "audioSentenceFile": "ja_jitensha_sentence.mp3",
-            "imageFile": "ja_jitensha.jpg"
+            "mediaFile": "ja_jitensha.jpg"
         },
         {
             "id": "ja_b_c46",
@@ -462,7 +462,7 @@
             "sentenceNative": "I rode an airplane.",
             "audioWordFile": "ja_hikoki_word.mp3",
             "audioSentenceFile": "ja_hikoki_sentence.mp3",
-            "imageFile": "ja_hikoki.jpg"
+            "mediaFile": "ja_hikoki.jpg"
         },
         {
             "id": "ja_b_c47",
@@ -472,7 +472,7 @@
             "sentenceNative": "I got lost on the road.",
             "audioWordFile": "ja_michi_word.mp3",
             "audioSentenceFile": "ja_michi_sentence.mp3",
-            "imageFile": "ja_michi.jpg"
+            "mediaFile": "ja_michi.jpg"
         },
         {
             "id": "ja_b_c48",
@@ -482,7 +482,7 @@
             "sentenceNative": "The station is near from here.",
             "audioWordFile": "ja_eki_word.mp3",
             "audioSentenceFile": "ja_eki_sentence.mp3",
-            "imageFile": "ja_eki.jpg"
+            "mediaFile": "ja_eki.jpg"
         },
         {
             "id": "ja_b_c49",
@@ -492,7 +492,7 @@
             "sentenceNative": "This shop is famous.",
             "audioWordFile": "ja_mise_word.mp3",
             "audioSentenceFile": "ja_mise_sentence.mp3",
-            "imageFile": "ja_mise.jpg"
+            "mediaFile": "ja_mise.jpg"
         },
         {
             "id": "ja_b_c50",
@@ -502,7 +502,7 @@
             "sentenceNative": "I want to buy a house.",
             "audioWordFile": "ja_ie_word.mp3",
             "audioSentenceFile": "ja_ie_sentence.mp3",
-            "imageFile": "ja_ie.jpg"
+            "mediaFile": "ja_ie.jpg"
         },
         {
             "id": "ja_b_c51",
@@ -512,7 +512,7 @@
             "sentenceNative": "I cleaned the room.",
             "audioWordFile": "ja_heya_word.mp3",
             "audioSentenceFile": "ja_heya_sentence.mp3",
-            "imageFile": "ja_heya.jpg"
+            "mediaFile": "ja_heya.jpg"
         },
         {
             "id": "ja_b_c52",
@@ -522,7 +522,7 @@
             "sentenceNative": "Please open the window.",
             "audioWordFile": "ja_mado_word.mp3",
             "audioSentenceFile": "ja_mado_sentence.mp3",
-            "imageFile": "ja_mado.jpg"
+            "mediaFile": "ja_mado.jpg"
         },
         {
             "id": "ja_b_c53",
@@ -532,7 +532,7 @@
             "sentenceNative": "I wash the clothes.",
             "audioWordFile": "ja_fuku_word.mp3",
             "audioSentenceFile": "ja_fuku_sentence.mp3",
-            "imageFile": "ja_fuku.jpg"
+            "mediaFile": "ja_fuku.jpg"
         },
         {
             "id": "ja_b_c54",
@@ -542,7 +542,7 @@
             "sentenceNative": "I want new shoes.",
             "audioWordFile": "ja_kutsu_word.mp3",
             "audioSentenceFile": "ja_kutsu_sentence.mp3",
-            "imageFile": "ja_kutsu.jpg"
+            "mediaFile": "ja_kutsu.jpg"
         },
         {
             "id": "ja_b_c55",
@@ -552,7 +552,7 @@
             "sentenceNative": "It is raining today.",
             "audioWordFile": "ja_ame_word.mp3",
             "audioSentenceFile": "ja_ame_sentence.mp3",
-            "imageFile": "ja_ame.jpg"
+            "mediaFile": "ja_ame.jpg"
         },
         {
             "id": "ja_b_c56",
@@ -562,7 +562,7 @@
             "sentenceNative": "The snow has piled up.",
             "audioWordFile": "ja_yuki_word.mp3",
             "audioSentenceFile": "ja_yuki_sentence.mp3",
-            "imageFile": "ja_yuki.jpg"
+            "mediaFile": "ja_yuki.jpg"
         },
         {
             "id": "ja_b_c57",
@@ -572,7 +572,7 @@
             "sentenceNative": "The wind is strong, isn't it?",
             "audioWordFile": "ja_kaze_word.mp3",
             "audioSentenceFile": "ja_kaze_sentence.mp3",
-            "imageFile": "ja_kaze.jpg"
+            "mediaFile": "ja_kaze.jpg"
         },
         {
             "id": "ja_b_c58",
@@ -582,7 +582,7 @@
             "sentenceNative": "I can see the blue sky.",
             "audioWordFile": "ja_sora_word.mp3",
             "audioSentenceFile": "ja_sora_sentence.mp3",
-            "imageFile": "ja_sora.jpg"
+            "mediaFile": "ja_sora.jpg"
         },
         {
             "id": "ja_b_c59",
@@ -592,7 +592,7 @@
             "sentenceNative": "I climbed a mountain.",
             "audioWordFile": "ja_yama_word.mp3",
             "audioSentenceFile": "ja_yama_sentence.mp3",
-            "imageFile": "ja_yama.jpg"
+            "mediaFile": "ja_yama.jpg"
         },
         {
             "id": "ja_b_c60",
@@ -602,7 +602,7 @@
             "sentenceNative": "I swam in the river.",
             "audioWordFile": "ja_kawa_word.mp3",
             "audioSentenceFile": "ja_kawa_sentence.mp3",
-            "imageFile": "ja_kawa.jpg"
+            "mediaFile": "ja_kawa.jpg"
         },
         {
             "id": "ja_b_c61",
@@ -612,7 +612,7 @@
             "sentenceNative": "I want to go to the sea.",
             "audioWordFile": "ja_umi_word.mp3",
             "audioSentenceFile": "ja_umi_sentence.mp3",
-            "imageFile": "ja_umi.jpg"
+            "mediaFile": "ja_umi.jpg"
         },
         {
             "id": "ja_b_c62",
@@ -622,7 +622,7 @@
             "sentenceNative": "The light is shining through.",
             "audioWordFile": "ja_hikari_word.mp3",
             "audioSentenceFile": "ja_hikari_sentence.mp3",
-            "imageFile": "ja_hikari.jpg"
+            "mediaFile": "ja_hikari.jpg"
         },
         {
             "id": "ja_b_c63",
@@ -632,7 +632,7 @@
             "sentenceNative": "The shadow became long.",
             "audioWordFile": "ja_kage_word.mp3",
             "audioSentenceFile": "ja_kage_sentence.mp3",
-            "imageFile": "ja_kage.jpg"
+            "mediaFile": "ja_kage.jpg"
         },
         {
             "id": "ja_b_c64",
@@ -642,7 +642,7 @@
             "sentenceNative": "The flower bloomed.",
             "audioWordFile": "ja_hana_word.mp3",
             "audioSentenceFile": "ja_hana_sentence.mp3",
-            "imageFile": "ja_hana.jpg"
+            "mediaFile": "ja_hana.jpg"
         },
         {
             "id": "ja_b_c65",
@@ -652,7 +652,7 @@
             "sentenceNative": "There is a big tree.",
             "audioWordFile": "ja_ki_word.mp3",
             "audioSentenceFile": "ja_ki_sentence.mp3",
-            "imageFile": "ja_ki.jpg"
+            "mediaFile": "ja_ki.jpg"
         },
         {
             "id": "ja_b_c66",
@@ -662,7 +662,7 @@
             "sentenceNative": "Which color do you like?",
             "audioWordFile": "ja_iro_word.mp3",
             "audioSentenceFile": "ja_iro_sentence.mp3",
-            "imageFile": "ja_iro.jpg"
+            "mediaFile": "ja_iro.jpg"
         },
         {
             "id": "ja_b_c67",
@@ -672,7 +672,7 @@
             "sentenceNative": "I eat a red apple.",
             "audioWordFile": "ja_aka_word.mp3",
             "audioSentenceFile": "ja_aka_sentence.mp3",
-            "imageFile": "ja_aka.jpg"
+            "mediaFile": "ja_aka.jpg"
         },
         {
             "id": "ja_b_c68",
@@ -682,7 +682,7 @@
             "sentenceNative": "I am wearing a blue shirt.",
             "audioWordFile": "ja_ao_word.mp3",
             "audioSentenceFile": "ja_ao_sentence.mp3",
-            "imageFile": "ja_ao.jpg"
+            "mediaFile": "ja_ao.jpg"
         },
         {
             "id": "ja_b_c69",
@@ -692,7 +692,7 @@
             "sentenceNative": "A white bird is flying.",
             "audioWordFile": "ja_shiro_word.mp3",
             "audioSentenceFile": "ja_shiro_sentence.mp3",
-            "imageFile": "ja_shiro.jpg"
+            "mediaFile": "ja_shiro.jpg"
         },
         {
             "id": "ja_b_c70",
@@ -702,7 +702,7 @@
             "sentenceNative": "It's a black bag.",
             "audioWordFile": "ja_kuro_word.mp3",
             "audioSentenceFile": "ja_kuro_sentence.mp3",
-            "imageFile": "ja_kuro.jpg"
+            "mediaFile": "ja_kuro.jpg"
         },
         {
             "id": "ja_b_c71",
@@ -712,7 +712,7 @@
             "sentenceNative": "The moon is beautiful, isn't it?",
             "audioWordFile": "ja_tsuki_word.mp3",
             "audioSentenceFile": "ja_tsuki_sentence.mp3",
-            "imageFile": "ja_tsuki.jpg"
+            "mediaFile": "ja_tsuki.jpg"
         },
         {
             "id": "ja_b_c72",
@@ -722,7 +722,7 @@
             "sentenceNative": "I am using fire.",
             "audioWordFile": "ja_hi_word.mp3",
             "audioSentenceFile": "ja_hi_sentence.mp3",
-            "imageFile": "ja_hi.jpg"
+            "mediaFile": "ja_hi.jpg"
         },
         {
             "id": "ja_b_c73",
@@ -732,7 +732,7 @@
             "sentenceNative": "Wednesday is a holiday.",
             "audioWordFile": "ja_suiyobi_word.mp3",
             "audioSentenceFile": "ja_suiyobi_sentence.mp3",
-            "imageFile": "ja_suiyobi.jpg"
+            "mediaFile": "ja_suiyobi.jpg"
         },
         {
             "id": "ja_b_c74",
@@ -742,7 +742,7 @@
             "sentenceNative": "Let's meet on Thursday.",
             "audioWordFile": "ja_mokuyobi_word.mp3",
             "audioSentenceFile": "ja_mokuyobi_sentence.mp3",
-            "imageFile": "ja_mokuyobi.jpg"
+            "mediaFile": "ja_mokuyobi.jpg"
         },
         {
             "id": "ja_b_c75",
@@ -752,7 +752,7 @@
             "sentenceNative": "Friday night is fun.",
             "audioWordFile": "ja_kinyobi_word.mp3",
             "audioSentenceFile": "ja_kinyobi_sentence.mp3",
-            "imageFile": "ja_kinyobi.jpg"
+            "mediaFile": "ja_kinyobi.jpg"
         },
         {
             "id": "ja_b_c76",
@@ -762,7 +762,7 @@
             "sentenceNative": "I'm going shopping on Saturday.",
             "audioWordFile": "ja_doyobi_word.mp3",
             "audioSentenceFile": "ja_doyobi_sentence.mp3",
-            "imageFile": "ja_doyobi.jpg"
+            "mediaFile": "ja_doyobi.jpg"
         },
         {
             "id": "ja_b_c77",
@@ -772,7 +772,7 @@
             "sentenceNative": "I will take it easy on Sunday.",
             "audioWordFile": "ja_nichiyobi_word.mp3",
             "audioSentenceFile": "ja_nichiyobi_sentence.mp3",
-            "imageFile": "ja_nichiyobi.jpg"
+            "mediaFile": "ja_nichiyobi.jpg"
         },
         {
             "id": "ja_b_c78",
@@ -782,7 +782,7 @@
             "sentenceNative": "Please move your body.",
             "audioWordFile": "ja_karada_word.mp3",
             "audioSentenceFile": "ja_karada_sentence.mp3",
-            "imageFile": "ja_karada.jpg"
+            "mediaFile": "ja_karada.jpg"
         },
         {
             "id": "ja_b_c79",
@@ -792,7 +792,7 @@
             "sentenceNative": "You are smart (have a good head).",
             "audioWordFile": "ja_atama_word.mp3",
             "audioSentenceFile": "ja_atama_sentence.mp3",
-            "imageFile": "ja_atama.jpg"
+            "mediaFile": "ja_atama.jpg"
         },
         {
             "id": "ja_b_c80",
@@ -802,7 +802,7 @@
             "sentenceNative": "My eyes are tired.",
             "audioWordFile": "ja_me_word.mp3",
             "audioSentenceFile": "ja_me_sentence.mp3",
-            "imageFile": "ja_me.jpg"
+            "mediaFile": "ja_me.jpg"
         },
         {
             "id": "ja_b_c81",
@@ -812,7 +812,7 @@
             "sentenceNative": "My ear hurts.",
             "audioWordFile": "ja_mimi_word.mp3",
             "audioSentenceFile": "ja_mimi_sentence.mp3",
-            "imageFile": "ja_mimi.jpg"
+            "mediaFile": "ja_mimi.jpg"
         },
         {
             "id": "ja_b_c82",
@@ -822,7 +822,7 @@
             "sentenceNative": "Please open your mouth.",
             "audioWordFile": "ja_kuchi_word.mp3",
             "audioSentenceFile": "ja_kuchi_sentence.mp3",
-            "imageFile": "ja_kuchi.jpg"
+            "mediaFile": "ja_kuchi.jpg"
         },
         {
             "id": "ja_b_c83",
@@ -832,7 +832,7 @@
             "sentenceNative": "I washed my hands.",
             "audioWordFile": "ja_te_word.mp3",
             "audioSentenceFile": "ja_te_sentence.mp3",
-            "imageFile": "ja_te.jpg"
+            "mediaFile": "ja_te.jpg"
         },
         {
             "id": "ja_b_c84",
@@ -842,7 +842,7 @@
             "sentenceNative": "His legs are long.",
             "audioWordFile": "ja_ashi_word.mp3",
             "audioSentenceFile": "ja_ashi_sentence.mp3",
-            "imageFile": "ja_ashi.jpg"
+            "mediaFile": "ja_ashi.jpg"
         },
         {
             "id": "ja_b_c85",
@@ -852,7 +852,7 @@
             "sentenceNative": "My heart was warmed.",
             "audioWordFile": "ja_kokoro_word.mp3",
             "audioSentenceFile": "ja_kokoro_sentence.mp3",
-            "imageFile": "ja_kokoro.jpg"
+            "mediaFile": "ja_kokoro.jpg"
         },
         {
             "id": "ja_b_c86",
@@ -862,7 +862,7 @@
             "sentenceNative": "The voice is small (quiet).",
             "audioWordFile": "ja_koe_word.mp3",
             "audioSentenceFile": "ja_koe_sentence.mp3",
-            "imageFile": "ja_koe.jpg"
+            "mediaFile": "ja_koe.jpg"
         },
         {
             "id": "ja_b_c87",
@@ -872,7 +872,7 @@
             "sentenceNative": "What sound is that?",
             "audioWordFile": "ja_oto_word.mp3",
             "audioSentenceFile": "ja_oto_sentence.mp3",
-            "imageFile": "ja_oto.jpg"
+            "mediaFile": "ja_oto.jpg"
         },
         {
             "id": "ja_b_c88",
@@ -882,7 +882,7 @@
             "sentenceNative": "I was free yesterday.",
             "audioWordFile": "ja_kinou_word.mp3",
             "audioSentenceFile": "ja_kinou_sentence.mp3",
-            "imageFile": "ja_kinou.jpg"
+            "mediaFile": "ja_kinou.jpg"
         },
         {
             "id": "ja_b_c89",
@@ -892,7 +892,7 @@
             "sentenceNative": "I am busy today.",
             "audioWordFile": "ja_kyo_word.mp3",
             "audioSentenceFile": "ja_kyo_sentence.mp3",
-            "imageFile": "ja_kyo.jpg"
+            "mediaFile": "ja_kyo.jpg"
         },
         {
             "id": "ja_b_c90",
@@ -902,7 +902,7 @@
             "sentenceNative": "It will probably rain tomorrow.",
             "audioWordFile": "ja_ashita_word.mp3",
             "audioSentenceFile": "ja_ashita_sentence.mp3",
-            "imageFile": "ja_ashita.jpg"
+            "mediaFile": "ja_ashita.jpg"
         },
         {
             "id": "ja_b_c91",
@@ -912,7 +912,7 @@
             "sentenceNative": "I play tennis every week.",
             "audioWordFile": "ja_maishu_word.mp3",
             "audioSentenceFile": "ja_maishu_sentence.mp3",
-            "imageFile": "ja_maishu.jpg"
+            "mediaFile": "ja_maishu.jpg"
         },
         {
             "id": "ja_b_c92",
@@ -922,7 +922,7 @@
             "sentenceNative": "I came to Japan last month.",
             "audioWordFile": "ja_sengetsu_word.mp3",
             "audioSentenceFile": "ja_sengetsu_sentence.mp3",
-            "imageFile": "ja_sengetsu.jpg"
+            "mediaFile": "ja_sengetsu.jpg"
         },
         {
             "id": "ja_b_c93",
@@ -932,7 +932,7 @@
             "sentenceNative": "I will graduate next year.",
             "audioWordFile": "ja_rainen_word.mp3",
             "audioSentenceFile": "ja_rainen_sentence.mp3",
-            "imageFile": "ja_rainen.jpg"
+            "mediaFile": "ja_rainen.jpg"
         },
         {
             "id": "ja_b_c94",
@@ -942,7 +942,7 @@
             "sentenceNative": "I study every day.",
             "audioWordFile": "ja_mainichi_word.mp3",
             "audioSentenceFile": "ja_mainichi_sentence.mp3",
-            "imageFile": "ja_mainichi.jpg"
+            "mediaFile": "ja_mainichi.jpg"
         },
         {
             "id": "ja_b_c95",
@@ -952,7 +952,7 @@
             "sentenceNative": "I sometimes take a walk.",
             "audioWordFile": "ja_tokidoki_word.mp3",
             "audioSentenceFile": "ja_tokidoki_sentence.mp3",
-            "imageFile": "ja_tokidoki.jpg"
+            "mediaFile": "ja_tokidoki.jpg"
         },
         {
             "id": "ja_b_c96",
@@ -962,7 +962,7 @@
             "sentenceNative": "It's no good at all.",
             "audioWordFile": "ja_zenzen_word.mp3",
             "audioSentenceFile": "ja_zenzen_sentence.mp3",
-            "imageFile": "ja_zenzen.jpg"
+            "mediaFile": "ja_zenzen.jpg"
         },
         {
             "id": "ja_b_c97",
@@ -972,7 +972,7 @@
             "sentenceNative": "The trip was fun.",
             "audioWordFile": "ja_tanoshii_word.mp3",
             "audioSentenceFile": "ja_tanoshii_sentence.mp3",
-            "imageFile": "ja_tanoshii.jpg"
+            "mediaFile": "ja_tanoshii.jpg"
         },
         {
             "id": "ja_b_c98",
@@ -982,7 +982,7 @@
             "sentenceNative": "The test was difficult.",
             "audioWordFile": "ja_muzukashii_word.mp3",
             "audioSentenceFile": "ja_muzukashii_sentence.mp3",
-            "imageFile": "ja_muzukashii.jpg"
+            "mediaFile": "ja_muzukashii.jpg"
         },
         {
             "id": "ja_b_c99",
@@ -992,7 +992,7 @@
             "sentenceNative": "This problem is easy.",
             "audioWordFile": "ja_yasashii_word.mp3",
             "audioSentenceFile": "ja_yasashii_sentence.mp3",
-            "imageFile": "ja_yasashii.jpg"
+            "mediaFile": "ja_yasashii.jpg"
         },
         {
             "id": "ja_b_c100",
@@ -1002,7 +1002,7 @@
             "sentenceNative": "Are you well?",
             "audioWordFile": "ja_genki_word.mp3",
             "audioSentenceFile": "ja_genki_sentence.mp3",
-            "imageFile": "ja_genki.jpg"
+            "mediaFile": "ja_genki.jpg"
         }
     ]
 }

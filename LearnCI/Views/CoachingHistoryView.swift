@@ -152,7 +152,8 @@ struct CoachingHistoryView: View {
                             
                             // Mood
                             VStack(alignment: .trailing) {
-                                moodIcon(for: item.rating)
+                                Image(systemName: DailyFeedback.moodIconName(for: item.rating))
+                                    .foregroundStyle(DailyFeedback.moodColor(for: item.rating))
                                     .font(.title2)
                                 Text(item.moodDescription)
                                     .font(.caption2)
@@ -220,19 +221,5 @@ struct CoachingHistoryView: View {
         }
     }
     
-    private func moodIcon(for rating: Int) -> some View {
-        let iconName: String
-        let color: Color
-        switch rating {
-        case 1: iconName = "cloud.rain.fill"; color = .gray
-        case 2: iconName = "cloud.fill"; color = .blue.opacity(0.6)
-        case 3: iconName = "cloud.sun.fill"; color = .orange.opacity(0.7)
-        case 4: iconName = "sun.max.fill"; color = .yellow
-        case 5: iconName = "sparkles"; color = .yellow
-        default: iconName = "questionmark.circle"; color = .gray
-        }
-        
-        return Image(systemName: iconName)
-            .foregroundStyle(color)
-    }
+
 }

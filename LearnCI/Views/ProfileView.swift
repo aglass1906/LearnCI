@@ -20,6 +20,8 @@ struct ProfileView: View {
     @State private var dailyCardGoal: Double = 20
     @State private var selectedGamePreset: GameConfiguration.Preset = .inputFocus
     @State private var startingHours: Int = 0
+    @State private var ttsRate: Float = 0.5
+    @State private var isEditing: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -42,25 +44,24 @@ struct ProfileView: View {
                             TextField("Location", text: $location)
                                 .textContentType(.location)
                             
-                            Button(action: {
-                                locationManager.requestLocationAndAddress()
-                            }) {
-                                Image(systemName: "location.fill")
-                                    .foregroundColor(.blue)
+                            if isEditing {
+                                Button(action: {
+                                    locationManager.requestLocationAndAddress()
+                                }) {
+                                    Image(systemName: "location.fill")
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                         
-                        if locationManager.isLoading {
-                            Text("Locating...")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else if let error = locationManager.errorMessage {
-                            Text(error)
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        }
+                        // ... location status text ...
                     }
                     
+
+                }
+                .disabled(!isEditing)
+                
+                Section(header: Text("Language Learning")) {
                     Picker("Target Language", selection: $selectedLanguage) {
                         ForEach(Language.allCases) { lang in
                             Text("\(lang.flag) \(lang.rawValue)").tag(lang)
@@ -72,28 +73,67 @@ struct ProfileView: View {
                             Text("\(level.rawValue) (\(level.cerCode))").tag(level)
                         }
                     }
-                }
-                
-                Section(header: Text("Goals")) {
+                    
                     VStack(alignment: .leading) {
                         Text("Daily Time Goal: \(Int(dailyGoal)) minutes")
                         Slider(value: $dailyGoal, in: 10...120, step: 5)
+                            .tint(isEditing ? .blue : .gray) // Visual cue
                     }
                     
-                    Stepper("Daily Card Goal: \(Int(dailyCardGoal))", value: $dailyCardGoal, in: 5...100, step: 5)
+                    HStack {
+                        Text("Starting Hours")
+                        Spacer()
+                        TextField("Hours", value: $startingHours, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                    }
+                    Text("Add your previous learning time to your total.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
+                .disabled(!isEditing)
                 
                 Section(header: Text("Game Settings")) {
+
+                    
+                    Stepper("Daily Card Goal: \(Int(dailyCardGoal))", value: $dailyCardGoal, in: 5...100, step: 5)
+                    
                     Picker("Default Card Display", selection: $selectedGamePreset) {
                         ForEach(GameConfiguration.Preset.allCases) { preset in
                             Text(preset.rawValue).tag(preset)
                         }
                     }
                 }
+                .disabled(!isEditing)
+                
+                Section(header: Text("Audio Settings")) {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text("Robot Voice Speed")
+                            Spacer()
+                            Text(String(format: "%.1fx", ttsRate))
+                                .foregroundColor(.secondary)
+                                .font(.callout)
+                                .monospacedDigit()
+                        }
+                        
+                        Slider(value: $ttsRate, in: 0.1...1.0, step: 0.1) {
+                            Text("Confirm")
+                        } minimumValueLabel: {
+                            Image(systemName: "tortoise.fill")
+                        } maximumValueLabel: {
+                            Image(systemName: "hare.fill")
+                        }
+                        .tint(isEditing ? .blue : .gray)
+                    }
+                }
+                .disabled(!isEditing)
                 
                 Section(header: Text("YouTube Connection")) {
-                    // ... (Existing YouTube Section)
-                    if youtubeManager.isAuthenticated {
+                    // ... (Existing YouTube, always enabled since it has its own auth flow)
+                    // We keep this enabled as requested ("not sign out")
+                     if youtubeManager.isAuthenticated {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 VStack(alignment: .leading) {
@@ -151,26 +191,9 @@ struct ProfileView: View {
                     }
                 }
                 
-                Section(header: Text("Learning History")) {
-                    HStack {
-                        Text("Starting Hours")
-                        Spacer()
-                        TextField("Hours", value: $startingHours, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 100)
-                    }
-                    Text("Add your previous learning time to your total.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+
                 
-                Section {
-                    Button("Save Changes") {
-                        saveProfile()
-                    }
-                    .disabled(profiles.isEmpty)
-                }
+                // Save button removed as it's now in toolbar
                 
                 Section(header: Text("Account")) {
                     Button("Sign Out", role: .destructive) {
@@ -179,36 +202,65 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                     if isEditing {
+                         Button("Done") {
+                             saveProfile()
+                             withAnimation { isEditing = false }
+                         }
+                         .fontWeight(.bold)
+                     } else {
+                         Button("Edit") {
+                             withAnimation { isEditing = true }
+                         }
+                     }
+                }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    if isEditing {
+                        Button("Cancel") {
+                            loadProfileData() // Revert
+                            withAnimation { isEditing = false }
+                        }
+                    }
+                }
+            }
             .onChange(of: locationManager.locationString) { _, newLocation in
                 if let loc = newLocation {
                     location = loc
                 }
             }
             .onAppear {
-                if let profile = profiles.first {
-                    name = profile.name
-                    location = profile.location ?? ""
-                    selectedLanguage = profile.currentLanguage
-                    selectedLevel = profile.currentLevel
-                    dailyGoal = Double(profile.dailyGoalMinutes)
-                    dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
-                    selectedGamePreset = profile.defaultGamePreset
-                    startingHours = profile.startingHours
-                } else {
-                    // Create profile associated with current user
-                    if let userID = authManager.currentUser {
-                        let newProfile = UserProfile(userID: userID)
-                        newProfile.fullName = authManager.currentUserFullName
-                        newProfile.email = authManager.currentUserEmail
-                        newProfile.avatarUrl = authManager.currentUserAvatar
-                        if let googleName = authManager.currentUserFullName {
-                            newProfile.name = googleName // Default display name to full name
-                            name = googleName
-                        }
-                        
-                        modelContext.insert(newProfile)
-                    }
+               loadProfileData()
+            }
+        }
+    }
+    
+    func loadProfileData() {
+        if let profile = profiles.first {
+            name = profile.name
+            location = profile.location ?? ""
+            selectedLanguage = profile.currentLanguage
+            selectedLevel = profile.currentLevel
+            dailyGoal = Double(profile.dailyGoalMinutes)
+            dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
+            selectedGamePreset = profile.defaultGamePreset
+            startingHours = profile.startingHours
+            ttsRate = profile.ttsRate
+        } else {
+            // Create profile associated with current user
+            if let userID = authManager.currentUser {
+                let newProfile = UserProfile(userID: userID)
+                newProfile.fullName = authManager.currentUserFullName
+                newProfile.email = authManager.currentUserEmail
+                newProfile.avatarUrl = authManager.currentUserAvatar
+                if let googleName = authManager.currentUserFullName {
+                    newProfile.name = googleName // Default display name to full name
+                    name = googleName
                 }
+                
+                modelContext.insert(newProfile)
             }
         }
     }
@@ -223,6 +275,7 @@ struct ProfileView: View {
             profile.dailyCardGoal = Int(dailyCardGoal)
             profile.defaultGamePreset = selectedGamePreset
             profile.startingHours = startingHours
+            profile.ttsRate = ttsRate
             
             // Update auth fields if they were missing
             if profile.email == nil { profile.email = authManager.currentUserEmail }

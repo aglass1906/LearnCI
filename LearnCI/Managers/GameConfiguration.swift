@@ -36,14 +36,16 @@ struct GameConfiguration: Codable, Equatable {
     var back: BackConfiguration
     var isRandomOrder: Bool = false
     var useTTSFallback: Bool = true
+    var ttsRate: Float = 0.5
     
-    init(word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true) {
+    init(word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true, ttsRate: Float = 0.5) {
         self.word = word
         self.sentence = sentence
         self.image = image
         self.back = back
         self.isRandomOrder = isRandomOrder
         self.useTTSFallback = useTTSFallback
+        self.ttsRate = ttsRate
     }
     
     static func from(preset: Preset) -> GameConfiguration {

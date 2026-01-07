@@ -15,14 +15,18 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     override init() {
         super.init()
-        setupAudioSession()
+        configureAudioSession()
     }
     
-    private func setupAudioSession() {
+    func configureAudioSession() {
         do {
-            // Using .mixWithOthers allows us to play even if background music is already running
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
-            try AVAudioSession.sharedInstance().setActive(true)
+            let session = AVAudioSession.sharedInstance()
+            // Standard playback config.
+            // Reverting to .default mode as .moviePlayback can sometimes conflict with TTS on certain devices/simulators.
+            // Using standard options (interrupting others) to ensure clean playback pipeline.
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+            print("DEBUG: AVAudioSession active. Category: Playback, Mode: Default")
         } catch {
             print("Failed to setup audio session: \(error)")
         }
@@ -92,7 +96,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         return nil
     }
     
-    private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, useFallback: Bool = false, completion: (() -> Void)? = nil) {
+    private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         self.onCompletion = completion
         
         if let url = resolveAudioURL(filename: filename, folderName: folderName) {
@@ -105,14 +109,14 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
                 play(url: fallbackUrl)
             } else if useFallback, let text = text, let language = language {
                 // FALLBACK: Use TTS
-                speak(text: text, language: language)
+                speak(text: text, language: language, rate: ttsRate)
             } else {
                 onCompletion?()
             }
         }
     }
     
-    func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, useFallback: Bool = false, completion: (() -> Void)? = nil) {
+    func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         // Avoid restarting if this specific file is already playing as a single intent
         if let player = player, player.isPlaying, currentSequence == [AudioItem(filename: filename, text: text, language: language)] {
             return
@@ -126,7 +130,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         stopAudio()
         self.currentSequence = [AudioItem(filename: filename, text: text, language: language)]
         
-        playInternal(filename: filename, folderName: folderName, text: text, language: language, useFallback: useFallback, completion: completion)
+        playInternal(filename: filename, folderName: folderName, text: text, language: language, useFallback: useFallback, ttsRate: ttsRate, completion: completion)
     }
     
     // MARK: - Sequence Playback
@@ -180,11 +184,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         let items = filenames.map { AudioItem(filename: $0, text: nil, language: nil) }
         playSequence(items: items, folderName: folderName, useFallback: false)
     }
-    
+
     private func play(url: URL) {
         do {
-            // Ensure session is active for playback
-            try AVAudioSession.sharedInstance().setActive(true)
+            configureAudioSession()
             
             player = try AVAudioPlayer(contentsOf: url)
             player?.delegate = self
@@ -196,37 +199,24 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         }
     }
     
-    private func speak(text: String, language: Language) {
+    private func speak(text: String, language: Language, rate: Float) {
         let utterance = AVSpeechUtterance(string: text)
         
-        // Configure voice based on language
         let voiceCode: String
         switch language {
-        case .spanish: voiceCode = "es-MX" // Mexican Spanish (Refold/Latin America focus)
+        case .spanish: voiceCode = "es-MX"
         case .japanese: voiceCode = "ja-JP"
         case .korean: voiceCode = "ko-KR"
         }
         
         utterance.voice = AVSpeechSynthesisVoice(language: voiceCode)
-        utterance.rate = 0.5 // Default rate
+        utterance.rate = rate
         
-        // Ensure audio session is active
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
-        try? AVAudioSession.sharedInstance().setActive(true)
-        
-        synthesizer.speak(utterance)
-        
-        // Mock completion for TTS since AVSpeechSynthesizerDelegate is tricky to hook up dynamically
-        // Use the estimated duration or a fixed delay?
-        // Actually, without delegate, speak() is asyncfire-and-forget, but it blocks the synth.
-        // We need to know when it finishes to play the next item.
-        // We MUST use delegate.
-        
-        // For now, simpler workaround: Assume a rough duration based on text length?
-        // No, that breeds bugs.
-        // Let's set the delegate to self.
+        // Ensure session is correct
+        configureAudioSession()
         
         synthesizer.delegate = self
+        synthesizer.speak(utterance)
     }
     
     func stopAudio() {

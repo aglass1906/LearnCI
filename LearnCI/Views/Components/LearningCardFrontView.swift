@@ -1,4 +1,5 @@
 import SwiftUI
+import AVKit
 
 struct LearningCardFrontView: View {
     let card: LearningCard
@@ -6,49 +7,84 @@ struct LearningCardFrontView: View {
     let config: GameConfiguration
     
     @Environment(AudioManager.self) private var audioManager
+    @Environment(DataManager.self) private var dataManager
     
     // Internal state for hints
     @State private var isImageRevealed: Bool = false
     @State private var isWordRevealed: Bool = false
     @State private var isSentenceRevealed: Bool = false
     
+    var isCardFlipped: Bool = false
+    var onFlip: () -> Void
+    
     var body: some View {
         VStack(spacing: 15) {
-            // Optional Image
-            if config.image != .hidden {
-                if let image = resolveImage(card.imageFile, folder: deck.baseFolderName) {
+            // Visual Media (Image or Video)
+            if config.image != .hidden, let filename = card.mediaFile, !filename.isEmpty {
+                if let mediaURL = dataManager.resolveURL(folderName: deck.baseFolderName, filename: filename) {
+                    let isVideo = isVideoFile(filename)
+                    
                     if config.image == .hint && !isImageRevealed {
                         // Hint Mode: Tap to reveal
                         Button(action: {
                             withAnimation { isImageRevealed = true }
                         }) {
                             ZStack {
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .blur(radius: 20)
-                                    .opacity(0.8)
+                                // Placeholder specific to type
+                                if isVideo {
+                                    Color.black.opacity(0.8)
+                                        .frame(height: 200)
+                                        .cornerRadius(10)
+                                    
+                                    Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(.white.opacity(0.8))
+                                } else {
+                                    // Try to show blurred image if possible, else generic placeholder
+                                    if let uiImage = UIImage(contentsOfFile: mediaURL.path) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .blur(radius: 20)
+                                            .opacity(0.8)
+                                            .frame(maxHeight: 180)
+                                            .cornerRadius(10)
+                                    } else {
+                                        Color.gray.opacity(0.3)
+                                            .frame(height: 180)
+                                            .cornerRadius(10)
+                                    }
+                                }
                                 
+                                // Overlay Text
                                 VStack {
                                     Image(systemName: "eye.fill")
                                         .font(.largeTitle)
-                                    Text("Show Image")
+                                    Text(isVideo ? "Show Video" : "Show Image")
                                         .fontWeight(.bold)
                                 }
                                 .foregroundColor(.white)
                                 .shadow(radius: 2)
                             }
-                            .frame(maxHeight: 180)
-                            .cornerRadius(10)
                         }
                         .buttonStyle(PlainButtonStyle())
-                    } else {
+                        
+                } else {
                         // Visible Mode or Revealed
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 180)
-                            .cornerRadius(10)
+                        if isVideo {
+                            CardVideoPlayer(url: mediaURL, audioManager: audioManager, shouldPause: isCardFlipped)
+                                .frame(height: 220)
+                                .cornerRadius(10)
+                        } else {
+                            if let uiImage = UIImage(contentsOfFile: mediaURL.path) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 180)
+                                    .cornerRadius(10)
+                                    .onTapGesture { onFlip() }
+                            }
+                        }
                     }
                 }
             }
@@ -68,6 +104,7 @@ struct LearningCardFrontView: View {
                     } else {
                         Text(card.targetWord)
                             .font(.system(size: 40, weight: .bold))
+                            .onTapGesture { onFlip() }
                     }
                     
                     if config.word.audio != .hidden, let file = card.audioWordFile {
@@ -80,7 +117,8 @@ struct LearningCardFrontView: View {
                                     folderName: deck.baseFolderName,
                                     text: card.targetWord,
                                     language: deck.language,
-                                    useFallback: config.useTTSFallback
+                                    useFallback: config.useTTSFallback,
+                                    ttsRate: config.ttsRate
                                 )
                             }) {
                                 Image(systemName: "speaker.wave.2.fill")
@@ -114,6 +152,7 @@ struct LearningCardFrontView: View {
                             .font(.headline)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
+                            .onTapGesture { onFlip() }
                     }
                     
                     if config.sentence.audio != .hidden, let file = card.audioSentenceFile {
@@ -126,7 +165,8 @@ struct LearningCardFrontView: View {
                                     folderName: deck.baseFolderName,
                                     text: card.sentenceTarget,
                                     language: deck.language,
-                                    useFallback: config.useTTSFallback
+                                    useFallback: config.useTTSFallback,
+                                    ttsRate: config.ttsRate
                                 )
                             }) {
                                 HStack {
@@ -147,32 +187,11 @@ struct LearningCardFrontView: View {
         .id(card.id) 
     }
     
-    // Helper needed for image resolution (copied from GameView logic or we can move it to a shared helper)
-    // For now, I'll include the logic here, but relying on DataManager would be better if we had access.
-    // However, the original code used a helper method in GameView.
-    // Let's rely on DataManager being present in Environment or passing a resolver closure.
-    // Actually, `resolveImage` logic was fairly self-contained but used `UIImage(contentsOfFile:)`.
-    // To avoid duplication, let's inject a way to resolve images or just duplicate the simple logic since it depends on DataManager to resolve URL.
-    // Wait, the original `resolveImage` used `dataManager.resolveURL`. DataManager is in environment.
-    
-    @Environment(DataManager.self) private var dataManager
-
-    private func resolveImage(_ filename: String?, folder: String?) -> Image? {
-        guard let name = filename, !name.isEmpty else { return nil }
-        
-        // System fallback if name looks like a system icon
-        if name.contains("system:") {
-            let systemName = name.replacingOccurrences(of: "system:", with: "")
-            return Image(systemName: systemName)
-        }
-
-        // Use DataManager's optimized lookup
-        if let url = dataManager.resolveURL(folderName: folder, filename: name) {
-            if let uiImage = UIImage(contentsOfFile: url.path) {
-                return Image(uiImage: uiImage)
-            }
-        }
-        
-        return nil
+    // Helper to detect video extensions
+    private func isVideoFile(_ filename: String) -> Bool {
+        let videoExtensions = ["mp4", "mov", "m4v", "avi", "webm"]
+        let ext = (filename as NSString).pathExtension.lowercased()
+        return videoExtensions.contains(ext)
     }
 }
+

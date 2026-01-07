@@ -46,7 +46,7 @@ struct GameConfigurationView: View {
                     // Row 2: Display Mode
                     Button(action: { showDisplayConfig = true }) {
                         SettingsRow(
-                            icon: "eye.fill",
+                            icon: "slider.horizontal.3",
                             iconColor: .purple,
                             text: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
                         ) {

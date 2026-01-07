@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class DailyFeedback {
@@ -25,12 +26,34 @@ final class DailyFeedback {
     
     static func moodLabel(for rating: Int) -> String {
         switch rating {
-        case 1: return "Frustrated"
+        case 1: return "Bad"
         case 2: return "Struggling"
-        case 3: return "Okay"
-        case 4: return "Good"
-        case 5: return "Great!"
+        case 3: return "Good"
+        case 4: return "Great"
+        case 5: return "Amazing"
         default: return "Unknown"
+        }
+    }
+    
+    static func moodIconName(for rating: Int) -> String {
+        switch rating {
+        case 1: return "cloud.rain.fill"
+        case 2: return "cloud.fill"
+        case 3: return "cloud.sun.fill"
+        case 4: return "sun.max.fill"
+        case 5: return "sparkles"
+        default: return "questionmark.circle"
+        }
+    }
+    
+    static func moodColor(for rating: Int) -> Color {
+        switch rating {
+        case 1: return .gray
+        case 2: return .blue.opacity(0.6)
+        case 3: return .orange.opacity(0.7)
+        case 4: return .yellow
+        case 5: return .yellow
+        default: return .gray
         }
     }
 }

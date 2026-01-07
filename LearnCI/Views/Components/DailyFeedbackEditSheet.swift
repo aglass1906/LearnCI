@@ -8,19 +8,9 @@ struct DailyFeedbackEditSheet: View {
     @Bindable var feedback: DailyFeedback
     
     // moodIcon helper (duplicated for now or could be shared)
-    private func moodIcon(for rating: Int) -> some View {
-        let iconName: String
-        let color: Color
-        switch rating {
-        case 1: iconName = "cloud.rain.fill"; color = .gray
-        case 2: iconName = "cloud.fill"; color = .blue.opacity(0.6)
-        case 3: iconName = "cloud.sun.fill"; color = .orange.opacity(0.7)
-        case 4: iconName = "sun.max.fill"; color = .yellow
-        case 5: iconName = "sparkles"; color = .yellow
-        default: iconName = "questionmark.circle"; color = .gray
-        }
-        return Image(systemName: iconName).foregroundStyle(color)
-    }
+
+    
+
     
     var body: some View {
         NavigationStack {
@@ -30,20 +20,39 @@ struct DailyFeedbackEditSheet: View {
                 }
                 
                 Section("Mood") {
-                    HStack {
+                    HStack(spacing: 0) { // spacing 0 to allow flexible frames to fill
                         ForEach(1...5, id: \.self) { rating in
-                            Button(action: { feedback.rating = rating }) {
-                                VStack {
-                                    moodIcon(for: rating)
-                                        .font(.title2)
-                                        .scaleEffect(feedback.rating == rating ? 1.2 : 1.0)
+                            Button(action: { 
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    feedback.rating = rating
                                 }
+                            }) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: DailyFeedback.moodIconName(for: rating))
+                                        .foregroundStyle(DailyFeedback.moodColor(for: rating))
+                                        .font(.title2)
+                                        .scaleEffect(feedback.rating == rating ? 1.1 : 1.0)
+                                    
+                                    Text(DailyFeedback.moodLabel(for: rating)) // Use shared model logic
+                                        .font(.caption2)
+                                        .fontWeight(feedback.rating == rating ? .bold : .regular)
+                                        .foregroundColor(feedback.rating == rating ? .primary : .secondary)
+                                }
+                                .padding(.vertical, 8)
                                 .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(feedback.rating == rating ? Color.accentColor.opacity(0.15) : Color.clear)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(feedback.rating == rating ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                                )
                             }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.plain)
                         }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                 }
                 
                 Section("Note") {

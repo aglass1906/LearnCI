@@ -337,8 +337,19 @@ struct GameView: View {
         // Sync customConfig if needed
         if selectedPreset != .customize {
              customConfig = GameConfiguration.from(preset: selectedPreset)
-        } else if let savedConfig = profile.customGameConfiguration {
+             // Inject global TTS rate into the fresh preset config
+             customConfig.ttsRate = profile.ttsRate
+        } else if var savedConfig = profile.customGameConfiguration {
+             // If we have a saved config, use it...
              customConfig = savedConfig
+             // ...BUT ensure the TTS rate reflects the current global preference as a baseline
+             // (unless we want 'Review configuration' to persist its OWN rate separate from Profile?
+             // User said "default to user's global tts speed".
+             // It's safer to sync it here so the slider starts at the "Global" value.)
+             customConfig.ttsRate = profile.ttsRate
+        } else {
+             // Fallback if Customize selected but no config? Should act like preset.
+             customConfig.ttsRate = profile.ttsRate
         }
         
         hasInitialized = true
@@ -386,6 +397,9 @@ struct GameView: View {
         isFlipped = false
         sessionStartTime = Date()
         
+        // Ensure audio session is active and ready for playback
+        audioManager.configureAudioSession()
+        
         // Capture final config
         if selectedPreset == .customize {
             sessionConfig = customConfig
@@ -394,6 +408,16 @@ struct GameView: View {
         }
         
         sessionConfig.isRandomOrder = isRandomOrder
+        
+        // Apply Global TTS Preference (Only if not customizing)
+        if selectedPreset != .customize {
+            if let profile = userProfile {
+                sessionConfig.ttsRate = profile.ttsRate
+            } else {
+                 sessionConfig.ttsRate = 0.5
+            }
+        }
+        // If .customize, sessionConfig.ttsRate is already set from customConfig (which user controlled)
         
         // Prepare Cards
         // CRITICAL FIX: Do NOT try to read `deck` (loadedDeck) immediately here for the new session,

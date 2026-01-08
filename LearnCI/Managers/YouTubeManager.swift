@@ -5,6 +5,13 @@ import UIKit
 
 @Observable
 class YouTubeManager {
+    enum FetchTarget {
+        case feed
+        case feedAppend
+        case singleChannel
+        case singleChannelAppend
+    }
+    
     var isAuthenticated: Bool = false
     var youtubeAccount: String?
     var videos: [YouTubeVideo] = []
@@ -369,13 +376,6 @@ class YouTubeManager {
     // Recs Pagination
     var recsNextPageToken: String?
     var recsUsingMostPopular: Bool = false
-    
-    enum FetchTarget {
-        case feed
-        case feedAppend
-        case singleChannel
-        case singleChannelAppend
-    }
 
     private func fetchVideosFromChannels(token: String, channelIds: [String], isRefresh: Bool = false, target: FetchTarget = .feed) {
         // QUOTA OPTIMIZATION: Instead of searching (100 units), 

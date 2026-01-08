@@ -637,7 +637,6 @@ struct GameView: View {
         
         // Try exact match first, then lowercase match
         let key = type.rawValue
-        let lowerKey = type.rawValue.lowercased() // "flashcards"
         
         // Find which key exists
         // My JSON wrote: "flashcards": { ... }

@@ -36,8 +36,30 @@ struct UserHeader: View {
                 Spacer()
                 
                 // Language Flag
-                Text(profile.currentLanguage.flag)
-                    .font(.title2)
+                // Language Switcher
+                Menu {
+                    ForEach(Language.allCases) { lang in
+                        Button {
+                            profile.currentLanguage = lang
+                            try? modelContext.save()
+                        } label: {
+                            // Use simple text for system menu reliability
+                            Text("\(lang.flag) \(lang.rawValue)")
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(profile.currentLanguage.flag)
+                            .font(.title2)
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(6)
+                    .background(Color.gray.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
                 
                 // Today's Minutes
                 HStack(spacing: 4) {

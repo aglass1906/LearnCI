@@ -121,7 +121,7 @@ struct CardTile: View {
                         .font(.system(size: 14, weight: .semibold))
                         .multilineTextAlignment(.center)
                         .padding(4)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.black)
                 )
                 .opacity(card.isFlipped || card.isMatched ? 1 : 0)
                 .rotation3DEffect(

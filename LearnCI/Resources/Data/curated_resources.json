@@ -1,0 +1,148 @@
+[
+    {
+        "id": "A1B2C3D4-E5F6-4A1B-8C2D-3E4F5A6B7C8D",
+        "type": "podcast",
+        "title": "Spanish Obsessed",
+        "author": "Rob & Liz",
+        "description": "Natural conversations for all levels, from complete beginner to advanced. Rob and Liz discuss various topics in a relaxed way.",
+        "cover_image_url": "https://spanishobsessed.com/wp-content/uploads/2019/01/SO-Logo-Square-300x300.png",
+        "main_url": "https://spanishobsessed.com",
+        "feed_url": null,
+        "tags": [
+            "listening",
+            "conversation"
+        ],
+        "language": "es",
+        "dialect": "Mixed",
+        "difficulty": "Intermediate",
+        "avg_rating": 4.8,
+        "notes": "Great for natural listening practice. They explain difficult words in English sometimes.",
+        "is_featured": true,
+        "status": "published"
+    },
+    {
+        "id": "11223344-5566-7788-9900-AABBCCDDEEFF",
+        "type": "book",
+        "title": "Short Stories in Spanish",
+        "author": "Olly Richards",
+        "description": "8 unconventional short stories for young and adult learners. Written for high-beginner to low-intermediate level.",
+        "cover_image_url": "https://m.media-amazon.com/images/I/81dDw1uP0CL._SY522_.jpg",
+        "main_url": "https://www.amazon.com/Short-Stories-Spanish-Beginners-vocabulary-ebook/dp/B07HFG4V5J",
+        "feed_url": null,
+        "tags": [
+            "reading",
+            "stories"
+        ],
+        "language": "es",
+        "difficulty": "Beginner",
+        "avg_rating": 4.5,
+        "notes": "Classic graded reader. Good for A2/B1 level.",
+        "is_featured": false,
+        "status": "published"
+    },
+    {
+        "id": "AA11BB22-CC33-DD44-EE55-FF6677889900",
+        "type": "youtube",
+        "title": "Dreaming Spanish",
+        "author": "Pablo Román",
+        "description": "The gold standard for Comprehensible Input videos. Thousands of videos sorted by difficulty (Superbeginner to Advanced).",
+        "cover_image_url": "https://yt3.googleusercontent.com/ytc/AIdro_n8-9j5v5J6K4k_6n8k_8n8k_8n8k_8n8k_8n8k=s176-c-k-c0x00ffffff-no-rj",
+        "main_url": "https://www.youtube.com/@DreamingSpanish",
+        "feed_url": null,
+        "tags": [
+            "watching",
+            "ci",
+            "immersion"
+        ],
+        "language": "es",
+        "dialect": "Spain",
+        "difficulty": "All Levels",
+        "avg_rating": 5.0,
+        "notes": "Essential. Start with Superbeginner videos if you are new.",
+        "is_featured": true,
+        "status": "published"
+    },
+    {
+        "id": "BB22CC33-DD44-EE55-FF66-001122334455",
+        "type": "podcast",
+        "title": "Nihongo con Teppei",
+        "author": "Teppei",
+        "description": "Japanese podcast for beginners (N5-N3). Teppei speaks entirely in simple Japanese about everyday topics.",
+        "cover_image_url": "https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded400/1376839/1376839-1605587784013-0972b22b07907.jpg",
+        "main_url": "https://nihongoconteppei.com",
+        "feed_url": null,
+        "tags": [
+            "listening",
+            "immersion",
+            "beginner"
+        ],
+        "language": "ja",
+        "difficulty": "Beginner",
+        "avg_rating": 4.9,
+        "notes": "Fantastic for listening immersion. Try the 'Beginner' series first.",
+        "is_featured": true,
+        "status": "published"
+    },
+    {
+        "id": "CC33DD44-EE55-FF66-0011-223344556677",
+        "type": "website",
+        "title": "Tae Kim's Guide to Learning Japanese",
+        "author": "Tae Kim",
+        "description": "A comprehensive guide to Japanese grammar. It explains things from a Japanese perspective, unlike many textbooks.",
+        "cover_image_url": "https://guidetojapanese.org/learn/img/tk_logo.png",
+        "main_url": "https://guidetojapanese.org/learn/",
+        "feed_url": null,
+        "tags": [
+            "reading",
+            "grammar"
+        ],
+        "language": "ja",
+        "difficulty": "All Levels",
+        "avg_rating": 4.8,
+        "notes": "The Bible of Japanese grammar. Free and excellent.",
+        "is_featured": false,
+        "status": "published"
+    },
+    {
+        "id": "DD44EE55-FF66-0011-2233-445566778899",
+        "type": "website",
+        "title": "Talk To Me In Korean",
+        "author": "TTMIK",
+        "description": "The most popular resource for learning Korean. Offers free grammar lessons (Levels 1-10) and many books.",
+        "cover_image_url": "https://d3jgmo86321q0o.cloudfront.net/assets/ttmik_logo_square.png",
+        "main_url": "https://talktomeinkorean.com",
+        "feed_url": null,
+        "tags": [
+            "grammar",
+            "listening",
+            "courses"
+        ],
+        "language": "ko",
+        "difficulty": "All Levels",
+        "avg_rating": 4.9,
+        "notes": "Excellent structure for grammar. The core curriculum is free.",
+        "is_featured": true,
+        "status": "published"
+    },
+    {
+        "id": "EE55FF66-0011-2233-4455-66778899AA00",
+        "type": "youtube",
+        "title": "Choi Susu",
+        "author": "Choi Susu",
+        "description": "Perfect Comprehensible Input for Korean. She speaks slowly and clearly about daily life, often with drawings.",
+        "cover_image_url": "https://yt3.googleusercontent.com/ytc/AIdro_k2l8x8_8x8_8x8_8x8_8x8_8x8_8x8_8x8=s176-c-k-c0x00ffffff-no-rj",
+        "main_url": "https://www.youtube.com/@ChoiSusu",
+        "feed_url": null,
+        "tags": [
+            "watching",
+            "ci",
+            "immersion"
+        ],
+        "language": "ko",
+        "difficulty": "Beginner",
+        "avg_rating": 4.9,
+        "notes": "Highly recommended for beginners looking for immersion.",
+        "is_featured": true,
+        "status": "published"
+    }
+]

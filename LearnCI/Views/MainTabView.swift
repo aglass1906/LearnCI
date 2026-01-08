@@ -27,6 +27,11 @@ struct MainTabView: View {
                             .tabItem {
                                 Label("Videos", systemImage: "play.rectangle.fill")
                             }
+
+                        ResourceLibraryView()
+                            .tabItem {
+                                Label("Library", systemImage: "books.vertical.fill")
+                            }
                         
                         HistoryView()
                             .tabItem {

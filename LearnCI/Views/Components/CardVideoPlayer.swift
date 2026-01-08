@@ -42,8 +42,8 @@ struct CardVideoPlayer: View {
                 // CRITICAL: Differentiate audio algorithm for Simulator vs Device
                 #if targetEnvironment(simulator)
                 // Simulator has known audio engine issues with pitch algorithms.
-                // .lowQualityZeroLatency is often the most robust for basic playback here.
-                newPlayer.currentItem?.audioTimePitchAlgorithm = .lowQualityZeroLatency
+                // .timeDomain is often the most robust for basic playback here.
+                newPlayer.currentItem?.audioTimePitchAlgorithm = .timeDomain
                 #else
                 // Device: Use varispeed for high-quality 1.0x playback
                 newPlayer.currentItem?.audioTimePitchAlgorithm = .varispeed
@@ -64,7 +64,7 @@ struct CardVideoPlayer: View {
         let item = AVPlayerItem(url: newUrl)
         // Differentiate audio algorithm for Simulator vs Device
         #if targetEnvironment(simulator)
-        item.audioTimePitchAlgorithm = .lowQualityZeroLatency
+        item.audioTimePitchAlgorithm = .timeDomain
         #else
         item.audioTimePitchAlgorithm = .varispeed
         #endif

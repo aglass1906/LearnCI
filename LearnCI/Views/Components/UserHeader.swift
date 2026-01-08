@@ -4,6 +4,8 @@ import SwiftData
 struct UserHeader: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
+    @Binding var showProfile: Bool
+    @Binding var currentTab: AppTab
     
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
@@ -23,15 +25,21 @@ struct UserHeader: View {
     var body: some View {
         if let profile = userProfile {
             HStack(spacing: 16) {
-                // User Name
-                HStack(spacing: 8) {
-                    Image(systemName: "person.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                    Text(profile.name)
-                        .font(.headline)
-                        .fontWeight(.bold)
+                // User Name & Avatar Link
+                Button {
+                    showProfile = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "person.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                        Text(profile.name)
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                    }
                 }
+                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -61,19 +69,25 @@ struct UserHeader: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 
-                // Today's Minutes
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(.blue)
-                    Text("\(todayMinutes) / \(profile.dailyGoalMinutes)m")
-                        .font(.headline)
-                        .monospacedDigit()
+                // Today's Minutes (Click to view History)
+                Button {
+                    currentTab = .history
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(.blue)
+                        Text("\(todayMinutes) / \(profile.dailyGoalMinutes)m")
+                            .font(.headline)
+                            .monospacedDigit()
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.1))
+                    .clipShape(Capsule())
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.blue.opacity(0.1))
-                .clipShape(Capsule())
+                .buttonStyle(.plain)
             }
             .padding(.horizontal)
             .padding(.vertical, 12)
@@ -89,6 +103,6 @@ struct UserHeader: View {
 }
 
 #Preview {
-    UserHeader()
+    UserHeader(showProfile: .constant(false), currentTab: .constant(.dashboard))
         .environment(AuthManager())
 }

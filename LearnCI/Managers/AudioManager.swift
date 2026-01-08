@@ -15,6 +15,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     override init() {
         super.init()
+        // Explicitly tell synthesizer to use the existing audio session we configure
+        synthesizer.usesApplicationAudioSession = true
         configureAudioSession()
     }
     
@@ -31,6 +33,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             print("Failed to setup audio session: \(error)")
         }
     }
+
+
     
     func audioExists(named filename: String, folderName: String? = nil) -> Bool {
         return resolveAudioURL(filename: filename, folderName: folderName) != nil
@@ -225,6 +229,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         
         utterance.voice = AVSpeechSynthesisVoice(language: voiceCode)
         utterance.rate = rate
+        utterance.volume = 1.0 // Ensure maximum volume relative to system level
         
         // Ensure session is correct
         configureAudioSession()

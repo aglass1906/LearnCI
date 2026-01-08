@@ -42,7 +42,7 @@ struct ActiveCardStack: View {
             .padding()
         }
         .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
-        .frame(height: 350)
+        .frame(minHeight: 350) // Allow expansion for long story text
         .padding()
     }
 }

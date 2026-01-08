@@ -3,6 +3,7 @@ import SwiftData
 
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) var dismiss
     @Environment(YouTubeManager.self) private var youtubeManager
     @Environment(AuthManager.self) private var authManager
     @Environment(LocationManager.self) private var locationManager
@@ -205,15 +206,16 @@ struct ProfileView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                      if isEditing {
-                         Button("Done") {
+                         Button("Save") {
                              saveProfile()
                              withAnimation { isEditing = false }
                          }
                          .fontWeight(.bold)
                      } else {
-                         Button("Edit") {
-                             withAnimation { isEditing = true }
+                         Button("Done") {
+                             dismiss()
                          }
+                         .fontWeight(.bold)
                      }
                 }
                 
@@ -222,6 +224,10 @@ struct ProfileView: View {
                         Button("Cancel") {
                             loadProfileData() // Revert
                             withAnimation { isEditing = false }
+                        }
+                    } else {
+                        Button("Edit") {
+                            withAnimation { isEditing = true }
                         }
                     }
                 }

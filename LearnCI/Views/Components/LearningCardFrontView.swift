@@ -103,7 +103,7 @@ struct LearningCardFrontView: View {
                          .buttonStyle(PlainButtonStyle())
                     } else {
                         Text(card.wordTarget)
-                            .font(.system(size: 40, weight: .bold))
+                            .font(.system(size: 32, weight: .bold)) // Reduced from 40
                             .onTapGesture { onFlip() }
                     }
                     
@@ -151,6 +151,7 @@ struct LearningCardFrontView: View {
                         Text(card.sentenceTarget)
                             .font(.headline)
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true) // Allow full expansion
                             .padding(.horizontal)
                             .onTapGesture { onFlip() }
                     }

@@ -21,11 +21,16 @@ struct FlashcardGameView: View {
             let card = sessionCards[currentCardIndex]
             
             VStack {
-                // Progress Header
-                progressHeader
-                
-                // Card View
-                ActiveCardStack(card: card, deck: deck, config: sessionConfig, isFlipped: $isFlipped)
+                ScrollView {
+                    VStack {
+                        // Progress Header
+                        progressHeader
+                        
+                        // Card View
+                        ActiveCardStack(card: card, deck: deck, config: sessionConfig, isFlipped: $isFlipped)
+                    }
+                    .padding(.bottom, 20)
+                }
                 
                 // Learning Success Controls
                 if isFlipped {
@@ -110,5 +115,6 @@ struct FlashcardGameView: View {
             .disabled(currentCardIndex >= deck.cards.count - 1)
         }
         .padding(.horizontal, 40)
+        .padding(.bottom, 20) // Reduced from 60 to avoid excessive spacing
     }
 }

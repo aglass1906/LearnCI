@@ -450,11 +450,17 @@ struct GameView: View {
         
         // If we happen to hit the cache in DataManager, loadedDeck might ALREADY be set instantly.
         // So we check:
+
         if let currentDeck = deck, currentDeck.id == metDeck.id {
+             // Apply Deck Overrides (e.g. Randomization from JSON)
+             applyDeckOverrides(to: &sessionConfig, from: currentDeck, type: selectedGameType)
+             
+             let filtered = filterCards(currentDeck.cards, for: selectedGameType)
+             
              if sessionConfig.isRandomOrder {
-                 sessionCards = currentDeck.cards.shuffled()
+                 sessionCards = filtered.shuffled()
              } else {
-                 sessionCards = currentDeck.cards
+                 sessionCards = filtered
              }
         }
         
@@ -472,9 +478,9 @@ struct GameView: View {
     }
     
     func playCurrentCardAudio() {
-        // Only auto-play audio for Flashcards mode or if explicitly requested in card logic.
+        // Only auto-play audio for Flashcards/Story mode.
         // Memory Match manages its own audio on tap.
-        guard sessionConfig.gameType == .flashcards else { return }
+        guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { return }
         
         guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
         let card = sessionCards[currentCardIndex]
@@ -486,7 +492,7 @@ struct GameView: View {
 
         // Only autoplay if visibility is 'visible'
         if sessionConfig.word.audio == .visible, let wordFile = card.audioWordFile {
-             sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.targetWord, language: language))
+             sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: language))
         }
         if sessionConfig.sentence.audio == .visible, let sentenceFile = card.audioSentenceFile {
              sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: language))
@@ -582,10 +588,16 @@ struct GameView: View {
         // Race condition fix: If we started session but deck wasn't ready,
         // populate cards now that it is loaded.
         if gameState == .active && sessionCards.isEmpty, let deck = newDeck, !deck.cards.isEmpty {
+            // Apply Deck Overrides (late load)
+            // Note: We need to update the binding/state of sessionConfig too if we want it to reflect
+            applyDeckOverrides(to: &sessionConfig, from: deck, type: sessionConfig.gameType)
+            
+            let filtered = filterCards(deck.cards, for: sessionConfig.gameType)
+            
             if sessionConfig.isRandomOrder {
-                sessionCards = deck.cards.shuffled()
+                sessionCards = filtered.shuffled()
             } else {
-                sessionCards = deck.cards
+                sessionCards = filtered
             }
             
             // Trigger audio now that we have cards
@@ -594,9 +606,83 @@ struct GameView: View {
             }
         }
     }
+    
+    // MARK: - Deck Logic Helpers
+    
+    func filterCards(_ cards: [LearningCard], for type: GameConfiguration.GameType) -> [LearningCard] {
+        return cards.filter { card in
+            guard let usage = card.usage, !usage.isEmpty else { return true }
+            
+            // Story Only Logic
+            if usage.contains("story_only") && type != .story {
+                return false
+            }
+            
+            // Flashcard Only Logic ?? ("flashcard_only" - hypothetical)
+            
+            return true
+        }
+    }
+    
+    func applyDeckOverrides(to config: inout GameConfiguration, from deck: CardDeck, type: GameConfiguration.GameType) {
+        // Check for game-specific defaults from the deck JSON
+        // The key in JSON is the rawValue (e.g. "Flashcards", "Memory Match", "Story")
+        // NOTE: My JSON keys were lowercase "flashcards", "memoryMatch" in some places??
+        // Let's check `DataManager` / `GameConfiguration` raw values.
+        // GameType rawValues are "Flashcards", "Memory Match".
+        // My JSON updates used: "flashcards" (lowercase) in keys.
+        // I need to be careful with case sensitivity here.
+        
+        guard let deckConfig = deck.gameConfiguration else { return }
+        
+        // Try exact match first, then lowercase match
+        let key = type.rawValue
+        let lowerKey = type.rawValue.lowercased() // "flashcards"
+        
+        // Find which key exists
+        // My JSON wrote: "flashcards": { ... }
+        // GameType.flashcards.rawValue is "Flashcards"
+        
+        var defaults: DeckDefaults?
+        
+        // Iterate keys to find case-insensitive match
+        for (jsonKey, val) in deckConfig {
+            if jsonKey.caseInsensitiveCompare(key) == .orderedSame {
+                defaults = val
+                break
+            }
+            // Also check for "flashcards" vs "Flashcards" specifically if caseInsensitive didn't catch specific 'camelCase' vs 'Title Case' mapping issues (though caseInsensitive should)
+        }
+        
+        if let defaults = defaults {
+            print("DEBUG: Applying deck defaults for \(type.rawValue): \(defaults)")
+            
+            // Dictionary "randomize" is now handled in GameConfigurationView to allow for user overrides.
+            // We do NOT override it here anymore.
+            
+            /*
+            if let random = defaults.randomize {
+                config.isRandomOrder = random
+            }
+            */
+            
+            if let autoPlay = defaults.audioAutoplay {
+                // If TRUE -> Visible. If FALSE -> Hint?
+                // For input focus, typical is Visible.
+                if !autoPlay {
+                    // Turn off autoplay by setting audio to .hint or .hidden
+                    // .hint = Manual Play
+                    config.word.audio = .hint
+                    config.sentence.audio = .hint
+                } else {
+                    config.word.audio = .visible
+                    config.sentence.audio = .visible
+                }
+            }
+        }
+    }
 }
     
-
 
 // MARK: - Helpers
 

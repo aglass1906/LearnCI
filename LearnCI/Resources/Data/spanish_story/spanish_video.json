@@ -1,0 +1,65 @@
+{
+    "id": "es_video_001",
+    "language": "Spanish",
+    "languageName": "Spanish",
+    "languageCode": "es",
+    "level": "Beginner",
+    "title": "Spanish Video Stories - Pizza Gratis",
+    "supportedModes": [
+        "story"
+    ],
+    "gameConfiguration": {
+        "story": {
+            "audioAutoplay": true,
+            "replayCount": 1,
+            "nativeHiddenByDefault": true
+        },
+        "flashcards": {
+            "randomize": false
+        }
+    },
+    "cards": [
+        {
+            "id": "es_video_001_c1",
+            "type": "intro",
+            "order": 1,
+            "wordTarget": "Pizza Gratis",
+            "wordNative": "Free Pizza",
+            "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
+            "sentenceNative": "Click the Next Button to begin the story.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": "",
+            "usage": [
+                "story_only"
+            ]
+        },
+        {
+            "id": "es_video_001_c2",
+            "type": "story",
+            "order": 2,
+            "wordTarget": "Pizza Gratis",
+            "wordNative": "Free Pizza",
+            "sentenceTarget": "",
+            "sentenceNative": "",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": "DUO_Pizza_Gratis.mov"
+        },
+        {
+            "id": "es_video_001_c3",
+            "type": "outro",
+            "order": 3,
+            "wordTarget": "Pizza Gratis",
+            "wordNative": "Free Pizza",
+            "sentenceTarget": "The end",
+            "sentenceNative": "",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": "DUO_Pizza_Gratis.jpeg",
+            "usage": [
+                "story_only"
+            ]
+        }
+    ]
+}

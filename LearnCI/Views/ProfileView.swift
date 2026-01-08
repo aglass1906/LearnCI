@@ -112,7 +112,7 @@ struct ProfileView: View {
                         HStack {
                             Text("Robot Voice Speed")
                             Spacer()
-                            Text(String(format: "%.1fx", ttsRate))
+                            Text(String(format: "%.1fx", ttsRate * 2))
                                 .foregroundColor(.secondary)
                                 .font(.callout)
                                 .monospacedDigit()

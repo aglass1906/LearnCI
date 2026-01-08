@@ -26,6 +26,7 @@ struct GameConfiguration: Codable, Equatable {
         case audioCards = "Audio Cards"
         case pictureCard = "Picture Card"
         case flashcard = "Flashcard"
+        case story = "Story"
         
         var id: String { rawValue }
     }
@@ -33,7 +34,8 @@ struct GameConfiguration: Codable, Equatable {
     enum GameType: String, Codable, CaseIterable, Identifiable {
         case flashcards = "Flashcards"
         case memoryMatch = "Memory Match"
-        case sentenceBuilder = "Sentence Scramble" // Renamed for clarity
+        case sentenceBuilder = "Sentence Scramble"
+        case story = "Story" // Renamed for clarity
         
         var id: String { rawValue }
         
@@ -42,6 +44,38 @@ struct GameConfiguration: Codable, Equatable {
             case .flashcards: return "rectangle.stack.fill"
             case .memoryMatch: return "square.grid.2x2.fill"
             case .sentenceBuilder: return "text.bubble.fill"
+            case .story: return "book.fill"
+            }
+        }
+        
+        // Custom decoding to handle case-insensitive "flashcards" vs "Flashcards"
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawString = try container.decode(String.self)
+            
+            // Try exact match first
+            if let type = GameType(rawValue: rawString) {
+                self = type
+                return
+            }
+            
+            // Try case-insensitive scan
+            let lowercased = rawString.lowercased()
+            if let type = GameType.allCases.first(where: {
+                $0.rawValue.lowercased() == lowercased ||
+                String(describing: $0).lowercased() == lowercased // checks "flashcards" against case name if needed
+            }) {
+                self = type
+                return
+            }
+            
+            // Fallback for known legacy keys if rawValue didn't catch them
+            switch lowercased {
+            case "flashcards": self = .flashcards
+            case "memorymatch", "memory match": self = .memoryMatch
+            case "story": self = .story
+            default:
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid GameType: \(rawString)")
             }
         }
     }
@@ -102,6 +136,17 @@ struct GameConfiguration: Codable, Equatable {
                 sentence: SectionConfiguration(text: .hidden, audio: .hidden),
                 image: .hidden,
                 back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible),
+                useTTSFallback: true
+            )
+        case .story:
+            // Story Mode Defaults: Full Immersion
+            // Text: Visible, Audio: Visible, Image: Visible
+            // Back (Translations): Hint (Hidden by default, user taps to see)
+            return GameConfiguration(
+                word: SectionConfiguration(text: .visible, audio: .visible),
+                sentence: SectionConfiguration(text: .visible, audio: .visible),
+                image: .visible,
+                back: BackConfiguration(translation: .hint, sentenceMeaning: .hint, studyLinks: .visible),
                 useTTSFallback: true
             )
         }

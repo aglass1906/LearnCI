@@ -47,7 +47,7 @@ class MemoryGameEngine {
         for card in selectedCards {
             // Target Card (Word in Target Language)
             newCards.append(MemoryCard(
-                content: card.targetWord,
+                content: card.wordTarget,
                 associatedCardId: card.id,
                 type: .target,
                 audioFile: card.audioWordFile
@@ -55,7 +55,7 @@ class MemoryGameEngine {
             
             // Native Card (Translation)
             newCards.append(MemoryCard(
-                content: card.nativeTranslation,
+                content: card.wordNative,
                 associatedCardId: card.id,
                 type: .native
             ))

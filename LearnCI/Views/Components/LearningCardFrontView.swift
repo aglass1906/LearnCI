@@ -102,7 +102,7 @@ struct LearningCardFrontView: View {
                          }
                          .buttonStyle(PlainButtonStyle())
                     } else {
-                        Text(card.targetWord)
+                        Text(card.wordTarget)
                             .font(.system(size: 40, weight: .bold))
                             .onTapGesture { onFlip() }
                     }
@@ -115,7 +115,7 @@ struct LearningCardFrontView: View {
                                 audioManager.playAudio(
                                     named: file,
                                     folderName: deck.baseFolderName,
-                                    text: card.targetWord,
+                                    text: card.wordTarget,
                                     language: deck.language,
                                     useFallback: config.useTTSFallback,
                                     ttsRate: config.ttsRate

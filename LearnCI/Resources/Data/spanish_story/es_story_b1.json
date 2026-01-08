@@ -1,0 +1,95 @@
+{
+    "id": "es_story_004",
+    "languageName": "Spanish",
+    "languageCode": "es",
+    "level": "Intermediate",
+    "cefr": "B1",
+    "title": "Spanish Stories - My First Morning (B1)",
+    "supportedModes": [
+        "story"
+    ],
+    "gameConfiguration": {
+        "story": {
+            "audioAutoplay": true,
+            "replayCount": 1,
+            "nativeHiddenByDefault": true
+        },
+        "flashcards": {
+            "randomize": false
+        }
+    },
+    "cards": [
+        {
+            "id": "es_story_004_c1",
+            "type": "intro",
+            "order": 1,
+            "wordTarget": "Mi primera mañana",
+            "wordNative": "My First Morning",
+            "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
+            "sentenceNative": "Click the Next Button to begin the story.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        },
+        {
+            "id": "es_story_004_c2",
+            "type": "story",
+            "order": 2,
+            "wordTarget": "Hombre",
+            "wordNative": "Man",
+            "sentenceTarget": "El hombre se despierta temprano, aunque todavía está cansado.",
+            "sentenceNative": "The man wakes up early, even though he is still tired.",
+            "audioWordFile": "es_hombre_word.mp3",
+            "audioSentenceFile": "es_el_hombre_se_despierta_cansado.mp3",
+            "mediaFile": "es_hombre_despierta.jpg"
+        },
+        {
+            "id": "es_story_004_c3",
+            "type": "story",
+            "order": 3,
+            "wordTarget": "Café",
+            "wordNative": "Coffee",
+            "sentenceTarget": "Mientras prepara café en la cocina, piensa en lo que tiene que hacer durante el día.",
+            "sentenceNative": "While he prepares coffee in the kitchen, he thinks about what he has to do during the day.",
+            "audioWordFile": "es_cafe_word.mp3",
+            "audioSentenceFile": "es_el_hombre_prepara_cafe_y_piensa.mp3",
+            "mediaFile": "es_hombre_cafe.jpg"
+        },
+        {
+            "id": "es_story_004_c4",
+            "type": "story",
+            "order": 4,
+            "wordTarget": "Calle",
+            "wordNative": "Street",
+            "sentenceTarget": "Después de salir de casa, camina por la calle observando a las personas y las tiendas.",
+            "sentenceNative": "After leaving the house, he walks down the street, observing people and shops.",
+            "audioWordFile": "es_calle_word.mp3",
+            "audioSentenceFile": "es_caminar_observando_calle.mp3",
+            "mediaFile": "es_hombre_calle.jpg"
+        },
+        {
+            "id": "es_story_004_c5",
+            "type": "story",
+            "order": 5,
+            "wordTarget": "Amigo",
+            "wordNative": "Friend",
+            "sentenceTarget": "De repente, ve a un amigo con quien no ha hablado desde hace tiempo y se detiene a conversar.",
+            "sentenceNative": "Suddenly, he sees a friend he hasn’t talked to in a while and stops to chat.",
+            "audioWordFile": "es_amigo_word.mp3",
+            "audioSentenceFile": "es_el_hombre_habla_con_amigo_tiempo.mp3",
+            "mediaFile": "es_hombre_amigo.jpg"
+        },
+        {
+            "id": "es_story_004_c6",
+            "type": "outro",
+            "order": 6,
+            "wordTarget": "Mi mañana",
+            "wordNative": "My Morning",
+            "sentenceTarget": "Después de despedirse de su amigo, el hombre continúa su mañana con más energía.",
+            "sentenceNative": "After saying goodbye to his friend, the man continues his morning with more energy.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": ""
+        }
+    ]
+}

@@ -5,16 +5,26 @@ struct DeckSelectionSheet: View {
     @Binding var selectedDeck: DeckMetadata?
     @Binding var language: Language
     @Binding var level: LearningLevel
+    @Binding var selectedGameType: GameConfiguration.GameType
     
     @Environment(\.dismiss) private var dismiss
+    
+    var filteredDecks: [DeckMetadata] {
+        availableDecks.filter { deck in
+            // Filter by language and level is implicit in availableDecks (passed from GameView),
+            // BUT GameView currently passes `dataManager.availableDecks` which *is* filtered by discoverDecks.
+            // However, we now want to ensure the deck supports the current GAME MODE.
+            deck.supportedModes.contains(selectedGameType)
+        }
+    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Filters
+                // Filters (Language/Level)
                 VStack(spacing: 12) {
                     HStack {
-                        // Language Selector
+                         // Language Selector
                         Menu {
                             ForEach(Language.allCases) { lang in
                                 Button(action: { language = lang }) {
@@ -72,23 +82,24 @@ struct DeckSelectionSheet: View {
                 .zIndex(1)
                 
                 List {
-                    if availableDecks.isEmpty {
+                    if filteredDecks.isEmpty {
                         VStack(spacing: 20) {
                             Image(systemName: "magnifyingglass")
                                 .font(.largeTitle)
                                 .foregroundColor(.gray)
-                            Text("No decks found for this selection.")
+                            Text("No decks found.")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("Try changing the level or language.")
+                            Text("No decks match \(language.rawValue) \(level.rawValue) for \(selectedGameType.rawValue).")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
                         .listRowBackground(Color.clear)
                     } else {
-                        ForEach(availableDecks) { deck in
+                        ForEach(filteredDecks) { deck in
                             DeckSelectionRow(deck: deck, selectedDeckId: selectedDeck?.id) {
                                 selectedDeck = deck
                                 dismiss()

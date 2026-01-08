@@ -88,8 +88,20 @@ struct GameConfigurationView: View {
                             icon: "gearshape.fill",
                             iconColor: .orange,
                             text: "\(sessionDuration) min · \(sessionCardGoal) cards",
-                            subText: isRandomOrder ? "Random Order" : "Sequential"
-                        )
+                            subText: nil // Use subContent for multi-line
+                        ) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(isRandomOrder ? "Random Order" : "Sequential")
+                                
+                                if useTTSFallback {
+                                    Text("Voice On · \(String(format: "%.1fx", ttsRate * 2)) Speed")
+                                } else {
+                                    Text("Voice Off")
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        }
                     }
                 }
                 .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -125,7 +137,8 @@ struct GameConfigurationView: View {
                 availableDecks: availableDecks,
                 selectedDeck: $selectedDeck,
                 language: $sessionLanguage,
-                level: $sessionLevel
+                level: $sessionLevel,
+                selectedGameType: $selectedGameType
             )
         }
         .sheet(isPresented: $showDisplayConfig) {
@@ -147,6 +160,46 @@ struct GameConfigurationView: View {
                 gameType: selectedGameType
             )
         }
+        // React to changes to apply deck defaults
+        .onChange(of: selectedDeck) { _, newDeck in
+            applyDeckDefaults(from: newDeck, for: selectedGameType)
+        }
+        .onChange(of: selectedGameType) { _, newType in
+            applyDeckDefaults(from: selectedDeck, for: newType)
+            
+            // Auto-switch preset for Story Mode
+            if newType == .story {
+                selectedPreset = .story
+            } else if selectedPreset == .story {
+                // If switching away from Story, revert to a default (e.g. Input Focus)
+                selectedPreset = .inputFocus
+            }
+        }
+    }
+    
+    // Extract defaults from metadata without loading full deck
+    private func applyDeckDefaults(from deck: DeckMetadata?, for type: GameConfiguration.GameType) {
+        guard let deck = deck, let config = deck.gameConfiguration else { return }
+        
+        // Find matching key (case-insensitive)
+        let typeKey = type.rawValue // "Flashcards"
+        
+        var defaults: DeckDefaults?
+        
+        // Iterate keys to find case-insensitive match
+        for (jsonKey, val) in config {
+            if jsonKey.caseInsensitiveCompare(typeKey) == .orderedSame {
+                defaults = val
+                break
+            }
+        }
+        
+        if let defaults = defaults {
+            if let random = defaults.randomize {
+                isRandomOrder = random
+            }
+            // Add other defaults here as needed (e.g. autoplay)
+        }
     }
     
     private func displayDescription(for preset: GameConfiguration.Preset, config: GameConfiguration) -> String {
@@ -161,6 +214,8 @@ struct GameConfigurationView: View {
             return "Image & Text (Visual)"
         case .flashcard:
             return "Text Only (Drill)"
+        case .story:
+            return "Read & Listen (Immersion)"
         }
     }
 }

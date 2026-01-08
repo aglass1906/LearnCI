@@ -9,6 +9,8 @@ struct DeckMetadata: Identifiable, Equatable {
     let level: LearningLevel
     let folderName: String
     let filename: String
+    let supportedModes: Set<GameConfiguration.GameType>
+    let gameConfiguration: [String: DeckDefaults]?
 }
 
 struct InspirationalQuote: Codable, Identifiable {
@@ -112,14 +114,18 @@ class DataManager {
             let decoder = JSONDecoder()
             // We only need the basic info. If it's not a valid CardDeck JSON, it will fail here.
             let deck = try decoder.decode(CardDeck.self, from: data)
-            return DeckMetadata(
+            let metadata = DeckMetadata(
                 id: deck.id,
                 title: deck.title,
                 language: deck.language,
                 level: deck.level,
                 folderName: folderName,
-                filename: url.lastPathComponent
+                filename: url.lastPathComponent,
+                supportedModes: deck.supportedModes ?? [.flashcards], // Default to flashcards
+                gameConfiguration: deck.gameConfiguration
             )
+            // print("DEBUG: Loaded deck \(deck.id) from \(url.lastPathComponent) with modes: \(deck.supportedModes ?? [])")
+            return metadata
         } catch {
             // Ignore files that are not CardDecks
             return nil
@@ -296,7 +302,7 @@ class DataManager {
             level: level,
             title: "No Decks Found",
             cards: [
-                LearningCard(id: "f1", targetWord: "Add Data", nativeTranslation: "Please add JSON", sentenceTarget: "Add resources to Data folder", sentenceNative: "No matching decks found for \(language.rawValue) (\(level.rawValue))", audioWordFile: nil, audioSentenceFile: nil)
+                LearningCard(id: "f1", wordTarget: "Add Data", wordNative: "Please add JSON", sentenceTarget: "Add resources to Data folder", sentenceNative: "No matching decks found for \(language.rawValue) (\(level.rawValue))", audioWordFile: nil, audioSentenceFile: nil)
             ],
             baseFolderName: nil
         )

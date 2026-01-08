@@ -3,11 +3,20 @@
     "language": "Spanish",
     "level": "Super Beginner",
     "title": "Spanish Survival Basics",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
     "cards": [
         {
             "id": "es_sb_c1",
-            "targetWord": "Hola",
-            "nativeTranslation": "Hello",
+            "wordTarget": "Hola",
+            "wordNative": "Hello",
             "sentenceTarget": "Hola, ¿cómo estás?",
             "sentenceNative": "Hello, how are you?",
             "audioWordFile": "es_hola_word.mp3",
@@ -16,8 +25,8 @@
         },
         {
             "id": "es_sb_c2",
-            "targetWord": "Gracias",
-            "nativeTranslation": "Thank you",
+            "wordTarget": "Gracias",
+            "wordNative": "Thank you",
             "sentenceTarget": "Muchas gracias por tu ayuda.",
             "sentenceNative": "Thank you very much for your help.",
             "audioWordFile": "es_gracias_word.mp3",
@@ -26,8 +35,8 @@
         },
         {
             "id": "es_sb_c3",
-            "targetWord": "Por favor",
-            "nativeTranslation": "Please",
+            "wordTarget": "Por favor",
+            "wordNative": "Please",
             "sentenceTarget": "Un café, por favor.",
             "sentenceNative": "A coffee, please.",
             "audioWordFile": "es_porfavor_word.mp3",
@@ -36,8 +45,8 @@
         },
         {
             "id": "es_sb_c4",
-            "targetWord": "Adiós",
-            "nativeTranslation": "Goodbye",
+            "wordTarget": "Adiós",
+            "wordNative": "Goodbye",
             "sentenceTarget": "Adiós, nos vemos mañana.",
             "sentenceNative": "Goodbye, see you tomorrow.",
             "audioWordFile": "es_adios_word.mp3",
@@ -46,8 +55,8 @@
         },
         {
             "id": "es_sb_c5",
-            "targetWord": "Si",
-            "nativeTranslation": "Yes",
+            "wordTarget": "Si",
+            "wordNative": "Yes",
             "sentenceTarget": "Si, me gusta mucho.",
             "sentenceNative": "Yes, I like it a lot.",
             "audioWordFile": "es_si_word.mp3",
@@ -56,8 +65,8 @@
         },
         {
             "id": "es_sb_c6",
-            "targetWord": "No",
-            "nativeTranslation": "No",
+            "wordTarget": "No",
+            "wordNative": "No",
             "sentenceTarget": "No, no tengo hambre.",
             "sentenceNative": "No, I'm not hungry.",
             "audioWordFile": "es_no_word.mp3",
@@ -66,8 +75,8 @@
         },
         {
             "id": "es_sb_c7",
-            "targetWord": "Agua",
-            "nativeTranslation": "Water",
+            "wordTarget": "Agua",
+            "wordNative": "Water",
             "sentenceTarget": "Quiero un vaso de agua.",
             "sentenceNative": "I want a glass of water.",
             "audioWordFile": "es_agua_word.mp3",
@@ -76,8 +85,8 @@
         },
         {
             "id": "es_sb_c8",
-            "targetWord": "Comida",
-            "nativeTranslation": "Food",
+            "wordTarget": "Comida",
+            "wordNative": "Food",
             "sentenceTarget": "La comida está muy buena.",
             "sentenceNative": "The food is very good.",
             "audioWordFile": "es_comida_word.mp3",
@@ -86,8 +95,8 @@
         },
         {
             "id": "es_sb_c9",
-            "targetWord": "Amigo",
-            "nativeTranslation": "Friend",
+            "wordTarget": "Amigo",
+            "wordNative": "Friend",
             "sentenceTarget": "Él es mi mejor amigo.",
             "sentenceNative": "He is my best friend.",
             "audioWordFile": "es_amigo_word.mp3",
@@ -96,8 +105,8 @@
         },
         {
             "id": "es_sb_c10",
-            "targetWord": "Casa",
-            "nativeTranslation": "House",
+            "wordTarget": "Casa",
+            "wordNative": "House",
             "sentenceTarget": "Mi casa es pequeña pero bonita.",
             "sentenceNative": "My house is small but pretty.",
             "audioWordFile": "es_casa_word.mp3",
@@ -106,8 +115,8 @@
         },
         {
             "id": "es_sb_c11",
-            "targetWord": "Gato",
-            "nativeTranslation": "Cat",
+            "wordTarget": "Gato",
+            "wordNative": "Cat",
             "sentenceTarget": "El gato duerme en el sofá.",
             "sentenceNative": "The cat sleeps on the sofa.",
             "audioWordFile": "es_gato_word.mp3",
@@ -116,8 +125,8 @@
         },
         {
             "id": "es_sb_c12",
-            "targetWord": "Perro",
-            "nativeTranslation": "Dog",
+            "wordTarget": "Perro",
+            "wordNative": "Dog",
             "sentenceTarget": "El perro corre en el parque.",
             "sentenceNative": "The dog runs in the park.",
             "audioWordFile": "es_perro_word.mp3",
@@ -126,8 +135,8 @@
         },
         {
             "id": "es_sb_c13",
-            "targetWord": "Uno",
-            "nativeTranslation": "One",
+            "wordTarget": "Uno",
+            "wordNative": "One",
             "sentenceTarget": "Tengo uno solo.",
             "sentenceNative": "I have only one.",
             "audioWordFile": "es_uno_word.mp3",
@@ -136,8 +145,8 @@
         },
         {
             "id": "es_sb_c14",
-            "targetWord": "Dos",
-            "nativeTranslation": "Two",
+            "wordTarget": "Dos",
+            "wordNative": "Two",
             "sentenceTarget": "Dos cafés, por favor.",
             "sentenceNative": "Two coffees, please.",
             "audioWordFile": "es_dos_word.mp3",
@@ -146,8 +155,8 @@
         },
         {
             "id": "es_sb_c15",
-            "targetWord": "Tres",
-            "nativeTranslation": "Three",
+            "wordTarget": "Tres",
+            "wordNative": "Three",
             "sentenceTarget": "Hay tres pájaros en el árbol.",
             "sentenceNative": "There are three birds in the tree.",
             "audioWordFile": "es_tres_word.mp3",
@@ -156,8 +165,8 @@
         },
         {
             "id": "es_sb_c16",
-            "targetWord": "Libro",
-            "nativeTranslation": "Book",
+            "wordTarget": "Libro",
+            "wordNative": "Book",
             "sentenceTarget": "Estoy leyendo un libro interesante.",
             "sentenceNative": "I am reading an interesting book.",
             "audioWordFile": "es_libro_word.mp3",
@@ -166,8 +175,8 @@
         },
         {
             "id": "es_sb_c17",
-            "targetWord": "Escuela",
-            "nativeTranslation": "School",
+            "wordTarget": "Escuela",
+            "wordNative": "School",
             "sentenceTarget": "La escuela está cerca de aquí.",
             "sentenceNative": "The school is near here.",
             "audioWordFile": "es_escuela_word.mp3",
@@ -176,8 +185,8 @@
         },
         {
             "id": "es_sb_c18",
-            "targetWord": "Pueblo",
-            "nativeTranslation": "Town",
+            "wordTarget": "Pueblo",
+            "wordNative": "Town",
             "sentenceTarget": "Es un pueblo muy tranquilo.",
             "sentenceNative": "It is a very quiet town.",
             "audioWordFile": "es_pueblo_word.mp3",
@@ -186,8 +195,8 @@
         },
         {
             "id": "es_sb_c19",
-            "targetWord": "Ciudad",
-            "nativeTranslation": "City",
+            "wordTarget": "Ciudad",
+            "wordNative": "City",
             "sentenceTarget": "La ciudad es muy ruidosa.",
             "sentenceNative": "The city is very noisy.",
             "audioWordFile": "es_ciudad_word.mp3",
@@ -196,8 +205,8 @@
         },
         {
             "id": "es_sb_c20",
-            "targetWord": "Baño",
-            "nativeTranslation": "Bathroom",
+            "wordTarget": "Baño",
+            "wordNative": "Bathroom",
             "sentenceTarget": "¿Dónde está el baño?",
             "sentenceNative": "Where is the bathroom?",
             "audioWordFile": "es_bano_word.mp3",
@@ -206,8 +215,8 @@
         },
         {
             "id": "es_sb_c21",
-            "targetWord": "Mañana",
-            "nativeTranslation": "Morning / Tomorrow",
+            "wordTarget": "Mañana",
+            "wordNative": "Morning / Tomorrow",
             "sentenceTarget": "Mañana por la mañana iré al mercado.",
             "sentenceNative": "Tomorrow morning I will go to the market.",
             "audioWordFile": "es_manana_word.mp3",
@@ -216,8 +225,8 @@
         },
         {
             "id": "es_sb_c22",
-            "targetWord": "Noche",
-            "nativeTranslation": "Night",
+            "wordTarget": "Noche",
+            "wordNative": "Night",
             "sentenceTarget": "La noche es oscura.",
             "sentenceNative": "The night is dark.",
             "audioWordFile": "es_noche_word.mp3",
@@ -226,8 +235,8 @@
         },
         {
             "id": "es_sb_c23",
-            "targetWord": "Hoy",
-            "nativeTranslation": "Today",
+            "wordTarget": "Hoy",
+            "wordNative": "Today",
             "sentenceTarget": "Hoy es un gran día.",
             "sentenceNative": "Today is a great day.",
             "audioWordFile": "es_hoy_word.mp3",
@@ -236,8 +245,8 @@
         },
         {
             "id": "es_sb_c24",
-            "targetWord": "Tiempo",
-            "nativeTranslation": "Time / Weather",
+            "wordTarget": "Tiempo",
+            "wordNative": "Time / Weather",
             "sentenceTarget": "No tengo mucho tiempo.",
             "sentenceNative": "I don't have much time.",
             "audioWordFile": "es_tiempo_word.mp3",
@@ -246,8 +255,8 @@
         },
         {
             "id": "es_sb_c25",
-            "targetWord": "Feliz",
-            "nativeTranslation": "Happy",
+            "wordTarget": "Feliz",
+            "wordNative": "Happy",
             "sentenceTarget": "Estoy muy feliz hoy.",
             "sentenceNative": "I am very happy today.",
             "audioWordFile": "es_feliz_word.mp3",

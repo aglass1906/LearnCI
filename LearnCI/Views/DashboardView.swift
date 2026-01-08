@@ -588,10 +588,10 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(word.targetWord)
+                            Text(word.wordTarget)
                                 .font(.title)
                                 .fontWeight(.bold)
-                            Text(word.nativeTranslation)
+                            Text(word.wordNative)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                         }
@@ -606,7 +606,7 @@ struct DashboardView: View {
                                     audioManager.playAudio(
                                         named: file, 
                                         folderName: wordOfDayFolder,
-                                        text: word.targetWord,
+                                        text: word.wordTarget,
                                         language: userProfile?.currentLanguage ?? .spanish,
                                         useFallback: true
                                     )

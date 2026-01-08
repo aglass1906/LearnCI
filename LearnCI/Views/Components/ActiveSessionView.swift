@@ -65,6 +65,21 @@ struct ActiveSessionView: View {
                         systemImage: "text.bubble.fill",
                         description: Text("This game mode is under construction.")
                      )
+                case .story:
+                    // Reuse Flashcard View for Story Reading (Linear Mode)
+                    FlashcardGameView(
+                        deck: deck,
+                        sessionCards: sessionCards,
+                        currentCardIndex: currentCardIndex,
+                        learnedCount: learnedCount,
+                        sessionCardGoal: sessionCardGoal,
+                        sessionConfig: sessionConfig,
+                        isFlipped: $isFlipped,
+                        onRelearn: onRelearn,
+                        onLearned: onLearned,
+                        onNext: onNext,
+                        onPrev: onPrev
+                    )
                 }
             } else {
                 ProgressView("Loading Deck...")

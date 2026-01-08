@@ -99,21 +99,40 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         self.onCompletion = completion
         
-        if let url = resolveAudioURL(filename: filename, folderName: folderName) {
-            play(url: url)
-        } else {
-            print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
-            
-            // Try one more time with exact filename in root bundle if folder was provided
-            if folderName != nil, let fallbackUrl = resolveAudioURL(filename: filename, folderName: nil) {
-                play(url: fallbackUrl)
-            } else if useFallback, let text = text, let language = language {
-                // FALLBACK: Use TTS
-                speak(text: text, language: language, rate: ttsRate)
+        // Define fallback action
+        let performFallback = {
+            if useFallback, let text = text, let language = language {
+                print("DEBUG: Using TTS Fallback for: \(text)")
+                self.speak(text: text, language: language, rate: ttsRate)
             } else {
-                onCompletion?()
+                self.onCompletion?()
             }
         }
+        
+        // Attempt 1: Specific Folder
+        if let url = resolveAudioURL(filename: filename, folderName: folderName) {
+            do {
+                try play(url: url)
+                return // Success
+            } catch {
+                print("DEBUG: Primary audio file found but failed to play: \(error).")
+            }
+        } else {
+            print("Audio file not found: \(filename) (folder: \(folderName ?? "nil"))")
+        }
+        
+        // Attempt 2: Root Bundle (only if we looked in a folder first)
+        if folderName != nil, let url = resolveAudioURL(filename: filename, folderName: nil) {
+             do {
+                try play(url: url)
+                return // Success
+            } catch {
+                print("DEBUG: Root fallback audio file found but failed to play: \(error).")
+            }
+        }
+        
+        // Final Fallback: TTS
+        performFallback()
     }
     
     func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
@@ -186,18 +205,12 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         playSequence(items: items, folderName: folderName, useFallback: false, ttsRate: 0.5)
     }
 
-    private func play(url: URL) {
-        do {
-            configureAudioSession()
-            
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.delegate = self
-            player?.prepareToPlay()
-            player?.play()
-        } catch {
-            print("Failed to play audio: \(error)")
-            onCompletion?()
-        }
+    private func play(url: URL) throws {
+        configureAudioSession()
+        player = try AVAudioPlayer(contentsOf: url)
+        player?.delegate = self
+        player?.prepareToPlay()
+        player?.play()
     }
     
     private func speak(text: String, language: Language, rate: Float) {

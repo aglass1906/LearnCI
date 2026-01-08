@@ -7,22 +7,25 @@ struct LearningCardBackView: View {
     
     var body: some View {
         VStack(spacing: 15) {
+            // Word Meaning
             if config.back.translation != .hidden {
                 Text("Meaning:")
                     .font(.caption)
                     .foregroundColor(.gray)
                 
-                Text(card.nativeTranslation)
+                Text(card.wordNative)
                     .font(.title)
                     .foregroundColor(.secondary)
                     .blur(radius: config.back.translation == .hint ? 5 : 0)
             }
             
+            // Divider if both are shown
             if config.back.translation != .hidden && config.back.sentenceMeaning != .hidden {
                 Divider()
             }
             
-            if config.back.sentenceMeaning != .hidden {
+            // Sentence Meaning
+            if config.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
                 Text("Sentence Meaning:")
                     .font(.caption)
                     .foregroundColor(.gray)
@@ -34,16 +37,14 @@ struct LearningCardBackView: View {
                     .blur(radius: config.back.sentenceMeaning == .hint ? 5 : 0)
             }
             
+            Spacer()
+            
+            // Study Links
             if config.back.studyLinks != .hidden {
-                if config.back.translation != .hidden || config.back.sentenceMeaning != .hidden {
-                     Divider()
-                }
-               
-                // External Study Links
-                StudyLinksView(word: card.targetWord, sentence: card.sentenceTarget, languageCode: deck.language.code)
+                 Divider()
+                 StudyLinksView(word: card.wordTarget, sentence: card.sentenceTarget, languageCode: deck.language.code)
                     .opacity(config.back.studyLinks == .hint ? 0.3 : 1.0)
             }
         }
-        // Removed .scaleEffect(x: -1, y: 1) as it mirrors text; relying on correct rotation in parent instead
     }
 }

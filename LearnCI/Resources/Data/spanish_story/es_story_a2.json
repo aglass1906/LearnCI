@@ -1,15 +1,24 @@
 {
     "id": "es_story_003",
+    "language": "Spanish",
     "languageName": "Spanish",
     "languageCode": "es",
     "level": "Intermediate",
     "cefr": "A2",
     "title": "Spanish Stories - My First Morning (A2)",
-    "type": "story",
-    "defaults": {
-        "audioAutoplay": true,
-        "replayCount": 1,
-        "nativeHiddenByDefault": true
+    "supportedModes": [
+        "story",
+        "flashcards"
+    ],
+    "gameConfiguration": {
+        "story": {
+            "audioAutoplay": true,
+            "replayCount": 1,
+            "nativeHiddenByDefault": true
+        },
+        "flashcards": {
+            "randomize": false
+        }
     },
     "cards": [
         {
@@ -22,7 +31,10 @@
             "sentenceNative": "Click the Next Button to begin the story.",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "",
+            "usage": [
+                "story_only"
+            ]
         },
         {
             "id": "es_story_003_c2",
@@ -33,8 +45,8 @@
             "sentenceTarget": "El hombre se despierta temprano porque tiene que trabajar.",
             "sentenceNative": "The man wakes up early because he has to work.",
             "audioWordFile": "es_hombre_word.mp3",
-            "audioSentenceFile": "es_el_hombre_se_despierta_temprano.mp3",
-            "mediaFile": "es_hombre_despierta.jpg"
+            "audioSentenceFile": "",
+            "mediaFile": "es_b1_01_hombre_despierta.png"
         },
         {
             "id": "es_story_003_c3",
@@ -45,8 +57,8 @@
             "sentenceTarget": "Después de levantarse, el hombre prepara café en la cocina.",
             "sentenceNative": "After getting up, the man prepares coffee in the kitchen.",
             "audioWordFile": "es_cafe_word.mp3",
-            "audioSentenceFile": "es_el_hombre_prepara_cafe.mp3",
-            "mediaFile": "es_hombre_cafe.jpg"
+            "audioSentenceFile": "",
+            "mediaFile": "es_b1_02_hombre_cafe.png"
         },
         {
             "id": "es_story_003_c4",
@@ -57,8 +69,8 @@
             "sentenceTarget": "Con su café en la mano, el hombre camina por la calle y mira las tiendas.",
             "sentenceNative": "With his coffee in hand, the man walks down the street and looks at the shops.",
             "audioWordFile": "es_calle_word.mp3",
-            "audioSentenceFile": "es_el_hombre_camina_y_mira_tiendas.mp3",
-            "mediaFile": "es_hombre_calle.jpg"
+            "audioSentenceFile": "",
+            "mediaFile": "es_b1_03_hombre_calle.png"
         },
         {
             "id": "es_story_003_c5",
@@ -69,11 +81,26 @@
             "sentenceTarget": "En la calle, el hombre ve a un amigo y habla con él por unos minutos.",
             "sentenceNative": "On the street, the man sees a friend and talks with him for a few minutes.",
             "audioWordFile": "es_amigo_word.mp3",
-            "audioSentenceFile": "es_el_hombre_habla_con_amigo.mp3",
-            "mediaFile": "es_hombre_amigo.jpg"
+            "audioSentenceFile": "",
+            "mediaFile": "es_b1_04_hombre_amigo.png"
         },
         {
             "id": "es_story_003_c6",
+            "type": "outro",
+            "order": 6,
+            "wordTarget": "Conversación",
+            "wordNative": "Conversation",
+            "sentenceTarget": "Después de hablar con su amigo, el hombre continúa su mañana.",
+            "sentenceNative": "After talking with his friend, the man continues his morning.",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": "es_b1_05_hombre_conversa.png",
+            "usage": [
+                "story_only"
+            ]
+        },
+        {
+            "id": "es_story_003_c7",
             "type": "outro",
             "order": 6,
             "wordTarget": "Mi mañana",
@@ -82,7 +109,25 @@
             "sentenceNative": "After talking with his friend, the man continues his morning.",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "es_b1_06_hombre_despedida.png",
+            "usage": [
+                "story_only"
+            ]
+        },
+        {
+            "id": "es_story_003_c8",
+            "type": "outro",
+            "order": 6,
+            "wordTarget": "El Fin`",
+            "wordNative": "The End",
+            "sentenceTarget": "Fin",
+            "sentenceNative": "The end",
+            "audioWordFile": "",
+            "audioSentenceFile": "",
+            "mediaFile": "",
+            "usage": [
+                "story_only"
+            ]
         }
     ]
 }

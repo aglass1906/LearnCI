@@ -3,11 +3,20 @@
     "language": "Korean",
     "level": "Super Beginner",
     "title": "Korean Starter Words",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
     "cards": [
         {
             "id": "ko_sb_c1",
-            "targetWord": "안녕하세요",
-            "nativeTranslation": "Hello",
+            "wordTarget": "안녕하세요",
+            "wordNative": "Hello",
             "sentenceTarget": "안녕하세요, 만나서 반가워요.",
             "sentenceNative": "Hello, nice to meet you.",
             "audioWordFile": "ko_annyeong_word.mp3",
@@ -16,8 +25,8 @@
         },
         {
             "id": "ko_sb_c2",
-            "targetWord": "감사합니다",
-            "nativeTranslation": "Thank you",
+            "wordTarget": "감사합니다",
+            "wordNative": "Thank you",
             "sentenceTarget": "도와주셔서 감사합니다.",
             "sentenceNative": "Thank you for helping me.",
             "audioWordFile": "ko_gamsahamnida_word.mp3",
@@ -26,8 +35,8 @@
         },
         {
             "id": "ko_sb_c3",
-            "targetWord": "죄송합니다",
-            "nativeTranslation": "I'm sorry",
+            "wordTarget": "죄송합니다",
+            "wordNative": "I'm sorry",
             "sentenceTarget": "늦어서 죄송합니다.",
             "sentenceNative": "I'm sorry for being late.",
             "audioWordFile": "ko_joesonghamnida_word.mp3",
@@ -36,8 +45,8 @@
         },
         {
             "id": "ko_sb_c4",
-            "targetWord": "네",
-            "nativeTranslation": "Yes",
+            "wordTarget": "네",
+            "wordNative": "Yes",
             "sentenceTarget": "네, 맞아요.",
             "sentenceNative": "Yes, that's right.",
             "audioWordFile": "ko_ne_word.mp3",
@@ -46,8 +55,8 @@
         },
         {
             "id": "ko_sb_c5",
-            "targetWord": "아니요",
-            "nativeTranslation": "No",
+            "wordTarget": "아니요",
+            "wordNative": "No",
             "sentenceTarget": "아니요, 괜찮아요.",
             "sentenceNative": "No, it's okay.",
             "audioWordFile": "ko_aniyo_word.mp3",
@@ -56,8 +65,8 @@
         },
         {
             "id": "ko_sb_c6",
-            "targetWord": "물",
-            "nativeTranslation": "Water",
+            "wordTarget": "물",
+            "wordNative": "Water",
             "sentenceTarget": "물 좀 주세요.",
             "sentenceNative": "Please give me some water.",
             "audioWordFile": "ko_mul_word.mp3",
@@ -66,8 +75,8 @@
         },
         {
             "id": "ko_sb_c7",
-            "targetWord": "음식",
-            "nativeTranslation": "Food",
+            "wordTarget": "음식",
+            "wordNative": "Food",
             "sentenceTarget": "한국 음식은 맛있어요.",
             "sentenceNative": "Korean food is delicious.",
             "audioWordFile": "ko_eumsik_word.mp3",
@@ -76,8 +85,8 @@
         },
         {
             "id": "ko_sb_c8",
-            "targetWord": "집",
-            "nativeTranslation": "House / Home",
+            "wordTarget": "집",
+            "wordNative": "House / Home",
             "sentenceTarget": "제 집은 근처에 있어요.",
             "sentenceNative": "My house is nearby.",
             "audioWordFile": "ko_jip_word.mp3",
@@ -86,8 +95,8 @@
         },
         {
             "id": "ko_sb_c9",
-            "targetWord": "친구",
-            "nativeTranslation": "Friend",
+            "wordTarget": "친구",
+            "wordNative": "Friend",
             "sentenceTarget": "우리는 친한 친구예요.",
             "sentenceNative": "We are close friends.",
             "audioWordFile": "ko_chingu_word.mp3",
@@ -96,8 +105,8 @@
         },
         {
             "id": "ko_sb_c10",
-            "targetWord": "고양이",
-            "nativeTranslation": "Cat",
+            "wordTarget": "고양이",
+            "wordNative": "Cat",
             "sentenceTarget": "고양이가 귀여워요.",
             "sentenceNative": "The cat is cute.",
             "audioWordFile": "ko_goyangi_word.mp3",
@@ -106,8 +115,8 @@
         },
         {
             "id": "ko_sb_c11",
-            "targetWord": "강아지",
-            "nativeTranslation": "Dog / Puppy",
+            "wordTarget": "강아지",
+            "wordNative": "Dog / Puppy",
             "sentenceTarget": "강아지가 뛰고 있어요.",
             "sentenceNative": "The dog is running.",
             "audioWordFile": "ko_gangaji_word.mp3",
@@ -116,8 +125,8 @@
         },
         {
             "id": "ko_sb_c12",
-            "targetWord": "일",
-            "nativeTranslation": "One",
+            "wordTarget": "일",
+            "wordNative": "One",
             "sentenceTarget": "일 번 출구로 오세요.",
             "sentenceNative": "Come to exit number one.",
             "audioWordFile": "ko_il_word.mp3",
@@ -126,8 +135,8 @@
         },
         {
             "id": "ko_sb_c13",
-            "targetWord": "이",
-            "nativeTranslation": "Two",
+            "wordTarget": "이",
+            "wordNative": "Two",
             "sentenceTarget": "이 층으로 올라가세요.",
             "sentenceNative": "Please go up to the second floor.",
             "audioWordFile": "ko_i_word.mp3",
@@ -136,8 +145,8 @@
         },
         {
             "id": "ko_sb_c14",
-            "targetWord": "삼",
-            "nativeTranslation": "Three",
+            "wordTarget": "삼",
+            "wordNative": "Three",
             "sentenceTarget": "삼 월에 꽃이 피어요.",
             "sentenceNative": "Flowers bloom in March.",
             "audioWordFile": "ko_sam_word.mp3",
@@ -146,8 +155,8 @@
         },
         {
             "id": "ko_sb_c15",
-            "targetWord": "책",
-            "nativeTranslation": "Book",
+            "wordTarget": "책",
+            "wordNative": "Book",
             "sentenceTarget": "이 책은 아주 재미있어요.",
             "sentenceNative": "This book is very interesting.",
             "audioWordFile": "ko_chaek_word.mp3",
@@ -156,8 +165,8 @@
         },
         {
             "id": "ko_sb_c16",
-            "targetWord": "학교",
-            "nativeTranslation": "School",
+            "wordTarget": "학교",
+            "wordNative": "School",
             "sentenceTarget": "내일부터 학교에 가요.",
             "sentenceNative": "I'm going to school from tomorrow.",
             "audioWordFile": "ko_hakgyo_word.mp3",
@@ -166,8 +175,8 @@
         },
         {
             "id": "ko_sb_c17",
-            "targetWord": "오늘",
-            "nativeTranslation": "Today",
+            "wordTarget": "오늘",
+            "wordNative": "Today",
             "sentenceTarget": "오늘은 날씨가 좋네요.",
             "sentenceNative": "Today the weather is good.",
             "audioWordFile": "ko_oneul_word.mp3",
@@ -176,8 +185,8 @@
         },
         {
             "id": "ko_sb_c18",
-            "targetWord": "내일",
-            "nativeTranslation": "Tomorrow",
+            "wordTarget": "내일",
+            "wordNative": "Tomorrow",
             "sentenceTarget": "내일 만나요.",
             "sentenceNative": "See you tomorrow.",
             "audioWordFile": "ko_naeil_word.mp3",
@@ -186,8 +195,8 @@
         },
         {
             "id": "ko_sb_c19",
-            "targetWord": "아침",
-            "nativeTranslation": "Morning / Breakfast",
+            "wordTarget": "아침",
+            "wordNative": "Morning / Breakfast",
             "sentenceTarget": "아침을 꼭 챙겨 드세요.",
             "sentenceNative": "Make sure to eat breakfast.",
             "audioWordFile": "ko_achim_word.mp3",
@@ -196,8 +205,8 @@
         },
         {
             "id": "ko_sb_c20",
-            "targetWord": "밤",
-            "nativeTranslation": "Night",
+            "wordTarget": "밤",
+            "wordNative": "Night",
             "sentenceTarget": "밤에 별이 보여요.",
             "sentenceNative": "Stars are visible at night.",
             "audioWordFile": "ko_bam_word.mp3",
@@ -206,8 +215,8 @@
         },
         {
             "id": "ko_sb_c21",
-            "targetWord": "선생님",
-            "nativeTranslation": "Teacher",
+            "wordTarget": "선생님",
+            "wordNative": "Teacher",
             "sentenceTarget": "선생님, 질문이 있어요.",
             "sentenceNative": "Teacher, I have a question.",
             "audioWordFile": "ko_seonsaengnim_word.mp3",
@@ -216,8 +225,8 @@
         },
         {
             "id": "ko_sb_c22",
-            "targetWord": "학생",
-            "nativeTranslation": "Student",
+            "wordTarget": "학생",
+            "wordNative": "Student",
             "sentenceTarget": "저는 한국어 학생입니다.",
             "sentenceNative": "I am a Korean language student.",
             "audioWordFile": "ko_haksaeng_word.mp3",
@@ -226,8 +235,8 @@
         },
         {
             "id": "ko_sb_c23",
-            "targetWord": "사랑해",
-            "nativeTranslation": "I love you",
+            "wordTarget": "사랑해",
+            "wordNative": "I love you",
             "sentenceTarget": "엄마, 아빠 사랑해요.",
             "sentenceNative": "Mom, Dad, I love you.",
             "audioWordFile": "ko_saranghae_word.mp3",
@@ -236,8 +245,8 @@
         },
         {
             "id": "ko_sb_c24",
-            "targetWord": "좋아해",
-            "nativeTranslation": "I like (you/it)",
+            "wordTarget": "좋아해",
+            "wordNative": "I like (you/it)",
             "sentenceTarget": "저는 사과를 좋아해요.",
             "sentenceNative": "I like apples.",
             "audioWordFile": "ko_joahae_word.mp3",
@@ -246,8 +255,8 @@
         },
         {
             "id": "ko_sb_c25",
-            "targetWord": "행복해",
-            "nativeTranslation": "Happy",
+            "wordTarget": "행복해",
+            "wordNative": "Happy",
             "sentenceTarget": "지금 정말 행복해요.",
             "sentenceNative": "I am really happy right now.",
             "audioWordFile": "ko_haengbokhae_word.mp3",

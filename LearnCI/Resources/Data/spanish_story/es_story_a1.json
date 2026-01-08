@@ -5,12 +5,21 @@
     "languageCode": "es",
     "level": "Beginner",
     "cefr": "A1",
-    "title": "Spanish Stories - My First Morning",
-    "type": "story",
-    "defaults": {
-        "audioAutoplay": true,
-        "replayCount": 1,
-        "nativeHiddenByDefault": true
+    "title": "Spanish Stories - My First Morning (A1)",
+    "supportedModes": [
+        "flashcards",
+        "story",
+        "memoryMatch"
+    ],
+    "gameConfiguration": {
+        "story": {
+            "audioAutoplay": true,
+            "replayCount": 1,
+            "nativeHiddenByDefault": true
+        },
+        "flashcards": {
+            "randomize": false
+        }
     },
     "cards": [
         {
@@ -23,7 +32,10 @@
             "sentenceNative": "Click the Next Button to begin the story.",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "",
+            "usage": [
+                "story_only"
+            ]
         },
         {
             "id": "es_story_002_c2",
@@ -83,7 +95,10 @@
             "sentenceNative": "The end",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "",
+            "usage": [
+                "story_only"
+            ]
         }
     ]
 }

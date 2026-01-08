@@ -42,18 +42,28 @@ enum LearningLevel: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum CardType: String, Codable {
+    case standard
+    case intro
+    case story
+    case outro
+}
+
 struct LearningCard: Identifiable, Codable, Hashable {
     var id: String
-    var targetWord: String
-    var nativeTranslation: String
+    var wordTarget: String
+    var wordNative: String
     var sentenceTarget: String
     var sentenceNative: String
     var audioWordFile: String?
     var audioSentenceFile: String?
     var mediaFile: String?
     
-    // For local tracking if needed, though mostly handled by DataManager/Game logic
-    // We make this optional so it doesn't fail JSON decoding if missing
+    // New Fields
+    var type: CardType = .standard
+    var order: Int = 0
+    var usage: Set<String>? // e.g. ["story_only"]
+    
     var isMastered: Bool?
     
     var masteredState: Bool {
@@ -62,37 +72,58 @@ struct LearningCard: Identifiable, Codable, Hashable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, targetWord, nativeTranslation, sentenceTarget, sentenceNative
-        case audioWordFile, audioSentenceFile
-        case mediaFile
-        case imageFile // Legacy support
-        case isMastered
+        case id, wordTarget, wordNative, sentenceTarget, sentenceNative
+        case audioWordFile, audioSentenceFile, mediaFile, imageFile
+        case type, order, usage, isMastered
+        
+        // Legacy keys
+        case targetWord, nativeTranslation
     }
     
-    init(id: String, targetWord: String, nativeTranslation: String, sentenceTarget: String, sentenceNative: String, audioWordFile: String? = nil, audioSentenceFile: String? = nil, mediaFile: String? = nil, isMastered: Bool? = nil) {
+    init(id: String, wordTarget: String, wordNative: String, sentenceTarget: String, sentenceNative: String, audioWordFile: String? = nil, audioSentenceFile: String? = nil, mediaFile: String? = nil, type: CardType = .standard, order: Int = 0, usage: Set<String>? = nil, isMastered: Bool? = nil) {
         self.id = id
-        self.targetWord = targetWord
-        self.nativeTranslation = nativeTranslation
+        self.wordTarget = wordTarget
+        self.wordNative = wordNative
         self.sentenceTarget = sentenceTarget
         self.sentenceNative = sentenceNative
         self.audioWordFile = audioWordFile
         self.audioSentenceFile = audioSentenceFile
         self.mediaFile = mediaFile
+        self.type = type
+        self.order = order
+        self.usage = usage
         self.isMastered = isMastered
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
-        self.targetWord = try container.decode(String.self, forKey: .targetWord)
-        self.nativeTranslation = try container.decode(String.self, forKey: .nativeTranslation)
-        self.sentenceTarget = try container.decode(String.self, forKey: .sentenceTarget)
-        self.sentenceNative = try container.decode(String.self, forKey: .sentenceNative)
+        
+        // Smart Decoding for Word Target
+        if let target = try container.decodeIfPresent(String.self, forKey: .wordTarget) {
+            self.wordTarget = target
+        } else {
+            self.wordTarget = try container.decode(String.self, forKey: .targetWord)
+        }
+        
+        // Smart Decoding for Native Word
+        if let native = try container.decodeIfPresent(String.self, forKey: .wordNative) {
+            self.wordNative = native
+        } else {
+            self.wordNative = try container.decode(String.self, forKey: .nativeTranslation)
+        }
+        
+        // Optional Fields
+        self.sentenceTarget = try container.decodeIfPresent(String.self, forKey: .sentenceTarget) ?? ""
+        self.sentenceNative = try container.decodeIfPresent(String.self, forKey: .sentenceNative) ?? ""
         self.audioWordFile = try container.decodeIfPresent(String.self, forKey: .audioWordFile)
         self.audioSentenceFile = try container.decodeIfPresent(String.self, forKey: .audioSentenceFile)
         self.isMastered = try container.decodeIfPresent(Bool.self, forKey: .isMastered)
+        self.type = try container.decodeIfPresent(CardType.self, forKey: .type) ?? .standard
+        self.order = try container.decodeIfPresent(Int.self, forKey: .order) ?? 0
+        self.usage = try container.decodeIfPresent(Set<String>.self, forKey: .usage)
         
-        // Robust media file decoding: Prefers mediaFile, falls back to imageFile
+        // Media File Fallback
         if let media = try container.decodeIfPresent(String.self, forKey: .mediaFile) {
             self.mediaFile = media
         } else {
@@ -103,15 +134,25 @@ struct LearningCard: Identifiable, Codable, Hashable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
-        try container.encode(targetWord, forKey: .targetWord)
-        try container.encode(nativeTranslation, forKey: .nativeTranslation)
+        try container.encode(wordTarget, forKey: .wordTarget)
+        try container.encode(wordNative, forKey: .wordNative)
         try container.encode(sentenceTarget, forKey: .sentenceTarget)
         try container.encode(sentenceNative, forKey: .sentenceNative)
         try container.encodeIfPresent(audioWordFile, forKey: .audioWordFile)
         try container.encodeIfPresent(audioSentenceFile, forKey: .audioSentenceFile)
         try container.encodeIfPresent(mediaFile, forKey: .mediaFile)
         try container.encodeIfPresent(isMastered, forKey: .isMastered)
+        try container.encode(type, forKey: .type)
+        try container.encode(order, forKey: .order)
+        try container.encodeIfPresent(usage, forKey: .usage)
     }
+}
+
+struct DeckDefaults: Codable, Equatable {
+    var audioAutoplay: Bool?
+    var replayCount: Int?
+    var nativeHiddenByDefault: Bool?
+    var randomize: Bool?
 }
 
 struct CardDeck: Codable, Identifiable, Equatable {
@@ -120,7 +161,13 @@ struct CardDeck: Codable, Identifiable, Equatable {
     var level: LearningLevel
     var title: String
     var cards: [LearningCard]
-    var baseFolderName: String? // Added to track resource folder
+    
+    // New Fields
+    var supportedModes: Set<GameConfiguration.GameType>?
+    var gameConfiguration: [String: DeckDefaults]?
+    var defaults: DeckDefaults?
+    
+    var baseFolderName: String? 
     
     static func == (lhs: CardDeck, rhs: CardDeck) -> Bool {
         return lhs.id == rhs.id &&

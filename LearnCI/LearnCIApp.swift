@@ -48,6 +48,11 @@ struct LearnCIApp: App {
                 .environment(syncManager)
                 .environment(locationManager)
                 .environment(audioManager)
+                .onOpenURL { url in
+                    Task {
+                        try? await authManager.handleIncomingURL(url)
+                    }
+                }
         }
         .modelContainer(sharedModelContainer)
     }

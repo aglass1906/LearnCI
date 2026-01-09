@@ -23,6 +23,7 @@ struct ProfileView: View {
     @State private var startingHours: Int = 0
     @State private var ttsRate: Float = 0.5
     @State private var isEditing: Bool = false
+    @State private var showChangePassword = false
     
     var body: some View {
         NavigationStack {
@@ -197,6 +198,10 @@ struct ProfileView: View {
                 // Save button removed as it's now in toolbar
                 
                 Section(header: Text("Account")) {
+                    Button("Change Password") {
+                        showChangePassword = true
+                    }
+                    
                     Button("Sign Out", role: .destructive) {
                         authManager.signOut()
                     }
@@ -239,6 +244,9 @@ struct ProfileView: View {
             }
             .onAppear {
                loadProfileData()
+            }
+            .sheet(isPresented: $showChangePassword) {
+                ChangePasswordSheet()
             }
         }
     }

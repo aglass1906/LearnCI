@@ -22,7 +22,16 @@
 				<string>com.googleusercontent.apps.552647494880-jktkhpond5gofkvbcr0mrd2u2ucfrmd3</string>
 			</array>
 		</dict>
-		<dict/>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.learnci.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>learnci</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to show where you are on the board and connect you with local learners.</string>

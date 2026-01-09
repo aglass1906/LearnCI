@@ -142,6 +142,78 @@ class AuthManager {
         }
     }
     
+    // MARK: - Email/Password & Phone Authentication
+    
+    @MainActor
+    func signUp(email: String, password: String, phone: String, fullName: String) async throws {
+        // Sign up with email and password
+        let session = try await supabase.auth.signUp(
+            email: email,
+            password: password,
+            data: [
+                "full_name": .string(fullName),
+                "phone": .string(phone)
+            ]
+        )
+        
+        // Update state
+        self.state = .authenticated(
+            userID: session.user.id.uuidString,
+            email: session.user.email,
+            fullName: fullName,
+            avatarURL: nil
+        )
+    }
+    
+    @MainActor
+    func signInWithEmail(email: String, password: String) async throws {
+        let session = try await supabase.auth.signIn(email: email, password: password)
+        
+        let metadata = session.user.userMetadata
+        let fullName = metadata["full_name"]?.value as? String
+        let avatarUrl = metadata["avatar_url"]?.value as? String
+        
+        self.state = .authenticated(
+            userID: session.user.id.uuidString,
+            email: session.user.email,
+            fullName: fullName,
+            avatarURL: avatarUrl
+        )
+    }
+    
+    @MainActor
+    func verifyOTP(phone: String, token: String) async throws {
+        let session = try await supabase.auth.verifyOTP(
+            phone: phone,
+            token: token,
+            type: .sms
+        )
+        
+        let metadata = session.user.userMetadata
+        let fullName = metadata["full_name"]?.value as? String
+        let avatarUrl = metadata["avatar_url"]?.value as? String
+        
+        self.state = .authenticated(
+            userID: session.user.id.uuidString,
+            email: session.user.email,
+            fullName: fullName,
+            avatarURL: avatarUrl
+        )
+    }
+    
+    @MainActor
+    func updatePassword(password: String) async throws {
+        try await supabase.auth.update(user: UserAttributes(password: password))
+    }
+
+    @MainActor
+    func sendPasswordReset(email: String) async throws {
+        // Must match a URL allowed in Supabase Dashboard -> Auth -> URL Configuration
+        // And 'learnci://' must be added to Info.plist
+        let redirectURL = URL(string: "learnci://reset-password")
+        try await supabase.auth.resetPasswordForEmail(email, redirectTo: redirectURL)
+    }
+    
     func signOut() {
         Task {
             try? await supabase.auth.signOut()
@@ -152,6 +224,12 @@ class AuthManager {
         }
     }
     
+    @MainActor
+    func handleIncomingURL(_ url: URL) async throws {
+        // Handle deep link callback from Supabase (e.g. password resets, email confirmations)
+        try await supabase.handle(url)
+    }
+
     // MARK: - Crypto Helpers for Nonce
     
     private func randomNonceString(length: Int = 32) -> String {

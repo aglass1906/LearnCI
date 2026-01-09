@@ -16,6 +16,8 @@ struct GameConfigurationView: View {
     let availableDecks: [DeckMetadata]
     let startAction: () -> Void
     
+    @Environment(DataManager.self) private var dataManager
+    
     // Sheet State
     @State private var showDeckSelection = false
     @State private var showDisplayConfig = false
@@ -27,26 +29,22 @@ struct GameConfigurationView: View {
     private var effectiveConfig: GameConfiguration {
         selectedPreset == .customize ? customConfig : GameConfiguration.from(preset: selectedPreset)
     }
+    
+    private var deckImage: UIImage? {
+        guard let deck = selectedDeck, let cover = deck.coverImage else { return nil }
+        // We need folderName. DeckMetadata has it.
+        if let url = dataManager.resolveURL(folderName: deck.folderName, filename: cover) {
+             return UIImage(contentsOfFile: url.path)
+        }
+        return nil
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 25) {
                 // Unified Settings Card (Mimics Session Summary)
                 VStack(spacing: 0) {
-                    // Row 1: Deck Selection (Merged)
-                    Button(action: { showDeckSelection = true }) {
-                        SettingsRow(
-                            icon: "menucard.fill",
-                            iconColor: .blue,
-                            text: selectedDeck?.title ?? "Select a Deck...",
-                            subText: "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(sessionLevel.rawValue)"
-                        )
-                    }
-                    
-                    Divider()
-                        .padding(.leading, 50)
-                    
-                    // Row 1.5: Game Mode
+                    // Row 1: Game Mode
                     Menu {
                         Picker("Game Mode", selection: $selectedGameType) {
                             ForEach(GameConfiguration.GameType.allCases) { type in
@@ -60,6 +58,20 @@ struct GameConfigurationView: View {
                             iconColor: .indigo,
                             text: selectedGameType.rawValue,
                             subText: "Tap to change game mode"
+                        )
+                    }
+                    
+                    Divider()
+                        .padding(.leading, 50)
+
+                    // Row 2: Deck Selection (Merged)
+                    Button(action: { showDeckSelection = true }) {
+                        SettingsRow(
+                            icon: "menucard.fill",
+                            iconColor: .blue,
+                            text: selectedDeck?.title ?? "Select a Deck...",
+                            subText: selectedDeck == nil ? "Compatible with \(selectedGameType.rawValue)" : "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(sessionLevel.rawValue)",
+                            customImage: deckImage
                         )
                     }
                     
@@ -134,7 +146,7 @@ struct GameConfigurationView: View {
         .background(Color(UIColor.systemGroupedBackground)) // Better background for the card style
         .sheet(isPresented: $showDeckSelection) {
             DeckSelectionSheet(
-                availableDecks: availableDecks,
+                availableDecks: availableDecks.filter { $0.supportedModes.contains(selectedGameType) },
                 selectedDeck: $selectedDeck,
                 language: $sessionLanguage,
                 level: $sessionLevel,
@@ -165,6 +177,11 @@ struct GameConfigurationView: View {
             applyDeckDefaults(from: newDeck, for: selectedGameType)
         }
         .onChange(of: selectedGameType) { _, newType in
+            // Validate deck compatibility
+            if let deck = selectedDeck, !deck.supportedModes.contains(newType) {
+                selectedDeck = nil // Clear if incompatible
+            }
+            
             applyDeckDefaults(from: selectedDeck, for: newType)
             
             // Auto-switch preset for Story Mode
@@ -227,21 +244,30 @@ struct SettingsRow<Content: View>: View {
     var text: String
     var subText: String?
     var isEmojiIcon: Bool
+    var customImage: UIImage?
     var subContent: Content
     
-    init(icon: String, iconColor: Color = .primary, text: String, subText: String? = nil, isEmojiIcon: Bool = false, @ViewBuilder subContent: () -> Content = { EmptyView() }) {
+    init(icon: String, iconColor: Color = .primary, text: String, subText: String? = nil, isEmojiIcon: Bool = false, customImage: UIImage? = nil, @ViewBuilder subContent: () -> Content = { EmptyView() }) {
         self.icon = icon
         self.iconColor = iconColor
         self.text = text
         self.subText = subText
         self.isEmojiIcon = isEmojiIcon
+        self.customImage = customImage
         self.subContent = subContent()
     }
     
     var body: some View {
         HStack(spacing: 12) {
             // Icon Area
-            if isEmojiIcon {
+            if let image = customImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 40, height: 40) // Square for cover
+                    .cornerRadius(8)
+                    .clipped()
+            } else if isEmojiIcon {
                 Text(icon)
                     .font(.title2)
                     .frame(width: 24)
@@ -258,6 +284,7 @@ struct SettingsRow<Content: View>: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(.primary)
+                    .lineLimit(1) // Avoid overflow
                 
                 if let sub = subText {
                     Text(sub)

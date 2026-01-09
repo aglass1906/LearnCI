@@ -159,6 +159,7 @@ struct GameView: View {
                     }
                 }
         }
+        .toolbar(gameState == .active ? .hidden : .visible, for: .tabBar)
     }
 
     @ViewBuilder
@@ -466,6 +467,8 @@ struct GameView: View {
         
         withAnimation {
             gameState = .active
+            // Enable full screen for all game modes
+            dataManager.isFullScreen = true
         }
         
         // Audio will be triggered by handleDeckLoaded if we waited, 
@@ -518,6 +521,7 @@ struct GameView: View {
         saveActivity()
         withAnimation {
             gameState = .finished
+            dataManager.isFullScreen = false // Ensure we exit full screen
         }
     }
     

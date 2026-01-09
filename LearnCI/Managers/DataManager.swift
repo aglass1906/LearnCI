@@ -11,6 +11,7 @@ struct DeckMetadata: Identifiable, Equatable {
     let filename: String
     let supportedModes: Set<GameConfiguration.GameType>
     let gameConfiguration: [String: DeckDefaults]?
+    let coverImage: String?
 }
 
 struct InspirationalQuote: Codable, Identifiable {
@@ -25,6 +26,9 @@ class DataManager {
     var errorMessage: String?
     var availableDecks: [DeckMetadata] = []
     var inspirationalQuotes: [InspirationalQuote] = []
+    
+    // UI State
+    var isFullScreen: Bool = false
     
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
@@ -122,7 +126,8 @@ class DataManager {
                 folderName: folderName,
                 filename: url.lastPathComponent,
                 supportedModes: deck.supportedModes ?? [.flashcards], // Default to flashcards
-                gameConfiguration: deck.gameConfiguration
+                gameConfiguration: deck.gameConfiguration,
+                coverImage: deck.coverImage
             )
             // print("DEBUG: Loaded deck \(deck.id) from \(url.lastPathComponent) with modes: \(deck.supportedModes ?? [])")
             return metadata

@@ -1,0 +1,78 @@
+{
+    "id": "es_challenge_001",
+    "mode": "listening_emoji_challenge",
+    "level": "A2",
+    "coverImage": "es_challenge_001_cover.png",
+    "supportedModes": [
+        "challenge"
+    ],
+    "gameConfiguration": {
+        "story": {
+            "audioAutoplay": true,
+            "replayCount": 1,
+            "nativeHiddenByDefault": true
+        },
+        "flashcards": {
+            "randomize": false
+        },
+        "rules": {
+            "audioFirst": true,
+            "allowReplay": true,
+            "showSentenceOption": true,
+            "showNativeLanguage": false,
+            "noPenaltyOnWrong": true
+        }
+    },
+    "challenges": [
+        {
+            "cardId": "es_story_003_c2",
+            "sentenceTarget": "El hombre se despierta temprano porque tiene que trabajar.",
+            "emojiOptions": [
+                "😴⏰💼",
+                "☕🙂",
+                "🚶‍♂️🏙"
+            ],
+            "correctIndex": 0
+        },
+        {
+            "cardId": "es_story_003_c3",
+            "sentenceTarget": "Después de levantarse, el hombre prepara café en la cocina.",
+            "emojiOptions": [
+                "☕🍳🏠",
+                "🛏😴",
+                "🚗💼"
+            ],
+            "correctIndex": 0
+        },
+        {
+            "cardId": "es_story_003_c4",
+            "sentenceTarget": "Con su café en la mano, el hombre camina por la calle y mira las tiendas.",
+            "emojiOptions": [
+                "🚶‍♂️☕🏬",
+                "🧍‍♂️📱",
+                "🛏☕😴"
+            ],
+            "correctIndex": 0
+        },
+        {
+            "cardId": "es_story_003_c5",
+            "sentenceTarget": "En la calle, el hombre ve a un amigo y habla con él por unos minutos.",
+            "emojiOptions": [
+                "🧍‍♂️🗣👬⏱️",
+                "🚶‍♂️😐",
+                "📱😶"
+            ],
+            "correctIndex": 0
+        },
+        {
+            "cardId": "es_story_003_c6",
+            "sentenceTarget": "Después de hablar con su amigo, el hombre continúa su mañana.",
+            "emojiOptions": [
+                "➡️🙂🌅",
+                "🛑😴",
+                "🏠⬅️"
+            ],
+            "correctIndex": 0
+        }
+    ]
+}

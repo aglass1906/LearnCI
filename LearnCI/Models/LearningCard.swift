@@ -166,6 +166,7 @@ struct CardDeck: Codable, Identifiable, Equatable {
     var supportedModes: Set<GameConfiguration.GameType>?
     var gameConfiguration: [String: DeckDefaults]?
     var defaults: DeckDefaults?
+    var coverImage: String?
     
     var baseFolderName: String? 
     

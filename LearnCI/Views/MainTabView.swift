@@ -12,6 +12,7 @@ enum AppTab: String, CaseIterable {
 
 struct MainTabView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(DataManager.self) private var dataManager
     @State private var selectedTab: AppTab = .dashboard
     @State private var showProfile = false
     
@@ -22,7 +23,9 @@ struct MainTabView: View {
                 ProgressView("Checking session...")
             case .authenticated:
                 VStack(spacing: 0) {
-                    UserHeader(showProfile: $showProfile, currentTab: $selectedTab)
+                    if !dataManager.isFullScreen {
+                        UserHeader(showProfile: $showProfile, currentTab: $selectedTab)
+                    }
                     
                     TabView(selection: $selectedTab) {
                         DashboardView()

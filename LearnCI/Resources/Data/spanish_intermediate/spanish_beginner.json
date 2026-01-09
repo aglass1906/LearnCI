@@ -24,7 +24,7 @@
             "sentenceNative": "The man walks down the street.",
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_hombre_sentence.mp3",
-            "mediaFile": "es_hombre.jpg"
+            "mediaFile": "es_hombre.png"
         },
         {
             "id": "es_b_c2",
@@ -34,7 +34,7 @@
             "sentenceNative": "The woman talks with her friend.",
             "audioWordFile": "es_mujer_word.mp3",
             "audioSentenceFile": "es_mujer_sentence.mp3",
-            "mediaFile": "es_mujer.jpg"
+            "mediaFile": "es_mujer.png"
         },
         {
             "id": "es_b_c3",
@@ -44,7 +44,7 @@
             "sentenceNative": "The boy plays with the ball.",
             "audioWordFile": "es_nino_word.mp3",
             "audioSentenceFile": "es_nino_sentence.mp3",
-            "mediaFile": "es_nino.jpg"
+            "mediaFile": "es_nino.png"
         },
         {
             "id": "es_b_c4",
@@ -54,7 +54,7 @@
             "sentenceNative": "The girl dances in the garden.",
             "audioWordFile": "es_nina_word.mp3",
             "audioSentenceFile": "es_nina_sentence.mp3",
-            "mediaFile": "es_nina.jpg"
+            "mediaFile": "es_nina.png"
         },
         {
             "id": "es_b_c5",
@@ -64,7 +64,7 @@
             "sentenceNative": "My brother lives in Madrid.",
             "audioWordFile": "es_hermano_word.mp3",
             "audioSentenceFile": "es_hermano_sentence.mp3",
-            "mediaFile": "es_hermano.jpg"
+            "mediaFile": "es_hermano.png"
         },
         {
             "id": "es_b_c6",
@@ -74,7 +74,7 @@
             "sentenceNative": "I have an older sister.",
             "audioWordFile": "es_hermana_word.mp3",
             "audioSentenceFile": "es_hermana_sentence.mp3",
-            "mediaFile": "es_hermana.jpg"
+            "mediaFile": "es_hermana.png"
         },
         {
             "id": "es_b_c7",
@@ -84,7 +84,7 @@
             "sentenceNative": "My father works in a bank.",
             "audioWordFile": "es_padre_word.mp3",
             "audioSentenceFile": "es_padre_sentence.mp3",
-            "mediaFile": "es_padre.jpg"
+            "mediaFile": "es_padre.png"
         },
         {
             "id": "es_b_c8",
@@ -94,7 +94,7 @@
             "sentenceNative": "My mother is a teacher.",
             "audioWordFile": "es_madre_word.mp3",
             "audioSentenceFile": "es_madre_sentence.mp3",
-            "mediaFile": "es_madre.jpg"
+            "mediaFile": "es_madre.png"
         },
         {
             "id": "es_b_c9",
@@ -104,7 +104,7 @@
             "sentenceNative": "My grandfather tells stories.",
             "audioWordFile": "es_abuelo_word.mp3",
             "audioSentenceFile": "es_abuelo_sentence.mp3",
-            "mediaFile": "es_abuelo.jpg"
+            "mediaFile": "es_abuelo.png"
         },
         {
             "id": "es_b_c10",
@@ -114,7 +114,7 @@
             "sentenceNative": "The needle is very small.",
             "audioWordFile": "es_aguja_word.mp3",
             "audioSentenceFile": "es_aguja_sentence.mp3",
-            "mediaFile": "es_aguja.jpg"
+            "mediaFile": "es_aguja.png"
         },
         {
             "id": "es_b_c11",
@@ -124,7 +124,7 @@
             "sentenceNative": "The food is on the table.",
             "audioWordFile": "es_mesa_word.mp3",
             "audioSentenceFile": "es_mesa_sentence.mp3",
-            "mediaFile": "es_mesa.jpg"
+            "mediaFile": "es_mesa.png"
         },
         {
             "id": "es_b_c12",
@@ -134,7 +134,7 @@
             "sentenceNative": "Please sit in the chair.",
             "audioWordFile": "es_silla_word.mp3",
             "audioSentenceFile": "es_silla_sentence.mp3",
-            "mediaFile": "es_silla.jpg"
+            "mediaFile": "es_silla.png"
         },
         {
             "id": "es_b_c13",
@@ -144,7 +144,7 @@
             "sentenceNative": "I'm going to bed now.",
             "audioWordFile": "es_cama_word.mp3",
             "audioSentenceFile": "es_cama_sentence.mp3",
-            "mediaFile": "es_cama.jpg"
+            "mediaFile": "es_cama.png"
         },
         {
             "id": "es_b_c14",
@@ -154,7 +154,7 @@
             "sentenceNative": "Close the door when you leave.",
             "audioWordFile": "es_puerta_word.mp3",
             "audioSentenceFile": "es_puerta_sentence.mp3",
-            "mediaFile": "es_puerta.jpg"
+            "mediaFile": "es_puerta.png"
         },
         {
             "id": "es_b_c15",
@@ -164,7 +164,7 @@
             "sentenceNative": "Open the window, it's hot.",
             "audioWordFile": "es_ventana_word.mp3",
             "audioSentenceFile": "es_ventana_sentence.mp3",
-            "mediaFile": "es_ventana.jpg"
+            "mediaFile": "es_ventana.png"
         },
         {
             "id": "es_b_c16",
@@ -174,7 +174,7 @@
             "sentenceNative": "I am cooking in the kitchen.",
             "audioWordFile": "es_cocina_word.mp3",
             "audioSentenceFile": "es_cocina_sentence.mp3",
-            "mediaFile": "es_cocina.jpg"
+            "mediaFile": "es_cocina.png"
         },
         {
             "id": "es_b_c17",
@@ -184,7 +184,7 @@
             "sentenceNative": "I have a lot of food at home.",
             "audioWordFile": "es_comida_word.mp3",
             "audioSentenceFile": "es_comida_sentence.mp3",
-            "mediaFile": "es_comida.jpg"
+            "mediaFile": "es_comida.png"
         },
         {
             "id": "es_b_c18",
@@ -194,7 +194,7 @@
             "sentenceNative": "Breakfast is very important.",
             "audioWordFile": "es_desayuno_word.mp3",
             "audioSentenceFile": "es_desayuno_sentence.mp3",
-            "mediaFile": "es_desayuno.jpg"
+            "mediaFile": "es_desayuno.png"
         },
         {
             "id": "es_b_c19",
@@ -204,7 +204,7 @@
             "sentenceNative": "We eat lunch at two.",
             "audioWordFile": "es_almuerzo_word.mp3",
             "audioSentenceFile": "es_almuerzo_sentence.mp3",
-            "mediaFile": "es_almuerzo.jpg"
+            "mediaFile": "es_almuerzo.png"
         },
         {
             "id": "es_b_c20",

@@ -1,9 +1,87 @@
 import SwiftUI
+import SwiftData
 
 struct ResourceDetailView: View {
     let resource: LearningResource
     
     var body: some View {
+        content
+    }
+    
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Environment(DataManager.self) private var dataManager
+    
+    @State private var showBrowser = false
+    @State private var startTime: Date?
+    @State private var readingDuration: TimeInterval = 0
+    @State private var showTimeLogSheet = false
+    @State private var logMinutes: Double = 5
+    @State private var logComment: String = ""
+    
+    func openResource() {
+        if let url = URL(string: resource.mainUrl) {
+            startTime = Date()
+            showBrowser = true
+        }
+    }
+    
+    func handleBrowserDismiss() {
+        showBrowser = false
+        if let start = startTime {
+            let end = Date()
+            readingDuration = end.timeIntervalSince(start)
+            
+            // If read for more than 1 minute, prompt to log
+            if readingDuration > 60 {
+                logMinutes = max(1, round(readingDuration / 60))
+                logComment = "Read: \(resource.title)"
+                showTimeLogSheet = true
+            }
+        }
+    }
+    
+    func saveActivity() {
+        let minutes = Int(logMinutes)
+        guard minutes > 0 else { return }
+        
+        let activity = UserActivity(
+            date: Date(),
+            minutes: minutes,
+            activityType: mapResourceTypeToActivity(resource.type),
+            language: Language(rawValue: resource.language) ?? .spanish,
+            userID: authManager.currentUser,
+            comment: logComment
+        )
+        
+        modelContext.insert(activity)
+        // SwiftData autosaves, try? modelContext.save() is optional but good practice
+    }
+    
+    func mapResourceTypeToActivity(_ type: ResourceType) -> ActivityType {
+        switch type {
+        case .book, .website: return .reading
+        case .youtube: return .watchingVideos
+        case .podcast: return .podcasts
+        }
+    }
+}
+
+extension ResourceDetailView {
+    // ... existing view ...
+}
+
+// Add sheets to main body
+extension ResourceDetailView {
+    // This wrapper is needed because `body` is computed
+    // We will inject the sheet modifiers into the main details view below
+}
+
+// Re-structure struct for cleaner modifiers
+extension ResourceDetailView {
+    
+    @ViewBuilder
+    var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Hero Image
@@ -107,11 +185,18 @@ struct ResourceDetailView: View {
         }
         .ignoresSafeArea(edges: .top)
         .toolbarBackground(.hidden, for: .navigationBar)
-    }
-    
-    func openResource() {
-        if let url = URL(string: resource.mainUrl) {
-            UIApplication.shared.open(url)
+        .sheet(isPresented: $showBrowser) {
+            if let url = URL(string: resource.mainUrl) {
+                InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
+                    .ignoresSafeArea()
+            }
+        }
+        .sheet(isPresented: $showTimeLogSheet) {
+            LogWatchTimeSheet(
+                minutes: $logMinutes,
+                comment: $logComment,
+                onSave: saveActivity
+            )
         }
     }
 }

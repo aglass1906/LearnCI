@@ -100,6 +100,12 @@ class YouTubeManager {
             return
         }
         
+        // Find the top-most view controller to present from
+        var topController = rootViewController
+        while let presented = topController.presentedViewController {
+            topController = presented
+        }
+        
         isLoading = true
         errorMessage = nil
         
@@ -109,7 +115,7 @@ class YouTubeManager {
         GIDSignIn.sharedInstance.configuration = signInConfig
         
         GIDSignIn.sharedInstance.signIn(
-            withPresenting: rootViewController,
+            withPresenting: topController,
             hint: nil,
             additionalScopes: ["https://www.googleapis.com/auth/youtube.readonly"]
         ) { [weak self] result, error in
@@ -117,6 +123,12 @@ class YouTubeManager {
                 self?.isLoading = false
                 
                 if let error = error {
+                    // Ignore "user cancelled" error to avoid noisy alerts
+                    if (error as NSError).code == -5 {
+                         print("User cancelled sign in")
+                         return
+                    }
+                    
                     self?.errorMessage = "Sign in failed: \(error.localizedDescription)"
                     print("Google Sign-In Error: \(error)")
                     return

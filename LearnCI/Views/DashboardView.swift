@@ -67,9 +67,7 @@ struct DashboardView: View {
                         roadmapSection
                         
                         // 3. Breakdown
-                        if !activityByType.isEmpty {
-                            breakdownSection
-                        }
+                        breakdownSection
                         
                         // 4. Leaderboard
                         leaderboardSection

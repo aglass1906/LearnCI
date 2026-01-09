@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Observation
+import UIKit
 
 struct DeckMetadata: Identifiable, Equatable {
     let id: String
@@ -157,59 +158,71 @@ class DataManager {
         }
     }
 
-    // Helper to resolve the URL for a resource, trying local development path first, then bundle.
+    // Helper to resolve the URL for a resource.
+    // NOTE: For Assets.xcassets, we can't get a URL.
+    // If this returns nil, UI should try UIImage(named: filename).
     func resolveURL(folderName: String?, filename: String) -> URL? {
         let cacheKey = "\(folderName ?? "root")/\(filename)"
         if let cached = resourceURLCache[cacheKey] {
             return cached
         }
         
-        let fm = FileManager.default
-        
-        // 1. Try local dev path (Simulator only)
-        #if targetEnvironment(simulator)
-        if let folder = folderName {
-            let localPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data/\(folder)/\(filename)"
-            if fm.fileExists(atPath: localPath) {
-                let url = URL(fileURLWithPath: localPath)
-                resourceURLCache[cacheKey] = url
-                return url
-            }
-        }
-        #endif
-        
         let name = (filename as NSString).deletingPathExtension
         let ext = (filename as NSString).pathExtension
         
-        // 2. Try Bundle with subdirectory
+        // 2. Specific Bundle Subdirectories
+        var subdirectories = [String]()
         if let folder = folderName {
-            if let url = Bundle.main.url(forResource: name, 
-                                         withExtension: ext, 
-                                         subdirectory: "Resources/Data/\(folder)") ?? 
-                        Bundle.main.url(forResource: name, 
-                                         withExtension: ext, 
-                                         subdirectory: "Data/\(folder)") {
+            subdirectories.append("Resources/Data/\(folder)")
+            subdirectories.append("Resources/Images/\(folder)")
+            subdirectories.append("Data/\(folder)")
+            subdirectories.append("Images/\(folder)")
+        }
+        subdirectories.append("Resources/Images")
+        subdirectories.append("Resources/Data")
+        subdirectories.append("Images")
+        subdirectories.append("Data")
+        
+        for subDir in subdirectories {
+            if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: subDir) {
                 resourceURLCache[cacheKey] = url
                 return url
             }
         }
         
-        // 3. Try standard Bundle locations (flattened or root)
+        // 3. Fallback: Standard flattened bundle search
         if let url = Bundle.main.url(forResource: name, withExtension: ext) {
             resourceURLCache[cacheKey] = url
             return url
         }
         
-        // 4. Robust recursive search in bundle (fallback)
-        // Case-insensitive for resilience on device
-        let bundleURL = Bundle.main.bundleURL
-        if let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+        // 4. Fallback: Recursive Search (Slowest, use as last resort)
+        let fm = FileManager.default
+        if let enumerator = fm.enumerator(at: Bundle.main.bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
             for case let fileURL as URL in enumerator {
                 if fileURL.lastPathComponent.lowercased() == filename.lowercased() {
                     resourceURLCache[cacheKey] = fileURL
                     return fileURL
                 }
             }
+        }
+        
+        // If file not found in bundle, it might be in Assets.xcassets.
+        return nil 
+    }
+    
+    // NEW: Helper to load image transparently from either File or Asset
+    func loadImage(folderName: String?, filename: String) -> UIImage? {
+        // 1. Try file URL first
+        if let url = resolveURL(folderName: folderName, filename: filename),
+           let image = UIImage(contentsOfFile: url.path) {
+            return image
+        }
+        
+        // 2. Try Asset Catalog (stripping extension)
+        let name = (filename as NSString).deletingPathExtension
+        if let image = UIImage(named: name) {
+            return image
         }
         
         return nil

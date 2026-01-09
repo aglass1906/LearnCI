@@ -32,11 +32,7 @@ struct GameConfigurationView: View {
     
     private var deckImage: UIImage? {
         guard let deck = selectedDeck, let cover = deck.coverImage else { return nil }
-        // We need folderName. DeckMetadata has it.
-        if let url = dataManager.resolveURL(folderName: deck.folderName, filename: cover) {
-             return UIImage(contentsOfFile: url.path)
-        }
-        return nil
+        return dataManager.loadImage(folderName: deck.folderName, filename: cover)
     }
 
     var body: some View {

@@ -351,34 +351,40 @@ struct GameView: View {
         // Only initialize from profile ONCE to allow temporary overrides
         guard let profile = userProfile, !hasInitialized else { return }
         
+        print("DEBUG: Accessing currentLanguage")
         sessionLanguage = profile.currentLanguage
+        print("DEBUG: Accessing currentLevel")
         sessionLevel = profile.currentLevel
+        print("DEBUG: Accessing dailyCardGoal")
         sessionCardGoal = profile.dailyCardGoal ?? 20
+        print("DEBUG: Accessing defaultGamePreset")
         selectedPreset = profile.defaultGamePreset
+        print("DEBUG: Accessing currentGameType")
         selectedGameType = profile.currentGameType // Restore last game type
+        print("DEBUG: Loaded currentGameType = \(selectedGameType.rawValue)")
+        
         // Load Global Audio Settings
+        print("DEBUG: Accessing ttsRate")
         ttsRate = profile.ttsRate
-        // useTTSFallback isn't in profile yet but is in GameConfig. 
-        // We should treat GameConfig.useTTSFallback as the source of truth if loading a preset, 
-        // OR we can add it to profile. For now, default true.
         useTTSFallback = true 
         
         // Sync customConfig if needed
         if selectedPreset != .customize {
+             print("DEBUG: Generating config from preset")
              customConfig = GameConfiguration.from(preset: selectedPreset)
              // Inject global TTS rate into the fresh preset config
              customConfig.ttsRate = profile.ttsRate
-        } else if let savedConfig = profile.customGameConfiguration {
-             // If we have a saved config, use it...
-             customConfig = savedConfig
-             // ...BUT ensure the TTS rate reflects the current global preference as a baseline
-             // (unless we want 'Review configuration' to persist its OWN rate separate from Profile?
-             // User said "default to user's global tts speed".
-             // It's safer to sync it here so the slider starts at the "Global" value.)
-             customConfig.ttsRate = profile.ttsRate
         } else {
-             // Fallback if Customize selected but no config? Should act like preset.
-             customConfig.ttsRate = profile.ttsRate
+             print("DEBUG: Checking customGameConfiguration")
+             if let savedConfig = profile.customGameConfiguration {
+                 print("DEBUG: Loaded customGameConfiguration")
+                 customConfig = savedConfig
+                 customConfig.ttsRate = profile.ttsRate
+             } else {
+                 print("DEBUG: No saved config, using default")
+                 // Fallback if Customize selected but no config? Should act like preset.
+                 customConfig.ttsRate = profile.ttsRate
+             }
         }
         
         hasInitialized = true

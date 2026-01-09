@@ -21,46 +21,29 @@ struct LearningCardFrontView: View {
         VStack(spacing: 15) {
             // Visual Media (Image or Video)
             if config.image != .hidden, let filename = card.mediaFile, !filename.isEmpty {
-                if let mediaURL = dataManager.resolveURL(folderName: deck.baseFolderName, filename: filename) {
-                    let isVideo = isVideoFile(filename)
-                    
+                let isVideo = isVideoFile(filename)
+                
+                // For videos, we strictly need a File URL
+                if isVideo, let mediaURL = dataManager.resolveURL(folderName: deck.baseFolderName, filename: filename) {
                     if config.image == .hint && !isImageRevealed {
                         // Hint Mode: Tap to reveal
                         Button(action: {
                             withAnimation { isImageRevealed = true }
                         }) {
                             ZStack {
-                                // Placeholder specific to type
-                                if isVideo {
-                                    Color.black.opacity(0.8)
-                                        .frame(height: 200)
-                                        .cornerRadius(10)
-                                    
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.white.opacity(0.8))
-                                } else {
-                                    // Try to show blurred image if possible, else generic placeholder
-                                    if let uiImage = UIImage(contentsOfFile: mediaURL.path) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .blur(radius: 20)
-                                            .opacity(0.8)
-                                            .frame(maxHeight: 180)
-                                            .cornerRadius(10)
-                                    } else {
-                                        Color.gray.opacity(0.3)
-                                            .frame(height: 180)
-                                            .cornerRadius(10)
-                                    }
-                                }
+                                Color.black.opacity(0.8)
+                                    .frame(height: 200)
+                                    .cornerRadius(10)
+                                
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white.opacity(0.8))
                                 
                                 // Overlay Text
                                 VStack {
                                     Image(systemName: "eye.fill")
                                         .font(.largeTitle)
-                                    Text(isVideo ? "Show Video" : "Show Image")
+                                    Text("Show Video")
                                         .fontWeight(.bold)
                                 }
                                 .foregroundColor(.white)
@@ -69,23 +52,56 @@ struct LearningCardFrontView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                } else {
-                        // Visible Mode or Revealed
-                        if isVideo {
-                            CardVideoPlayer(url: mediaURL, audioManager: audioManager, shouldPause: isCardFlipped)
-                                .frame(height: 220)
-                                .cornerRadius(10)
-                        } else {
-                            if let uiImage = UIImage(contentsOfFile: mediaURL.path) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxHeight: 180)
-                                    .cornerRadius(10)
-                                    .onTapGesture { onFlip() }
-                            }
-                        }
+                    } else {
+                        // Visible Video
+                        CardVideoPlayer(url: mediaURL, audioManager: audioManager, shouldPause: isCardFlipped)
+                            .frame(height: 220)
+                            .cornerRadius(10)
                     }
+                } 
+                // For images, we use our helper that checks both File URL and Assets
+                else if !isVideo, let uiImage = dataManager.loadImage(folderName: deck.baseFolderName, filename: filename) {
+                    if config.image == .hint && !isImageRevealed {
+                         // Hint Mode
+                         Button(action: {
+                             withAnimation { isImageRevealed = true }
+                         }) {
+                             ZStack {
+                                 Image(uiImage: uiImage)
+                                     .resizable()
+                                     .scaledToFit()
+                                     .blur(radius: 20)
+                                     .opacity(0.8)
+                                     .frame(maxHeight: 180)
+                                     .cornerRadius(10)
+                                 
+                                 VStack {
+                                     Image(systemName: "eye.fill")
+                                         .font(.largeTitle)
+                                     Text("Show Image")
+                                         .fontWeight(.bold)
+                                 }
+                                 .foregroundColor(.white)
+                                 .shadow(radius: 2)
+                             }
+                         }
+                         .buttonStyle(PlainButtonStyle())
+                    } else {
+                        // Visible Image
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 180)
+                            .cornerRadius(10)
+                            .onTapGesture { onFlip() }
+                    }
+                }
+                else if !isVideo {
+                     // Image not found placeholder
+                     Color.gray.opacity(0.3)
+                         .frame(height: 180)
+                         .cornerRadius(10)
+                         .overlay(Text("Image not found").font(.caption).foregroundColor(.secondary))
                 }
             }
             

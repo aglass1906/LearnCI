@@ -16,8 +16,7 @@ struct DeckSelectionRow: View {
             HStack(spacing: 12) {
                 // Cover Image or Icon
                 if let coverName = deck.coverImage,
-                   let coverURL = dataManager.resolveURL(folderName: deck.folderName, filename: coverName),
-                   let uiImage = UIImage(contentsOfFile: coverURL.path) {
+                   let uiImage = dataManager.loadImage(folderName: deck.folderName, filename: coverName) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)

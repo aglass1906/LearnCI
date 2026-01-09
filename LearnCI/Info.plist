@@ -24,5 +24,7 @@
 		</dict>
 		<dict/>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to show where you are on the board and connect you with local learners.</string>
 </dict>
 </plist>

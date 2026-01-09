@@ -3,14 +3,16 @@ import Observation
 import GoogleSignIn
 import UIKit
 
+enum FetchTarget {
+    case feed
+    case feedAppend
+    case singleChannel
+    case singleChannelAppend
+}
+
 @Observable
 class YouTubeManager {
-    enum FetchTarget {
-        case feed
-        case feedAppend
-        case singleChannel
-        case singleChannelAppend
-    }
+
     
     var isAuthenticated: Bool = false
     var youtubeAccount: String?

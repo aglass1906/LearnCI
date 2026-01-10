@@ -77,10 +77,13 @@ struct DashboardView: View {
                     }
                 }
 
-                .task {
+                .task(id: authManager.currentUser) {
                     // Create default profile if missing (Self-healing for fresh app install)
+                    // We also ensure we have a valid currentUser value to avoid creating profiles for 'nil' (unauth)
+                    // although the query filters by nil if unauth.
+                    
                     if userProfile == nil {
-                         print("DEBUG: No profile found on Dashboard. Creating default.")
+                         print("DEBUG: No profile found on Dashboard for user \(authManager.currentUser ?? "nil"). Creating default.")
                          if let userID = authManager.currentUser {
                              let newProfile = UserProfile(userID: userID)
                              // Sync with auth data
@@ -93,6 +96,7 @@ struct DashboardView: View {
                              
                              modelContext.insert(newProfile)
                              try? modelContext.save()
+                             print("DEBUG: Created new profile for \(userID)")
                          }
                     }
 

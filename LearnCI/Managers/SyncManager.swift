@@ -145,13 +145,15 @@ struct CoachingCheckInDTO: Encodable {
             print("  - Profile: \(p.name), ID: \(p.id), UserID: \(p.userID ?? "nil")")
         }
         
-        // 1. Adopt Profile (Any profile that isn't mine)
-        // We assume single-user-at-a-time ownership for this device
-        let profileDescriptor = FetchDescriptor<UserProfile>(predicate: #Predicate { $0.userID != userID })
-        let otherProfiles = try context.fetch(profileDescriptor)
+        // 1. Adopt Anonymous Profile Only
+        // We only want to claim "Guest" data (userID == nil).
+        // If a profile has a DIFFERENT userID, it belongs to someone else (e.g. previous logout).
+        // DO NOT STEAL IT.
+        let profileDescriptor = FetchDescriptor<UserProfile>(predicate: #Predicate { $0.userID == nil })
+        let anonymousProfiles = try context.fetch(profileDescriptor)
         
-        for profile in otherProfiles {
-            print("Adopting profile '\(profile.name)' (was: \(profile.userID ?? "nil")) for user \(userID)")
+        for profile in anonymousProfiles {
+            print("Adopting anonymous profile '\(profile.name)' for user \(userID)")
             profile.userID = userID
         }
         
@@ -167,7 +169,7 @@ struct CoachingCheckInDTO: Encodable {
             }
         }
         
-        if !otherProfiles.isEmpty || !otherActivities.isEmpty {
+        if !anonymousProfiles.isEmpty || !otherActivities.isEmpty {
             try context.save()
         }
     }

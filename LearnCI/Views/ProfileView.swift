@@ -49,7 +49,7 @@ struct ProfileView: View {
                     .fontWeight(.bold)
                 }
             }
-            .onAppear {
+            .task(id: authManager.currentUser) {
                ensureProfileExists()
             }
         }

@@ -26,9 +26,9 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             // Standard playback config.
             // Reverting to .default mode as .moviePlayback can sometimes conflict with TTS on certain devices/simulators.
             // Using standard options (interrupting others) to ensure clean playback pipeline.
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try session.setActive(true)
-            print("DEBUG: AVAudioSession active. Category: Playback, Mode: Default")
+            print("DEBUG: AVAudioSession active. Category: Playback, Mode: Default, Options: MixWithOthers")
         } catch {
             print("Failed to setup audio session: \(error)")
         }

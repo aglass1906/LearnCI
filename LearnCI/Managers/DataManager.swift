@@ -170,6 +170,8 @@ class DataManager {
         let name = (filename as NSString).deletingPathExtension
         let ext = (filename as NSString).pathExtension
         
+        print("DEBUG: Looking for \(filename) (Folder: \(folderName ?? "nil"))")
+        
         // 2. Specific Bundle Subdirectories
         var subdirectories = [String]()
         if let folder = folderName {
@@ -185,6 +187,7 @@ class DataManager {
         
         for subDir in subdirectories {
             if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: subDir) {
+                print("DEBUG: Found in subdirectory: \(subDir)")
                 resourceURLCache[cacheKey] = url
                 return url
             }
@@ -192,15 +195,18 @@ class DataManager {
         
         // 3. Fallback: Standard flattened bundle search
         if let url = Bundle.main.url(forResource: name, withExtension: ext) {
+            print("DEBUG: Found in root/flattened bundle")
             resourceURLCache[cacheKey] = url
             return url
         }
         
+        print("DEBUG: FAILED to find \(filename) in Bundle")
         // 4. Fallback: Recursive Search (Slowest, use as last resort)
         let fm = FileManager.default
         if let enumerator = fm.enumerator(at: Bundle.main.bundleURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
             for case let fileURL as URL in enumerator {
                 if fileURL.lastPathComponent.lowercased() == filename.lowercased() {
+                    print("DEBUG: Found via recursive search at: \(fileURL)")
                     resourceURLCache[cacheKey] = fileURL
                     return fileURL
                 }

@@ -30,9 +30,12 @@ struct DashboardView: View {
     }
     
     var totalMinutes: Int {
-        let activityMinutes = activities.reduce(0) { $0 + $1.minutes }
+        // Use Synced Profile Total (Source of Truth) + Pending (Unsynced)
+        let baseMinutes = userProfile?.totalMinutes ?? 0
+        let pendingMinutes = activities.filter { !$0.isSynced }.reduce(0) { $0 + $1.minutes }
         let startingMinutes = (userProfile?.startingHours ?? 0) * 60
-        return activityMinutes + startingMinutes
+        
+        return baseMinutes + pendingMinutes + startingMinutes
     }
     
     var todayActivities: [UserActivity] {

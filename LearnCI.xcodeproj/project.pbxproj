@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		131E058F2F1D4FDC009547EB /* Images in Resources */ = {isa = PBXBuildFile; fileRef = 131E058E2F1D4FD9009547EB /* Images */; };
 		135AABA62F087FB5002207B5 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABA52F087FB5002207B5 /* GoogleSignIn */; };
 		135AABA82F087FB5002207B5 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABA72F087FB5002207B5 /* GoogleSignInSwift */; };
 		135AABCA2F098957002207B5 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABC92F098957002207B5 /* Auth */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		131E058E2F1D4FD9009547EB /* Images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Images; path = LearnCI/Resources/Images; sourceTree = "<group>"; };
 		135AAB3C2F083F93002207B5 /* LearnCI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnCI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -26,6 +28,74 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Resources/Images/es_abuelo.png,
+				Resources/Images/es_aguja.png,
+				Resources/Images/es_almuerzo.png,
+				Resources/Images/es_arbol.jpg,
+				Resources/Images/es_arroz.jpg,
+				Resources/Images/es_azucar.jpg,
+				Resources/Images/es_b1_01_hombre_despierta.png,
+				Resources/Images/es_b1_02_hombre_cafe.png,
+				Resources/Images/es_b1_03_hombre_calle.png,
+				Resources/Images/es_b1_04_hombre_amigo.png,
+				Resources/Images/es_b1_05_hombre_conversa.png,
+				Resources/Images/es_b1_06_hombre_despedida.png,
+				Resources/Images/es_bus.png,
+				Resources/Images/es_cama.png,
+				Resources/Images/es_carne.jpg,
+				Resources/Images/es_cena.png,
+				Resources/Images/es_challenge_001_cover.png,
+				Resources/Images/es_cielo.jpg,
+				Resources/Images/es_cine.png,
+				Resources/Images/es_coche.png,
+				Resources/Images/es_cocina.png,
+				Resources/Images/es_comida.png,
+				Resources/Images/es_desayuno.png,
+				Resources/Images/es_dinero.png,
+				Resources/Images/es_estrella.jpg,
+				Resources/Images/es_flor.jpg,
+				Resources/Images/es_fruta.jpg,
+				Resources/Images/es_hermana.png,
+				Resources/Images/es_hermano.png,
+				Resources/Images/es_hombre.png,
+				Resources/Images/es_hotel.png,
+				Resources/Images/es_huevo.jpg,
+				Resources/Images/es_lapiz.png,
+				Resources/Images/es_leche.jpg,
+				Resources/Images/es_libro.png,
+				Resources/Images/es_luna.jpg,
+				Resources/Images/es_madre.png,
+				Resources/Images/es_manzana.jpg,
+				Resources/Images/es_mar.jpg,
+				Resources/Images/es_mercado.png,
+				Resources/Images/es_mesa.png,
+				Resources/Images/es_montana.png,
+				Resources/Images/es_mujer.png,
+				Resources/Images/es_nina.png,
+				Resources/Images/es_nino.png,
+				Resources/Images/es_padre.png,
+				Resources/Images/es_pan.jpg,
+				Resources/Images/es_papel.png,
+				Resources/Images/es_parque.png,
+				Resources/Images/es_pera.jpg,
+				Resources/Images/es_pescado.jpg,
+				Resources/Images/es_playa.png,
+				Resources/Images/es_puerta.png,
+				Resources/Images/es_queso.jpg,
+				Resources/Images/es_reloj.png,
+				Resources/Images/es_restaurante.png,
+				Resources/Images/es_ropa.png,
+				Resources/Images/es_sal.jpg,
+				Resources/Images/es_silla.png,
+				Resources/Images/es_sol.jpg,
+				Resources/Images/es_sombrero.png,
+				Resources/Images/es_story_002_cover.png,
+				Resources/Images/es_te.jpg,
+				Resources/Images/es_tienda.png,
+				Resources/Images/es_trabajo.png,
+				Resources/Images/es_tren.png,
+				Resources/Images/es_ventana.png,
+				Resources/Images/es_zapatos.png,
 			);
 			target = 135AAB3B2F083F93002207B5 /* LearnCI */;
 		};
@@ -64,6 +134,7 @@
 		135AAB332F083F93002207B5 = {
 			isa = PBXGroup;
 			children = (
+				131E058E2F1D4FD9009547EB /* Images */,
 				135AAB3E2F083F93002207B5 /* LearnCI */,
 				135AAB3D2F083F93002207B5 /* Products */,
 			);
@@ -153,6 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				131E058F2F1D4FDC009547EB /* Images in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

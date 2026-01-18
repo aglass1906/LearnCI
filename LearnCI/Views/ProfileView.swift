@@ -4,8 +4,10 @@ import SwiftData
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) var dismiss
+    @Environment(SyncManager.self) private var syncManager
     @Environment(AuthManager.self) private var authManager
     @Query private var allProfiles: [UserProfile]
+    @State private var showDeleteConfirmation = false
     
     var profiles: [UserProfile] {
         allProfiles.filter { $0.userID == authManager.currentUser }
@@ -37,7 +39,17 @@ struct ProfileView: View {
                         }
                     }
                 } else {
-                    ContentUnavailableView("Loading Profile...", systemImage: "person.circle")
+                    if !syncManager.hasInitialSyncCompleted {
+                        ContentUnavailableView("Syncing Profile...", systemImage: "arrow.triangle.2.circlepath")
+                    } else {
+                        ContentUnavailableView("Loading Profile...", systemImage: "person.circle")
+                    }
+                }
+                
+                Section("Development") {
+                    Button("Remove All Profiles", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
                 }
             }
             .navigationTitle("Profile")
@@ -52,10 +64,27 @@ struct ProfileView: View {
             .task(id: authManager.currentUser) {
                ensureProfileExists()
             }
+            .onChange(of: syncManager.hasInitialSyncCompleted) { _, completed in
+                if completed {
+                    ensureProfileExists()
+                }
+            }
+            .alert("Reset All Profiles?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete All", role: .destructive) {
+                    deleteAllProfiles()
+                }
+            } message: {
+                Text("This will delete ALL local profiles, including hidden ones. This cannot be undone.")
+            }
         }
     }
     
     func ensureProfileExists() {
+        // Wait for sync to complete before creating a default profile
+        // This prevents overwriting server data with a blank profile
+        guard syncManager.hasInitialSyncCompleted else { return }
+        
         if profiles.isEmpty {
             // Create profile associated with current user
             if let userID = authManager.currentUser {
@@ -69,6 +98,15 @@ struct ProfileView: View {
                 
                 modelContext.insert(newProfile)
             }
+        }
+    }
+    
+    private func deleteAllProfiles() {
+        do {
+            try modelContext.delete(model: UserProfile.self)
+            dismiss()
+        } catch {
+            print("Failed to delete profiles: \(error)")
         }
     }
 }

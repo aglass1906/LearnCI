@@ -32,7 +32,8 @@
             "mediaFile": "",
             "usage": [
                 "story_only"
-            ]
+            ],
+            "domain": "Story"
         },
         {
             "id": "es_video_001_c2",
@@ -44,7 +45,8 @@
             "sentenceNative": "",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": "DUO_Pizza_Gratis.mov"
+            "mediaFile": "DUO_Pizza_Gratis.mov",
+            "domain": "Story"
         },
         {
             "id": "es_video_001_c3",
@@ -59,7 +61,8 @@
             "mediaFile": "DUO_Pizza_Gratis.jpeg",
             "usage": [
                 "story_only"
-            ]
+            ],
+            "domain": "Story"
         }
     ]
 }

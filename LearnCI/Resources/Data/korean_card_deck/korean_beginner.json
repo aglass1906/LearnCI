@@ -21,7 +21,8 @@
             "sentenceNative": "I am a student.",
             "audioWordFile": "ko_jeo_word.mp3",
             "audioSentenceFile": "ko_jeo_sentence.mp3",
-            "mediaFile": "ko_jeo.jpg"
+            "mediaFile": "ko_jeo.jpg",
+            "domain": "People & Pronouns"
         },
         {
             "id": "ko_b_c2",
@@ -31,7 +32,8 @@
             "sentenceNative": "Who are you?",
             "audioWordFile": "ko_neo_word.mp3",
             "audioSentenceFile": "ko_neo_sentence.mp3",
-            "mediaFile": "ko_neo.jpg"
+            "mediaFile": "ko_neo.jpg",
+            "domain": "People & Pronouns"
         },
         {
             "id": "ko_b_c3",
@@ -41,7 +43,8 @@
             "sentenceNative": "He is my friend.",
             "audioWordFile": "ko_geu_word.mp3",
             "audioSentenceFile": "ko_geu_sentence.mp3",
-            "mediaFile": "ko_geu.jpg"
+            "mediaFile": "ko_geu.jpg",
+            "domain": "People & Pronouns"
         },
         {
             "id": "ko_b_c4",
@@ -51,7 +54,8 @@
             "sentenceNative": "She is very pretty.",
             "audioWordFile": "ko_geunyeo_word.mp3",
             "audioSentenceFile": "ko_geunyeo_sentence.mp3",
-            "mediaFile": "ko_geunyeo.jpg"
+            "mediaFile": "ko_geunyeo.jpg",
+            "domain": "People & Pronouns"
         },
         {
             "id": "ko_b_c5",
@@ -61,7 +65,8 @@
             "sentenceNative": "There are many people here.",
             "audioWordFile": "ko_saram_word.mp3",
             "audioSentenceFile": "ko_saram_sentence.mp3",
-            "mediaFile": "ko_saram.jpg"
+            "mediaFile": "ko_saram.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c6",
@@ -71,7 +76,8 @@
             "sentenceNative": "Who is that man?",
             "audioWordFile": "ko_namja_word.mp3",
             "audioSentenceFile": "ko_namja_sentence.mp3",
-            "mediaFile": "ko_namja.jpg"
+            "mediaFile": "ko_namja.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c7",
@@ -81,7 +87,8 @@
             "sentenceNative": "The woman is singing.",
             "audioWordFile": "ko_yeoja_word.mp3",
             "audioSentenceFile": "ko_yeoja_sentence.mp3",
-            "mediaFile": "ko_yeoja.jpg"
+            "mediaFile": "ko_yeoja.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c8",
@@ -91,7 +98,8 @@
             "sentenceNative": "The child is laughing.",
             "audioWordFile": "ko_ai_word.mp3",
             "audioSentenceFile": "ko_ai_sentence.mp3",
-            "mediaFile": "ko_ai.jpg"
+            "mediaFile": "ko_ai.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c9",
@@ -101,7 +109,8 @@
             "sentenceNative": "Father is an office worker.",
             "audioWordFile": "ko_abeoji_word.mp3",
             "audioSentenceFile": "ko_abeoji_sentence.mp3",
-            "mediaFile": "ko_abeoji.jpg"
+            "mediaFile": "ko_abeoji.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c10",
@@ -111,7 +120,8 @@
             "sentenceNative": "Mother is good at cooking.",
             "audioWordFile": "ko_eomeoni_word.mp3",
             "audioSentenceFile": "ko_eomeoni_sentence.mp3",
-            "mediaFile": "ko_eomeoni.jpg"
+            "mediaFile": "ko_eomeoni.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c11",
@@ -121,7 +131,8 @@
             "sentenceNative": "The younger sibling does homework.",
             "audioWordFile": "ko_dongsaeng_word.mp3",
             "audioSentenceFile": "ko_dongsaeng_sentence.mp3",
-            "mediaFile": "ko_dongsaeng.jpg"
+            "mediaFile": "ko_dongsaeng.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c12",
@@ -131,7 +142,8 @@
             "sentenceNative": "Older brother is tall.",
             "audioWordFile": "ko_hyeong_word.mp3",
             "audioSentenceFile": "ko_hyeong_sentence.mp3",
-            "mediaFile": "ko_hyeong.jpg"
+            "mediaFile": "ko_hyeong.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c13",
@@ -141,7 +153,8 @@
             "sentenceNative": "Older sister is a college student.",
             "audioWordFile": "ko_nuna_word.mp3",
             "audioSentenceFile": "ko_nuna_sentence.mp3",
-            "mediaFile": "ko_nuna.jpg"
+            "mediaFile": "ko_nuna.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c14",
@@ -151,7 +164,8 @@
             "sentenceNative": "The friend gave a gift.",
             "audioWordFile": "ko_chingu_word.mp3",
             "audioSentenceFile": "ko_chingu_sentence.mp3",
-            "mediaFile": "ko_chingu.jpg"
+            "mediaFile": "ko_chingu.jpg",
+            "domain": "People & Family"
         },
         {
             "id": "ko_b_c15",
@@ -161,7 +175,8 @@
             "sentenceNative": "I go to school early.",
             "audioWordFile": "ko_hakgyo_word.mp3",
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
-            "mediaFile": "ko_hakgyo.jpg"
+            "mediaFile": "ko_hakgyo.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c16",
@@ -171,7 +186,8 @@
             "sentenceNative": "The company is in Seoul.",
             "audioWordFile": "ko_hoesa_word.mp3",
             "audioSentenceFile": "ko_hoesa_sentence.mp3",
-            "mediaFile": "ko_hoesa.jpg"
+            "mediaFile": "ko_hoesa.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c17",
@@ -181,7 +197,8 @@
             "sentenceNative": "I have to go to the hospital.",
             "audioWordFile": "ko_byeongwon_word.mp3",
             "audioSentenceFile": "ko_byeongwon_sentence.mp3",
-            "mediaFile": "ko_byeongwon.jpg"
+            "mediaFile": "ko_byeongwon.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c18",
@@ -191,7 +208,8 @@
             "sentenceNative": "I bought fruit at the market.",
             "audioWordFile": "ko_sijang_word.mp3",
             "audioSentenceFile": "ko_sijang_sentence.mp3",
-            "mediaFile": "ko_sijang.jpg"
+            "mediaFile": "ko_sijang.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c19",
@@ -201,7 +219,8 @@
             "sentenceNative": "This restaurant's bibimbap is delicious.",
             "audioWordFile": "ko_sikdang_word.mp3",
             "audioSentenceFile": "ko_sikdang_sentence.mp3",
-            "mediaFile": "ko_sikdang.jpg"
+            "mediaFile": "ko_sikdang.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c20",
@@ -211,7 +230,8 @@
             "sentenceNative": "I meet a friend at the coffee shop.",
             "audioWordFile": "ko_keopisyop_word.mp3",
             "audioSentenceFile": "ko_keopisyop_sentence.mp3",
-            "mediaFile": "ko_keopisyop.jpg"
+            "mediaFile": "ko_keopisyop.jpg",
+            "domain": "Places"
         },
         {
             "id": "ko_b_c21",
@@ -221,7 +241,8 @@
             "sentenceNative": "The house is very clean.",
             "audioWordFile": "ko_jip_word.mp3",
             "audioSentenceFile": "ko_jip_sentence.mp3",
-            "mediaFile": "ko_jip.jpg"
+            "mediaFile": "ko_jip.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c22",
@@ -231,7 +252,8 @@
             "sentenceNative": "The room is warm.",
             "audioWordFile": "ko_bang_word.mp3",
             "audioSentenceFile": "ko_bang_sentence.mp3",
-            "mediaFile": "ko_bang.jpg"
+            "mediaFile": "ko_bang.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c23",
@@ -241,7 +263,8 @@
             "sentenceNative": "Where is the bathroom?",
             "audioWordFile": "ko_hwajangsil_word.mp3",
             "audioSentenceFile": "ko_hwajangsil_sentence.mp3",
-            "mediaFile": "ko_hwajangsil.jpg"
+            "mediaFile": "ko_hwajangsil.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c24",
@@ -251,7 +274,8 @@
             "sentenceNative": "I drink water in the kitchen.",
             "audioWordFile": "ko_jubang_word.mp3",
             "audioSentenceFile": "ko_jubang_sentence.mp3",
-            "mediaFile": "ko_jubang.jpg"
+            "mediaFile": "ko_jubang.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c25",
@@ -261,7 +285,8 @@
             "sentenceNative": "The bed is very comfortable.",
             "audioWordFile": "ko_chimdae_word.mp3",
             "audioSentenceFile": "ko_chimdae_sentence.mp3",
-            "mediaFile": "ko_chimdae.jpg"
+            "mediaFile": "ko_chimdae.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c26",
@@ -271,7 +296,8 @@
             "sentenceNative": "There is a book on the desk.",
             "audioWordFile": "ko_chaeksang_word.mp3",
             "audioSentenceFile": "ko_chaeksang_sentence.mp3",
-            "mediaFile": "ko_chaeksang.jpg"
+            "mediaFile": "ko_chaeksang.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c27",
@@ -281,7 +307,8 @@
             "sentenceNative": "Please sit in the chair.",
             "audioWordFile": "ko_uija_word.mp3",
             "audioSentenceFile": "ko_uija_sentence.mp3",
-            "mediaFile": "ko_uija.jpg"
+            "mediaFile": "ko_uija.jpg",
+            "domain": "Home & Furniture"
         },
         {
             "id": "ko_b_c28",
@@ -291,7 +318,8 @@
             "sentenceNative": "What is your phone number?",
             "audioWordFile": "ko_jeonhwa_word.mp3",
             "audioSentenceFile": "ko_jeonhwa_sentence.mp3",
-            "mediaFile": "ko_jeonhwa.jpg"
+            "mediaFile": "ko_jeonhwa.jpg",
+            "domain": "Objects"
         },
         {
             "id": "ko_b_c29",
@@ -301,7 +329,8 @@
             "sentenceNative": "I play games on the computer.",
             "audioWordFile": "ko_keompyuteo_word.mp3",
             "audioSentenceFile": "ko_keompyuteo_sentence.mp3",
-            "mediaFile": "ko_keompyuteo.jpg"
+            "mediaFile": "ko_keompyuteo.jpg",
+            "domain": "Objects"
         },
         {
             "id": "ko_b_c30",
@@ -311,7 +340,8 @@
             "sentenceNative": "I read books every day.",
             "audioWordFile": "ko_chaek_word.mp3",
             "audioSentenceFile": "ko_chaek_sentence.mp3",
-            "mediaFile": "ko_chaek.jpg"
+            "mediaFile": "ko_chaek.jpg",
+            "domain": "Objects"
         },
         {
             "id": "ko_b_c31",
@@ -321,7 +351,8 @@
             "sentenceNative": "Please lend me a pencil.",
             "audioWordFile": "ko_yeonpil_word.mp3",
             "audioSentenceFile": "ko_yeonpil_sentence.mp3",
-            "mediaFile": "ko_yeonpil.jpg"
+            "mediaFile": "ko_yeonpil.jpg",
+            "domain": "Objects"
         },
         {
             "id": "ko_b_c32",
@@ -331,7 +362,8 @@
             "sentenceNative": "Please write your name on the paper.",
             "audioWordFile": "ko_jong_i_word.mp3",
             "audioSentenceFile": "ko_jong_i_sentence.mp3",
-            "mediaFile": "ko_jong_i.jpg"
+            "mediaFile": "ko_jong_i.jpg",
+            "domain": "Objects"
         },
         {
             "id": "ko_b_c33",
@@ -341,7 +373,8 @@
             "sentenceNative": "I want to earn a lot of money.",
             "audioWordFile": "ko_don_word.mp3",
             "audioSentenceFile": "ko_don_sentence.mp3",
-            "mediaFile": "ko_don.jpg"
+            "mediaFile": "ko_don.jpg",
+            "domain": "Money"
         },
         {
             "id": "ko_b_c34",
@@ -351,7 +384,8 @@
             "sentenceNative": "Please wear thick clothes.",
             "audioWordFile": "ko_ot_word.mp3",
             "audioSentenceFile": "ko_ot_sentence.mp3",
-            "mediaFile": "ko_ot.jpg"
+            "mediaFile": "ko_ot.jpg",
+            "domain": "Clothing"
         },
         {
             "id": "ko_b_c35",
@@ -361,7 +395,8 @@
             "sentenceNative": "Please take off your shoes and come in.",
             "audioWordFile": "ko_sinbal_word.mp3",
             "audioSentenceFile": "ko_sinbal_sentence.mp3",
-            "mediaFile": "ko_sinbal.jpg"
+            "mediaFile": "ko_sinbal.jpg",
+            "domain": "Clothing"
         },
         {
             "id": "ko_b_c36",
@@ -371,7 +406,8 @@
             "sentenceNative": "The bag is too heavy.",
             "audioWordFile": "ko_gabang_word.mp3",
             "audioSentenceFile": "ko_gabang_sentence.mp3",
-            "mediaFile": "ko_gabang.jpg"
+            "mediaFile": "ko_gabang.jpg",
+            "domain": "Clothing"
         },
         {
             "id": "ko_b_c37",
@@ -381,7 +417,8 @@
             "sentenceNative": "Time has passed so quickly.",
             "audioWordFile": "ko_sigan_word.mp3",
             "audioSentenceFile": "ko_sigan_sentence.mp3",
-            "mediaFile": "ko_sigan.jpg"
+            "mediaFile": "ko_sigan.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c38",
@@ -391,7 +428,8 @@
             "sentenceNative": "There is a party today.",
             "audioWordFile": "ko_oneul_word.mp3",
             "audioSentenceFile": "ko_oneul_sentence.mp3",
-            "mediaFile": "ko_oneul.jpg"
+            "mediaFile": "ko_oneul.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c39",
@@ -401,7 +439,8 @@
             "sentenceNative": "I watched a movie yesterday.",
             "audioWordFile": "ko_eoje_word.mp3",
             "audioSentenceFile": "ko_eoje_sentence.mp3",
-            "mediaFile": "ko_eoje.jpg"
+            "mediaFile": "ko_eoje.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c40",
@@ -411,7 +450,8 @@
             "sentenceNative": "I'm going to the sea tomorrow.",
             "audioWordFile": "ko_naeil_word.mp3",
             "audioSentenceFile": "ko_naeil_sentence.mp3",
-            "mediaFile": "ko_naeil.jpg"
+            "mediaFile": "ko_naeil.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c41",
@@ -421,7 +461,8 @@
             "sentenceNative": "I wake up early in the morning.",
             "audioWordFile": "ko_achim_word.mp3",
             "audioSentenceFile": "ko_achim_sentence.mp3",
-            "mediaFile": "ko_achim.jpg"
+            "mediaFile": "ko_achim.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c42",
@@ -431,7 +472,8 @@
             "sentenceNative": "What's the lunch menu?",
             "audioWordFile": "ko_jeomsim_word.mp3",
             "audioSentenceFile": "ko_jeomsim_sentence.mp3",
-            "mediaFile": "ko_jeomsim.jpg"
+            "mediaFile": "ko_jeomsim.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c43",
@@ -441,7 +483,8 @@
             "sentenceNative": "We are eating out in the evening.",
             "audioWordFile": "ko_jeonyeok_word.mp3",
             "audioSentenceFile": "ko_jeonyeok_sentence.mp3",
-            "mediaFile": "ko_jeonyeok.jpg"
+            "mediaFile": "ko_jeonyeok.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c44",
@@ -451,7 +494,8 @@
             "sentenceNative": "You shouldn't eat ramen at night.",
             "audioWordFile": "ko_bam_word.mp3",
             "audioSentenceFile": "ko_bam_sentence.mp3",
-            "mediaFile": "ko_bam.jpg"
+            "mediaFile": "ko_bam.jpg",
+            "domain": "Time & Meals"
         },
         {
             "id": "ko_b_c45",
@@ -461,7 +505,8 @@
             "sentenceNative": "Do you like spicy food?",
             "audioWordFile": "ko_eumsik_word.mp3",
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
-            "mediaFile": "ko_eumsik.jpg"
+            "mediaFile": "ko_eumsik.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c46",
@@ -471,7 +516,8 @@
             "sentenceNative": "Please drink a lot of water.",
             "audioWordFile": "ko_mul_word.mp3",
             "audioSentenceFile": "ko_mul_sentence.mp3",
-            "mediaFile": "ko_mul.jpg"
+            "mediaFile": "ko_mul.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c47",
@@ -481,7 +527,8 @@
             "sentenceNative": "Did you eat? (Have you had your meal?)",
             "audioWordFile": "ko_bap_word.mp3",
             "audioSentenceFile": "ko_bap_sentence.mp3",
-            "mediaFile": "ko_bap.jpg"
+            "mediaFile": "ko_bap.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c48",
@@ -491,7 +538,8 @@
             "sentenceNative": "Bulgogi is made with beef.",
             "audioWordFile": "ko_gogi_word.mp3",
             "audioSentenceFile": "ko_gogi_sentence.mp3",
-            "mediaFile": "ko_gogi.jpg"
+            "mediaFile": "ko_gogi.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c49",
@@ -501,7 +549,8 @@
             "sentenceNative": "I bought fresh fish at the market.",
             "audioWordFile": "ko_saengseon_word.mp3",
             "audioSentenceFile": "ko_saengseon_sentence.mp3",
-            "mediaFile": "ko_saengseon.jpg"
+            "mediaFile": "ko_saengseon.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c50",
@@ -511,7 +560,8 @@
             "sentenceNative": "You must eat a variety of vegetables.",
             "audioWordFile": "ko_yachae_word.mp3",
             "audioSentenceFile": "ko_yachae_sentence.mp3",
-            "mediaFile": "ko_yachae.jpg"
+            "mediaFile": "ko_yachae.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c51",
@@ -521,7 +571,8 @@
             "sentenceNative": "Which fruit do you like best?",
             "audioWordFile": "ko_gwail_word.mp3",
             "audioSentenceFile": "ko_gwail_sentence.mp3",
-            "mediaFile": "ko_gwail.jpg"
+            "mediaFile": "ko_gwail.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c52",
@@ -531,7 +582,8 @@
             "sentenceNative": "The milk has gone bad.",
             "audioWordFile": "ko_uyu_word.mp3",
             "audioSentenceFile": "ko_uyu_sentence.mp3",
-            "mediaFile": "ko_uyu.jpg"
+            "mediaFile": "ko_uyu.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c53",
@@ -541,7 +593,8 @@
             "sentenceNative": "I bought freshly baked bread from the bakery.",
             "audioWordFile": "ko_ppang_word.mp3",
             "audioSentenceFile": "ko_ppang_sentence.mp3",
-            "mediaFile": "ko_ppang.jpg"
+            "mediaFile": "ko_ppang.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c54",
@@ -551,7 +604,8 @@
             "sentenceNative": "I'll make you a fried egg.",
             "audioWordFile": "ko_gyeran_word.mp3",
             "audioSentenceFile": "ko_gyeran_sentence.mp3",
-            "mediaFile": "ko_gyeran.jpg"
+            "mediaFile": "ko_gyeran.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c55",
@@ -561,7 +615,8 @@
             "sentenceNative": "Would you like a cup of warm tea?",
             "audioWordFile": "ko_cha_word.mp3",
             "audioSentenceFile": "ko_cha_sentence.mp3",
-            "mediaFile": "ko_cha.jpg"
+            "mediaFile": "ko_cha.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c56",
@@ -571,7 +626,8 @@
             "sentenceNative": "Do you put sugar in your coffee?",
             "audioWordFile": "ko_keopi_word.mp3",
             "audioSentenceFile": "ko_keopi_sentence.mp3",
-            "mediaFile": "ko_keopi.jpg"
+            "mediaFile": "ko_keopi.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c57",
@@ -581,7 +637,8 @@
             "sentenceNative": "Please drink alcohol in moderation.",
             "audioWordFile": "ko_sul_word.mp3",
             "audioSentenceFile": "ko_sul_sentence.mp3",
-            "mediaFile": "ko_sul.jpg"
+            "mediaFile": "ko_sul.jpg",
+            "domain": "Food & Drink"
         },
         {
             "id": "ko_b_c58",
@@ -591,7 +648,8 @@
             "sentenceNative": "Studying Korean is fun.",
             "audioWordFile": "ko_gongbu_word.mp3",
             "audioSentenceFile": "ko_gongbu_sentence.mp3",
-            "mediaFile": "ko_gongbu.jpg"
+            "mediaFile": "ko_gongbu.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c59",
@@ -601,7 +659,8 @@
             "sentenceNative": "What kind of work do you do?",
             "audioWordFile": "ko_il_word.mp3",
             "audioSentenceFile": "ko_il_sentence.mp3",
-            "mediaFile": "ko_il.jpg"
+            "mediaFile": "ko_il.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c60",
@@ -611,7 +670,8 @@
             "sentenceNative": "I exercise for my health.",
             "audioWordFile": "ko_undong_word.mp3",
             "audioSentenceFile": "ko_undong_sentence.mp3",
-            "mediaFile": "ko_undong.jpg"
+            "mediaFile": "ko_undong.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c61",
@@ -621,7 +681,8 @@
             "sentenceNative": "I'm going on a trip during this vacation.",
             "audioWordFile": "ko_yeohaeng_word.mp3",
             "audioSentenceFile": "ko_yeohaeng_sentence.mp3",
-            "mediaFile": "ko_yeohaeng.jpg"
+            "mediaFile": "ko_yeohaeng.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c62",
@@ -631,7 +692,8 @@
             "sentenceNative": "This is a song I like.",
             "audioWordFile": "ko_norae_word.mp3",
             "audioSentenceFile": "ko_norae_sentence.mp3",
-            "mediaFile": "ko_norae.jpg"
+            "mediaFile": "ko_norae.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c63",
@@ -641,7 +703,8 @@
             "sentenceNative": "What kind of movie genre do you like?",
             "audioWordFile": "ko_yeonghwa_word.mp3",
             "audioSentenceFile": "ko_yeonghwa_sentence.mp3",
-            "mediaFile": "ko_yeonghwa.jpg"
+            "mediaFile": "ko_yeonghwa.jpg",
+            "domain": "Activities"
         },
         {
             "id": "ko_b_c64",
@@ -651,7 +714,8 @@
             "sentenceNative": "The weather is really sunny today.",
             "audioWordFile": "ko_nalssi_word.mp3",
             "audioSentenceFile": "ko_nalssi_sentence.mp3",
-            "mediaFile": "ko_nalssi.jpg"
+            "mediaFile": "ko_nalssi.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c65",
@@ -661,7 +725,8 @@
             "sentenceNative": "It's raining, so take an umbrella.",
             "audioWordFile": "ko_bi_word.mp3",
             "audioSentenceFile": "ko_bi_sentence.mp3",
-            "mediaFile": "ko_bi.jpg"
+            "mediaFile": "ko_bi.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c66",
@@ -671,7 +736,8 @@
             "sentenceNative": "White snow is falling.",
             "audioWordFile": "ko_nun_word.mp3",
             "audioSentenceFile": "ko_nun_sentence.mp3",
-            "mediaFile": "ko_nun.jpg"
+            "mediaFile": "ko_nun.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c67",
@@ -681,7 +747,8 @@
             "sentenceNative": "A cool breeze is blowing.",
             "audioWordFile": "ko_baram_word.mp3",
             "audioSentenceFile": "ko_baram_sentence.mp3",
-            "mediaFile": "ko_baram.jpg"
+            "mediaFile": "ko_baram.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c68",
@@ -691,7 +758,8 @@
             "sentenceNative": "The sky is very high and blue.",
             "audioWordFile": "ko_haneul_word.mp3",
             "audioSentenceFile": "ko_haneul_sentence.mp3",
-            "mediaFile": "ko_haneul.jpg"
+            "mediaFile": "ko_haneul.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c69",
@@ -701,7 +769,8 @@
             "sentenceNative": "There are many clouds in the sky.",
             "audioWordFile": "ko_gureum_word.mp3",
             "audioSentenceFile": "ko_gureum_sentence.mp3",
-            "mediaFile": "ko_gureum.jpg"
+            "mediaFile": "ko_gureum.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c70",
@@ -711,7 +780,8 @@
             "sentenceNative": "The sun is setting.",
             "audioWordFile": "ko_hae_word.mp3",
             "audioSentenceFile": "ko_hae_sentence.mp3",
-            "mediaFile": "ko_hae.jpg"
+            "mediaFile": "ko_hae.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c71",
@@ -721,7 +791,8 @@
             "sentenceNative": "A full moon has risen.",
             "audioWordFile": "ko_dal_word.mp3",
             "audioSentenceFile": "ko_dal_sentence.mp3",
-            "mediaFile": "ko_dal.jpg"
+            "mediaFile": "ko_dal.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c72",
@@ -731,7 +802,8 @@
             "sentenceNative": "Stars twinkle in the night sky.",
             "audioWordFile": "ko_byeol_word.mp3",
             "audioSentenceFile": "ko_byeol_sentence.mp3",
-            "mediaFile": "ko_byeol.jpg"
+            "mediaFile": "ko_byeol.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c73",
@@ -741,7 +813,8 @@
             "sentenceNative": "I go to the mountain on weekends.",
             "audioWordFile": "ko_san_word.mp3",
             "audioSentenceFile": "ko_san_sentence.mp3",
-            "mediaFile": "ko_san.jpg"
+            "mediaFile": "ko_san.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c74",
@@ -751,7 +824,8 @@
             "sentenceNative": "In summer, the sea is the best.",
             "audioWordFile": "ko_bada_word.mp3",
             "audioSentenceFile": "ko_bada_sentence.mp3",
-            "mediaFile": "ko_bada.jpg"
+            "mediaFile": "ko_bada.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c75",
@@ -761,7 +835,8 @@
             "sentenceNative": "I ride a bicycle at the Han River.",
             "audioWordFile": "ko_gang_word.mp3",
             "audioSentenceFile": "ko_gang_sentence.mp3",
-            "mediaFile": "ko_gang.jpg"
+            "mediaFile": "ko_gang.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c76",
@@ -771,7 +846,8 @@
             "sentenceNative": "Rest under the tree.",
             "audioWordFile": "ko_namu_word.mp3",
             "audioSentenceFile": "ko_namu_sentence.mp3",
-            "mediaFile": "ko_namu.jpg"
+            "mediaFile": "ko_namu.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c77",
@@ -781,7 +857,8 @@
             "sentenceNative": "The flowers are in full bloom.",
             "audioWordFile": "ko_kkot_word.mp3",
             "audioSentenceFile": "ko_kkot_sentence.mp3",
-            "mediaFile": "ko_kkot.jpg"
+            "mediaFile": "ko_kkot.jpg",
+            "domain": "Nature & Weather"
         },
         {
             "id": "ko_b_c78",
@@ -791,7 +868,8 @@
             "sentenceNative": "This watermelon is really big.",
             "audioWordFile": "ko_keuda_word.mp3",
             "audioSentenceFile": "ko_keuda_sentence.mp3",
-            "mediaFile": "ko_keuda.jpg"
+            "mediaFile": "ko_keuda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c79",
@@ -801,7 +879,8 @@
             "sentenceNative": "The room is too small.",
             "audioWordFile": "ko_jakda_word.mp3",
             "audioSentenceFile": "ko_jakda_sentence.mp3",
-            "mediaFile": "ko_jakda.jpg"
+            "mediaFile": "ko_jakda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c80",
@@ -811,7 +890,8 @@
             "sentenceNative": "There is too much homework.",
             "audioWordFile": "ko_manta_word.mp3",
             "audioSentenceFile": "ko_manta_sentence.mp3",
-            "mediaFile": "ko_manta.jpg"
+            "mediaFile": "ko_manta.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c81",
@@ -821,7 +901,8 @@
             "sentenceNative": "There aren't many people. (There are few people)",
             "audioWordFile": "ko_jeokda_word.mp3",
             "audioSentenceFile": "ko_jeokda_sentence.mp3",
-            "mediaFile": "ko_jeokda.jpg"
+            "mediaFile": "ko_jeokda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c82",
@@ -831,7 +912,8 @@
             "sentenceNative": "This clothing is too expensive.",
             "audioWordFile": "ko_bissada_word.mp3",
             "audioSentenceFile": "ko_bissada_sentence.mp3",
-            "mediaFile": "ko_bissada.jpg"
+            "mediaFile": "ko_bissada.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c83",
@@ -841,7 +923,8 @@
             "sentenceNative": "Items are cheap in this market.",
             "audioWordFile": "ko_ssada_word.mp3",
             "audioSentenceFile": "ko_ssada_sentence.mp3",
-            "mediaFile": "ko_ssada.jpg"
+            "mediaFile": "ko_ssada.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c84",
@@ -851,7 +934,8 @@
             "sentenceNative": "You have a very good personality.",
             "audioWordFile": "ko_jota_word.mp3",
             "audioSentenceFile": "ko_jota_sentence.mp3",
-            "mediaFile": "ko_jota.jpg"
+            "mediaFile": "ko_jota.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c85",
@@ -861,7 +945,8 @@
             "sentenceNative": "I feel very bad.",
             "audioWordFile": "ko_nappeuda_word.mp3",
             "audioSentenceFile": "ko_nappeuda_sentence.mp3",
-            "mediaFile": "ko_nappeuda.jpg"
+            "mediaFile": "ko_nappeuda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c86",
@@ -871,7 +956,8 @@
             "sentenceNative": "The problem is too difficult.",
             "audioWordFile": "ko_eoryeopda_word.mp3",
             "audioSentenceFile": "ko_eoryeopda_sentence.mp3",
-            "mediaFile": "ko_eoryeopda.jpg"
+            "mediaFile": "ko_eoryeopda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c87",
@@ -881,7 +967,8 @@
             "sentenceNative": "This game is really easy.",
             "audioWordFile": "ko_swipda_word.mp3",
             "audioSentenceFile": "ko_swipda_sentence.mp3",
-            "mediaFile": "ko_swipda.jpg"
+            "mediaFile": "ko_swipda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c88",
@@ -891,7 +978,8 @@
             "sentenceNative": "I enjoyed watching the movie.",
             "audioWordFile": "ko_jaemiitda_word.mp3",
             "audioSentenceFile": "ko_jaemiitda_sentence.mp3",
-            "mediaFile": "ko_jaemiitda.jpg"
+            "mediaFile": "ko_jaemiitda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c89",
@@ -901,7 +989,8 @@
             "sentenceNative": "The class is not fun (boring).",
             "audioWordFile": "ko_jaemieopda_word.mp3",
             "audioSentenceFile": "ko_jaemieopda_sentence.mp3",
-            "mediaFile": "ko_jaemieopda.jpg"
+            "mediaFile": "ko_jaemieopda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c90",
@@ -911,7 +1000,8 @@
             "sentenceNative": "It's far from here to my house.",
             "audioWordFile": "ko_meolda_word.mp3",
             "audioSentenceFile": "ko_meolda_sentence.mp3",
-            "mediaFile": "ko_meolda.jpg"
+            "mediaFile": "ko_meolda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c91",
@@ -921,7 +1011,8 @@
             "sentenceNative": "The station is very near.",
             "audioWordFile": "ko_gakkapda_word.mp3",
             "audioSentenceFile": "ko_gakkapda_sentence.mp3",
-            "mediaFile": "ko_gakkapda.jpg"
+            "mediaFile": "ko_gakkapda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c92",
@@ -931,7 +1022,8 @@
             "sentenceNative": "Summer is too hot.",
             "audioWordFile": "ko_deopda_word.mp3",
             "audioSentenceFile": "ko_deopda_sentence.mp3",
-            "mediaFile": "ko_deopda.jpg"
+            "mediaFile": "ko_deopda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c93",
@@ -941,7 +1033,8 @@
             "sentenceNative": "Winter is very cold.",
             "audioWordFile": "ko_chupda_word.mp3",
             "audioSentenceFile": "ko_chupda_sentence.mp3",
-            "mediaFile": "ko_chupda.jpg"
+            "mediaFile": "ko_chupda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c94",
@@ -951,7 +1044,8 @@
             "sentenceNative": "I'm really busy these days.",
             "audioWordFile": "ko_bappeuda_word.mp3",
             "audioSentenceFile": "ko_bappeuda_sentence.mp3",
-            "mediaFile": "ko_bappeuda.jpg"
+            "mediaFile": "ko_bappeuda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c95",
@@ -961,7 +1055,8 @@
             "sentenceNative": "I'm free this weekend.",
             "audioWordFile": "ko_hangahada_word.mp3",
             "audioSentenceFile": "ko_hangahada_sentence.mp3",
-            "mediaFile": "ko_hangahada.jpg"
+            "mediaFile": "ko_hangahada.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c96",
@@ -971,7 +1066,8 @@
             "sentenceNative": "This cake is really delicious!",
             "audioWordFile": "ko_masitda_word.mp3",
             "audioSentenceFile": "ko_masitda_sentence.mp3",
-            "mediaFile": "ko_masitda.jpg"
+            "mediaFile": "ko_masitda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c97",
@@ -981,7 +1077,8 @@
             "sentenceNative": "The soup is too bland, so it doesn't taste good.",
             "audioWordFile": "ko_madeopda_word.mp3",
             "audioSentenceFile": "ko_madeopda_sentence.mp3",
-            "mediaFile": "ko_madeopda.jpg"
+            "mediaFile": "ko_madeopda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c98",
@@ -991,7 +1088,8 @@
             "sentenceNative": "Where are you going?",
             "audioWordFile": "ko_gada_word.mp3",
             "audioSentenceFile": "ko_gada_sentence.mp3",
-            "mediaFile": "ko_gada.jpg"
+            "mediaFile": "ko_gada.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c99",
@@ -1001,7 +1099,8 @@
             "sentenceNative": "Please come quickly.",
             "audioWordFile": "ko_oda_word.mp3",
             "audioSentenceFile": "ko_oda_sentence.mp3",
-            "mediaFile": "ko_oda.jpg"
+            "mediaFile": "ko_oda.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "ko_b_c100",
@@ -1011,7 +1110,8 @@
             "sentenceNative": "I had a delicious lunch.",
             "audioWordFile": "ko_meokda_word.mp3",
             "audioSentenceFile": "ko_meokda_sentence.mp3",
-            "mediaFile": "ko_meokda.jpg"
+            "mediaFile": "ko_meokda.jpg",
+            "domain": "Adjectives"
         }
     ]
 }

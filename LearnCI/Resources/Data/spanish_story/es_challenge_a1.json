@@ -32,7 +32,8 @@
                 "☕🙂",
                 "🚶‍♂️🏙"
             ],
-            "correctIndex": 0
+            "correctIndex": 0,
+            "domain": "Story"
         },
         {
             "cardId": "es_story_003_c3",
@@ -42,7 +43,8 @@
                 "🛏😴",
                 "🚗💼"
             ],
-            "correctIndex": 0
+            "correctIndex": 0,
+            "domain": "Story"
         },
         {
             "cardId": "es_story_003_c4",
@@ -52,7 +54,8 @@
                 "🧍‍♂️📱",
                 "🛏☕😴"
             ],
-            "correctIndex": 0
+            "correctIndex": 0,
+            "domain": "Story"
         },
         {
             "cardId": "es_story_003_c5",
@@ -62,7 +65,8 @@
                 "🚶‍♂️😐",
                 "📱😶"
             ],
-            "correctIndex": 0
+            "correctIndex": 0,
+            "domain": "Story"
         },
         {
             "cardId": "es_story_003_c6",
@@ -72,7 +76,8 @@
                 "🛑😴",
                 "🏠⬅️"
             ],
-            "correctIndex": 0
+            "correctIndex": 0,
+            "domain": "Story"
         }
     ]
 }

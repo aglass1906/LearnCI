@@ -24,7 +24,8 @@
             "sentenceNative": "The man walks down the street.",
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_hombre_sentence.mp3",
-            "mediaFile": "es_hombre.png"
+            "mediaFile": "es_hombre.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c2",
@@ -34,7 +35,8 @@
             "sentenceNative": "The woman talks with her friend.",
             "audioWordFile": "es_mujer_word.mp3",
             "audioSentenceFile": "es_mujer_sentence.mp3",
-            "mediaFile": "es_mujer.png"
+            "mediaFile": "es_mujer.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c3",
@@ -44,7 +46,8 @@
             "sentenceNative": "The boy plays with the ball.",
             "audioWordFile": "es_nino_word.mp3",
             "audioSentenceFile": "es_nino_sentence.mp3",
-            "mediaFile": "es_nino.png"
+            "mediaFile": "es_nino.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c4",
@@ -54,7 +57,8 @@
             "sentenceNative": "The girl dances in the garden.",
             "audioWordFile": "es_nina_word.mp3",
             "audioSentenceFile": "es_nina_sentence.mp3",
-            "mediaFile": "es_nina.png"
+            "mediaFile": "es_nina.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c5",
@@ -64,7 +68,8 @@
             "sentenceNative": "My brother lives in Madrid.",
             "audioWordFile": "es_hermano_word.mp3",
             "audioSentenceFile": "es_hermano_sentence.mp3",
-            "mediaFile": "es_hermano.png"
+            "mediaFile": "es_hermano.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c6",
@@ -74,7 +79,8 @@
             "sentenceNative": "I have an older sister.",
             "audioWordFile": "es_hermana_word.mp3",
             "audioSentenceFile": "es_hermana_sentence.mp3",
-            "mediaFile": "es_hermana.png"
+            "mediaFile": "es_hermana.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c7",
@@ -84,7 +90,8 @@
             "sentenceNative": "My father works in a bank.",
             "audioWordFile": "es_padre_word.mp3",
             "audioSentenceFile": "es_padre_sentence.mp3",
-            "mediaFile": "es_padre.png"
+            "mediaFile": "es_padre.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c8",
@@ -94,7 +101,8 @@
             "sentenceNative": "My mother is a teacher.",
             "audioWordFile": "es_madre_word.mp3",
             "audioSentenceFile": "es_madre_sentence.mp3",
-            "mediaFile": "es_madre.png"
+            "mediaFile": "es_madre.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c9",
@@ -104,7 +112,8 @@
             "sentenceNative": "My grandfather tells stories.",
             "audioWordFile": "es_abuelo_word.mp3",
             "audioSentenceFile": "es_abuelo_sentence.mp3",
-            "mediaFile": "es_abuelo.png"
+            "mediaFile": "es_abuelo.png",
+            "domain": "Family"
         },
         {
             "id": "es_b_c10",
@@ -114,7 +123,8 @@
             "sentenceNative": "The needle is very small.",
             "audioWordFile": "es_aguja_word.mp3",
             "audioSentenceFile": "es_aguja_sentence.mp3",
-            "mediaFile": "es_aguja.png"
+            "mediaFile": "es_aguja.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c11",
@@ -124,7 +134,8 @@
             "sentenceNative": "The food is on the table.",
             "audioWordFile": "es_mesa_word.mp3",
             "audioSentenceFile": "es_mesa_sentence.mp3",
-            "mediaFile": "es_mesa.png"
+            "mediaFile": "es_mesa.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c12",
@@ -134,7 +145,8 @@
             "sentenceNative": "Please sit in the chair.",
             "audioWordFile": "es_silla_word.mp3",
             "audioSentenceFile": "es_silla_sentence.mp3",
-            "mediaFile": "es_silla.png"
+            "mediaFile": "es_silla.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c13",
@@ -144,7 +156,8 @@
             "sentenceNative": "I'm going to bed now.",
             "audioWordFile": "es_cama_word.mp3",
             "audioSentenceFile": "es_cama_sentence.mp3",
-            "mediaFile": "es_cama.png"
+            "mediaFile": "es_cama.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c14",
@@ -154,7 +167,8 @@
             "sentenceNative": "Close the door when you leave.",
             "audioWordFile": "es_puerta_word.mp3",
             "audioSentenceFile": "es_puerta_sentence.mp3",
-            "mediaFile": "es_puerta.png"
+            "mediaFile": "es_puerta.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c15",
@@ -164,7 +178,8 @@
             "sentenceNative": "Open the window, it's hot.",
             "audioWordFile": "es_ventana_word.mp3",
             "audioSentenceFile": "es_ventana_sentence.mp3",
-            "mediaFile": "es_ventana.png"
+            "mediaFile": "es_ventana.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c16",
@@ -174,7 +189,8 @@
             "sentenceNative": "I am cooking in the kitchen.",
             "audioWordFile": "es_cocina_word.mp3",
             "audioSentenceFile": "es_cocina_sentence.mp3",
-            "mediaFile": "es_cocina.png"
+            "mediaFile": "es_cocina.png",
+            "domain": "Home"
         },
         {
             "id": "es_b_c17",
@@ -184,7 +200,8 @@
             "sentenceNative": "I have a lot of food at home.",
             "audioWordFile": "es_comida_word.mp3",
             "audioSentenceFile": "es_comida_sentence.mp3",
-            "mediaFile": "es_comida.png"
+            "mediaFile": "es_comida.png",
+            "domain": "Food"
         },
         {
             "id": "es_b_c18",
@@ -194,7 +211,8 @@
             "sentenceNative": "Breakfast is very important.",
             "audioWordFile": "es_desayuno_word.mp3",
             "audioSentenceFile": "es_desayuno_sentence.mp3",
-            "mediaFile": "es_desayuno.png"
+            "mediaFile": "es_desayuno.png",
+            "domain": "Food"
         },
         {
             "id": "es_b_c19",
@@ -204,7 +222,8 @@
             "sentenceNative": "We eat lunch at two.",
             "audioWordFile": "es_almuerzo_word.mp3",
             "audioSentenceFile": "es_almuerzo_sentence.mp3",
-            "mediaFile": "es_almuerzo.png"
+            "mediaFile": "es_almuerzo.png",
+            "domain": "Food"
         },
         {
             "id": "es_b_c20",
@@ -214,7 +233,8 @@
             "sentenceNative": "Dinner is ready.",
             "audioWordFile": "es_cena_word.mp3",
             "audioSentenceFile": "es_cena_sentence.mp3",
-            "mediaFile": "es_cena.png"
+            "mediaFile": "es_cena.png",
+            "domain": "Food"
         },
         {
             "id": "es_b_c21",
@@ -224,7 +244,8 @@
             "sentenceNative": "I bought new clothes yesterday.",
             "audioWordFile": "es_ropa_word.mp3",
             "audioSentenceFile": "es_ropa_sentence.mp3",
-            "mediaFile": "es_ropa.png"
+            "mediaFile": "es_ropa.png",
+            "domain": "Clothing"
         },
         {
             "id": "es_b_c22",
@@ -234,7 +255,8 @@
             "sentenceNative": "My shoes are black.",
             "audioWordFile": "es_zapatos_word.mp3",
             "audioSentenceFile": "es_zapatos_sentence.mp3",
-            "mediaFile": "es_zapatos.png"
+            "mediaFile": "es_zapatos.png",
+            "domain": "Clothing"
         },
         {
             "id": "es_b_c23",
@@ -244,7 +266,8 @@
             "sentenceNative": "He's wearing a red hat.",
             "audioWordFile": "es_sombrero_word.mp3",
             "audioSentenceFile": "es_sombrero_sentence.mp3",
-            "mediaFile": "es_sombrero.png"
+            "mediaFile": "es_sombrero.png",
+            "domain": "Clothing"
         },
         {
             "id": "es_b_c24",
@@ -254,7 +277,8 @@
             "sentenceNative": "My watch doesn't work.",
             "audioWordFile": "es_reloj_word.mp3",
             "audioSentenceFile": "es_reloj_sentence.mp3",
-            "mediaFile": "es_reloj.png"
+            "mediaFile": "es_reloj.png",
+            "domain": "Clothing"
         },
         {
             "id": "es_b_c25",
@@ -264,7 +288,8 @@
             "sentenceNative": "This book is very long.",
             "audioWordFile": "es_libro_word.mp3",
             "audioSentenceFile": "es_libro_sentence.mp3",
-            "mediaFile": "es_libro.png"
+            "mediaFile": "es_libro.png",
+            "domain": "School"
         },
         {
             "id": "es_b_c26",
@@ -274,7 +299,8 @@
             "sentenceNative": "Do you have a pencil?",
             "audioWordFile": "es_lapiz_word.mp3",
             "audioSentenceFile": "es_lapiz_sentence.mp3",
-            "mediaFile": "es_lapiz.png"
+            "mediaFile": "es_lapiz.png",
+            "domain": "School"
         },
         {
             "id": "es_b_c27",
@@ -284,7 +310,8 @@
             "sentenceNative": "Write on the paper.",
             "audioWordFile": "es_papel_word.mp3",
             "audioSentenceFile": "es_papel_sentence.mp3",
-            "mediaFile": "es_papel.png"
+            "mediaFile": "es_papel.png",
+            "domain": "School"
         },
         {
             "id": "es_b_c28",
@@ -294,7 +321,8 @@
             "sentenceNative": "I don't have money today.",
             "audioWordFile": "es_dinero_word.mp3",
             "audioSentenceFile": "es_dinero_sentence.mp3",
-            "mediaFile": "es_dinero.png"
+            "mediaFile": "es_dinero.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c29",
@@ -304,7 +332,8 @@
             "sentenceNative": "Let's go to the market together.",
             "audioWordFile": "es_mercado_word.mp3",
             "audioSentenceFile": "es_mercado_sentence.mp3",
-            "mediaFile": "es_mercado.png"
+            "mediaFile": "es_mercado.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c30",
@@ -314,7 +343,8 @@
             "sentenceNative": "The shop closes late.",
             "audioWordFile": "es_tienda_word.mp3",
             "audioSentenceFile": "es_tienda_sentence.mp3",
-            "mediaFile": "es_tienda.png"
+            "mediaFile": "es_tienda.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c31",
@@ -324,7 +354,8 @@
             "sentenceNative": "I have a lot of work today.",
             "audioWordFile": "es_trabajo_word.mp3",
             "audioSentenceFile": "es_trabajo_sentence.mp3",
-            "mediaFile": "es_trabajo.png"
+            "mediaFile": "es_trabajo.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c32",
@@ -334,7 +365,8 @@
             "sentenceNative": "My car is blue.",
             "audioWordFile": "es_coche_word.mp3",
             "audioSentenceFile": "es_coche_sentence.mp3",
-            "mediaFile": "es_coche.png"
+            "mediaFile": "es_coche.png",
+            "domain": "Transport"
         },
         {
             "id": "es_b_c33",
@@ -344,7 +376,8 @@
             "sentenceNative": "I take the bus every day.",
             "audioWordFile": "es_bus_word.mp3",
             "audioSentenceFile": "es_bus_sentence.mp3",
-            "mediaFile": "es_bus.png"
+            "mediaFile": "es_bus.png",
+            "domain": "Transport"
         },
         {
             "id": "es_b_c34",
@@ -354,7 +387,8 @@
             "sentenceNative": "The train leaves at ten.",
             "audioWordFile": "es_tren_word.mp3",
             "audioSentenceFile": "es_tren_sentence.mp3",
-            "mediaFile": "es_tren.png"
+            "mediaFile": "es_tren.png",
+            "domain": "Transport"
         },
         {
             "id": "es_b_c35",
@@ -364,7 +398,8 @@
             "sentenceNative": "The plane flies high.",
             "audioWordFile": "es_avion_word.mp3",
             "audioSentenceFile": "es_avion_sentence.mp3",
-            "mediaFile": "es_avion.jpg"
+            "mediaFile": "es_avion.jpg",
+            "domain": "Transport"
         },
         {
             "id": "es_b_c36",
@@ -374,7 +409,8 @@
             "sentenceNative": "Walk down the main street.",
             "audioWordFile": "es_calle_word.mp3",
             "audioSentenceFile": "es_calle_sentence.mp3",
-            "mediaFile": "es_calle.jpg"
+            "mediaFile": "es_calle.jpg",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c37",
@@ -384,7 +420,8 @@
             "sentenceNative": "We play in the park.",
             "audioWordFile": "es_parque_word.mp3",
             "audioSentenceFile": "es_parque_sentence.mp3",
-            "mediaFile": "es_parque.png"
+            "mediaFile": "es_parque.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c38",
@@ -394,7 +431,8 @@
             "sentenceNative": "Let's go to the cinema tonight.",
             "audioWordFile": "es_cine_word.mp3",
             "audioSentenceFile": "es_cine_sentence.mp3",
-            "mediaFile": "es_cine.png"
+            "mediaFile": "es_cine.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c39",
@@ -404,7 +442,8 @@
             "sentenceNative": "The restaurant is gourmet.",
             "audioWordFile": "es_restaurante_word.mp3",
             "audioSentenceFile": "es_restaurante_sentence.mp3",
-            "mediaFile": "es_restaurante.png"
+            "mediaFile": "es_restaurante.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c40",
@@ -414,7 +453,8 @@
             "sentenceNative": "We slept in a hotel.",
             "audioWordFile": "es_hotel_word.mp3",
             "audioSentenceFile": "es_hotel_sentence.mp3",
-            "mediaFile": "es_hotel.png"
+            "mediaFile": "es_hotel.png",
+            "domain": "City Life"
         },
         {
             "id": "es_b_c41",
@@ -424,7 +464,8 @@
             "sentenceNative": "The beach is very beautiful.",
             "audioWordFile": "es_playa_word.mp3",
             "audioSentenceFile": "es_playa_sentence.mp3",
-            "mediaFile": "es_playa.png"
+            "mediaFile": "es_playa.png",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c42",
@@ -434,7 +475,8 @@
             "sentenceNative": "We climbed the mountain.",
             "audioWordFile": "es_montana_word.mp3",
             "audioSentenceFile": "es_montana_sentence.mp3",
-            "mediaFile": "es_montana.png"
+            "mediaFile": "es_montana.png",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c43",
@@ -444,7 +486,8 @@
             "sentenceNative": "The sun shines a lot.",
             "audioWordFile": "es_sol_word.mp3",
             "audioSentenceFile": "es_sol_sentence.mp3",
-            "mediaFile": "es_sol.jpg"
+            "mediaFile": "es_sol.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c44",
@@ -454,7 +497,8 @@
             "sentenceNative": "The moon is round.",
             "audioWordFile": "es_luna_word.mp3",
             "audioSentenceFile": "es_luna_sentence.mp3",
-            "mediaFile": "es_luna.jpg"
+            "mediaFile": "es_luna.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c45",
@@ -464,7 +508,8 @@
             "sentenceNative": "I see a shooting star.",
             "audioWordFile": "es_estrella_word.mp3",
             "audioSentenceFile": "es_estrella_sentence.mp3",
-            "mediaFile": "es_estrella.jpg"
+            "mediaFile": "es_estrella.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c46",
@@ -474,7 +519,8 @@
             "sentenceNative": "The sky is blue.",
             "audioWordFile": "es_cielo_word.mp3",
             "audioSentenceFile": "es_cielo_sentence.mp3",
-            "mediaFile": "es_cielo.jpg"
+            "mediaFile": "es_cielo.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c47",
@@ -484,7 +530,8 @@
             "sentenceNative": "The sea is calm.",
             "audioWordFile": "es_mar_word.mp3",
             "audioSentenceFile": "es_mar_sentence.mp3",
-            "mediaFile": "es_mar.jpg"
+            "mediaFile": "es_mar.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c48",
@@ -494,7 +541,8 @@
             "sentenceNative": "The flower smells good.",
             "audioWordFile": "es_flor_word.mp3",
             "audioSentenceFile": "es_flor_sentence.mp3",
-            "mediaFile": "es_flor.jpg"
+            "mediaFile": "es_flor.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c49",
@@ -504,7 +552,8 @@
             "sentenceNative": "The tree is very old.",
             "audioWordFile": "es_arbol_word.mp3",
             "audioSentenceFile": "es_arbol_sentence.mp3",
-            "mediaFile": "es_arbol.jpg"
+            "mediaFile": "es_arbol.jpg",
+            "domain": "Nature"
         },
         {
             "id": "es_b_c50",
@@ -514,7 +563,8 @@
             "sentenceNative": "I like fresh fruit.",
             "audioWordFile": "es_fruta_word.mp3",
             "audioSentenceFile": "es_fruta_sentence.mp3",
-            "mediaFile": "es_fruta.jpg"
+            "mediaFile": "es_fruta.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c51",
@@ -524,7 +574,8 @@
             "sentenceNative": "I eat a red apple.",
             "audioWordFile": "es_manzana_word.mp3",
             "audioSentenceFile": "es_manzana_sentence.mp3",
-            "mediaFile": "es_manzana.jpg"
+            "mediaFile": "es_manzana.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c52",
@@ -534,7 +585,8 @@
             "sentenceNative": "The pear is sweet.",
             "audioWordFile": "es_pera_word.mp3",
             "audioSentenceFile": "es_pera_sentence.mp3",
-            "mediaFile": "es_pera.jpg"
+            "mediaFile": "es_pera.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c53",
@@ -544,7 +596,8 @@
             "sentenceNative": "I drink milk every morning.",
             "audioWordFile": "es_leche_word.mp3",
             "audioSentenceFile": "es_leche_sentence.mp3",
-            "mediaFile": "es_leche.jpg"
+            "mediaFile": "es_leche.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c54",
@@ -554,7 +607,8 @@
             "sentenceNative": "The bread is crunchy.",
             "audioWordFile": "es_pan_word.mp3",
             "audioSentenceFile": "es_pan_sentence.mp3",
-            "mediaFile": "es_pan.jpg"
+            "mediaFile": "es_pan.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c55",
@@ -564,7 +618,8 @@
             "sentenceNative": "I love cheese.",
             "audioWordFile": "es_queso_word.mp3",
             "audioSentenceFile": "es_queso_sentence.mp3",
-            "mediaFile": "es_queso.jpg"
+            "mediaFile": "es_queso.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c56",
@@ -574,7 +629,8 @@
             "sentenceNative": "I don't eat meat.",
             "audioWordFile": "es_carne_word.mp3",
             "audioSentenceFile": "es_carne_sentence.mp3",
-            "mediaFile": "es_carne.jpg"
+            "mediaFile": "es_carne.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c57",
@@ -584,7 +640,8 @@
             "sentenceNative": "Fish is healthy.",
             "audioWordFile": "es_pescado_word.mp3",
             "audioSentenceFile": "es_pescado_sentence.mp3",
-            "mediaFile": "es_pescado.jpg"
+            "mediaFile": "es_pescado.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c58",
@@ -594,7 +651,8 @@
             "sentenceNative": "The rice is white.",
             "audioWordFile": "es_arroz_word.mp3",
             "audioSentenceFile": "es_arroz_sentence.mp3",
-            "mediaFile": "es_arroz.jpg"
+            "mediaFile": "es_arroz.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c59",
@@ -604,7 +662,8 @@
             "sentenceNative": "I want a fried egg.",
             "audioWordFile": "es_huevo_word.mp3",
             "audioSentenceFile": "es_huevo_sentence.mp3",
-            "mediaFile": "es_huevo.jpg"
+            "mediaFile": "es_huevo.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c60",
@@ -614,7 +673,8 @@
             "sentenceNative": "Add a little bit of salt.",
             "audioWordFile": "es_sal_word.mp3",
             "audioSentenceFile": "es_sal_sentence.mp3",
-            "mediaFile": "es_sal.jpg"
+            "mediaFile": "es_sal.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c61",
@@ -624,7 +684,8 @@
             "sentenceNative": "Sugar is sweet.",
             "audioWordFile": "es_azucar_word.mp3",
             "audioSentenceFile": "es_azucar_sentence.mp3",
-            "mediaFile": "es_azucar.jpg"
+            "mediaFile": "es_azucar.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c62",
@@ -634,7 +695,8 @@
             "sentenceNative": "Drink green tea.",
             "audioWordFile": "es_te_word.mp3",
             "audioSentenceFile": "es_te_sentence.mp3",
-            "mediaFile": "es_te.jpg"
+            "mediaFile": "es_te.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c63",
@@ -644,7 +706,8 @@
             "sentenceNative": "I prefer black coffee.",
             "audioWordFile": "es_cafe_word.mp3",
             "audioSentenceFile": "es_cafe_sentence.mp3",
-            "mediaFile": "es_cafe.jpg"
+            "mediaFile": "es_cafe.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c64",
@@ -654,7 +717,8 @@
             "sentenceNative": "The beer is cold.",
             "audioWordFile": "es_cerveza_word.mp3",
             "audioSentenceFile": "es_cerveza_sentence.mp3",
-            "mediaFile": "es_cerveza.jpg"
+            "mediaFile": "es_cerveza.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c65",
@@ -664,7 +728,8 @@
             "sentenceNative": "Red wine is tasty.",
             "audioWordFile": "es_vino_word.mp3",
             "audioSentenceFile": "es_vino_sentence.mp3",
-            "mediaFile": "es_vino.jpg"
+            "mediaFile": "es_vino.jpg",
+            "domain": "Food"
         },
         {
             "id": "es_b_c66",
@@ -674,7 +739,8 @@
             "sentenceNative": "Take care of your body.",
             "audioWordFile": "es_cuerpo_word.mp3",
             "audioSentenceFile": "es_cuerpo_sentence.mp3",
-            "mediaFile": "es_cuerpo.jpg"
+            "mediaFile": "es_cuerpo.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c67",
@@ -684,7 +750,8 @@
             "sentenceNative": "My head hurts.",
             "audioWordFile": "es_cabeza_word.mp3",
             "audioSentenceFile": "es_cabeza_sentence.mp3",
-            "mediaFile": "es_cabeza.jpg"
+            "mediaFile": "es_cabeza.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c68",
@@ -694,7 +761,8 @@
             "sentenceNative": "Wash your face.",
             "audioWordFile": "es_cara_word.mp3",
             "audioSentenceFile": "es_cara_sentence.mp3",
-            "mediaFile": "es_cara.jpg"
+            "mediaFile": "es_cara.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c69",
@@ -704,7 +772,8 @@
             "sentenceNative": "I have one blue eye.",
             "audioWordFile": "es_ojo_word.mp3",
             "audioSentenceFile": "es_ojo_sentence.mp3",
-            "mediaFile": "es_ojo.jpg"
+            "mediaFile": "es_ojo.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c70",
@@ -714,7 +783,8 @@
             "sentenceNative": "I breathe through my nose.",
             "audioWordFile": "es_nariz_word.mp3",
             "audioSentenceFile": "es_nariz_sentence.mp3",
-            "mediaFile": "es_nariz.jpg"
+            "mediaFile": "es_nariz.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c71",
@@ -724,7 +794,8 @@
             "sentenceNative": "Close your mouth.",
             "audioWordFile": "es_boca_word.mp3",
             "audioSentenceFile": "es_boca_sentence.mp3",
-            "mediaFile": "es_boca.jpg"
+            "mediaFile": "es_boca.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c72",
@@ -734,7 +805,8 @@
             "sentenceNative": "My ear is itchy.",
             "audioWordFile": "es_oreja_word.mp3",
             "audioSentenceFile": "es_oreja_sentence.mp3",
-            "mediaFile": "es_oreja.jpg"
+            "mediaFile": "es_oreja.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c73",
@@ -744,7 +816,8 @@
             "sentenceNative": "She has long hair.",
             "audioWordFile": "es_pelo_word.mp3",
             "audioSentenceFile": "es_pelo_sentence.mp3",
-            "mediaFile": "es_pelo.jpg"
+            "mediaFile": "es_pelo.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c74",
@@ -754,7 +827,8 @@
             "sentenceNative": "Give me your hand.",
             "audioWordFile": "es_mano_word.mp3",
             "audioSentenceFile": "es_mano_sentence.mp3",
-            "mediaFile": "es_mano.jpg"
+            "mediaFile": "es_mano.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c75",
@@ -764,7 +838,8 @@
             "sentenceNative": "My arm is strong.",
             "audioWordFile": "es_brazo_word.mp3",
             "audioSentenceFile": "es_brazo_sentence.mp3",
-            "mediaFile": "es_brazo.jpg"
+            "mediaFile": "es_brazo.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c76",
@@ -774,7 +849,8 @@
             "sentenceNative": "Run with your right leg.",
             "audioWordFile": "es_pierna_word.mp3",
             "audioSentenceFile": "es_pierna_sentence.mp3",
-            "mediaFile": "es_pierna.jpg"
+            "mediaFile": "es_pierna.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c77",
@@ -784,7 +860,8 @@
             "sentenceNative": "My foot hurts.",
             "audioWordFile": "es_pie_word.mp3",
             "audioSentenceFile": "es_pie_sentence.mp3",
-            "mediaFile": "es_pie.jpg"
+            "mediaFile": "es_pie.jpg",
+            "domain": "Body"
         },
         {
             "id": "es_b_c78",
@@ -794,7 +871,8 @@
             "sentenceNative": "I'm going to the doctor.",
             "audioWordFile": "es_medico_word.mp3",
             "audioSentenceFile": "es_medico_sentence.mp3",
-            "mediaFile": "es_medico.jpg"
+            "mediaFile": "es_medico.jpg",
+            "domain": "Society"
         },
         {
             "id": "es_b_c79",
@@ -804,7 +882,8 @@
             "sentenceNative": "I am very sick.",
             "audioWordFile": "es_enfermo_word.mp3",
             "audioSentenceFile": "es_enfermo_sentence.mp3",
-            "mediaFile": "es_enfermo.jpg"
+            "mediaFile": "es_enfermo.jpg",
+            "domain": "Society"
         },
         {
             "id": "es_b_c80",
@@ -814,7 +893,8 @@
             "sentenceNative": "The hospital is big.",
             "audioWordFile": "es_hospital_word.mp3",
             "audioSentenceFile": "es_hospital_sentence.mp3",
-            "mediaFile": "es_hospital.jpg"
+            "mediaFile": "es_hospital.jpg",
+            "domain": "Society"
         },
         {
             "id": "es_b_c81",
@@ -824,7 +904,8 @@
             "sentenceNative": "Call the police.",
             "audioWordFile": "es_policia_word.mp3",
             "audioSentenceFile": "es_policia_sentence.mp3",
-            "mediaFile": "es_policia.jpg"
+            "mediaFile": "es_policia.jpg",
+            "domain": "Society"
         },
         {
             "id": "es_b_c82",
@@ -834,7 +915,8 @@
             "sentenceNative": "The firefighter puts out the fire.",
             "audioWordFile": "es_bombero_word.mp3",
             "audioSentenceFile": "es_bombero_sentence.mp3",
-            "mediaFile": "es_bombero.jpg"
+            "mediaFile": "es_bombero.jpg",
+            "domain": "Society"
         },
         {
             "id": "es_b_c83",
@@ -844,7 +926,8 @@
             "sentenceNative": "Barcelona is my city.",
             "audioWordFile": "es_ciudad_word.mp3",
             "audioSentenceFile": "es_ciudad_sentence.mp3",
-            "mediaFile": "es_ciudad.jpg"
+            "mediaFile": "es_ciudad.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c84",
@@ -854,7 +937,8 @@
             "sentenceNative": "I live in the countryside.",
             "audioWordFile": "es_campo_word.mp3",
             "audioSentenceFile": "es_campo_sentence.mp3",
-            "mediaFile": "es_campo.jpg"
+            "mediaFile": "es_campo.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c85",
@@ -864,7 +948,8 @@
             "sentenceNative": "The world is small.",
             "audioWordFile": "es_mundo_word.mp3",
             "audioSentenceFile": "es_mundo_sentence.mp3",
-            "mediaFile": "es_mundo.jpg"
+            "mediaFile": "es_mundo.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c86",
@@ -874,7 +959,8 @@
             "sentenceNative": "We don't want war.",
             "audioWordFile": "es_guerra_word.mp3",
             "audioSentenceFile": "es_guerra_sentence.mp3",
-            "mediaFile": "es_guerra.jpg"
+            "mediaFile": "es_guerra.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c87",
@@ -884,7 +970,8 @@
             "sentenceNative": "We want peace.",
             "audioWordFile": "es_paz_word.mp3",
             "audioSentenceFile": "es_paz_sentence.mp3",
-            "mediaFile": "es_paz.jpg"
+            "mediaFile": "es_paz.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c88",
@@ -894,7 +981,8 @@
             "sentenceNative": "Love is eternal.",
             "audioWordFile": "es_amor_word.mp3",
             "audioSentenceFile": "es_amor_sentence.mp3",
-            "mediaFile": "es_amor.jpg"
+            "mediaFile": "es_amor.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c89",
@@ -904,7 +992,8 @@
             "sentenceNative": "Don't feel hate.",
             "audioWordFile": "es_odio_word.mp3",
             "audioSentenceFile": "es_odio_sentence.mp3",
-            "mediaFile": "es_odio.jpg"
+            "mediaFile": "es_odio.jpg",
+            "domain": "World"
         },
         {
             "id": "es_b_c90",
@@ -914,7 +1003,8 @@
             "sentenceNative": "It's hot in summer.",
             "audioWordFile": "es_verano_word.mp3",
             "audioSentenceFile": "es_verano_sentence.mp3",
-            "mediaFile": "es_verano.jpg"
+            "mediaFile": "es_verano.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c91",
@@ -924,7 +1014,8 @@
             "sentenceNative": "It snows in winter.",
             "audioWordFile": "es_invierno_word.mp3",
             "audioSentenceFile": "es_invierno_sentence.mp3",
-            "mediaFile": "es_invierno.jpg"
+            "mediaFile": "es_invierno.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c92",
@@ -934,7 +1025,8 @@
             "sentenceNative": "Flowers bloom in spring.",
             "audioWordFile": "es_primavera_word.mp3",
             "audioSentenceFile": "es_primavera_sentence.mp3",
-            "mediaFile": "es_primavera.jpg"
+            "mediaFile": "es_primavera.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c93",
@@ -944,7 +1036,8 @@
             "sentenceNative": "The leaves fall in autumn.",
             "audioWordFile": "es_otono_word.mp3",
             "audioSentenceFile": "es_otono_sentence.mp3",
-            "mediaFile": "es_otono.jpg"
+            "mediaFile": "es_otono.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c94",
@@ -954,7 +1047,8 @@
             "sentenceNative": "Today is Monday.",
             "audioWordFile": "es_lunes_word.mp3",
             "audioSentenceFile": "es_lunes_sentence.mp3",
-            "mediaFile": "es_lunes.jpg"
+            "mediaFile": "es_lunes.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c95",
@@ -964,7 +1058,8 @@
             "sentenceNative": "Tomorrow is Tuesday.",
             "audioWordFile": "es_martes_word.mp3",
             "audioSentenceFile": "es_martes_sentence.mp3",
-            "mediaFile": "es_martes.jpg"
+            "mediaFile": "es_martes.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c96",
@@ -974,7 +1069,8 @@
             "sentenceNative": "I like Saturday.",
             "audioWordFile": "es_sabado_word.mp3",
             "audioSentenceFile": "es_sabado_sentence.mp3",
-            "mediaFile": "es_sabado.jpg"
+            "mediaFile": "es_sabado.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c97",
@@ -984,7 +1080,8 @@
             "sentenceNative": "Sunday is for rest.",
             "audioWordFile": "es_domingo_word.mp3",
             "audioSentenceFile": "es_domingo_sentence.mp3",
-            "mediaFile": "es_domingo.jpg"
+            "mediaFile": "es_domingo.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_b_c98",
@@ -994,7 +1091,8 @@
             "sentenceNative": "I like this color.",
             "audioWordFile": "es_color_word.mp3",
             "audioSentenceFile": "es_color_sentence.mp3",
-            "mediaFile": "es_color.jpg"
+            "mediaFile": "es_color.jpg",
+            "domain": "Colors"
         },
         {
             "id": "es_b_c99",
@@ -1004,7 +1102,8 @@
             "sentenceNative": "The paper is white.",
             "audioWordFile": "es_blanco_word.mp3",
             "audioSentenceFile": "es_blanco_sentence.mp3",
-            "mediaFile": "es_blanco.jpg"
+            "mediaFile": "es_blanco.jpg",
+            "domain": "Colors"
         },
         {
             "id": "es_b_c100",
@@ -1014,7 +1113,8 @@
             "sentenceNative": "The night is black.",
             "audioWordFile": "es_negro_word.mp3",
             "audioSentenceFile": "es_negro_sentence.mp3",
-            "mediaFile": "es_negro.jpg"
+            "mediaFile": "es_negro.jpg",
+            "domain": "Colors"
         }
     ]
 }

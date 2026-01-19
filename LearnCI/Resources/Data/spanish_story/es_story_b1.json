@@ -29,7 +29,8 @@
             "sentenceNative": "Click the Next Button to begin the story.",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "",
+            "domain": "Story"
         },
         {
             "id": "es_story_004_c2",
@@ -41,7 +42,8 @@
             "sentenceNative": "The man wakes up early, even though he is still tired.",
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_el_hombre_se_despierta_cansado.mp3",
-            "mediaFile": "es_hombre_despierta.jpg"
+            "mediaFile": "es_hombre_despierta.jpg",
+            "domain": "Story"
         },
         {
             "id": "es_story_004_c3",
@@ -53,7 +55,8 @@
             "sentenceNative": "While he prepares coffee in the kitchen, he thinks about what he has to do during the day.",
             "audioWordFile": "es_cafe_word.mp3",
             "audioSentenceFile": "es_el_hombre_prepara_cafe_y_piensa.mp3",
-            "mediaFile": "es_hombre_cafe.jpg"
+            "mediaFile": "es_hombre_cafe.jpg",
+            "domain": "Story"
         },
         {
             "id": "es_story_004_c4",
@@ -65,7 +68,8 @@
             "sentenceNative": "After leaving the house, he walks down the street, observing people and shops.",
             "audioWordFile": "es_calle_word.mp3",
             "audioSentenceFile": "es_caminar_observando_calle.mp3",
-            "mediaFile": "es_hombre_calle.jpg"
+            "mediaFile": "es_hombre_calle.jpg",
+            "domain": "Story"
         },
         {
             "id": "es_story_004_c5",
@@ -77,7 +81,8 @@
             "sentenceNative": "Suddenly, he sees a friend he hasn’t talked to in a while and stops to chat.",
             "audioWordFile": "es_amigo_word.mp3",
             "audioSentenceFile": "es_el_hombre_habla_con_amigo_tiempo.mp3",
-            "mediaFile": "es_hombre_amigo.jpg"
+            "mediaFile": "es_hombre_amigo.jpg",
+            "domain": "Story"
         },
         {
             "id": "es_story_004_c6",
@@ -89,7 +94,8 @@
             "sentenceNative": "After saying goodbye to his friend, the man continues his morning with more energy.",
             "audioWordFile": "",
             "audioSentenceFile": "",
-            "mediaFile": ""
+            "mediaFile": "",
+            "domain": "Story"
         }
     ]
 }

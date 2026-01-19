@@ -24,7 +24,8 @@
             "sentenceNative": "We must develop new strategies.",
             "audioWordFile": "es_desarrollar_word.mp3",
             "audioSentenceFile": "es_desarrollar_sentence.mp3",
-            "mediaFile": "es_desarrollar.jpg"
+            "mediaFile": "es_desarrollar.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c2",
@@ -34,7 +35,8 @@
             "sentenceNative": "We have to make the most of the good weather.",
             "audioWordFile": "es_aprovechar_word.mp3",
             "audioSentenceFile": "es_aprovechar_sentence.mp3",
-            "mediaFile": "es_aprovechar.jpg"
+            "mediaFile": "es_aprovechar.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c3",
@@ -44,7 +46,8 @@
             "sentenceNative": "He was tired; however, he kept working.",
             "audioWordFile": "es_sinembargo_word.mp3",
             "audioSentenceFile": "es_sinembargo_sentence.mp3",
-            "mediaFile": "es_sinembargo.jpg"
+            "mediaFile": "es_sinembargo.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c4",
@@ -54,7 +57,8 @@
             "sentenceNative": "They are going to carry out a scientific experiment.",
             "audioWordFile": "es_realizar_word.mp3",
             "audioSentenceFile": "es_realizar_sentence.mp3",
-            "mediaFile": "es_realizar.jpg"
+            "mediaFile": "es_realizar.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c5",
@@ -64,7 +68,8 @@
             "sentenceNative": "I will go to the party even if it is raining.",
             "audioWordFile": "es_aunque_word.mp3",
             "audioSentenceFile": "es_aunque_sentence.mp3",
-            "mediaFile": "es_aunque.jpg"
+            "mediaFile": "es_aunque.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c6",
@@ -74,7 +79,8 @@
             "sentenceNative": "It is not red, but rather orange.",
             "audioWordFile": "es_sino_word.mp3",
             "audioSentenceFile": "es_sino_sentence.mp3",
-            "mediaFile": "es_sino.jpg"
+            "mediaFile": "es_sino.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c7",
@@ -84,7 +90,8 @@
             "sentenceNative": "We all have a right to education.",
             "audioWordFile": "es_derecho_word.mp3",
             "audioSentenceFile": "es_derecho_sentence.mp3",
-            "mediaFile": "es_derecho.jpg"
+            "mediaFile": "es_derecho.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c8",
@@ -94,7 +101,8 @@
             "sentenceNative": "Turn left at the traffic light.",
             "audioWordFile": "es_izquierda_word.mp3",
             "audioSentenceFile": "es_izquierda_sentence.mp3",
-            "mediaFile": "es_izquierda.jpg"
+            "mediaFile": "es_izquierda.jpg",
+            "domain": "Verbs & Concepts"
         },
         {
             "id": "es_i_c9",
@@ -104,7 +112,8 @@
             "sentenceNative": "The keys are on top of the table.",
             "audioWordFile": "es_encima_word.mp3",
             "audioSentenceFile": "es_encima_sentence.mp3",
-            "mediaFile": "es_encima.jpg"
+            "mediaFile": "es_encima.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c10",
@@ -114,7 +123,8 @@
             "sentenceNative": "The dog is under the bed.",
             "audioWordFile": "es_debajo_word.mp3",
             "audioSentenceFile": "es_debajo_sentence.mp3",
-            "mediaFile": "es_debajo.jpg"
+            "mediaFile": "es_debajo.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c11",
@@ -124,7 +134,8 @@
             "sentenceNative": "Someone is walking behind me.",
             "audioWordFile": "es_detras_word.mp3",
             "audioSentenceFile": "es_detras_sentence.mp3",
-            "mediaFile": "es_detras.jpg"
+            "mediaFile": "es_detras.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c12",
@@ -134,7 +145,8 @@
             "sentenceNative": "Stand in front of the camera.",
             "audioWordFile": "es_delante_word.mp3",
             "audioSentenceFile": "es_delante_sentence.mp3",
-            "mediaFile": "es_delante.jpg"
+            "mediaFile": "es_delante.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c13",
@@ -144,7 +156,8 @@
             "sentenceNative": "I live very close to the center.",
             "audioWordFile": "es_cerca_word.mp3",
             "audioSentenceFile": "es_cerca_sentence.mp3",
-            "mediaFile": "es_cerca.jpg"
+            "mediaFile": "es_cerca.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c14",
@@ -154,7 +167,8 @@
             "sentenceNative": "My country is very far from here.",
             "audioWordFile": "es_lejos_word.mp3",
             "audioSentenceFile": "es_lejos_sentence.mp3",
-            "mediaFile": "es_lejos.jpg"
+            "mediaFile": "es_lejos.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c15",
@@ -164,7 +178,8 @@
             "sentenceNative": "Tomorrow I have to wake up early.",
             "audioWordFile": "es_temprano_word.mp3",
             "audioSentenceFile": "es_temprano_sentence.mp3",
-            "mediaFile": "es_temprano.jpg"
+            "mediaFile": "es_temprano.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c16",
@@ -174,7 +189,8 @@
             "sentenceNative": "He arrived late to the meeting.",
             "audioWordFile": "es_tarde_word.mp3",
             "audioSentenceFile": "es_tarde_sentence.mp3",
-            "mediaFile": "es_tarde.jpg"
+            "mediaFile": "es_tarde.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c17",
@@ -184,7 +200,8 @@
             "sentenceNative": "I hope to see you soon.",
             "audioWordFile": "es_pronto_word.mp3",
             "audioSentenceFile": "es_pronto_sentence.mp3",
-            "mediaFile": "es_pronto.jpg"
+            "mediaFile": "es_pronto.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c18",
@@ -194,7 +211,8 @@
             "sentenceNative": "We will go to the cinema after dinner.",
             "audioWordFile": "es_despues_word.mp3",
             "audioSentenceFile": "es_despues_sentence.mp3",
-            "mediaFile": "es_despues.jpg"
+            "mediaFile": "es_despues.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c19",
@@ -204,7 +222,8 @@
             "sentenceNative": "Wash your hands before eating.",
             "audioWordFile": "es_antes_word.mp3",
             "audioSentenceFile": "es_antes_sentence.mp3",
-            "mediaFile": "es_antes.jpg"
+            "mediaFile": "es_antes.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c20",
@@ -214,7 +233,8 @@
             "sentenceNative": "I haven't finished my homework yet.",
             "audioWordFile": "es_todavia_word.mp3",
             "audioSentenceFile": "es_todavia_sentence.mp3",
-            "mediaFile": "es_todavia.jpg"
+            "mediaFile": "es_todavia.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c21",
@@ -224,7 +244,8 @@
             "sentenceNative": "Maybe I will go to Spain next year.",
             "audioWordFile": "es_quizas_word.mp3",
             "audioSentenceFile": "es_quizas_sentence.mp3",
-            "mediaFile": "es_quizas.jpg"
+            "mediaFile": "es_quizas.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c22",
@@ -234,7 +255,8 @@
             "sentenceNative": "He spoke quite a bit during the class.",
             "audioWordFile": "es_bastante_word.mp3",
             "audioSentenceFile": "es_bastante_sentence.mp3",
-            "mediaFile": "es_bastante.jpg"
+            "mediaFile": "es_bastante.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c23",
@@ -244,7 +266,8 @@
             "sentenceNative": "This coffee is too hot.",
             "audioWordFile": "es_demasiado_word.mp3",
             "audioSentenceFile": "es_demasiado_sentence.mp3",
-            "mediaFile": "es_demasiado.jpg"
+            "mediaFile": "es_demasiado.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c24",
@@ -254,7 +277,8 @@
             "sentenceNative": "I have already seen that movie.",
             "audioWordFile": "es_ya_word.mp3",
             "audioSentenceFile": "es_ya_sentence.mp3",
-            "mediaFile": "es_ya.jpg"
+            "mediaFile": "es_ya.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c25",
@@ -264,7 +288,8 @@
             "sentenceNative": "I also like chocolate.",
             "audioWordFile": "es_tambien_word.mp3",
             "audioSentenceFile": "es_tambien_sentence.mp3",
-            "mediaFile": "es_tambien.jpg"
+            "mediaFile": "es_tambien.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c26",
@@ -274,7 +299,8 @@
             "sentenceNative": "I don't want to go, and neither does my friend.",
             "audioWordFile": "es_tampoco_word.mp3",
             "audioSentenceFile": "es_tampoco_sentence.mp3",
-            "mediaFile": "es_tampoco.jpg"
+            "mediaFile": "es_tampoco.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c27",
@@ -284,7 +310,8 @@
             "sentenceNative": "Are you sure you want to go?",
             "audioWordFile": "es_seguro_word.mp3",
             "audioSentenceFile": "es_seguro_sentence.mp3",
-            "mediaFile": "es_seguro.jpg"
+            "mediaFile": "es_seguro.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c28",
@@ -294,7 +321,8 @@
             "sentenceNative": "It's possible it will rain tomorrow.",
             "audioWordFile": "es_posible_word.mp3",
             "audioSentenceFile": "es_posible_sentence.mp3",
-            "mediaFile": "es_posible.jpg"
+            "mediaFile": "es_posible.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c29",
@@ -304,7 +332,8 @@
             "sentenceNative": "Nothing is impossible if you try hard.",
             "audioWordFile": "es_imposible_word.mp3",
             "audioSentenceFile": "es_imposible_sentence.mp3",
-            "mediaFile": "es_imposible.jpg"
+            "mediaFile": "es_imposible.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c30",
@@ -314,7 +343,8 @@
             "sentenceNative": "The exam was very easy.",
             "audioWordFile": "es_facil_word.mp3",
             "audioSentenceFile": "es_facil_sentence.mp3",
-            "mediaFile": "es_facil.jpg"
+            "mediaFile": "es_facil.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c31",
@@ -324,7 +354,8 @@
             "sentenceNative": "It is difficult to learn Chinese.",
             "audioWordFile": "es_dificil_word.mp3",
             "audioSentenceFile": "es_dificil_sentence.mp3",
-            "mediaFile": "es_dificil.jpg"
+            "mediaFile": "es_dificil.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c32",
@@ -334,7 +365,8 @@
             "sentenceNative": "Every person is different.",
             "audioWordFile": "es_diferente_word.mp3",
             "audioSentenceFile": "es_diferente_sentence.mp3",
-            "mediaFile": "es_diferente.jpg"
+            "mediaFile": "es_diferente.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c33",
@@ -344,7 +376,8 @@
             "sentenceNative": "The result is equal for everyone.",
             "audioWordFile": "es_igual_word.mp3",
             "audioSentenceFile": "es_igual_sentence.mp3",
-            "mediaFile": "es_igual.jpg"
+            "mediaFile": "es_igual.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c34",
@@ -354,7 +387,8 @@
             "sentenceNative": "Health is the most important thing.",
             "audioWordFile": "es_importante_word.mp3",
             "audioSentenceFile": "es_importante_sentence.mp3",
-            "mediaFile": "es_importante.jpg"
+            "mediaFile": "es_importante.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c35",
@@ -364,7 +398,8 @@
             "sentenceNative": "This tool is very useful.",
             "audioWordFile": "es_util_word.mp3",
             "audioSentenceFile": "es_util_sentence.mp3",
-            "mediaFile": "es_util.jpg"
+            "mediaFile": "es_util.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c36",
@@ -374,7 +409,8 @@
             "sentenceNative": "It's useless to complain now.",
             "audioWordFile": "es_inutil_word.mp3",
             "audioSentenceFile": "es_inutil_sentence.mp3",
-            "mediaFile": "es_inutil.jpg"
+            "mediaFile": "es_inutil.jpg",
+            "domain": "Adjectives"
         },
         {
             "id": "es_i_c37",
@@ -384,7 +420,8 @@
             "sentenceNative": "I have a new car.",
             "audioWordFile": "es_nuevo_word.mp3",
             "audioSentenceFile": "es_nuevo_sentence.mp3",
-            "mediaFile": "es_nuevo.jpg"
+            "mediaFile": "es_nuevo.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c38",
@@ -394,7 +431,8 @@
             "sentenceNative": "That building is very old.",
             "audioWordFile": "es_viejo_word.mp3",
             "audioSentenceFile": "es_viejo_sentence.mp3",
-            "mediaFile": "es_viejo.jpg"
+            "mediaFile": "es_viejo.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c39",
@@ -404,7 +442,8 @@
             "sentenceNative": "It's very cold outside.",
             "audioWordFile": "es_mucho_word.mp3",
             "audioSentenceFile": "es_mucho_sentence.mp3",
-            "mediaFile": "es_mucho.jpg"
+            "mediaFile": "es_mucho.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c40",
@@ -414,7 +453,8 @@
             "sentenceNative": "I have little free time.",
             "audioWordFile": "es_poco_word.mp3",
             "audioSentenceFile": "es_poco_sentence.mp3",
-            "mediaFile": "es_poco.jpg"
+            "mediaFile": "es_poco.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c41",
@@ -424,7 +464,8 @@
             "sentenceNative": "I have visited several countries.",
             "audioWordFile": "es_varios_word.mp3",
             "audioSentenceFile": "es_varios_sentence.mp3",
-            "mediaFile": "es_varios.jpg"
+            "mediaFile": "es_varios.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c42",
@@ -434,7 +475,8 @@
             "sentenceNative": "Do you have any plans for today?",
             "audioWordFile": "es_alguno_word.mp3",
             "audioSentenceFile": "es_alguno_sentence.mp3",
-            "mediaFile": "es_alguno.jpg"
+            "mediaFile": "es_alguno.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c43",
@@ -444,7 +486,8 @@
             "sentenceNative": "None of my friends smoke.",
             "audioWordFile": "es_ninguno_word.mp3",
             "audioSentenceFile": "es_ninguno_sentence.mp3",
-            "mediaFile": "es_ninguno.jpg"
+            "mediaFile": "es_ninguno.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c44",
@@ -454,7 +497,8 @@
             "sentenceNative": "Each day is a new opportunity.",
             "audioWordFile": "es_cada_word.mp3",
             "audioSentenceFile": "es_cada_sentence.mp3",
-            "mediaFile": "es_cada.jpg"
+            "mediaFile": "es_cada.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c45",
@@ -464,7 +508,8 @@
             "sentenceNative": "You can come at any time.",
             "audioWordFile": "es_cualquier_word.mp3",
             "audioSentenceFile": "es_cualquier_sentence.mp3",
-            "mediaFile": "es_cualquier.jpg"
+            "mediaFile": "es_cualquier.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c46",
@@ -474,7 +519,8 @@
             "sentenceNative": "We both agree.",
             "audioWordFile": "es_ambos_word.mp3",
             "audioSentenceFile": "es_ambos_sentence.mp3",
-            "mediaFile": "es_ambos.jpg"
+            "mediaFile": "es_ambos.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c47",
@@ -484,7 +530,8 @@
             "sentenceNative": "We are wearing the same dress.",
             "audioWordFile": "es_mismo_word.mp3",
             "audioSentenceFile": "es_mismo_sentence.mp3",
-            "mediaFile": "es_mismo.jpg"
+            "mediaFile": "es_mismo.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c48",
@@ -494,7 +541,8 @@
             "sentenceNative": "The next exit is in 5 km.",
             "audioWordFile": "es_siguiente_word.mp3",
             "audioSentenceFile": "es_siguiente_sentence.mp3",
-            "mediaFile": "es_siguiente.jpg"
+            "mediaFile": "es_siguiente.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c49",
@@ -504,7 +552,8 @@
             "sentenceNative": "On the previous page is the answer.",
             "audioWordFile": "es_anterior_word.mp3",
             "audioSentenceFile": "es_anterior_sentence.mp3",
-            "mediaFile": "es_anterior.jpg"
+            "mediaFile": "es_anterior.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c50",
@@ -514,7 +563,8 @@
             "sentenceNative": "This is my last day of work.",
             "audioWordFile": "es_ultimo_word.mp3",
             "audioSentenceFile": "es_ultimo_sentence.mp3",
-            "mediaFile": "es_ultimo.jpg"
+            "mediaFile": "es_ultimo.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c51",
@@ -524,7 +574,8 @@
             "sentenceNative": "The first to arrive wins a prize.",
             "audioWordFile": "es_primero_word.mp3",
             "audioSentenceFile": "es_primero_sentence.mp3",
-            "mediaFile": "es_primero.jpg"
+            "mediaFile": "es_primero.jpg",
+            "domain": "Determiners & Ordinals"
         },
         {
             "id": "es_i_c52",
@@ -534,7 +585,8 @@
             "sentenceNative": "There are many trees around the house.",
             "audioWordFile": "es_alrededor_word.mp3",
             "audioSentenceFile": "es_alrededor_sentence.mp3",
-            "mediaFile": "es_alrededor.jpg"
+            "mediaFile": "es_alrededor.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c53",
@@ -544,7 +596,8 @@
             "sentenceNative": "Go inside the room.",
             "audioWordFile": "es_dentro_word.mp3",
             "audioSentenceFile": "es_dentro_sentence.mp3",
-            "mediaFile": "es_dentro.jpg"
+            "mediaFile": "es_dentro.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c54",
@@ -554,7 +607,8 @@
             "sentenceNative": "Please stay outside.",
             "audioWordFile": "es_fuera_word.mp3",
             "audioSentenceFile": "es_fuera_sentence.mp3",
-            "mediaFile": "es_fuera.jpg"
+            "mediaFile": "es_fuera.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c55",
@@ -564,7 +618,8 @@
             "sentenceNative": "The bathroom is upstairs.",
             "audioWordFile": "es_arriba_word.mp3",
             "audioSentenceFile": "es_arriba_sentence.mp3",
-            "mediaFile": "es_arriba.jpg"
+            "mediaFile": "es_arriba.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c56",
@@ -574,7 +629,8 @@
             "sentenceNative": "Wait for me downstairs.",
             "audioWordFile": "es_abajo_word.mp3",
             "audioSentenceFile": "es_abajo_sentence.mp3",
-            "mediaFile": "es_abajo.jpg"
+            "mediaFile": "es_abajo.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c57",
@@ -584,7 +640,8 @@
             "sentenceNative": "The next train leaves at six.",
             "audioWordFile": "es_proximo_word.mp3",
             "audioSentenceFile": "es_proximo_sentence.mp3",
-            "mediaFile": "es_proximo.jpg"
+            "mediaFile": "es_proximo.jpg",
+            "domain": "Location"
         },
         {
             "id": "es_i_c58",
@@ -594,7 +651,8 @@
             "sentenceNative": "If you don't come, then I'll go alone.",
             "audioWordFile": "es_entonces_word.mp3",
             "audioSentenceFile": "es_entonces_sentence.mp3",
-            "mediaFile": "es_entonces.jpg"
+            "mediaFile": "es_entonces.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c59",
@@ -604,7 +662,8 @@
             "sentenceNative": "I'll see you later.",
             "audioWordFile": "es_luego_word.mp3",
             "audioSentenceFile": "es_luego_sentence.mp3",
-            "mediaFile": "es_luego.jpg"
+            "mediaFile": "es_luego.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c60",
@@ -614,7 +673,8 @@
             "sentenceNative": "I cook while you clean.",
             "audioWordFile": "es_mientras_word.mp3",
             "audioSentenceFile": "es_mientras_sentence.mp3",
-            "mediaFile": "es_mientras.jpg"
+            "mediaFile": "es_mientras.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c61",
@@ -624,7 +684,8 @@
             "sentenceNative": "I will always be here for you.",
             "audioWordFile": "es_siempre_word.mp3",
             "audioSentenceFile": "es_siempre_sentence.mp3",
-            "mediaFile": "es_siempre.jpg"
+            "mediaFile": "es_siempre.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c62",
@@ -634,7 +695,8 @@
             "sentenceNative": "I have never been to Asia.",
             "audioWordFile": "es_nunca_word.mp3",
             "audioSentenceFile": "es_nunca_sentence.mp3",
-            "mediaFile": "es_nunca.jpg"
+            "mediaFile": "es_nunca.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c63",
@@ -644,7 +706,8 @@
             "sentenceNative": "I will never forget this day.",
             "audioWordFile": "es_jamas_word.mp3",
             "audioSentenceFile": "es_jamas_sentence.mp3",
-            "mediaFile": "es_jamas.jpg"
+            "mediaFile": "es_jamas.jpg",
+            "domain": "Time"
         },
         {
             "id": "es_i_c64",
@@ -654,7 +717,8 @@
             "sentenceNative": "Sometimes I like to walk alone.",
             "audioWordFile": "es_aveces_word.mp3",
             "audioSentenceFile": "es_aveces_sentence.mp3",
-            "mediaFile": "es_aveces.jpg"
+            "mediaFile": "es_aveces.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c65",
@@ -664,7 +728,8 @@
             "sentenceNative": "I travel often for work.",
             "audioWordFile": "es_amenudo_word.mp3",
             "audioSentenceFile": "es_amenudo_sentence.mp3",
-            "mediaFile": "es_amenudo.jpg"
+            "mediaFile": "es_amenudo.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c66",
@@ -674,7 +739,8 @@
             "sentenceNative": "We have almost finished the task.",
             "audioWordFile": "es_casi_word.mp3",
             "audioSentenceFile": "es_casi_sentence.mp3",
-            "mediaFile": "es_casi.jpg"
+            "mediaFile": "es_casi.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c67",
@@ -684,7 +750,8 @@
             "sentenceNative": "I only want to sleep a bit.",
             "audioWordFile": "es_solo_word.mp3",
             "audioSentenceFile": "es_solo_sentence.mp3",
-            "mediaFile": "es_solo.jpg"
+            "mediaFile": "es_solo.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c68",
@@ -694,7 +761,8 @@
             "sentenceNative": "It costs too much money.",
             "audioWordFile": "es_demasiado_word.mp3",
             "audioSentenceFile": "es_demasiado_sentence.mp3",
-            "mediaFile": "es_demasiado.jpg"
+            "mediaFile": "es_demasiado.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c69",
@@ -704,7 +772,8 @@
             "sentenceNative": "It's a very good movie.",
             "audioWordFile": "es_muy_word.mp3",
             "audioSentenceFile": "es_muy_sentence.mp3",
-            "mediaFile": "es_muy.jpg"
+            "mediaFile": "es_muy.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c70",
@@ -714,7 +783,8 @@
             "sentenceNative": "I love you a lot.",
             "audioWordFile": "es_mucho_word.mp3",
             "audioSentenceFile": "es_mucho_sentence.mp3",
-            "mediaFile": "es_mucho.jpg"
+            "mediaFile": "es_mucho.jpg",
+            "domain": "Quantity"
         },
         {
             "id": "es_i_c71",
@@ -724,7 +794,8 @@
             "sentenceNative": "What are you doing?",
             "audioWordFile": "es_que_word.mp3",
             "audioSentenceFile": "es_que_sentence.mp3",
-            "mediaFile": "es_que.jpg"
+            "mediaFile": "es_que.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c72",
@@ -734,7 +805,8 @@
             "sentenceNative": "Who knocked at the door?",
             "audioWordFile": "es_quien_word.mp3",
             "audioSentenceFile": "es_quien_sentence.mp3",
-            "mediaFile": "es_quien.jpg"
+            "mediaFile": "es_quien.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c73",
@@ -744,7 +816,8 @@
             "sentenceNative": "Where do you live now?",
             "audioWordFile": "es_donde_word.mp3",
             "audioSentenceFile": "es_donde_sentence.mp3",
-            "mediaFile": "es_donde.jpg"
+            "mediaFile": "es_donde.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c74",
@@ -754,7 +827,8 @@
             "sentenceNative": "When will you return home?",
             "audioWordFile": "es_cuando_word.mp3",
             "audioSentenceFile": "es_cuando_sentence.mp3",
-            "mediaFile": "es_cuando.jpg"
+            "mediaFile": "es_cuando.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c75",
@@ -764,7 +838,8 @@
             "sentenceNative": "How do you say 'cat' in English?",
             "audioWordFile": "es_como_word.mp3",
             "audioSentenceFile": "es_como_sentence.mp3",
-            "mediaFile": "es_como.jpg"
+            "mediaFile": "es_como.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c76",
@@ -774,7 +849,8 @@
             "sentenceNative": "Why are you crying?",
             "audioWordFile": "es_porque_word.mp3",
             "audioSentenceFile": "es_porque_sentence.mp3",
-            "mediaFile": "es_porque.jpg"
+            "mediaFile": "es_porque.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c77",
@@ -784,7 +860,8 @@
             "sentenceNative": "How much does this t-shirt cost?",
             "audioWordFile": "es_cuanto_word.mp3",
             "audioSentenceFile": "es_cuanto_sentence.mp3",
-            "mediaFile": "es_cuanto.jpg"
+            "mediaFile": "es_cuanto.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c78",
@@ -794,7 +871,8 @@
             "sentenceNative": "Which is your favorite color?",
             "audioWordFile": "es_cual_word.mp3",
             "audioSentenceFile": "es_cual_sentence.mp3",
-            "mediaFile": "es_cual.jpg"
+            "mediaFile": "es_cual.jpg",
+            "domain": "Questions"
         },
         {
             "id": "es_i_c79",
@@ -804,7 +882,8 @@
             "sentenceNative": "This gift is for you.",
             "audioWordFile": "es_para_word.mp3",
             "audioSentenceFile": "es_para_sentence.mp3",
-            "mediaFile": "es_para.jpg"
+            "mediaFile": "es_para.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c80",
@@ -814,7 +893,8 @@
             "sentenceNative": "We walked along the beach.",
             "audioWordFile": "es_por_word.mp3",
             "audioSentenceFile": "es_por_sentence.mp3",
-            "mediaFile": "es_por.jpg"
+            "mediaFile": "es_por.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c81",
@@ -824,7 +904,8 @@
             "sentenceNative": "I want to go with my friends.",
             "audioWordFile": "es_con_word.mp3",
             "audioSentenceFile": "es_con_sentence.mp3",
-            "mediaFile": "es_con.jpg"
+            "mediaFile": "es_con.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c82",
@@ -834,7 +915,8 @@
             "sentenceNative": "I cannot live without you.",
             "audioWordFile": "es_sin_word.mp3",
             "audioSentenceFile": "es_sin_sentence.mp3",
-            "mediaFile": "es_sin.jpg"
+            "mediaFile": "es_sin.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c83",
@@ -844,7 +926,8 @@
             "sentenceNative": "We talk about the future.",
             "audioWordFile": "es_sobre_word.mp3",
             "audioSentenceFile": "es_sobre_sentence.mp3",
-            "mediaFile": "es_sobre.jpg"
+            "mediaFile": "es_sobre.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c84",
@@ -854,7 +937,8 @@
             "sentenceNative": "We walk towards the summit.",
             "audioWordFile": "es_hacia_word.mp3",
             "audioSentenceFile": "es_hacia_sentence.mp3",
-            "mediaFile": "es_hacia.jpg"
+            "mediaFile": "es_hacia.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c85",
@@ -864,7 +948,8 @@
             "sentenceNative": "Since yesterday I don't feel well.",
             "audioWordFile": "es_desde_word.mp3",
             "audioSentenceFile": "es_desde_sentence.mp3",
-            "mediaFile": "es_desde.jpg"
+            "mediaFile": "es_desde.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c86",
@@ -874,7 +959,8 @@
             "sentenceNative": "I will work until eight.",
             "audioWordFile": "es_hasta_word.mp3",
             "audioSentenceFile": "es_hasta_sentence.mp3",
-            "mediaFile": "es_hasta.jpg"
+            "mediaFile": "es_hasta.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c87",
@@ -884,7 +970,8 @@
             "sentenceNative": "There are secrets between us.",
             "audioWordFile": "es_entre_word.mp3",
             "audioSentenceFile": "es_entre_sentence.mp3",
-            "mediaFile": "es_entre.jpg"
+            "mediaFile": "es_entre.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c88",
@@ -894,7 +981,8 @@
             "sentenceNative": "We fight against injustice.",
             "audioWordFile": "es_contra_word.mp3",
             "audioSentenceFile": "es_contra_sentence.mp3",
-            "mediaFile": "es_contra.jpg"
+            "mediaFile": "es_contra.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c89",
@@ -904,7 +992,8 @@
             "sentenceNative": "According to the news, it will rain tomorrow.",
             "audioWordFile": "es_segun_word.mp3",
             "audioSentenceFile": "es_segun_sentence.mp3",
-            "mediaFile": "es_segun.jpg"
+            "mediaFile": "es_segun.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c90",
@@ -914,7 +1003,8 @@
             "sentenceNative": "The cat is under the table.",
             "audioWordFile": "es_bajo_word.mp3",
             "audioSentenceFile": "es_bajo_sentence.mp3",
-            "mediaFile": "es_bajo.jpg"
+            "mediaFile": "es_bajo.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c91",
@@ -924,7 +1014,8 @@
             "sentenceNative": "You can take any book.",
             "audioWordFile": "es_cualquier_word.mp3",
             "audioSentenceFile": "es_cualquier_sentence.mp3",
-            "mediaFile": "es_cualquier.jpg"
+            "mediaFile": "es_cualquier.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c92",
@@ -934,7 +1025,8 @@
             "sentenceNative": "I saw it with my own eyes.",
             "audioWordFile": "es_propio_word.mp3",
             "audioSentenceFile": "es_propio_sentence.mp3",
-            "mediaFile": "es_propio.jpg"
+            "mediaFile": "es_propio.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c93",
@@ -944,7 +1036,8 @@
             "sentenceNative": "He is a very strange man.",
             "audioWordFile": "es_extrano_word.mp3",
             "audioSentenceFile": "es_extrano_sentence.mp3",
-            "mediaFile": "es_extrano.jpg"
+            "mediaFile": "es_extrano.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c94",
@@ -954,7 +1047,8 @@
             "sentenceNative": "It seems like it's going to rain.",
             "audioWordFile": "es_parecer_word.mp3",
             "audioSentenceFile": "es_parecer_sentence.mp3",
-            "mediaFile": "es_parecer.jpg"
+            "mediaFile": "es_parecer.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c95",
@@ -964,7 +1058,8 @@
             "sentenceNative": "What's happening to you? (What's wrong?)",
             "audioWordFile": "es_pasar_word.mp3",
             "audioSentenceFile": "es_pasar_sentence.mp3",
-            "mediaFile": "es_pasar.jpg"
+            "mediaFile": "es_pasar.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c96",
@@ -974,7 +1069,8 @@
             "sentenceNative": "Leave me alone, please.",
             "audioWordFile": "es_dejar_word.mp3",
             "audioSentenceFile": "es_dejar_sentence.mp3",
-            "mediaFile": "es_dejar.jpg"
+            "mediaFile": "es_dejar.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c97",
@@ -984,7 +1080,8 @@
             "sentenceNative": "The train will arrive on time.",
             "audioWordFile": "es_llegar_word.mp3",
             "audioSentenceFile": "es_llegar_sentence.mp3",
-            "mediaFile": "es_llegar.jpg"
+            "mediaFile": "es_llegar.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c98",
@@ -994,7 +1091,8 @@
             "sentenceNative": "I can't find my keys.",
             "audioWordFile": "es_encontrar_word.mp3",
             "audioSentenceFile": "es_encontrar_sentence.mp3",
-            "mediaFile": "es_encontrar.jpg"
+            "mediaFile": "es_encontrar.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c99",
@@ -1004,7 +1102,8 @@
             "sentenceNative": "I can't believe what happened.",
             "audioWordFile": "es_creer_word.mp3",
             "audioSentenceFile": "es_creer_sentence.mp3",
-            "mediaFile": "es_creer.jpg"
+            "mediaFile": "es_creer.jpg",
+            "domain": "Concepts"
         },
         {
             "id": "es_i_c100",
@@ -1014,7 +1113,8 @@
             "sentenceNative": "I don't know the answer.",
             "audioWordFile": "es_saber_word.mp3",
             "audioSentenceFile": "es_saber_sentence.mp3",
-            "mediaFile": "es_saber.jpg"
+            "mediaFile": "es_saber.jpg",
+            "domain": "Concepts"
         }
     ]
 }

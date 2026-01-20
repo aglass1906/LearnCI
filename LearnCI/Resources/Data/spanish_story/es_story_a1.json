@@ -8,9 +8,7 @@
     "coverImage": "es_story_002_cover.png",
     "title": "Spanish Stories - My First Morning (A1)",
     "supportedModes": [
-        "flashcards",
-        "story",
-        "memoryMatch"
+        "story"
     ],
     "gameConfiguration": {
         "story": {
@@ -49,7 +47,7 @@
             "sentenceNative": "The man wakes up.",
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_el_hombre_se_despierta.mp3",
-            "mediaFile": "es_hombre_despierta.jpg",
+            "mediaFile": "es_b1_01_hombre_despierta.png",
             "domain": "Story"
         },
         {
@@ -62,7 +60,7 @@
             "sentenceNative": "The man drinks coffee.",
             "audioWordFile": "es_cafe_word.mp3",
             "audioSentenceFile": "es_el_hombre_bebe_cafe.mp3",
-            "mediaFile": "es_hombre_cafe.jpg",
+            "mediaFile": "es_b1_02_hombre_cafe.png",
             "domain": "Story"
         },
         {
@@ -75,7 +73,7 @@
             "sentenceNative": "The man walks down the street.",
             "audioWordFile": "es_calle_word.mp3",
             "audioSentenceFile": "es_el_hombre_camina_calle.mp3",
-            "mediaFile": "es_hombre_calle.jpg",
+            "mediaFile": "es_b1_03_hombre_calle.png",
             "domain": "Story"
         },
         {
@@ -88,13 +86,39 @@
             "sentenceNative": "The man sees his friend.",
             "audioWordFile": "es_amigo_word.mp3",
             "audioSentenceFile": "es_el_hombre_ve_amigo.mp3",
-            "mediaFile": "es_hombre_amigo.jpg",
+            "mediaFile": "es_b1_04_hombre_amigo.png",
             "domain": "Story"
         },
         {
             "id": "es_story_002_c6",
-            "type": "outro",
+            "type": "story",
             "order": 6,
+            "wordTarget": "Conversar",
+            "wordNative": "To converse",
+            "sentenceTarget": "El hombre conversa con su amigo.",
+            "sentenceNative": "The man converses with his friend.",
+            "audioWordFile": "es_conversa_word.mp3",
+            "audioSentenceFile": "es_el_hombre_conversa_amigo.mp3",
+            "mediaFile": "es_b1_05_hombre_conversa.png",
+            "domain": "Story"
+        },
+        {
+            "id": "es_story_002_c7",
+            "type": "story",
+            "order": 7,
+            "wordTarget": "Adiós",
+            "wordNative": "Goodbye",
+            "sentenceTarget": "El hombre se despide.",
+            "sentenceNative": "The man says goodbye.",
+            "audioWordFile": "es_adios_word.mp3",
+            "audioSentenceFile": "es_el_hombre_se_despide.mp3",
+            "mediaFile": "es_b1_06_hombre_despedida.png",
+            "domain": "Story"
+        },
+        {
+            "id": "es_story_002_c8",
+            "type": "outro",
+            "order": 8,
             "wordTarget": "Mi mañana",
             "wordNative": "My Morning",
             "sentenceTarget": "Fin",

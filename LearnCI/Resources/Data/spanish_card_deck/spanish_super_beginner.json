@@ -21,7 +21,7 @@
             "sentenceNative": "Hello, how are you?",
             "audioWordFile": "es_hola_word.mp3",
             "audioSentenceFile": "es_hola_sentence.mp3",
-            "mediaFile": "es_hola.jpg",
+            "mediaFile": "es_a1_hola.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -32,7 +32,7 @@
             "sentenceNative": "Thank you very much for your help.",
             "audioWordFile": "es_gracias_word.mp3",
             "audioSentenceFile": "es_gracias_sentence.mp3",
-            "mediaFile": "es_gracias.jpg",
+            "mediaFile": "es_a1_gracias.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -43,7 +43,7 @@
             "sentenceNative": "A coffee, please.",
             "audioWordFile": "es_porfavor_word.mp3",
             "audioSentenceFile": "es_porfavor_sentence.mp3",
-            "mediaFile": "es_porfavor.jpg",
+            "mediaFile": "es_a1_porfavor.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -54,7 +54,7 @@
             "sentenceNative": "Goodbye, see you tomorrow.",
             "audioWordFile": "es_adios_word.mp3",
             "audioSentenceFile": "es_adios_sentence.mp3",
-            "mediaFile": "es_adios.jpg",
+            "mediaFile": "es_a1_adios.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -65,7 +65,7 @@
             "sentenceNative": "Yes, I like it a lot.",
             "audioWordFile": "es_si_word.mp3",
             "audioSentenceFile": "es_si_sentence.mp3",
-            "mediaFile": "es_si.jpg",
+            "mediaFile": "es_a1_si.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -76,7 +76,7 @@
             "sentenceNative": "No, I'm not hungry.",
             "audioWordFile": "es_no_word.mp3",
             "audioSentenceFile": "es_no_sentence.mp3",
-            "mediaFile": "es_no.jpg",
+            "mediaFile": "es_a1_no.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -87,7 +87,7 @@
             "sentenceNative": "I want a glass of water.",
             "audioWordFile": "es_agua_word.mp3",
             "audioSentenceFile": "es_agua_sentence.mp3",
-            "mediaFile": "es_agua.jpg",
+            "mediaFile": "es_a1_agua.jpg",
             "domain": "Basics"
         },
         {
@@ -98,7 +98,7 @@
             "sentenceNative": "The food is very good.",
             "audioWordFile": "es_comida_word.mp3",
             "audioSentenceFile": "es_comida_sentence.mp3",
-            "mediaFile": "es_comida.jpg",
+            "mediaFile": "es_a1_comida.jpg",
             "domain": "Basics"
         },
         {
@@ -109,7 +109,7 @@
             "sentenceNative": "He is my best friend.",
             "audioWordFile": "es_amigo_word.mp3",
             "audioSentenceFile": "es_amigo_sentence.mp3",
-            "mediaFile": "es_amigo.jpg",
+            "mediaFile": "es_a1_amigo.jpg",
             "domain": "Daily Life"
         },
         {
@@ -120,7 +120,7 @@
             "sentenceNative": "My house is small but pretty.",
             "audioWordFile": "es_casa_word.mp3",
             "audioSentenceFile": "es_casa_sentence.mp3",
-            "mediaFile": "es_casa.jpg",
+            "mediaFile": "es_a1_casa.jpg",
             "domain": "Daily Life"
         },
         {
@@ -131,7 +131,7 @@
             "sentenceNative": "The cat sleeps on the sofa.",
             "audioWordFile": "es_gato_word.mp3",
             "audioSentenceFile": "es_gato_sentence.mp3",
-            "mediaFile": "es_gato.jpg",
+            "mediaFile": "es_a1_gato.jpg",
             "domain": "Daily Life"
         },
         {
@@ -142,7 +142,7 @@
             "sentenceNative": "The dog runs in the park.",
             "audioWordFile": "es_perro_word.mp3",
             "audioSentenceFile": "es_perro_sentence.mp3",
-            "mediaFile": "es_perro.jpg",
+            "mediaFile": "es_a1_perro.jpg",
             "domain": "Daily Life"
         },
         {
@@ -153,7 +153,7 @@
             "sentenceNative": "I have only one.",
             "audioWordFile": "es_uno_word.mp3",
             "audioSentenceFile": "es_uno_sentence.mp3",
-            "mediaFile": "es_uno.jpg",
+            "mediaFile": "es_a1_uno.jpg",
             "domain": "Numbers"
         },
         {
@@ -164,7 +164,7 @@
             "sentenceNative": "Two coffees, please.",
             "audioWordFile": "es_dos_word.mp3",
             "audioSentenceFile": "es_dos_sentence.mp3",
-            "mediaFile": "es_dos.jpg",
+            "mediaFile": "es_a1_dos.jpg",
             "domain": "Numbers"
         },
         {
@@ -175,7 +175,7 @@
             "sentenceNative": "There are three birds in the tree.",
             "audioWordFile": "es_tres_word.mp3",
             "audioSentenceFile": "es_tres_sentence.mp3",
-            "mediaFile": "es_tres.jpg",
+            "mediaFile": "es_a1_tres.jpg",
             "domain": "Numbers"
         },
         {
@@ -186,7 +186,7 @@
             "sentenceNative": "I am reading an interesting book.",
             "audioWordFile": "es_libro_word.mp3",
             "audioSentenceFile": "es_libro_sentence.mp3",
-            "mediaFile": "es_libro.jpg",
+            "mediaFile": "es_a1_libro.jpg",
             "domain": "Places"
         },
         {
@@ -197,7 +197,7 @@
             "sentenceNative": "The school is near here.",
             "audioWordFile": "es_escuela_word.mp3",
             "audioSentenceFile": "es_escuela_sentence.mp3",
-            "mediaFile": "es_escuela.jpg",
+            "mediaFile": "es_a1_escuela.jpg",
             "domain": "Places"
         },
         {
@@ -208,7 +208,7 @@
             "sentenceNative": "It is a very quiet town.",
             "audioWordFile": "es_pueblo_word.mp3",
             "audioSentenceFile": "es_pueblo_sentence.mp3",
-            "mediaFile": "es_pueblo.jpg",
+            "mediaFile": "es_a1_pueblo.jpg",
             "domain": "Places"
         },
         {
@@ -219,7 +219,7 @@
             "sentenceNative": "The city is very noisy.",
             "audioWordFile": "es_ciudad_word.mp3",
             "audioSentenceFile": "es_ciudad_sentence.mp3",
-            "mediaFile": "es_ciudad.jpg",
+            "mediaFile": "es_a1_ciudad.jpg",
             "domain": "Places"
         },
         {
@@ -230,7 +230,7 @@
             "sentenceNative": "Where is the bathroom?",
             "audioWordFile": "es_bano_word.mp3",
             "audioSentenceFile": "es_bano_sentence.mp3",
-            "mediaFile": "es_bano.jpg",
+            "mediaFile": "es_a1_bano.jpg",
             "domain": "Places"
         },
         {
@@ -241,7 +241,7 @@
             "sentenceNative": "Tomorrow morning I will go to the market.",
             "audioWordFile": "es_manana_word.mp3",
             "audioSentenceFile": "es_manana_sentence.mp3",
-            "mediaFile": "es_manana.jpg",
+            "mediaFile": "es_a1_manana.jpg",
             "domain": "Time"
         },
         {
@@ -252,7 +252,7 @@
             "sentenceNative": "The night is dark.",
             "audioWordFile": "es_noche_word.mp3",
             "audioSentenceFile": "es_noche_sentence.mp3",
-            "mediaFile": "es_noche.jpg",
+            "mediaFile": "es_a1_noche.jpg",
             "domain": "Time"
         },
         {
@@ -263,7 +263,7 @@
             "sentenceNative": "Today is a great day.",
             "audioWordFile": "es_hoy_word.mp3",
             "audioSentenceFile": "es_hoy_sentence.mp3",
-            "mediaFile": "es_hoy.jpg",
+            "mediaFile": "es_a1_hoy.jpg",
             "domain": "Time"
         },
         {
@@ -274,7 +274,7 @@
             "sentenceNative": "I don't have much time.",
             "audioWordFile": "es_tiempo_word.mp3",
             "audioSentenceFile": "es_tiempo_sentence.mp3",
-            "mediaFile": "es_tiempo.jpg",
+            "mediaFile": "es_a1_tiempo.jpg",
             "domain": "Time"
         },
         {
@@ -285,7 +285,7 @@
             "sentenceNative": "I am very happy today.",
             "audioWordFile": "es_feliz_word.mp3",
             "audioSentenceFile": "es_feliz_sentence.mp3",
-            "mediaFile": "es_feliz.jpg",
+            "mediaFile": "es_a1_feliz.jpg",
             "domain": "Emotions"
         }
     ]

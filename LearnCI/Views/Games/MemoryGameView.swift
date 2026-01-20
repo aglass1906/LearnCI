@@ -71,7 +71,7 @@ struct MemoryGameView: View {
         engine.playAudio = { filename, text in
             // Handle optional filename, but we always have text
             let safeFilename = filename ?? ""
-            let item = AudioManager.AudioItem(filename: safeFilename, text: text, language: deck.language)
+            let item = AudioManager.AudioItem(filename: safeFilename, text: text, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender)
             
             // Use TTS fallback and the session's configured speed
             let rate = sessionConfig.ttsRate

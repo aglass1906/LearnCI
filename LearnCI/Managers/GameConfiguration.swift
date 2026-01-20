@@ -88,8 +88,9 @@ struct GameConfiguration: Codable, Equatable {
     var isRandomOrder: Bool = false
     var useTTSFallback: Bool = true
     var ttsRate: Float = 0.5
+    var ttsVoiceGender: String = "female"
     
-    init(gameType: GameType = .flashcards, word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true, ttsRate: Float = 0.5) {
+    init(gameType: GameType = .flashcards, word: SectionConfiguration, sentence: SectionConfiguration, image: ElementVisibility, back: BackConfiguration = BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible), isRandomOrder: Bool = false, useTTSFallback: Bool = true, ttsRate: Float = 0.5, ttsVoiceGender: String = "female") {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -98,6 +99,7 @@ struct GameConfiguration: Codable, Equatable {
         self.isRandomOrder = isRandomOrder
         self.useTTSFallback = useTTSFallback
         self.ttsRate = ttsRate
+        self.ttsVoiceGender = ttsVoiceGender
     }
     
     static func from(preset: Preset) -> GameConfiguration {
@@ -109,7 +111,8 @@ struct GameConfiguration: Codable, Equatable {
                 sentence: SectionConfiguration(text: .visible, audio: .visible),
                 image: .hint,
                 back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible),
-                useTTSFallback: true
+                useTTSFallback: true,
+                ttsVoiceGender: "female" // Default
             )
         case .audioCards:
             // Word Audio Only (Text Hidden), Sentence Audio Only (Text Hidden), No Image
@@ -127,7 +130,8 @@ struct GameConfiguration: Codable, Equatable {
                 sentence: SectionConfiguration(text: .hidden, audio: .hidden),
                 image: .visible,
                 back: BackConfiguration(translation: .visible, sentenceMeaning: .visible, studyLinks: .visible),
-                useTTSFallback: true
+                useTTSFallback: true,
+                ttsVoiceGender: "female"
             )
         case .flashcard:
             // Yes Word (No Audio), No Sentence, No Image
@@ -147,7 +151,8 @@ struct GameConfiguration: Codable, Equatable {
                 sentence: SectionConfiguration(text: .visible, audio: .visible),
                 image: .visible,
                 back: BackConfiguration(translation: .hint, sentenceMeaning: .hint, studyLinks: .visible),
-                useTTSFallback: true
+                useTTSFallback: true,
+                ttsVoiceGender: "female"
             )
         }
     }

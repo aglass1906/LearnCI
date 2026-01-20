@@ -52,8 +52,9 @@ final class UserProfile {
     var lastCheckInHours: Int = 0 // Tracks the last milestone (0, 25, 50...)
     var startingHours: Int = 0 // Manual offset for previous experience
     var ttsRate: Float = 0.5 // Audio Speed Preference
+    var ttsVoiceGender: String = "female" // "male" or "female"
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5) {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5, ttsVoiceGender: String = "female") {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -70,6 +71,7 @@ final class UserProfile {
         self.lastCheckInHours = lastCheckInHours
         self.startingHours = startingHours
         self.ttsRate = ttsRate
+        self.ttsVoiceGender = ttsVoiceGender
     }
     
     private func languageRawUpdate(_ newValue: Language) {

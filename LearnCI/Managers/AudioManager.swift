@@ -100,14 +100,14 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         return nil
     }
     
-    private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
+    private func playInternal(filename: String, folderName: String?, text: String? = nil, language: Language? = nil, voiceGender: String? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         self.onCompletion = completion
         
         // Define fallback action
         let performFallback = {
             if useFallback, let text = text, let language = language {
-                print("DEBUG: Using TTS Fallback for: \(text)")
-                self.speak(text: text, language: language, rate: ttsRate)
+                print("DEBUG: Using TTS Fallback (\(voiceGender ?? "default")) for: \(text)")
+                self.speak(text: text, language: language, gender: voiceGender, rate: ttsRate)
             } else {
                 self.onCompletion?()
             }
@@ -139,7 +139,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         performFallback()
     }
     
-    func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
+    func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, voiceGender: String? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         // Avoid restarting if this specific file is already playing as a single intent
         if let player = player, player.isPlaying, currentSequence == [AudioItem(filename: filename, text: text, language: language)] {
             return
@@ -153,7 +153,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         stopAudio()
         self.currentSequence = [AudioItem(filename: filename, text: text, language: language)]
         
-        playInternal(filename: filename, folderName: folderName, text: text, language: language, useFallback: useFallback, ttsRate: ttsRate, completion: completion)
+        playInternal(filename: filename, folderName: folderName, text: text, language: language, voiceGender: voiceGender, useFallback: useFallback, ttsRate: ttsRate, completion: completion)
     }
     
     // MARK: - Sequence Playback
@@ -162,6 +162,14 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         let filename: String
         let text: String?
         let language: Language?
+        let voiceGender: String?
+        
+        init(filename: String, text: String? = nil, language: Language? = nil, voiceGender: String? = nil) {
+            self.filename = filename
+            self.text = text
+            self.language = language
+            self.voiceGender = voiceGender
+        }
     }
     
     // Tracking current sequence
@@ -192,6 +200,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             folderName: folderName,
             text: first.text,
             language: first.language,
+            voiceGender: first.voiceGender,
             useFallback: useFallback,
             ttsRate: ttsRate
         ) { [weak self] in
@@ -217,7 +226,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         player?.play()
     }
     
-    private func speak(text: String, language: Language, rate: Float) {
+    private func speak(text: String, language: Language, gender: String?, rate: Float) {
         let utterance = AVSpeechUtterance(string: text)
         
         let voiceCode: String
@@ -227,7 +236,52 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         case .korean: voiceCode = "ko-KR"
         }
         
-        utterance.voice = AVSpeechSynthesisVoice(language: voiceCode)
+        // Find voice by language and optionally gender
+        if let genderFilter = gender {
+            let preferredGender: AVSpeechSynthesisVoiceGender = genderFilter.lowercased() == "male" ? .male : .female
+            let allVoices = AVSpeechSynthesisVoice.speechVoices()
+            
+            // Helper to determine effective gender (handling "Unspecified" novelty voices)
+            func isVoice(_ voice: AVSpeechSynthesisVoice, matchGender target: AVSpeechSynthesisVoiceGender) -> Bool {
+                if voice.gender == target { return true }
+                if voice.gender == .unspecified {
+                    let maleNames = ["Jorge", "Juan", "Diego", "Carlos", "Grandpa", "Rocko", "Reed", "Eddy", "Rishi", "Daniel"]
+                    let femaleNames = ["Monica", "Paulina", "Soledad", "Angelica", "Grandma", "Sandy", "Shelley", "Flo", "Lola", "Samantha"]
+                    
+                    if target == .male {
+                        return maleNames.contains(where: { voice.name.contains($0) })
+                    } else {
+                        return femaleNames.contains(where: { voice.name.contains($0) })
+                    }
+                }
+                return false
+            }
+            
+            // 1. Exact Match: Voice Code + Effective Gender (e.g., es-MX Male/Eddy)
+            if let voice = allVoices.first(where: {
+                $0.language == voiceCode && isVoice($0, matchGender: preferredGender)
+            }) {
+                print("DEBUG: Selected exact match: \(voice.name) (\(voice.language))")
+                utterance.voice = voice
+            }
+            // 2. Dialect Fallback: Language Prefix + Effective Gender (e.g., es-ES Male/Rocko)
+            else if let voice = allVoices.first(where: {
+                $0.language.starts(with: language.code) && isVoice($0, matchGender: preferredGender)
+            }) {
+                print("DEBUG: Selected dialect fallback: \(voice.name) (\(voice.language)) for \(preferredGender)")
+                utterance.voice = voice
+            }
+            // 3. Language Fallback: Default for Code
+            else if let voice = AVSpeechSynthesisVoice(language: voiceCode) {
+                 print("DEBUG: Preferred gender \(genderFilter) not found for \(voiceCode) or dialects. Falling back to default: \(voice.name)")
+                 utterance.voice = voice
+            } else {
+                 print("DEBUG: No voice found for \(voiceCode). System default will be used.")
+            }
+        } else {
+            utterance.voice = AVSpeechSynthesisVoice(language: voiceCode)
+        }
+        
         utterance.rate = rate
         utterance.volume = 1.0 // Ensure maximum volume relative to system level
         

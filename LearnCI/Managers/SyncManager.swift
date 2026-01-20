@@ -344,7 +344,8 @@ struct CoachingCheckInDTO: Codable {
             starting_hours: profile.startingHours,
             tts_rate: profile.ttsRate,
             default_game_mode: profile.defaultGamePresetRaw,
-            last_game_type: profile.lastGameTypeRaw
+            last_game_type: profile.lastGameTypeRaw,
+            tts_voice_gender: profile.ttsVoiceGender
         )
         
         // Upsert to Supabase
@@ -426,6 +427,7 @@ struct CoachingCheckInDTO: Codable {
             if let tts = dto.tts_rate { profile.ttsRate = tts }
             if let dgm = dto.default_game_mode { profile.defaultGamePresetRaw = dgm }
             if let lgt = dto.last_game_type { profile.lastGameTypeRaw = lgt }
+            if let tvg = dto.tts_voice_gender { profile.ttsVoiceGender = tvg }
         } else {
             // Insert new from Server
             print("Sync: Profile missing locally. Restoring from server.")
@@ -442,7 +444,8 @@ struct CoachingCheckInDTO: Codable {
                 lastSelectedDeckId: dto.last_selected_deck_id,
                 lastCheckInHours: dto.last_check_in_hours ?? 0,
                 startingHours: dto.starting_hours ?? 0,
-                ttsRate: dto.tts_rate ?? 0.5
+                ttsRate: dto.tts_rate ?? 0.5,
+                ttsVoiceGender: dto.tts_voice_gender ?? "female"
             )
             // Fill in other optional fields
             newProfile.isPublic = dto.is_public
@@ -538,6 +541,7 @@ struct ProfileUploadDTO: Encodable {
     let tts_rate: Float?
     let default_game_mode: String?
     let last_game_type: String?
+    let tts_voice_gender: String?
 }
 
 struct ProfileDTO: Codable, Identifiable {
@@ -560,6 +564,7 @@ struct ProfileDTO: Codable, Identifiable {
     let tts_rate: Float?
     let default_game_mode: String?
     let last_game_type: String?
+    let tts_voice_gender: String?
 }
 
 struct ActivityDTO: Codable {

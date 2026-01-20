@@ -133,6 +133,7 @@ struct LearningCardFrontView: View {
                                     folderName: deck.baseFolderName,
                                     text: card.wordTarget,
                                     language: deck.language,
+                                    voiceGender: config.ttsVoiceGender,
                                     useFallback: config.useTTSFallback,
                                     ttsRate: config.ttsRate
                                 )
@@ -182,6 +183,7 @@ struct LearningCardFrontView: View {
                                     folderName: deck.baseFolderName,
                                     text: card.sentenceTarget,
                                     language: deck.language,
+                                    voiceGender: config.ttsVoiceGender,
                                     useFallback: config.useTTSFallback,
                                     ttsRate: config.ttsRate
                                 )

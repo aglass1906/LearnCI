@@ -486,6 +486,7 @@ extension DashboardView {
                                         folderName: wordOfDayFolder,
                                         text: word.wordTarget,
                                         language: userProfile?.currentLanguage ?? .spanish,
+                                        voiceGender: userProfile?.ttsVoiceGender,
                                         useFallback: true
                                     )
                                 }) {

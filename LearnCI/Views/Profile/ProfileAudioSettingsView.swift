@@ -6,6 +6,7 @@ struct ProfileAudioSettingsView: View {
     let profile: UserProfile
     
     @State private var ttsRate: Float = 0.5
+    @State private var ttsVoiceGender: String = "female"
     @State private var isEditing: Bool = false
     
     var body: some View {
@@ -33,6 +34,18 @@ struct ProfileAudioSettingsView: View {
                     }
                 } else {
                     LabeledContent("Robot Voice Speed", value: String(format: "%.1fx", ttsRate * 2))
+                }
+            }
+            
+            Section(header: Text("Voice Selection"), footer: Text("Selection applies to Spanish, Japanese, and Korean native voice fallbacks.")) {
+                if isEditing {
+                    Picker("Voice Gender", selection: $ttsVoiceGender) {
+                        Text("Female").tag("female")
+                        Text("Male").tag("male")
+                    }
+                    .pickerStyle(.segmented)
+                } else {
+                    LabeledContent("Voice Gender", value: ttsVoiceGender.capitalized)
                 }
             }
         }
@@ -69,10 +82,12 @@ struct ProfileAudioSettingsView: View {
     
     private func loadData() {
         ttsRate = profile.ttsRate
+        ttsVoiceGender = profile.ttsVoiceGender
     }
     
     private func saveData() {
         profile.ttsRate = ttsRate
+        profile.ttsVoiceGender = ttsVoiceGender
         profile.updatedAt = Date()
     }
 }

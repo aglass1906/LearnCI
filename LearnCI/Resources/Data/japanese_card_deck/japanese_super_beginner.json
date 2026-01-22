@@ -21,7 +21,7 @@
             "sentenceNative": "Hello, how are you?",
             "audioWordFile": "ja_konnichiwa_word.mp3",
             "audioSentenceFile": "ja_konnichiwa_sentence.mp3",
-            "mediaFile": "ja_konnichiwa.jpg",
+            "mediaFile": "ja_sb_konnichiwa.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -32,7 +32,7 @@
             "sentenceNative": "Thank you for helping me.",
             "audioWordFile": "ja_arigato_word.mp3",
             "audioSentenceFile": "ja_arigato_sentence.mp3",
-            "mediaFile": "ja_arigato.jpg",
+            "mediaFile": "ja_sb_arigato.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -43,7 +43,7 @@
             "sentenceNative": "Excuse me, where is the bathroom?",
             "audioWordFile": "ja_sumimasen_word.mp3",
             "audioSentenceFile": "ja_sumimasen_sentence.mp3",
-            "mediaFile": "ja_sumimasen.jpg",
+            "mediaFile": "ja_sb_sumimasen.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -54,7 +54,7 @@
             "sentenceNative": "Yes, that is right.",
             "audioWordFile": "ja_hai_word.mp3",
             "audioSentenceFile": "ja_hai_sentence.mp3",
-            "mediaFile": "ja_hai.jpg",
+            "mediaFile": "ja_sb_hai.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -65,7 +65,7 @@
             "sentenceNative": "No, that's not it.",
             "audioWordFile": "ja_iie_word.mp3",
             "audioSentenceFile": "ja_iie_sentence.mp3",
-            "mediaFile": "ja_iie.jpg",
+            "mediaFile": "ja_sb_iie.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -76,7 +76,7 @@
             "sentenceNative": "Goodbye, teacher.",
             "audioWordFile": "ja_sayonara_word.mp3",
             "audioSentenceFile": "ja_sayonara_sentence.mp3",
-            "mediaFile": "ja_sayonara.jpg",
+            "mediaFile": "ja_sb_sayonara.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -87,7 +87,7 @@
             "sentenceNative": "One glass of water, please.",
             "audioWordFile": "ja_onegaishimasu_word.mp3",
             "audioSentenceFile": "ja_onegaishimasu_sentence.mp3",
-            "mediaFile": "ja_onegaishimasu.jpg",
+            "mediaFile": "ja_sb_onegaishimasu.jpg",
             "domain": "Food & Drink"
         },
         {
@@ -98,7 +98,7 @@
             "sentenceNative": "I want to drink cold water.",
             "audioWordFile": "ja_mizu_word.mp3",
             "audioSentenceFile": "ja_mizu_sentence.mp3",
-            "mediaFile": "ja_mizu.jpg",
+            "mediaFile": "ja_sb_mizu.jpg",
             "domain": "Food & Drink"
         },
         {
@@ -109,7 +109,7 @@
             "sentenceNative": "This food is delicious.",
             "audioWordFile": "ja_tabemono_word.mp3",
             "audioSentenceFile": "ja_tabemono_sentence.mp3",
-            "mediaFile": "ja_tabemono.jpg",
+            "mediaFile": "ja_sb_tabemono.jpg",
             "domain": "Food & Drink"
         },
         {
@@ -120,7 +120,7 @@
             "sentenceNative": "The cat is sleeping.",
             "audioWordFile": "ja_neko_word.mp3",
             "audioSentenceFile": "ja_neko_sentence.mp3",
-            "mediaFile": "ja_neko.jpg",
+            "mediaFile": "ja_sb_neko.jpg",
             "domain": "Animals"
         },
         {
@@ -131,7 +131,7 @@
             "sentenceNative": "The dog is running.",
             "audioWordFile": "ja_inu_word.mp3",
             "audioSentenceFile": "ja_inu_sentence.mp3",
-            "mediaFile": "ja_inu.jpg",
+            "mediaFile": "ja_sb_inu.jpg",
             "domain": "Animals"
         },
         {
@@ -142,7 +142,7 @@
             "sentenceNative": "I want to go home early.",
             "audioWordFile": "ja_ie_word.mp3",
             "audioSentenceFile": "ja_ie_sentence.mp3",
-            "mediaFile": "ja_ie.jpg",
+            "mediaFile": "ja_sb_ie.jpg",
             "domain": "Home"
         },
         {
@@ -153,7 +153,7 @@
             "sentenceNative": "I watched a movie with my friend.",
             "audioWordFile": "ja_tomodachi_word.mp3",
             "audioSentenceFile": "ja_tomodachi_sentence.mp3",
-            "mediaFile": "ja_tomodachi.jpg",
+            "mediaFile": "ja_sb_tomodachi.jpg",
             "domain": "People"
         },
         {
@@ -164,7 +164,7 @@
             "sentenceNative": "I am reading an interesting book.",
             "audioWordFile": "ja_hon_word.mp3",
             "audioSentenceFile": "ja_hon_sentence.mp3",
-            "mediaFile": "ja_hon.jpg",
+            "mediaFile": "ja_sb_hon.jpg",
             "domain": "Objects"
         },
         {
@@ -175,7 +175,7 @@
             "sentenceNative": "Let's start from one.",
             "audioWordFile": "ja_ichi_word.mp3",
             "audioSentenceFile": "ja_ichi_sentence.mp3",
-            "mediaFile": "ja_ichi.jpg",
+            "mediaFile": "ja_sb_ichi.jpg",
             "domain": "Numbers"
         },
         {
@@ -186,7 +186,7 @@
             "sentenceNative": "Two apples, please.",
             "audioWordFile": "ja_ni_word.mp3",
             "audioSentenceFile": "ja_ni_sentence.mp3",
-            "mediaFile": "ja_ni.jpg",
+            "mediaFile": "ja_sb_ni.jpg",
             "domain": "Numbers"
         },
         {
@@ -197,7 +197,7 @@
             "sentenceNative": "Three people will go.",
             "audioWordFile": "ja_san_word.mp3",
             "audioSentenceFile": "ja_san_sentence.mp3",
-            "mediaFile": "ja_san.jpg",
+            "mediaFile": "ja_sb_san.jpg",
             "domain": "Numbers"
         },
         {
@@ -208,7 +208,7 @@
             "sentenceNative": "I woke up early in the morning.",
             "audioWordFile": "ja_asa_word.mp3",
             "audioSentenceFile": "ja_asa_sentence.mp3",
-            "mediaFile": "ja_asa.jpg",
+            "mediaFile": "ja_sb_asa.jpg",
             "domain": "Time"
         },
         {
@@ -219,7 +219,7 @@
             "sentenceNative": "It gets cold at night, doesn't it?",
             "audioWordFile": "ja_yoru_word.mp3",
             "audioSentenceFile": "ja_yoru_sentence.mp3",
-            "mediaFile": "ja_yoru.jpg",
+            "mediaFile": "ja_sb_yoru.jpg",
             "domain": "Time"
         },
         {
@@ -230,7 +230,7 @@
             "sentenceNative": "Today is hot.",
             "audioWordFile": "ja_kyo_word.mp3",
             "audioSentenceFile": "ja_kyo_sentence.mp3",
-            "mediaFile": "ja_kyo.jpg",
+            "mediaFile": "ja_sb_kyo.jpg",
             "domain": "Time"
         },
         {
@@ -241,7 +241,7 @@
             "sentenceNative": "Yesterday was rainy.",
             "audioWordFile": "ja_kinou_word.mp3",
             "audioSentenceFile": "ja_kinou_sentence.mp3",
-            "mediaFile": "ja_kinou.jpg",
+            "mediaFile": "ja_sb_kinou.jpg",
             "domain": "Time"
         },
         {
@@ -252,7 +252,7 @@
             "sentenceNative": "I go to school.",
             "audioWordFile": "ja_gakko_word.mp3",
             "audioSentenceFile": "ja_gakko_sentence.mp3",
-            "mediaFile": "ja_gakko.jpg",
+            "mediaFile": "ja_sb_gakko.jpg",
             "domain": "School"
         },
         {
@@ -263,7 +263,7 @@
             "sentenceNative": "Teacher, I have a question.",
             "audioWordFile": "ja_sensei_word.mp3",
             "audioSentenceFile": "ja_sensei_sentence.mp3",
-            "mediaFile": "ja_sensei.jpg",
+            "mediaFile": "ja_sb_sensei.jpg",
             "domain": "School"
         },
         {
@@ -274,7 +274,7 @@
             "sentenceNative": "I am a college student.",
             "audioWordFile": "ja_gakusei_word.mp3",
             "audioSentenceFile": "ja_gakusei_sentence.mp3",
-            "mediaFile": "ja_gakusei.jpg",
+            "mediaFile": "ja_sb_gakusei.jpg",
             "domain": "School"
         },
         {
@@ -285,7 +285,7 @@
             "sentenceNative": "I am happy to meet you.",
             "audioWordFile": "ja_ureshii_word.mp3",
             "audioSentenceFile": "ja_ureshii_sentence.mp3",
-            "mediaFile": "ja_ureshii.jpg",
+            "mediaFile": "ja_sb_ureshii.jpg",
             "domain": "Emotions"
         }
     ]

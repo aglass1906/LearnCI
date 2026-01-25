@@ -161,6 +161,16 @@ struct ResourceLibraryView: View {
     }
 }
 
+private func getLinkIcon(_ type: String) -> String {
+    switch type.lowercased() {
+    case "youtube": return "play.rectangle.fill"
+    case "spotify", "podcast", "apple_podcasts": return "headphones"
+    case "pdf": return "doc.text.fill"
+    case "website": return "globe"
+    default: return "link"
+    }
+}
+
 struct ResourceRow: View {
     let resource: LearningResource
     
@@ -266,7 +276,6 @@ struct ResourceCard: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                 
-                // Tags/Meta
                 HStack {
                     Text(resource.difficulty)
                         .font(.caption2)
@@ -277,6 +286,29 @@ struct ResourceCard: View {
                         .cornerRadius(4)
                     
                     Spacer()
+                    
+                    // Link Icons
+                    HStack(spacing: 6) {
+                        if !resource.mainUrl.isEmpty {
+                             Image(systemName: "safari")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if let links = resource.resourceLinks {
+                            ForEach(Array(links.filter { $0.isActive ?? true }.sorted { ($0.order ?? 0) < ($1.order ?? 0) }.prefix(4)), id: \.id) { link in
+                                Image(systemName: getLinkIcon(link.type))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            if links.filter({ $0.isActive ?? true }).count > 4 {
+                                Text("+\(links.filter({ $0.isActive ?? true }).count - 4)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 4)

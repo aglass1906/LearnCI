@@ -1,0 +1,137 @@
+{
+    "id": "fr_sb_001",
+    "language": "French",
+    "level": "Super Beginner",
+    "title": "French Survival Basics",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "fr_sb_c1",
+            "wordTarget": "Bonjour",
+            "wordNative": "Hello",
+            "sentenceTarget": "Bonjour, comment ça va ?",
+            "sentenceNative": "Hello, how are you?",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c2",
+            "wordTarget": "Merci",
+            "wordNative": "Thank you",
+            "sentenceTarget": "Merci beaucoup pour votre aide.",
+            "sentenceNative": "Thank you very much for your help.",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c3",
+            "wordTarget": "S'il vous plaît",
+            "wordNative": "Please",
+            "sentenceTarget": "Un café, s'il vous plaît.",
+            "sentenceNative": "A coffee, please.",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c4",
+            "wordTarget": "Au revoir",
+            "wordNative": "Goodbye",
+            "sentenceTarget": "Au revoir, à demain.",
+            "sentenceNative": "Goodbye, see you tomorrow.",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c5",
+            "wordTarget": "Oui",
+            "wordNative": "Yes",
+            "sentenceTarget": "Oui, j'aime beaucoup ça.",
+            "sentenceNative": "Yes, I like that a lot.",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c6",
+            "wordTarget": "Non",
+            "wordNative": "No",
+            "sentenceTarget": "Non, je n'ai pas faim.",
+            "sentenceNative": "No, I am not hungry.",
+            "domain": "Greetings & Basics"
+        },
+        {
+            "id": "fr_sb_c7",
+            "wordTarget": "Eau",
+            "wordNative": "Water",
+            "sentenceTarget": "Je voudrais un verre d'eau.",
+            "sentenceNative": "I would like a glass of water.",
+            "domain": "Basics"
+        },
+        {
+            "id": "fr_sb_c8",
+            "wordTarget": "Nourriture",
+            "wordNative": "Food",
+            "sentenceTarget": "La nourriture est très bonne.",
+            "sentenceNative": "The food is very good.",
+            "domain": "Basics"
+        },
+        {
+            "id": "fr_sb_c9",
+            "wordTarget": "Ami",
+            "wordNative": "Friend",
+            "sentenceTarget": "Il est mon meilleur ami.",
+            "sentenceNative": "He is my best friend.",
+            "domain": "Daily Life"
+        },
+        {
+            "id": "fr_sb_c10",
+            "wordTarget": "Maison",
+            "wordNative": "House",
+            "sentenceTarget": "Ma maison est petite mais jolie.",
+            "sentenceNative": "My house is small but pretty.",
+            "domain": "Daily Life"
+        },
+        {
+            "id": "fr_sb_c11",
+            "wordTarget": "Chat",
+            "wordNative": "Cat",
+            "sentenceTarget": "Le chat dort sur le canapé.",
+            "sentenceNative": "The cat sleeps on the sofa.",
+            "domain": "Daily Life"
+        },
+        {
+            "id": "fr_sb_c12",
+            "wordTarget": "Chien",
+            "wordNative": "Dog",
+            "sentenceTarget": "Le chien court dans le parc.",
+            "sentenceNative": "The dog runs in the park.",
+            "domain": "Daily Life"
+        },
+        {
+            "id": "fr_sb_c13",
+            "wordTarget": "Un",
+            "wordNative": "One",
+            "sentenceTarget": "J'en ai un seul.",
+            "sentenceNative": "I have only one.",
+            "domain": "Numbers"
+        },
+        {
+            "id": "fr_sb_c14",
+            "wordTarget": "Deux",
+            "wordNative": "Two",
+            "sentenceTarget": "Deux cafés, s'il vous plaît.",
+            "sentenceNative": "Two coffees, please.",
+            "domain": "Numbers"
+        },
+        {
+            "id": "fr_sb_c15",
+            "wordTarget": "Trois",
+            "wordNative": "Three",
+            "sentenceTarget": "Il y a trois oiseaux dans l'arbre.",
+            "sentenceNative": "There are three birds in the tree.",
+            "domain": "Numbers"
+        }
+    ]
+}

@@ -19,10 +19,21 @@ struct ResourceDetailView: View {
     @State private var logMinutes: Double = 5
     @State private var logComment: String = ""
     
-    func openResource() {
-        if let url = URL(string: resource.mainUrl) {
-            startTime = Date()
-            showBrowser = true
+    @State private var browserUrl: URL?
+    
+    func openUrl(_ url: URL) {
+        browserUrl = url
+        startTime = Date()
+        showBrowser = true
+    }
+    
+    func getLinkIcon(_ type: String) -> String {
+        switch type.lowercased() {
+        case "youtube": return "play.rectangle.fill"
+        case "spotify", "podcast", "apple_podcasts": return "headphones"
+        case "pdf": return "doc.text.fill"
+        case "website": return "globe"
+        default: return "link"
         }
     }
     
@@ -166,18 +177,51 @@ extension ResourceDetailView {
                     
                     Spacer(minLength: 20)
                     
-                    // Action Button
-                    Button(action: openResource) {
-                        HStack {
-                            Image(systemName: "safari")
-                            Text("Open Resource")
+                    // Action Buttons
+                    VStack(spacing: 12) {
+                        // Main URL Button
+                        if let url = URL(string: resource.mainUrl), !resource.mainUrl.isEmpty {
+                            Button(action: {
+                                openUrl(url)
+                            }) {
+                                HStack {
+                                    Image(systemName: "safari")
+                                    Text("Open Resource")
+                                    Spacer()
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.caption)
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(16)
+                            }
                         }
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(16)
+                        
+                        // Additional Resource Links
+                        if let links = resource.resourceLinks {
+                            ForEach(links.filter { $0.isActive ?? true }.sorted { ($0.order ?? 0) < ($1.order ?? 0) }) { link in
+                                if let url = URL(string: link.url) {
+                                    Button(action: {
+                                        openUrl(url)
+                                    }) {
+                                        HStack {
+                                            Image(systemName: getLinkIcon(link.type))
+                                            Text(link.label.isEmpty ? "Open Link" : link.label)
+                                            Spacer()
+                                            Image(systemName: "arrow.up.right")
+                                                .font(.caption)
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.primary)
+                                        .padding()
+                                        .background(Color(UIColor.secondarySystemBackground))
+                                        .cornerRadius(16)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding()
@@ -186,7 +230,7 @@ extension ResourceDetailView {
         .ignoresSafeArea(edges: .top)
         .toolbarBackground(.hidden, for: .navigationBar)
         .sheet(isPresented: $showBrowser) {
-            if let url = URL(string: resource.mainUrl) {
+            if let url = browserUrl {
                 InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
                     .ignoresSafeArea()
             }

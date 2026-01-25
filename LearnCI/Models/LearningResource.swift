@@ -44,6 +44,7 @@ struct LearningResource: Codable, Identifiable {
     let notes: String?
     let isFeatured: Bool
     let status: String // 'draft', 'published', 'rejected'
+    let resourceLinks: [ResourceLink]?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -62,5 +63,23 @@ struct LearningResource: Codable, Identifiable {
         case notes
         case isFeatured = "is_featured"
         case status
+        case resourceLinks = "resource_links"
+    }
+}
+
+struct ResourceLink: Codable, Identifiable {
+    var id: String { url + label }
+    let type: String
+    let url: String
+    let label: String
+    let order: Int?
+    let isActive: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case type
+        case url
+        case label
+        case order
+        case isActive
     }
 }

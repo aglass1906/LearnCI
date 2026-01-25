@@ -234,6 +234,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         case .spanish: voiceCode = "es-MX"
         case .japanese: voiceCode = "ja-JP"
         case .korean: voiceCode = "ko-KR"
+        case .french: voiceCode = "fr-FR"
         }
         
         // Find voice by language and optionally gender

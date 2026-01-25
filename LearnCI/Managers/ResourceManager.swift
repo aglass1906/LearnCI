@@ -34,7 +34,8 @@ class ResourceManager {
                 avgRating: nil,
                 notes: nil,
                 isFeatured: false,
-                status: "draft"
+                status: "draft",
+                resourceLinks: nil
             )
             
             try await client.from("learning_resources").insert(newResource).execute()

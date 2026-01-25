@@ -9,7 +9,7 @@
     ],
     "gameConfiguration": {
         "flashcards": {
-            "randomize": true
+            "randomize": false
         }
     },
     "cards": [
@@ -21,7 +21,7 @@
             "sentenceNative": "Hello, nice to meet you.",
             "audioWordFile": "ko_annyeong_word.mp3",
             "audioSentenceFile": "ko_annyeong_sentence.mp3",
-            "mediaFile": "ko_annyeong.jpg",
+            "mediaFile": "ko_a1_annyeong.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -32,7 +32,7 @@
             "sentenceNative": "Thank you for helping me.",
             "audioWordFile": "ko_gamsahamnida_word.mp3",
             "audioSentenceFile": "ko_gamsahamnida_sentence.mp3",
-            "mediaFile": "ko_gamsahamnida.jpg",
+            "mediaFile": "ko_a1_gamsahamnida.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -43,7 +43,7 @@
             "sentenceNative": "I'm sorry for being late.",
             "audioWordFile": "ko_joesonghamnida_word.mp3",
             "audioSentenceFile": "ko_joesonghamnida_sentence.mp3",
-            "mediaFile": "ko_joesonghamnida.jpg",
+            "mediaFile": "ko_a1_joesonghamnida.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -54,7 +54,7 @@
             "sentenceNative": "Yes, that's right.",
             "audioWordFile": "ko_ne_word.mp3",
             "audioSentenceFile": "ko_ne_sentence.mp3",
-            "mediaFile": "ko_ne.jpg",
+            "mediaFile": "ko_a1_ne.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -65,7 +65,7 @@
             "sentenceNative": "No, it's okay.",
             "audioWordFile": "ko_aniyo_word.mp3",
             "audioSentenceFile": "ko_aniyo_sentence.mp3",
-            "mediaFile": "ko_aniyo.jpg",
+            "mediaFile": "ko_a1_aniyo.jpg",
             "domain": "Greetings & Basics"
         },
         {
@@ -76,7 +76,7 @@
             "sentenceNative": "Please give me some water.",
             "audioWordFile": "ko_mul_word.mp3",
             "audioSentenceFile": "ko_mul_sentence.mp3",
-            "mediaFile": "ko_mul.jpg",
+            "mediaFile": "ko_a1_mul.jpg",
             "domain": "Food & Drink"
         },
         {
@@ -87,7 +87,7 @@
             "sentenceNative": "Korean food is delicious.",
             "audioWordFile": "ko_eumsik_word.mp3",
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
-            "mediaFile": "ko_eumsik.jpg",
+            "mediaFile": "ko_a1_eumsik.jpg",
             "domain": "Food & Drink"
         },
         {
@@ -98,7 +98,7 @@
             "sentenceNative": "My house is nearby.",
             "audioWordFile": "ko_jip_word.mp3",
             "audioSentenceFile": "ko_jip_sentence.mp3",
-            "mediaFile": "ko_jip.jpg",
+            "mediaFile": "ko_a1_jip.jpg",
             "domain": "Home & People"
         },
         {
@@ -109,7 +109,7 @@
             "sentenceNative": "We are close friends.",
             "audioWordFile": "ko_chingu_word.mp3",
             "audioSentenceFile": "ko_chingu_sentence.mp3",
-            "mediaFile": "ko_chingu.jpg",
+            "mediaFile": "ko_a1_chingu.jpg",
             "domain": "Home & People"
         },
         {
@@ -120,7 +120,7 @@
             "sentenceNative": "The cat is cute.",
             "audioWordFile": "ko_goyangi_word.mp3",
             "audioSentenceFile": "ko_goyangi_sentence.mp3",
-            "mediaFile": "ko_goyangi.jpg",
+            "mediaFile": "ko_a1_goyangi.jpg",
             "domain": "Animals"
         },
         {
@@ -131,7 +131,7 @@
             "sentenceNative": "The dog is running.",
             "audioWordFile": "ko_gangaji_word.mp3",
             "audioSentenceFile": "ko_gangaji_sentence.mp3",
-            "mediaFile": "ko_gangaji.jpg",
+            "mediaFile": "ko_a1_gangaji.jpg",
             "domain": "Animals"
         },
         {
@@ -142,7 +142,7 @@
             "sentenceNative": "Come to exit number one.",
             "audioWordFile": "ko_il_word.mp3",
             "audioSentenceFile": "ko_il_sentence.mp3",
-            "mediaFile": "ko_il.jpg",
+            "mediaFile": "ko_a1_il.jpg",
             "domain": "Numbers"
         },
         {
@@ -153,7 +153,7 @@
             "sentenceNative": "Please go up to the second floor.",
             "audioWordFile": "ko_i_word.mp3",
             "audioSentenceFile": "ko_i_sentence.mp3",
-            "mediaFile": "ko_i.jpg",
+            "mediaFile": "ko_a1_i.jpg",
             "domain": "Numbers"
         },
         {
@@ -164,7 +164,7 @@
             "sentenceNative": "Flowers bloom in March.",
             "audioWordFile": "ko_sam_word.mp3",
             "audioSentenceFile": "ko_sam_sentence.mp3",
-            "mediaFile": "ko_sam.jpg",
+            "mediaFile": "ko_a1_sam.jpg",
             "domain": "Numbers"
         },
         {
@@ -175,7 +175,7 @@
             "sentenceNative": "This book is very interesting.",
             "audioWordFile": "ko_chaek_word.mp3",
             "audioSentenceFile": "ko_chaek_sentence.mp3",
-            "mediaFile": "ko_chaek.jpg",
+            "mediaFile": "ko_a1_chaek.jpg",
             "domain": "Objects"
         },
         {
@@ -186,7 +186,7 @@
             "sentenceNative": "I'm going to school from tomorrow.",
             "audioWordFile": "ko_hakgyo_word.mp3",
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
-            "mediaFile": "ko_hakgyo.jpg",
+            "mediaFile": "ko_a1_hakgyo.jpg",
             "domain": "School"
         },
         {
@@ -197,7 +197,7 @@
             "sentenceNative": "Today the weather is good.",
             "audioWordFile": "ko_oneul_word.mp3",
             "audioSentenceFile": "ko_oneul_sentence.mp3",
-            "mediaFile": "ko_oneul.jpg",
+            "mediaFile": "ko_a1_oneul.jpg",
             "domain": "Time"
         },
         {
@@ -208,7 +208,7 @@
             "sentenceNative": "See you tomorrow.",
             "audioWordFile": "ko_naeil_word.mp3",
             "audioSentenceFile": "ko_naeil_sentence.mp3",
-            "mediaFile": "ko_naeil.jpg",
+            "mediaFile": "ko_a1_naeil.jpg",
             "domain": "Time"
         },
         {
@@ -219,7 +219,7 @@
             "sentenceNative": "Make sure to eat breakfast.",
             "audioWordFile": "ko_achim_word.mp3",
             "audioSentenceFile": "ko_achim_sentence.mp3",
-            "mediaFile": "ko_achim.jpg",
+            "mediaFile": "ko_a1_achim.jpg",
             "domain": "Time"
         },
         {
@@ -230,7 +230,7 @@
             "sentenceNative": "Stars are visible at night.",
             "audioWordFile": "ko_bam_word.mp3",
             "audioSentenceFile": "ko_bam_sentence.mp3",
-            "mediaFile": "ko_bam.jpg",
+            "mediaFile": "ko_a1_bam.jpg",
             "domain": "Time"
         },
         {
@@ -241,7 +241,7 @@
             "sentenceNative": "Teacher, I have a question.",
             "audioWordFile": "ko_seonsaengnim_word.mp3",
             "audioSentenceFile": "ko_seonsaengnim_sentence.mp3",
-            "mediaFile": "ko_seonsaengnim.jpg",
+            "mediaFile": "ko_a1_seonsaengnim.jpg",
             "domain": "School & People"
         },
         {
@@ -252,7 +252,7 @@
             "sentenceNative": "I am a Korean language student.",
             "audioWordFile": "ko_haksaeng_word.mp3",
             "audioSentenceFile": "ko_haksaeng_sentence.mp3",
-            "mediaFile": "ko_haksaeng.jpg",
+            "mediaFile": "ko_a1_haksaeng.jpg",
             "domain": "School & People"
         },
         {
@@ -263,7 +263,7 @@
             "sentenceNative": "Mom, Dad, I love you.",
             "audioWordFile": "ko_saranghae_word.mp3",
             "audioSentenceFile": "ko_saranghae_sentence.mp3",
-            "mediaFile": "ko_saranghae.jpg",
+            "mediaFile": "ko_a1_saranghae.jpg",
             "domain": "Emotions"
         },
         {
@@ -274,7 +274,7 @@
             "sentenceNative": "I like apples.",
             "audioWordFile": "ko_joahae_word.mp3",
             "audioSentenceFile": "ko_joahae_sentence.mp3",
-            "mediaFile": "ko_joahae.jpg",
+            "mediaFile": "ko_a1_joahae.jpg",
             "domain": "Emotions"
         },
         {
@@ -285,7 +285,7 @@
             "sentenceNative": "I am really happy right now.",
             "audioWordFile": "ko_haengbokhae_word.mp3",
             "audioSentenceFile": "ko_haengbokhae_sentence.mp3",
-            "mediaFile": "ko_haengbokhae.jpg",
+            "mediaFile": "ko_a1_haengbokhae.jpg",
             "domain": "Emotions"
         }
     ]

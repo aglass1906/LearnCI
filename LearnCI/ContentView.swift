@@ -15,26 +15,37 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
-        MainTabView()
-            .task {
-                // Initial sync if already logged in
+        Group {
+            switch authManager.state {
+            case .checking:
+                ProgressView("Checking session...")
+            case .unauthenticated:
+                AuthView()
+            case .authenticated:
+                MainTabView()
+            }
+        }
+        .task {
+            // Initial sync if already logged in
+            if authManager.currentUser != nil {
                 await syncManager.syncNow(modelContext: modelContext)
             }
-            .onChange(of: authManager.currentUser) { _, newValue in
-                if newValue != nil {
-                    Task {
-                        await syncManager.syncNow(modelContext: modelContext)
-                    }
+        }
+        .onChange(of: authManager.currentUser) { _, newValue in
+            if newValue != nil {
+                Task {
+                    await syncManager.syncNow(modelContext: modelContext)
                 }
             }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .active {
-                    print("App entered foreground - Triggering Sync")
-                    Task {
-                        await syncManager.syncNow(modelContext: modelContext)
-                    }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active && authManager.currentUser != nil {
+                print("App entered foreground - Triggering Sync")
+                Task {
+                    await syncManager.syncNow(modelContext: modelContext)
                 }
             }
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import SwiftData
 struct HistoryView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
+    @Environment(SyncManager.self) private var syncManager
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
     var activities: [UserActivity] {
@@ -290,6 +291,9 @@ struct HistoryView: View {
                         Image(systemName: "plus")
                     }
                 }
+            }
+            .task {
+                await syncManager.syncNow(modelContext: modelContext)
             }
         }
     }

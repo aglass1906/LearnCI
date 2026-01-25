@@ -171,13 +171,11 @@ struct CoachingCheckInDTO: Codable {
              // Check existence
              let descriptor = FetchDescriptor<DailyFeedback>(predicate: #Predicate { $0.id == id })
              if let existing = try context.fetch(descriptor).first {
-                 // Update if needed (Server Wins)
-                 if !existing.isSynced {
-                     existing.rating = dto.rating
-                     existing.note = dto.note
-                     existing.date = dto.date
-                     existing.isSynced = true
-                 }
+                 // Update from server (Server Wins after Push)
+                 existing.rating = dto.rating
+                 existing.note = dto.note
+                 existing.date = dto.date
+                 existing.isSynced = true
              } else {
                  // Insert new
                  let newFeedback = DailyFeedback(
@@ -215,15 +213,14 @@ struct CoachingCheckInDTO: Codable {
              let descriptor = FetchDescriptor<CoachingCheckIn>(predicate: #Predicate { $0.id == id })
              
              if let existing = try context.fetch(descriptor).first {
-                 if !existing.isSynced {
-                     existing.hoursMilestone = dto.hours_milestone
-                     existing.activityRatings = dto.activity_ratings
-                     existing.progressSentiment = dto.progress_sentiment
-                     existing.nextCyclePlan = dto.next_cycle_plan
-                     existing.notes = dto.notes
-                     existing.date = dto.date
-                     existing.isSynced = true
-                 }
+                 // Update from server
+                 existing.hoursMilestone = dto.hours_milestone
+                 existing.activityRatings = dto.activity_ratings
+                 existing.progressSentiment = dto.progress_sentiment
+                 existing.nextCyclePlan = dto.next_cycle_plan
+                 existing.notes = dto.notes
+                 existing.date = dto.date
+                 existing.isSynced = true
              } else {
                  let newCheckIn = CoachingCheckIn(
                      date: dto.date, 
@@ -480,14 +477,13 @@ struct CoachingCheckInDTO: Codable {
             let descriptor = FetchDescriptor<UserActivity>(predicate: #Predicate { $0.id == id })
             
             if let existing = try context.fetch(descriptor).first {
-                if !existing.isSynced {
-                    existing.minutes = dto.minutes
-                    existing.activityTypeRaw = dto.activity_type
-                    existing.languageRaw = dto.language
-                    existing.comment = dto.comment
-                    existing.date = dto.date
-                    existing.isSynced = true
-                }
+                // Update from server
+                existing.minutes = dto.minutes
+                existing.activityTypeRaw = dto.activity_type
+                existing.languageRaw = dto.language
+                existing.comment = dto.comment
+                existing.date = dto.date
+                existing.isSynced = true
             } else {
                 let newActivity = UserActivity(
                     date: dto.date,

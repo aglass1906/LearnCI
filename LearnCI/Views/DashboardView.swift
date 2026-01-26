@@ -117,6 +117,21 @@ struct DashboardView: View {
                     // Trigger Data Sync
                     await syncManager.syncNow(modelContext: modelContext)
                 }
+                .onChange(of: userProfile?.currentLanguage) { _, newLanguage in
+                    if let language = newLanguage, let profile = userProfile {
+                        Task {
+                            print("DEBUG: Language changed to \(language). Refetching Word of Day.")
+                            isLoadingWordOfDay = true
+                            wordOfDay = nil // Show loading state
+                            
+                            if let result = await dataManager.fetchWordOfDay(language: language, level: profile.currentLevel) {
+                                wordOfDay = result.card
+                                wordOfDayFolder = result.folder
+                            }
+                            isLoadingWordOfDay = false
+                        }
+                    }
+                }
             }
 
             // Loading Overlay

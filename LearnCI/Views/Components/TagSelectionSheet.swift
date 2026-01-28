@@ -6,7 +6,7 @@ struct TagSelectionSheet: View {
     @Environment(\.dismiss) var dismiss
     @Environment(DataManager.self) private var dataManager
     
-    @State private var tags: [(name: String, count: Int)] = []
+    @State private var domainGroups: [DomainGroup] = []
     @State private var isLoading = true
     @State private var selectedTag: String?
     
@@ -21,56 +21,79 @@ struct TagSelectionSheet: View {
                     if isLoading {
                         ProgressView("Scanning decks...")
                             .padding(.top, 40)
-                    } else if tags.isEmpty {
+                    } else if domainGroups.isEmpty {
                         ContentUnavailableView("No Tags Found", systemImage: "tag.slash", description: Text("No subject tags were found for this language."))
                     } else {
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(tags, id: \.name) { tag in
-                                Button {
-                                    selectedTag = tag.name
-                                } label: {
-                                    VStack {
-                                        Image(systemName: "tag.fill")
-                                            .font(.title2)
-                                            .foregroundStyle(selectedTag == tag.name ? .white : .accentColor)
+                        LazyVStack(alignment: .leading, spacing: 24) {
+                            ForEach(domainGroups, id: \.id) { domain in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    // Section Header
+                                    Text(domain.id)
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(.primary)
+                                    
+                                    if !domain.description.isEmpty {
+                                        Text(domain.description)
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
                                             .padding(.bottom, 4)
-                                        
-                                        Text(tag.name)
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                            .foregroundStyle(selectedTag == tag.name ? .white : .primary)
-                                            .multilineTextAlignment(.center)
-                                        
-                                        Text("\(tag.count)")
-                                            .font(.caption2)
-                                            .foregroundStyle(selectedTag == tag.name ? .white.opacity(0.8) : .secondary)
-                                            .padding(.top, 2)
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 100)
-                                    .background {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(selectedTag == tag.name ? Color.accentColor : Color(UIColor.secondarySystemGroupedBackground))
-                                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .stroke(selectedTag == tag.name ? Color.accentColor : Color.clear, lineWidth: 2)
-                                            )
+                                    
+                                    // Tags Grid
+                                    LazyVGrid(columns: columns, spacing: 12) {
+                                        ForEach(domain.tags, id: \.id) { tag in
+                                            Button {
+                                                selectedTag = tag.id
+                                            } label: {
+                                                VStack {
+                                                    Image(systemName: "tag.fill")
+                                                        .font(.title2)
+                                                        .foregroundStyle(selectedTag == tag.id ? .white : .accentColor)
+                                                        .padding(.bottom, 4)
+                                                    
+                                                    Text(tag.id)
+                                                        .font(.caption)
+                                                        .fontWeight(.medium)
+                                                        .foregroundStyle(selectedTag == tag.id ? .white : .primary)
+                                                        .multilineTextAlignment(.center)
+                                                    
+                                                    Text("\(tag.count)")
+                                                        .font(.caption2)
+                                                        .foregroundStyle(selectedTag == tag.id ? .white.opacity(0.8) : .secondary)
+                                                        .padding(.top, 2)
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 100)
+                                                .background {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .fill(selectedTag == tag.id ? Color.accentColor : Color(UIColor.secondarySystemGroupedBackground))
+                                                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 12)
+                                                                .stroke(selectedTag == tag.id ? Color.accentColor : Color.clear, lineWidth: 2)
+                                                        )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+                                .padding(.horizontal)
                             }
                         }
-                        .padding()
+                        .padding(.vertical)
                     }
                 }
                 
                 // Bottom Bar
-                if !isLoading && !tags.isEmpty {
+                if !isLoading && !domainGroups.isEmpty {
                     VStack(spacing: 12) {
                         Divider()
                         
-                        if let selected = selectedTag, let tagData = tags.first(where: { $0.name == selected }) {
-                             Text("\(tagData.count) cards selected")
+                        if let selected = selectedTag {
+                            // Find count across all groups
+                            let count = domainGroups.flatMap { $0.tags }.first { $0.id == selected }?.count ?? 0
+                             Text("\(count) cards selected")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         } else {
@@ -116,16 +139,9 @@ struct TagSelectionSheet: View {
     private func loadTags() {
         let manager = dataManager
         Task {
-            let discovered = manager.discoverTags(language: language)
+            let discovered = manager.discoverDomainTags(language: language)
             await MainActor.run {
-                // Sort by count descending, then name ascending
-                self.tags = discovered.map { ($0.key, $0.value) }
-                    .sorted {
-                        if $0.count == $1.count {
-                            return $0.name < $1.name
-                        }
-                        return $0.count > $1.count
-                    }
+                self.domainGroups = discovered
                 self.isLoading = false
             }
         }

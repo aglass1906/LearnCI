@@ -21,6 +21,29 @@ struct InspirationalQuote: Codable, Identifiable {
     let author: String
 }
 
+// MARK: - Taxonomy Models
+struct TagTaxonomy: Codable {
+    let description: String
+    let tags: [String: TagDetail]
+}
+
+struct TagDetail: Codable {
+    let description: String
+    let words: [String]
+}
+
+struct DomainGroup: Identifiable, Hashable {
+    let id: String // Domain Name
+    let description: String
+    var tags: [TagWithCount]
+}
+
+struct TagWithCount: Identifiable, Hashable {
+    let id: String // Tag Name
+    let description: String
+    let count: Int
+}
+
 @Observable
 class DataManager {
     var loadedDeck: CardDeck?
@@ -28,6 +51,9 @@ class DataManager {
     var availableDecks: [DeckMetadata] = []
     var inspirationalQuotes: [InspirationalQuote] = []
     var layoutPresets: [LayoutPreset] = []
+    
+    // Taxonomy Data
+    private var loadedTaxonomy: [String: TagTaxonomy] = [:] 
     
     // UI State
     var isFullScreen: Bool = false
@@ -133,6 +159,76 @@ class DataManager {
         }
         
         return tagCounts
+    }
+    
+    // Discover tags grouped by domain
+    func discoverDomainTags(language: Language) -> [DomainGroup] {
+        if loadedTaxonomy.isEmpty {
+            loadTagTaxonomy()
+        }
+        
+        let rawCounts = discoverTags(language: language)
+        var groupedDomains: [DomainGroup] = []
+        var assignedTags = Set<String>()
+        
+        // 1. Map known domains
+        for (domainName, domainData) in loadedTaxonomy {
+            var groupTags: [TagWithCount] = []
+            
+            for (tagName, tagDetail) in domainData.tags {
+                if let count = rawCounts[tagName], count > 0 {
+                    groupTags.append(TagWithCount(id: tagName, description: tagDetail.description, count: count))
+                    assignedTags.insert(tagName)
+                }
+            }
+            
+            if !groupTags.isEmpty {
+                // Sort by count desc, then name
+                groupTags.sort { $0.count == $1.count ? $0.id < $1.id : $0.count > $1.count }
+                groupedDomains.append(DomainGroup(id: domainName, description: domainData.description, tags: groupTags))
+            }
+        }
+        
+        // 2. Find "Other" tags (those in rawCounts but not in taxonomy)
+        var otherTags: [TagWithCount] = []
+        for (tagName, count) in rawCounts {
+            if !assignedTags.contains(tagName) {
+                // Try to guess a description or leave blank
+                 otherTags.append(TagWithCount(id: tagName, description: "Uncategorized tag", count: count))
+            }
+        }
+        
+        if !otherTags.isEmpty {
+            otherTags.sort { $0.count == $1.count ? $0.id < $1.id : $0.count > $1.count }
+            groupedDomains.append(DomainGroup(id: "Other", description: "Miscellaneous tags not in the main taxonomy.", tags: otherTags))
+        }
+        
+        // Sort Domains: Maybe enforce a specific order if keys are arbitrary?
+        // For now, alphabetical is okay, or we could add an 'order' field to JSON later.
+        // Let's hardcode "Other" to be last if we sort.
+        groupedDomains.sort {
+            if $0.id == "Other" { return false }
+            if $1.id == "Other" { return true }
+            return $0.id < $1.id
+        }
+        
+        return groupedDomains
+    }
+    
+    private func loadTagTaxonomy() {
+        guard let url = resolveURL(folderName: nil, filename: "tag_taxonomy.json") else {
+            print("Tag Taxonomy file not found")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            self.loadedTaxonomy = try decoder.decode([String: TagTaxonomy].self, from: data)
+            print("DEBUG: Loaded taxonomy with \(loadedTaxonomy.keys.count) domains")
+        } catch {
+            print("Error loading tag taxonomy: \(error)")
+        }
     }
     
     // Create a virtual deck from a specific tag

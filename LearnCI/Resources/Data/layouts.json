@@ -21,9 +21,9 @@
             "id": "inputFocus",
             "name": "Input Focus",
             "description": "Text & Audio (Immersion)",
-            "navigation": "swipe",
+            "navigation": "buttons",
             "autoNextDelay": 2.0,
-            "confirmation": "quiz",
+            "confirmation": "srs",
             "front": {
                 "word": {
                     "text": "visible",

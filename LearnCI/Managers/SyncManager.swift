@@ -412,9 +412,11 @@ struct CoachingCheckInDTO: Codable {
         let descriptor = FetchDescriptor<UserProfile>(predicate: #Predicate { $0.userID == userID })
         if let profile = try context.fetch(descriptor).first {
             // Update existing
-            profile.name = dto.name
-            profile.currentLanguageRaw = dto.current_language
-            profile.currentLevelRaw = dto.current_level
+            if let name = dto.name {
+                profile.name = name
+            }
+            if let lang = dto.current_language { profile.currentLanguageRaw = lang }
+            if let lvl = dto.current_level { profile.currentLevelRaw = lvl }
             profile.dailyGoalMinutes = dto.daily_goal_minutes
             if let dc = dto.daily_card_goal { profile.dailyCardGoal = dc }
             profile.isPublic = dto.is_public
@@ -429,9 +431,9 @@ struct CoachingCheckInDTO: Codable {
             // Insert new from Server
             print("Sync: Profile missing locally. Restoring from server.")
             let newProfile = UserProfile(
-                name: dto.name,
-                currentLanguage: Language(rawValue: dto.current_language) ?? .spanish,
-                currentLevel: LearningLevel(rawValue: dto.current_level) ?? .superBeginner,
+                name: dto.name ?? "Anonymous",
+                currentLanguage: Language(rawValue: dto.current_language ?? "") ?? .spanish,
+                currentLevel: LearningLevel(rawValue: dto.current_level ?? "") ?? .superBeginner,
                 dailyGoalMinutes: dto.daily_goal_minutes,
                 dailyCardGoal: dto.daily_card_goal ?? 20,
                 userID: userID,
@@ -543,9 +545,9 @@ struct ProfileUploadDTO: Encodable {
 struct ProfileDTO: Codable, Identifiable {
     var id: UUID { user_id }
     let user_id: UUID
-    let name: String
-    let current_language: String
-    let current_level: String
+    let name: String?
+    let current_language: String?
+    let current_level: String?
     let daily_goal_minutes: Int
     let daily_card_goal: Int?
     let is_public: Bool
@@ -561,6 +563,11 @@ struct ProfileDTO: Codable, Identifiable {
     let default_game_mode: String?
     let last_game_type: String?
     let tts_voice_gender: String?
+    
+    /// Display name with fallback for null names
+    var displayName: String {
+        name ?? "Anonymous"
+    }
 }
 
 struct ActivityDTO: Codable {

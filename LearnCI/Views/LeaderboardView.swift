@@ -69,9 +69,9 @@ struct LeaderboardRow: View {
                 .frame(width: 30)
             
             VStack(alignment: .leading) {
-                Text(leader.name)
+                Text(leader.displayName)
                     .font(.headline)
-                Text(leader.current_language.capitalized)
+                Text((leader.current_language ?? "Unknown").capitalized)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

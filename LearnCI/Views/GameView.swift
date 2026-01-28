@@ -47,6 +47,11 @@ struct GameView: View {
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
     
+    // UI Customization State
+    @State private var navigationStyle: NavigationStyle = .swipe
+    @State private var autoNextDelay: TimeInterval = 2.0
+    @State private var confirmationStyle: ConfirmationStyle = .quiz
+    
     // Runtime config (captured at start)
     @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
     @State private var sessionCards: [LearningCard] = []
@@ -160,6 +165,7 @@ struct GameView: View {
                 }
         }
         .toolbar(gameState == .active ? .hidden : .visible, for: .tabBar)
+        .toolbar(gameState == .active ? .hidden : .visible, for: .navigationBar)
     }
 
     @ViewBuilder
@@ -274,6 +280,9 @@ struct GameView: View {
             selectedGameType: $selectedGameType,
             useTTSFallback: $useTTSFallback,
             ttsRate: $ttsRate,
+            navigationStyle: $navigationStyle,
+            autoNextDelay: $autoNextDelay,
+            confirmationStyle: $confirmationStyle,
             availableDecks: dataManager.availableDecks,
             startAction: startActiveSession,
             onSavePreset: { newPreset in
@@ -448,6 +457,11 @@ struct GameView: View {
         // Apply Global Audio Settings
         sessionConfig.ttsRate = ttsRate
         sessionConfig.useTTSFallback = useTTSFallback
+        
+        // Apply Global UI Settings
+        sessionConfig.navigation = navigationStyle
+        sessionConfig.autoNextDelay = autoNextDelay
+        sessionConfig.confirmation = confirmationStyle
         
         // Prepare Cards
         // CRITICAL FIX: Do NOT try to read `deck` (loadedDeck) immediately here for the new session,

@@ -1,0 +1,156 @@
+{
+    "_usage": [
+        "=== Navigation Styles ===",
+        "  'swipe'    - Swipe left/right to navigate cards",
+        "  'buttons'  - On-screen arrows for Prev/Next",
+        "  'autoNext' - Auto-advance after audioNextDelay seconds",
+        "",
+        "=== Confirmation Styles ===",
+        "  'quiz' - Relearn/Learned buttons (self-grading)",
+        "  'srs'  - Hard/Good/Easy buttons (spaced repetition)",
+        "  'show' - Next button only (passive reading/listening)",
+        "  'auto' - No buttons, auto-advance (hands-free mode)",
+        "",
+        "=== Visibility Options ===",
+        "  'visible' - Show element, auto-play audio",
+        "  'hint'    - Blur/hide until tapped, manual audio",
+        "  'hide'    - Hidden completely"
+    ],
+    "presets": [
+        {
+            "id": "inputFocus",
+            "name": "Input Focus",
+            "description": "Text & Audio (Immersion)",
+            "navigation": "swipe",
+            "autoNextDelay": 2.0,
+            "confirmation": "quiz",
+            "front": {
+                "word": {
+                    "text": "visible",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "sentence": {
+                    "text": "visible",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "image": "hint"
+            },
+            "back": {
+                "translation": "visible",
+                "sentenceMeaning": "visible",
+                "studyLinks": "visible"
+            },
+            "useTTSFallback": true
+        },
+        {
+            "id": "audioCards",
+            "name": "Audio Cards",
+            "description": "Audio Only (Listening)",
+            "navigation": "swipe",
+            "autoNextDelay": 2.0,
+            "confirmation": "quiz",
+            "front": {
+                "word": {
+                    "text": "hide",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "sentence": {
+                    "text": "hide",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "image": "hide"
+            },
+            "back": {
+                "translation": "visible",
+                "sentenceMeaning": "visible",
+                "studyLinks": "visible"
+            },
+            "useTTSFallback": true
+        },
+        {
+            "id": "pictureCard",
+            "name": "Picture Card",
+            "description": "Image & Text (Visual)",
+            "navigation": "swipe",
+            "autoNextDelay": 2.0,
+            "confirmation": "quiz",
+            "front": {
+                "word": {
+                    "text": "visible",
+                    "audio": "hide",
+                    "autoplay": false
+                },
+                "sentence": {
+                    "text": "hide",
+                    "audio": "hide",
+                    "autoplay": false
+                },
+                "image": "visible"
+            },
+            "back": {
+                "translation": "visible",
+                "sentenceMeaning": "visible",
+                "studyLinks": "visible"
+            },
+            "useTTSFallback": true
+        },
+        {
+            "id": "flashcard",
+            "name": "Flashcard",
+            "description": "Text Only (Drill)",
+            "navigation": "swipe",
+            "autoNextDelay": 2.0,
+            "confirmation": "quiz",
+            "front": {
+                "word": {
+                    "text": "visible",
+                    "audio": "hide",
+                    "autoplay": false
+                },
+                "sentence": {
+                    "text": "hide",
+                    "audio": "hide",
+                    "autoplay": false
+                },
+                "image": "hide"
+            },
+            "back": {
+                "translation": "visible",
+                "sentenceMeaning": "visible",
+                "studyLinks": "visible"
+            },
+            "useTTSFallback": true
+        },
+        {
+            "id": "story",
+            "name": "Story",
+            "description": "Read & Listen (Immersion)",
+            "navigation": "swipe",
+            "autoNextDelay": 2.0,
+            "confirmation": "quiz",
+            "front": {
+                "word": {
+                    "text": "visible",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "sentence": {
+                    "text": "visible",
+                    "audio": "visible",
+                    "autoplay": true
+                },
+                "image": "visible"
+            },
+            "back": {
+                "translation": "hint",
+                "sentenceMeaning": "hint",
+                "studyLinks": "visible"
+            },
+            "useTTSFallback": true
+        }
+    ]
+}

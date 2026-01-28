@@ -13,18 +13,21 @@ struct GameConfigurationView: View {
     @Binding var useTTSFallback: Bool
     @Binding var ttsRate: Float
     
+    @Binding var navigationStyle: NavigationStyle
+    @Binding var autoNextDelay: TimeInterval
+    @Binding var confirmationStyle: ConfirmationStyle
+    
     let availableDecks: [DeckMetadata]
     let startAction: () -> Void
+    var onSavePreset: (GameConfiguration.Preset) -> Void
     
     @Environment(DataManager.self) private var dataManager
     
     // Sheet State
-    @State private var showDeckSelection = false
+    @State private var showDeckPicker = false
     @State private var showDisplayConfig = false
     @State private var showSessionOptions = false
     
-    // Callback to save default preset
-    var onSavePreset: ((GameConfiguration.Preset) -> Void)?
     
     private var effectiveConfig: GameConfiguration {
         selectedPreset == .customize ? customConfig : GameConfiguration.from(preset: selectedPreset)
@@ -61,7 +64,7 @@ struct GameConfigurationView: View {
                         .padding(.leading, 50)
 
                     // Row 2: Deck Selection (Merged)
-                    Button(action: { showDeckSelection = true }) {
+                    Button(action: { showDeckPicker = true }) {
                         SettingsRow(
                             icon: "menucard.fill",
                             iconColor: .blue,
@@ -80,9 +83,16 @@ struct GameConfigurationView: View {
                             SettingsRow(
                                 icon: "slider.horizontal.3",
                                 iconColor: .purple,
-                                text: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
+                                text: "Card Layout"
                             ) {
-                                DisplayConfigurationSummaryView(config: effectiveConfig)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.primary)
+                                    
+                                    DisplayConfigurationSummaryView(config: effectiveConfig)
+                                }
                             }
                         }
                         
@@ -100,6 +110,12 @@ struct GameConfigurationView: View {
                         ) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(isRandomOrder ? "Random Order" : "Sequential")
+                                
+                                HStack(spacing: 4) {
+                                    Text(navigationStyle.displayName)
+                                    Text("·")
+                                    Text(confirmationStyle.displayName)
+                                }
                                 
                                 if useTTSFallback {
                                     Text("Voice On · \(String(format: "%.1fx", ttsRate * 2)) Speed")
@@ -121,26 +137,22 @@ struct GameConfigurationView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Spacer()
-                
-                Button(action: startAction) {
-                    Text("Start Learn Session")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedDeck == nil ? Color.gray : Color.blue)
-                        .cornerRadius(15)
-                        .shadow(color: .blue.opacity(0.3), radius: selectedDeck == nil ? 0 : 8, y: 4)
+                // Deck selection reminder when none selected
+                if selectedDeck == nil {
+                    HStack {
+                        Image(systemName: "exclamationmark.circle")
+                            .foregroundColor(.orange)
+                        Text("Select a deck to start")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 8)
                 }
-                .disabled(selectedDeck == nil)
-                .padding(.horizontal)
-                .padding(.top, 20)
             }
             .padding(.vertical)
         }
         .background(Color(UIColor.systemGroupedBackground)) // Better background for the card style
-        .sheet(isPresented: $showDeckSelection) {
+        .sheet(isPresented: $showDeckPicker) {
             DeckSelectionSheet(
                 availableDecks: availableDecks.filter { $0.supportedModes.contains(selectedGameType) },
                 selectedDeck: $selectedDeck,
@@ -154,7 +166,7 @@ struct GameConfigurationView: View {
                 selectedPreset: $selectedPreset,
                 customConfig: $customConfig,
                 onSave: {
-                    onSavePreset?(selectedPreset)
+                    onSavePreset(selectedPreset)
                 }
             )
         }
@@ -165,8 +177,20 @@ struct GameConfigurationView: View {
                 isRandomOrder: $isRandomOrder,
                 useTTSFallback: $useTTSFallback,
                 ttsRate: $ttsRate,
+                navigationStyle: $navigationStyle,
+                autoNextDelay: $autoNextDelay,
+                confirmationStyle: $confirmationStyle,
                 gameType: selectedGameType
             )
+        }
+        .onChange(of: selectedPreset) { newPreset in
+            if newPreset != .customize {
+                // Load defaults from Layouts (DataManager)
+                let config = dataManager.configuration(for: newPreset)
+                navigationStyle = config.navigation
+                autoNextDelay = config.autoNextDelay
+                confirmationStyle = config.confirmation
+            }
         }
         // React to changes to apply deck defaults
         .onChange(of: selectedDeck) { _, newDeck in
@@ -186,6 +210,15 @@ struct GameConfigurationView: View {
             } else if selectedPreset == .story {
                 // If switching away from Story, revert to a default (e.g. Input Focus)
                 selectedPreset = .inputFocus
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: startAction) {
+                    Text("Start")
+                        .fontWeight(.semibold)
+                }
+                .disabled(selectedDeck == nil)
             }
         }
     }

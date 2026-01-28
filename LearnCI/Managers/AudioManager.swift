@@ -7,6 +7,9 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var onCompletion: (() -> Void)?
     private var sequenceWorkItem: DispatchWorkItem?
     
+    /// Indicates whether audio is currently playing (file or TTS)
+    var isPlaying: Bool = false
+    
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
     
@@ -192,7 +195,12 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     private func playNextInSequence(items: [AudioItem], folderName: String?, useFallback: Bool, ttsRate: Float) {
         var remaining = items
-        guard !remaining.isEmpty else { return }
+        guard !remaining.isEmpty else {
+            // Sequence complete - clear and set isPlaying to false
+            currentSequence = []
+            isPlaying = false
+            return
+        }
         let first = remaining.removeFirst()
         
         playInternal(
@@ -224,6 +232,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         player?.delegate = self
         player?.prepareToPlay()
         player?.play()
+        isPlaying = true
     }
     
     private func speak(text: String, language: Language, gender: String?, rate: Float) {
@@ -291,6 +300,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         
         synthesizer.delegate = self
         synthesizer.speak(utterance)
+        isPlaying = true
     }
     
     func stopAudio() {
@@ -300,10 +310,15 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         synthesizer.stopSpeaking(at: .immediate)
         onCompletion = nil
         currentSequence = []
+        isPlaying = false
     }
     
     // MARK: - AVAudioPlayerDelegate & AVSpeechSynthesizerDelegate
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        // Only set isPlaying=false if not in a sequence (sequence handles its own completion)
+        if currentSequence.isEmpty {
+            isPlaying = false
+        }
         onCompletion?()
         onCompletion = nil
     }
@@ -312,6 +327,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
 extension AudioManager: AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        // Only set isPlaying=false if not in a sequence (sequence handles its own completion)
+        if currentSequence.isEmpty {
+            isPlaying = false
+        }
         onCompletion?()
         onCompletion = nil
     }

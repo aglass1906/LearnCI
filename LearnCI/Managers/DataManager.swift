@@ -27,6 +27,7 @@ class DataManager {
     var errorMessage: String?
     var availableDecks: [DeckMetadata] = []
     var inspirationalQuotes: [InspirationalQuote] = []
+    var layoutPresets: [LayoutPreset] = []
     
     // UI State
     var isFullScreen: Bool = false
@@ -310,6 +311,38 @@ class DataManager {
         } catch {
             print("Error loading quotes: \(error)")
         }
+    }
+    
+    // Layout Configuration Support
+    func loadLayouts() {
+        guard let url = resolveURL(folderName: nil, filename: "layouts.json") else {
+            print("Layouts file not found")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let container = try decoder.decode(LayoutsContainer.self, from: data)
+            self.layoutPresets = container.presets
+            print("DEBUG: Loaded \(container.presets.count) layout presets")
+        } catch {
+            print("Error loading layouts: \(error)")
+        }
+    }
+    
+    func configuration(for preset: GameConfiguration.Preset) -> GameConfiguration {
+        if layoutPresets.isEmpty {
+            loadLayouts()
+        }
+        
+        // Find matching preset by key (mapped from enum)
+        if let match = layoutPresets.first(where: { $0.id == preset.key }) {
+             return match.toGameConfiguration()
+        }
+        
+        // Fallback to hardcoded defaults (legacy behavior via static factory)
+        return GameConfiguration.from(preset: preset)
     }
     
     func getRandomQuote() -> InspirationalQuote? {

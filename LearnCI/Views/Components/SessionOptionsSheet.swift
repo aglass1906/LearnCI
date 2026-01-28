@@ -6,6 +6,11 @@ struct SessionOptionsSheet: View {
     @Binding var isRandomOrder: Bool
     @Binding var useTTSFallback: Bool
     @Binding var ttsRate: Float
+    
+    @Binding var navigationStyle: NavigationStyle
+    @Binding var autoNextDelay: TimeInterval
+    @Binding var confirmationStyle: ConfirmationStyle
+    
     var gameType: GameConfiguration.GameType = .flashcards // Default for preview/fallback
     
     @Environment(\.dismiss) private var dismiss
@@ -54,6 +59,38 @@ struct SessionOptionsSheet: View {
                          Text("Multiples of 8 for 4x4 Grid")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                    }
+                }
+                
+                Section(header: Text("Input & Flow")) {
+                    VStack(alignment: .leading) {
+                        Text("Navigation Style")
+                        Picker("Navigation", selection: $navigationStyle) {
+                            Text("Swipe").tag(NavigationStyle.swipe)
+                            Text("Buttons").tag(NavigationStyle.buttons)
+                            Text("Auto-Next").tag(NavigationStyle.autoNext)
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    if navigationStyle == .autoNext {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Auto-Advance Delay")
+                                Spacer()
+                                Text(String(format: "%.1fs", autoNextDelay))
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: $autoNextDelay, in: 0.5...5.0, step: 0.5)
+                        }
+                    }
+                    
+                    Picker("Confirmation Style", selection: $confirmationStyle) {
+                        Text("Quiz (Relearn/Learned)").tag(ConfirmationStyle.quiz)
+                        Text("SRS (Hard/Good/Easy)").tag(ConfirmationStyle.srs)
+                        Text("Show (Next Only)").tag(ConfirmationStyle.show)
+                        Text("Auto (No Confirmation)").tag(ConfirmationStyle.auto)
                     }
                 }
                 

@@ -26,6 +26,8 @@
             "audioSentenceFile": "es_desarrollar_sentence.mp3",
             "mediaFile": "es_desarrollar.jpg",
             "tags": [
+                "Prepositions",
+                "Verbs",
                 "Verbs & Concepts"
             ]
         },
@@ -39,6 +41,8 @@
             "audioSentenceFile": "es_aprovechar_sentence.mp3",
             "mediaFile": "es_aprovechar.jpg",
             "tags": [
+                "Prepositions",
+                "Verbs",
                 "Verbs & Concepts"
             ]
         },
@@ -65,6 +69,8 @@
             "audioSentenceFile": "es_realizar_sentence.mp3",
             "mediaFile": "es_realizar.jpg",
             "tags": [
+                "Prepositions",
+                "Verbs",
                 "Verbs & Concepts"
             ]
         },
@@ -78,6 +84,7 @@
             "audioSentenceFile": "es_aunque_sentence.mp3",
             "mediaFile": "es_aunque.jpg",
             "tags": [
+                "Conjunctions",
                 "Verbs & Concepts"
             ]
         },
@@ -91,6 +98,7 @@
             "audioSentenceFile": "es_sino_sentence.mp3",
             "mediaFile": "es_sino.jpg",
             "tags": [
+                "Conjunctions",
                 "Verbs & Concepts"
             ]
         },
@@ -104,6 +112,8 @@
             "audioSentenceFile": "es_derecho_sentence.mp3",
             "mediaFile": "es_derecho.jpg",
             "tags": [
+                "Concepts",
+                "Directions",
                 "Verbs & Concepts"
             ]
         },
@@ -117,6 +127,7 @@
             "audioSentenceFile": "es_izquierda_sentence.mp3",
             "mediaFile": "es_izquierda.jpg",
             "tags": [
+                "Directions",
                 "Verbs & Concepts"
             ]
         },
@@ -130,7 +141,9 @@
             "audioSentenceFile": "es_encima_sentence.mp3",
             "mediaFile": "es_encima.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -143,7 +156,8 @@
             "audioSentenceFile": "es_debajo_sentence.mp3",
             "mediaFile": "es_debajo.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Prepositions"
             ]
         },
         {
@@ -156,6 +170,7 @@
             "audioSentenceFile": "es_detras_sentence.mp3",
             "mediaFile": "es_detras.jpg",
             "tags": [
+                "Directions",
                 "Location"
             ]
         },
@@ -169,7 +184,9 @@
             "audioSentenceFile": "es_delante_sentence.mp3",
             "mediaFile": "es_delante.jpg",
             "tags": [
-                "Location"
+                "Directions",
+                "Location",
+                "Prepositions"
             ]
         },
         {
@@ -182,7 +199,8 @@
             "audioSentenceFile": "es_cerca_sentence.mp3",
             "mediaFile": "es_cerca.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position"
             ]
         },
         {
@@ -195,7 +213,8 @@
             "audioSentenceFile": "es_lejos_sentence.mp3",
             "mediaFile": "es_lejos.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position"
             ]
         },
         {
@@ -208,6 +227,7 @@
             "audioSentenceFile": "es_temprano_sentence.mp3",
             "mediaFile": "es_temprano.jpg",
             "tags": [
+                "Adjectives",
                 "Time"
             ]
         },
@@ -221,7 +241,9 @@
             "audioSentenceFile": "es_tarde_sentence.mp3",
             "mediaFile": "es_tarde.jpg",
             "tags": [
-                "Time"
+                "Adjectives",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -247,6 +269,7 @@
             "audioSentenceFile": "es_despues_sentence.mp3",
             "mediaFile": "es_despues.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -286,6 +309,7 @@
             "audioSentenceFile": "es_quizas_sentence.mp3",
             "mediaFile": "es_quizas.jpg",
             "tags": [
+                "Adverbs",
                 "Concepts"
             ]
         },
@@ -364,6 +388,7 @@
             "audioSentenceFile": "es_seguro_sentence.mp3",
             "mediaFile": "es_seguro.jpg",
             "tags": [
+                "Adjectives",
                 "Concepts"
             ]
         },
@@ -494,6 +519,7 @@
             "audioSentenceFile": "es_nuevo_sentence.mp3",
             "mediaFile": "es_nuevo.jpg",
             "tags": [
+                "Adjectives",
                 "Concepts"
             ]
         },
@@ -507,6 +533,7 @@
             "audioSentenceFile": "es_viejo_sentence.mp3",
             "mediaFile": "es_viejo.jpg",
             "tags": [
+                "Adjectives",
                 "Concepts"
             ]
         },
@@ -624,6 +651,7 @@
             "audioSentenceFile": "es_mismo_sentence.mp3",
             "mediaFile": "es_mismo.jpg",
             "tags": [
+                "Adjectives",
                 "Determiners & Ordinals"
             ]
         },
@@ -676,7 +704,8 @@
             "audioSentenceFile": "es_primero_sentence.mp3",
             "mediaFile": "es_primero.jpg",
             "tags": [
-                "Determiners & Ordinals"
+                "Determiners & Ordinals",
+                "Numbers"
             ]
         },
         {
@@ -702,7 +731,8 @@
             "audioSentenceFile": "es_dentro_sentence.mp3",
             "mediaFile": "es_dentro.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position"
             ]
         },
         {
@@ -715,7 +745,8 @@
             "audioSentenceFile": "es_fuera_sentence.mp3",
             "mediaFile": "es_fuera.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position"
             ]
         },
         {
@@ -728,7 +759,9 @@
             "audioSentenceFile": "es_arriba_sentence.mp3",
             "mediaFile": "es_arriba.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -741,7 +774,9 @@
             "audioSentenceFile": "es_abajo_sentence.mp3",
             "mediaFile": "es_abajo.jpg",
             "tags": [
-                "Location"
+                "Location",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -767,6 +802,8 @@
             "audioSentenceFile": "es_entonces_sentence.mp3",
             "mediaFile": "es_entonces.jpg",
             "tags": [
+                "Adverbs",
+                "Conjunctions",
                 "Time"
             ]
         },
@@ -780,6 +817,7 @@
             "audioSentenceFile": "es_luego_sentence.mp3",
             "mediaFile": "es_luego.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -793,6 +831,7 @@
             "audioSentenceFile": "es_mientras_sentence.mp3",
             "mediaFile": "es_mientras.jpg",
             "tags": [
+                "Conjunctions",
                 "Time"
             ]
         },
@@ -806,6 +845,7 @@
             "audioSentenceFile": "es_siempre_sentence.mp3",
             "mediaFile": "es_siempre.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -819,6 +859,7 @@
             "audioSentenceFile": "es_nunca_sentence.mp3",
             "mediaFile": "es_nunca.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -832,6 +873,7 @@
             "audioSentenceFile": "es_jamas_sentence.mp3",
             "mediaFile": "es_jamas.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -845,6 +887,7 @@
             "audioSentenceFile": "es_aveces_sentence.mp3",
             "mediaFile": "es_aveces.jpg",
             "tags": [
+                "Adverbs",
                 "Concepts"
             ]
         },
@@ -858,6 +901,7 @@
             "audioSentenceFile": "es_amenudo_sentence.mp3",
             "mediaFile": "es_amenudo.jpg",
             "tags": [
+                "Adverbs",
                 "Concepts"
             ]
         },
@@ -975,6 +1019,7 @@
             "audioSentenceFile": "es_cuando_sentence.mp3",
             "mediaFile": "es_cuando.jpg",
             "tags": [
+                "Conjunctions",
                 "Questions"
             ]
         },
@@ -1040,7 +1085,8 @@
             "audioSentenceFile": "es_para_sentence.mp3",
             "mediaFile": "es_para.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1053,7 +1099,8 @@
             "audioSentenceFile": "es_por_sentence.mp3",
             "mediaFile": "es_por.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1066,7 +1113,8 @@
             "audioSentenceFile": "es_con_sentence.mp3",
             "mediaFile": "es_con.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1092,7 +1140,8 @@
             "audioSentenceFile": "es_sobre_sentence.mp3",
             "mediaFile": "es_sobre.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1118,7 +1167,8 @@
             "audioSentenceFile": "es_desde_sentence.mp3",
             "mediaFile": "es_desde.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1131,7 +1181,8 @@
             "audioSentenceFile": "es_hasta_sentence.mp3",
             "mediaFile": "es_hasta.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Conjunctions"
             ]
         },
         {
@@ -1144,7 +1195,9 @@
             "audioSentenceFile": "es_entre_sentence.mp3",
             "mediaFile": "es_entre.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -1170,7 +1223,8 @@
             "audioSentenceFile": "es_segun_sentence.mp3",
             "mediaFile": "es_segun.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1183,7 +1237,9 @@
             "audioSentenceFile": "es_bajo_sentence.mp3",
             "mediaFile": "es_bajo.jpg",
             "tags": [
-                "Concepts"
+                "Adjectives",
+                "Concepts",
+                "Prepositions"
             ]
         },
         {
@@ -1209,6 +1265,7 @@
             "audioSentenceFile": "es_propio_sentence.mp3",
             "mediaFile": "es_propio.jpg",
             "tags": [
+                "Adjectives",
                 "Concepts"
             ]
         },
@@ -1235,7 +1292,9 @@
             "audioSentenceFile": "es_parecer_sentence.mp3",
             "mediaFile": "es_parecer.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1248,7 +1307,9 @@
             "audioSentenceFile": "es_pasar_sentence.mp3",
             "mediaFile": "es_pasar.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1261,7 +1322,9 @@
             "audioSentenceFile": "es_dejar_sentence.mp3",
             "mediaFile": "es_dejar.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1274,7 +1337,9 @@
             "audioSentenceFile": "es_llegar_sentence.mp3",
             "mediaFile": "es_llegar.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1287,7 +1352,9 @@
             "audioSentenceFile": "es_encontrar_sentence.mp3",
             "mediaFile": "es_encontrar.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1300,7 +1367,9 @@
             "audioSentenceFile": "es_creer_sentence.mp3",
             "mediaFile": "es_creer.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1313,7 +1382,9 @@
             "audioSentenceFile": "es_saber_sentence.mp3",
             "mediaFile": "es_saber.jpg",
             "tags": [
-                "Concepts"
+                "Concepts",
+                "Prepositions",
+                "Verbs"
             ]
         }
     ]

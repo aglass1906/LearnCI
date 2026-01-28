@@ -36,7 +36,8 @@
             "audioSentenceFile": "es_gracias_sentence.mp3",
             "mediaFile": "es_a1_gracias.jpg",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -101,7 +102,8 @@
             "audioSentenceFile": "es_agua_sentence.mp3",
             "mediaFile": "es_a1_agua.jpg",
             "tags": [
-                "Basics"
+                "Basics",
+                "Food"
             ]
         },
         {
@@ -114,7 +116,8 @@
             "audioSentenceFile": "es_comida_sentence.mp3",
             "mediaFile": "es_a1_comida.jpg",
             "tags": [
-                "Basics"
+                "Basics",
+                "Food"
             ]
         },
         {
@@ -127,7 +130,8 @@
             "audioSentenceFile": "es_amigo_sentence.mp3",
             "mediaFile": "es_a1_amigo.jpg",
             "tags": [
-                "Daily Life"
+                "Daily Life",
+                "People"
             ]
         },
         {
@@ -140,7 +144,8 @@
             "audioSentenceFile": "es_casa_sentence.mp3",
             "mediaFile": "es_a1_casa.jpg",
             "tags": [
-                "Daily Life"
+                "Daily Life",
+                "Places"
             ]
         },
         {
@@ -153,7 +158,9 @@
             "audioSentenceFile": "es_gato_sentence.mp3",
             "mediaFile": "es_a1_gato.jpg",
             "tags": [
-                "Daily Life"
+                "Animals",
+                "Daily Life",
+                "Nature"
             ]
         },
         {
@@ -166,7 +173,9 @@
             "audioSentenceFile": "es_perro_sentence.mp3",
             "mediaFile": "es_a1_perro.jpg",
             "tags": [
-                "Daily Life"
+                "Animals",
+                "Daily Life",
+                "Nature"
             ]
         },
         {
@@ -218,6 +227,7 @@
             "audioSentenceFile": "es_libro_sentence.mp3",
             "mediaFile": "es_a1_libro.jpg",
             "tags": [
+                "Objects",
                 "Places"
             ]
         },
@@ -231,6 +241,7 @@
             "audioSentenceFile": "es_escuela_sentence.mp3",
             "mediaFile": "es_a1_escuela.jpg",
             "tags": [
+                "Daily Routine",
                 "Places"
             ]
         },
@@ -283,7 +294,9 @@
             "audioSentenceFile": "es_manana_sentence.mp3",
             "mediaFile": "es_a1_manana.jpg",
             "tags": [
-                "Time"
+                "Adverbs",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -296,7 +309,8 @@
             "audioSentenceFile": "es_noche_sentence.mp3",
             "mediaFile": "es_a1_noche.jpg",
             "tags": [
-                "Time"
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -309,6 +323,7 @@
             "audioSentenceFile": "es_hoy_sentence.mp3",
             "mediaFile": "es_a1_hoy.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -335,6 +350,7 @@
             "audioSentenceFile": "es_feliz_sentence.mp3",
             "mediaFile": "es_a1_feliz.jpg",
             "tags": [
+                "Adjectives",
                 "Emotions"
             ]
         }

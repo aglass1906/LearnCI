@@ -26,6 +26,7 @@
             "audioSentenceFile": "ES1K_1_ser_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -39,6 +40,7 @@
             "audioSentenceFile": "ES1K_2_estar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -52,6 +54,7 @@
             "audioSentenceFile": "ES1K_3_tener_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -65,6 +68,7 @@
             "audioSentenceFile": "ES1K_4_tener_que_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -77,7 +81,10 @@
             "audioWordFile": "ES1K_5_derecho_word.mp3",
             "audioSentenceFile": "ES1K_5_derecho_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts",
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0006",
@@ -89,6 +96,7 @@
             "audioSentenceFile": "ES1K_6_hacer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -102,6 +110,8 @@
             "audioSentenceFile": "ES1K_7_poder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -115,6 +125,7 @@
             "audioSentenceFile": "ES1K_8_ir_sentence.mp3",
             "mediaFile": "ES1K_ir_go_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -127,7 +138,9 @@
             "audioWordFile": "ES1K_9_verdad_word.mp3",
             "audioSentenceFile": "ES1K_9_verdad_sentence.mp3",
             "mediaFile": "ES1K_verdad_truth_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0010",
@@ -152,6 +165,7 @@
             "audioSentenceFile": "ES1K_11_deber_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -165,6 +179,7 @@
             "audioSentenceFile": "ES1K_12_ayudar_sentence.mp3",
             "mediaFile": "ES1K_ayudar_help_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -178,6 +193,8 @@
             "audioSentenceFile": "ES1K_13_querer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -191,6 +208,7 @@
             "audioSentenceFile": "ES1K_14_gustar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -204,7 +222,8 @@
             "audioSentenceFile": "ES1K_15_nuestro_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Grammar",
+                "Pronouns"
             ]
         },
         {
@@ -230,7 +249,9 @@
             "audioWordFile": "ES1K_17_sucio_word.mp3",
             "audioSentenceFile": "ES1K_17_sucio_sentence.mp3",
             "mediaFile": "ES1K_sucio_dirty_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0018",
@@ -242,6 +263,8 @@
             "audioSentenceFile": "ES1K_18_llevar_sentence.mp3",
             "mediaFile": "ES1K_llevar_carry_image.jpg",
             "tags": [
+                "Clothing",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -255,6 +278,7 @@
             "audioSentenceFile": "ES1K_19_escuela_sentence.mp3",
             "mediaFile": "ES1K_escuela_school_image.jpg",
             "tags": [
+                "Daily Routine",
                 "Places"
             ]
         },
@@ -267,7 +291,9 @@
             "audioWordFile": "ES1K_20_alemán_word.mp3",
             "audioSentenceFile": "ES1K_20_alemán_sentence.mp3",
             "mediaFile": "ES1K_alemán_german_image.jpg",
-            "tags": []
+            "tags": [
+                "People"
+            ]
         },
         {
             "id": "es1k_c0021",
@@ -305,6 +331,7 @@
             "audioSentenceFile": "ES1K_23_saber_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -318,6 +345,8 @@
             "audioSentenceFile": "ES1K_24_pintar_sentence.mp3",
             "mediaFile": "ES1K_pintar_paint_image.jpg",
             "tags": [
+                "Prepositions",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -330,7 +359,9 @@
             "audioWordFile": "ES1K_25_cuadro_word.mp3",
             "audioSentenceFile": "ES1K_25_cuadro_sentence.mp3",
             "mediaFile": "ES1K_cuadro_painting_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0026",
@@ -342,6 +373,7 @@
             "audioSentenceFile": "ES1K_26_siempre_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -355,6 +387,7 @@
             "audioSentenceFile": "ES1K_27_decir_sentence.mp3",
             "mediaFile": "ES1K_decir_say_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -368,6 +401,7 @@
             "audioSentenceFile": "ES1K_28_irse_sentence.mp3",
             "mediaFile": "ES1K_irse_leave_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -405,6 +439,7 @@
             "audioSentenceFile": "ES1K_31_ahora_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -418,6 +453,7 @@
             "audioSentenceFile": "ES1K_32_hablar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -431,6 +467,7 @@
             "audioSentenceFile": "ES1K_33_ver_sentence.mp3",
             "mediaFile": "ES1K_ver_watch_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -444,6 +481,7 @@
             "audioSentenceFile": "ES1K_34_tener_que_ver_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -470,6 +508,7 @@
             "audioSentenceFile": "ES1K_36_parecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -494,7 +533,8 @@
             "audioSentenceFile": "ES1K_38_joven_sentence.mp3",
             "mediaFile": "ES1K_joven_young_image.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "People"
             ]
         },
         {
@@ -507,6 +547,7 @@
             "audioSentenceFile": "ES1K_39_cuando_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
                 "Grammar"
             ]
         },
@@ -520,6 +561,7 @@
             "audioSentenceFile": "ES1K_40_tan_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
                 "Grammar"
             ]
         },
@@ -533,6 +575,7 @@
             "audioSentenceFile": "ES1K_41_vivir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -545,7 +588,9 @@
             "audioWordFile": "ES1K_42_aquí_acá_word.mp3",
             "audioSentenceFile": "ES1K_42_aquí_acá_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adverbs"
+            ]
         },
         {
             "id": "es1k_c0043",
@@ -557,6 +602,7 @@
             "audioSentenceFile": "ES1K_43_buscar_sentence.mp3",
             "mediaFile": "ES1K_buscar_lookfor_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -569,7 +615,10 @@
             "audioWordFile": "ES1K_44_oro_word.mp3",
             "audioSentenceFile": "ES1K_44_oro_sentence.mp3",
             "mediaFile": "ES1K_oro_gold_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Colors"
+            ]
         },
         {
             "id": "es1k_c0045",
@@ -581,6 +630,7 @@
             "audioSentenceFile": "ES1K_45_encontrar_sentence.mp3",
             "mediaFile": "ES1K_encontrar_find_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -594,6 +644,7 @@
             "audioSentenceFile": "ES1K_46_dar_sentence.mp3",
             "mediaFile": "ES1K_dar_give_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -606,7 +657,9 @@
             "audioWordFile": "ES1K_47_alguno_word.mp3",
             "audioSentenceFile": "ES1K_47_alguno_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Pronouns"
+            ]
         },
         {
             "id": "es1k_c0048",
@@ -618,7 +671,9 @@
             "audioSentenceFile": "ES1K_48_sobre_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Grammar",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -631,6 +686,7 @@
             "audioSentenceFile": "ES1K_49_hoy_sentence.mp3",
             "mediaFile": "ES1K_hoy_today_image.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -644,6 +700,7 @@
             "audioSentenceFile": "ES1K_50_escribir_sentence.mp3",
             "mediaFile": "ES1K_escribir_write_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -657,6 +714,7 @@
             "audioSentenceFile": "ES1K_51_leer_sentence.mp3",
             "mediaFile": "ES1K_leer_read_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -669,7 +727,9 @@
             "audioWordFile": "ES1K_52_libro_word.mp3",
             "audioSentenceFile": "ES1K_52_libro_sentence.mp3",
             "mediaFile": "ES1K_libro_book_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0053",
@@ -681,6 +741,7 @@
             "audioSentenceFile": "ES1K_53_llegar_sentence.mp3",
             "mediaFile": "ES1K_llegar_arrive_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -693,7 +754,9 @@
             "audioWordFile": "ES1K_54_abogado_word.mp3",
             "audioSentenceFile": "ES1K_54_abogado_sentence.mp3",
             "mediaFile": "ES1K_abogado_lawyer_image.jpg",
-            "tags": []
+            "tags": [
+                "Jobs"
+            ]
         },
         {
             "id": "es1k_c0055",
@@ -718,6 +781,7 @@
             "audioSentenceFile": "ES1K_56_pero_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
                 "Grammar"
             ]
         },
@@ -731,7 +795,9 @@
             "audioSentenceFile": "ES1K_57_tarde_sentence.mp3",
             "mediaFile": "ES1K_tarde_late_image.jpg",
             "tags": [
-                "Time"
+                "Adjectives",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -757,8 +823,9 @@
             "audioSentenceFile": "ES1K_59_comer_sentence.mp3",
             "mediaFile": "ES1K_comer_eat_image.jpg",
             "tags": [
-                "Verbs",
-                "Food"
+                "Food",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -784,6 +851,8 @@
             "audioSentenceFile": "ES1K_61_trabajar_sentence.mp3",
             "mediaFile": "ES1K_trabajar_work_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -797,6 +866,7 @@
             "audioSentenceFile": "ES1K_62_empezar_sentence.mp3",
             "mediaFile": "ES1K_empezar_start_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -823,6 +893,7 @@
             "audioSentenceFile": "ES1K_64_comprar_sentence.mp3",
             "mediaFile": "ES1K_comprar_buy_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -849,6 +920,8 @@
             "audioSentenceFile": "ES1K_66_pasar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -862,6 +935,7 @@
             "audioSentenceFile": "ES1K_67_salir_sentence.mp3",
             "mediaFile": "ES1K_salir_leave_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -875,6 +949,7 @@
             "audioSentenceFile": "ES1K_68_nunca_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -887,7 +962,9 @@
             "audioWordFile": "ES1K_69_nadie_word.mp3",
             "audioSentenceFile": "ES1K_69_nadie_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Pronouns"
+            ]
         },
         {
             "id": "es1k_c0070",
@@ -899,6 +976,7 @@
             "audioSentenceFile": "ES1K_70_porque_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
                 "Grammar"
             ]
         },
@@ -912,6 +990,9 @@
             "audioSentenceFile": "ES1K_71_conocer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
+                "Prepositions",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -938,6 +1019,7 @@
             "audioSentenceFile": "ES1K_73_asistir_sentence.mp3",
             "mediaFile": "ES1K_asistir_attend_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -951,6 +1033,7 @@
             "audioSentenceFile": "ES1K_74_poner_sentence.mp3",
             "mediaFile": "ES1K_poner_puton_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -964,6 +1047,7 @@
             "audioSentenceFile": "ES1K_75_venir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -977,6 +1061,8 @@
             "audioSentenceFile": "ES1K_76_jugar_sentence.mp3",
             "mediaFile": "ES1K_jugar_play_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -990,6 +1076,7 @@
             "audioSentenceFile": "ES1K_77_colegio_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Daily Routine",
                 "Places"
             ]
         },
@@ -1002,7 +1089,9 @@
             "audioWordFile": "ES1K_78_coche_word.mp3",
             "audioSentenceFile": "ES1K_78_coche_sentence.mp3",
             "mediaFile": "ES1K_coche_car_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0079",
@@ -1038,6 +1127,7 @@
             "audioSentenceFile": "ES1K_81_enero_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1075,6 +1165,7 @@
             "audioSentenceFile": "ES1K_84_seguir_sentence.mp3",
             "mediaFile": "ES1K_seguir_follow_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1112,7 +1203,8 @@
             "audioSentenceFile": "ES1K_87_azul_sentence.mp3",
             "mediaFile": "ES1K_azul_blue_image.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Colors"
             ]
         },
         {
@@ -1125,6 +1217,7 @@
             "audioSentenceFile": "ES1K_88_puerta_sentence.mp3",
             "mediaFile": "ES1K_puerta_door_image.jpg",
             "tags": [
+                "Objects",
                 "Places"
             ]
         },
@@ -1138,6 +1231,8 @@
             "audioSentenceFile": "ES1K_89_tomar_sentence.mp3",
             "mediaFile": "ES1K_tomar_drink_image.jpg",
             "tags": [
+                "Food",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1163,7 +1258,9 @@
             "audioWordFile": "ES1K_91_piso_word.mp3",
             "audioSentenceFile": "ES1K_91_piso_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0092",
@@ -1187,7 +1284,9 @@
             "audioWordFile": "ES1K_93_equipo_word.mp3",
             "audioSentenceFile": "ES1K_93_equipo_sentence.mp3",
             "mediaFile": "ES1K_equipo_team_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0094",
@@ -1199,6 +1298,8 @@
             "audioSentenceFile": "ES1K_94_ganar_sentence.mp3",
             "mediaFile": "ES1K_ganar_win_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -1258,6 +1359,7 @@
             "audioSentenceFile": "ES1K_99_mujer_sentence.mp3",
             "mediaFile": "ES1K_mujer_woman_image.jpg",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -1284,6 +1386,7 @@
             "audioSentenceFile": "ES1K_101_morir_sentence.mp3",
             "mediaFile": "ES1K_morir_die_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1296,7 +1399,9 @@
             "audioWordFile": "ES1K_102_miedo_word.mp3",
             "audioSentenceFile": "ES1K_102_miedo_sentence.mp3",
             "mediaFile": "ES1K_miedo_fear_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0103",
@@ -1308,6 +1413,7 @@
             "audioSentenceFile": "ES1K_103_perro_sentence.mp3",
             "mediaFile": "ES1K_perro_dog_image.jpg",
             "tags": [
+                "Animals",
                 "Nature"
             ]
         },
@@ -1321,7 +1427,11 @@
             "audioSentenceFile": "ES1K_104_hasta_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Adverbs",
+                "Conjunctions",
+                "Grammar",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -1333,7 +1443,9 @@
             "audioWordFile": "ES1K_105_tanto_word.mp3",
             "audioSentenceFile": "ES1K_105_tanto_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions"
+            ]
         },
         {
             "id": "es1k_c0106",
@@ -1371,7 +1483,8 @@
             "audioSentenceFile": "ES1K_108_mesa_sentence.mp3",
             "mediaFile": "ES1K_mesa_table_image.jpg",
             "tags": [
-                "Food"
+                "Food",
+                "Objects"
             ]
         },
         {
@@ -1384,6 +1497,7 @@
             "audioSentenceFile": "ES1K_109_olvidar_sentence.mp3",
             "mediaFile": "ES1K_olvidar_forget_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1396,7 +1510,9 @@
             "audioWordFile": "ES1K_110_llave_word.mp3",
             "audioSentenceFile": "ES1K_110_llave_sentence.mp3",
             "mediaFile": "ES1K_llave_key_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0111",
@@ -1408,6 +1524,7 @@
             "audioSentenceFile": "ES1K_111_dejar_sentence.mp3",
             "mediaFile": "ES1K_dejar_leave_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1421,7 +1538,9 @@
             "audioSentenceFile": "ES1K_112_aquel_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Adverbs",
+                "Grammar",
+                "Prepositions"
             ]
         },
         {
@@ -1447,7 +1566,8 @@
             "audioSentenceFile": "ES1K_114_mejor_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Adverbs"
             ]
         },
         {
@@ -1460,6 +1580,7 @@
             "audioSentenceFile": "ES1K_115_recordar_sentence.mp3",
             "mediaFile": "ES1K_recordar_remember_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1472,7 +1593,9 @@
             "audioWordFile": "ES1K_116_selva_word.mp3",
             "audioSentenceFile": "ES1K_116_selva_sentence.mp3",
             "mediaFile": "ES1K_selva_jungle_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0117",
@@ -1484,6 +1607,7 @@
             "audioSentenceFile": "ES1K_117_rey_sentence.mp3",
             "mediaFile": "ES1K_rey_king_image.jpg",
             "tags": [
+                "Jobs",
                 "People"
             ]
         },
@@ -1497,6 +1621,8 @@
             "audioSentenceFile": "ES1K_118_soler_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1536,6 +1662,7 @@
             "audioSentenceFile": "ES1K_121_mostrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1562,6 +1689,7 @@
             "audioSentenceFile": "ES1K_123_tratar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1575,6 +1703,7 @@
             "audioSentenceFile": "ES1K_124_tratar_de_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1588,6 +1717,7 @@
             "audioSentenceFile": "ES1K_125_durante_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Time"
             ]
         },
@@ -1625,6 +1755,8 @@
             "audioSentenceFile": "ES1K_128_esperar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1638,6 +1770,7 @@
             "audioSentenceFile": "ES1K_129_pedir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1677,6 +1810,8 @@
             "audioSentenceFile": "ES1K_132_abrir_sentence.mp3",
             "mediaFile": "ES1K_abrir_open_image.jpg",
             "tags": [
+                "Adjectives",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1703,8 +1838,9 @@
             "audioSentenceFile": "ES1K_134_beber_sentence.mp3",
             "mediaFile": "ES1K_beber_drink_image.jpg",
             "tags": [
-                "Verbs",
-                "Food"
+                "Food",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1744,6 +1880,7 @@
             "audioSentenceFile": "ES1K_137_caminar_sentence.mp3",
             "mediaFile": "ES1K_caminar_walk_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1794,6 +1931,7 @@
             "audioSentenceFile": "ES1K_141_romper_sentence.mp3",
             "mediaFile": "ES1K_romper_break_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1807,6 +1945,7 @@
             "audioSentenceFile": "ES1K_142_quedar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1820,6 +1959,7 @@
             "audioSentenceFile": "ES1K_143_creer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1832,7 +1972,9 @@
             "audioWordFile": "ES1K_144_sino_word.mp3",
             "audioSentenceFile": "ES1K_144_sino_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions"
+            ]
         },
         {
             "id": "es1k_c0145",
@@ -1843,7 +1985,9 @@
             "audioWordFile": "ES1K_145_izquierda_word.mp3",
             "audioSentenceFile": "ES1K_145_izquierda_sentence.mp3",
             "mediaFile": "ES1K_izquierda_left_image.jpg",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0146",
@@ -1868,6 +2012,7 @@
             "audioSentenceFile": "ES1K_147_nacer_sentence.mp3",
             "mediaFile": "ES1K_nacer_born_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1894,6 +2039,8 @@
             "audioSentenceFile": "ES1K_149_mirar_sentence.mp3",
             "mediaFile": "ES1K_mirar_look_image.jpg",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -1906,7 +2053,9 @@
             "audioWordFile": "ES1K_150_cualquier_word.mp3",
             "audioSentenceFile": "ES1K_150_cualquier_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Pronouns"
+            ]
         },
         {
             "id": "es1k_c0151",
@@ -1918,6 +2067,7 @@
             "audioSentenceFile": "ES1K_151_suceder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -1942,7 +2092,9 @@
             "audioSentenceFile": "ES1K_153_allí_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Adverbs",
+                "Grammar",
+                "Prepositions"
             ]
         },
         {
@@ -1979,6 +2131,8 @@
             "audioSentenceFile": "ES1K_156_caer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -2005,6 +2159,7 @@
             "audioSentenceFile": "ES1K_158_oír_sentence.mp3",
             "mediaFile": "ES1K_oír_hear_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2066,6 +2221,7 @@
             "audioSentenceFile": "ES1K_163_aprender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2078,7 +2234,9 @@
             "audioWordFile": "ES1K_164_fuera_word.mp3",
             "audioSentenceFile": "ES1K_164_fuera_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0165",
@@ -2090,6 +2248,7 @@
             "audioSentenceFile": "ES1K_165_hermano_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -2129,7 +2288,8 @@
             "audioSentenceFile": "ES1K_168_dolor_sentence.mp3",
             "mediaFile": "ES1K_dolor_pain_image.jpg",
             "tags": [
-                "Body"
+                "Body",
+                "Concepts"
             ]
         },
         {
@@ -2168,6 +2328,7 @@
             "audioSentenceFile": "ES1K_171_jefe_sentence.mp3",
             "mediaFile": "ES1K_jefe_boss_image.jpg",
             "tags": [
+                "Jobs",
                 "People"
             ]
         },
@@ -2181,6 +2342,7 @@
             "audioSentenceFile": "ES1K_172_viajar_sentence.mp3",
             "mediaFile": "ES1K_viajar_travel_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2220,6 +2382,7 @@
             "audioSentenceFile": "ES1K_175_marido_sentence.mp3",
             "mediaFile": "ES1K_marido_husband_image.jpg",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -2233,6 +2396,7 @@
             "audioSentenceFile": "ES1K_176_casar_sentence.mp3",
             "mediaFile": "ES1K_casar_marry_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2246,6 +2410,7 @@
             "audioSentenceFile": "ES1K_177_ayer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -2258,7 +2423,9 @@
             "audioWordFile": "ES1K_178_seco_word.mp3",
             "audioSentenceFile": "ES1K_178_seco_sentence.mp3",
             "mediaFile": "ES1K_seco_dry_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0179",
@@ -2283,7 +2450,8 @@
             "audioSentenceFile": "ES1K_180_cielo_sentence.mp3",
             "mediaFile": "ES1K_cielo_sky_image.jpg",
             "tags": [
-                "Nature"
+                "Nature",
+                "Places"
             ]
         },
         {
@@ -2296,6 +2464,7 @@
             "audioSentenceFile": "ES1K_181_ventana_sentence.mp3",
             "mediaFile": "ES1K_ventana_window_image.jpg",
             "tags": [
+                "Objects",
                 "Places"
             ]
         },
@@ -2322,6 +2491,7 @@
             "audioSentenceFile": "ES1K_183_probar_sentence.mp3",
             "mediaFile": "ES1K_probar_test_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2335,7 +2505,8 @@
             "audioSentenceFile": "ES1K_184_mismo_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Pronouns"
             ]
         },
         {
@@ -2348,7 +2519,9 @@
             "audioSentenceFile": "ES1K_185_entre_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Grammar",
+                "Position",
+                "Prepositions"
             ]
         },
         {
@@ -2361,7 +2534,8 @@
             "audioSentenceFile": "ES1K_186_poco_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Adverbs"
             ]
         },
         {
@@ -2374,6 +2548,7 @@
             "audioSentenceFile": "ES1K_187_llamar_sentence.mp3",
             "mediaFile": "ES1K_llamar_call_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2387,6 +2562,7 @@
             "audioSentenceFile": "ES1K_188_tío_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -2400,6 +2576,7 @@
             "audioSentenceFile": "ES1K_189_volver_sentence.mp3",
             "mediaFile": "ES1K_volver_return_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2413,6 +2590,7 @@
             "audioSentenceFile": "ES1K_190_mientras_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Conjunctions",
                 "Time"
             ]
         },
@@ -2425,7 +2603,9 @@
             "audioWordFile": "ES1K_191_palabra_word.mp3",
             "audioSentenceFile": "ES1K_191_palabra_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0192",
@@ -2450,6 +2630,8 @@
             "audioSentenceFile": "ES1K_193_perder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -2474,6 +2656,7 @@
             "audioSentenceFile": "ES1K_195_conseguir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2486,7 +2669,9 @@
             "audioWordFile": "ES1K_196_ante_word.mp3",
             "audioSentenceFile": "ES1K_196_ante_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0197",
@@ -2498,6 +2683,7 @@
             "audioSentenceFile": "ES1K_197_cambiar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2511,6 +2697,8 @@
             "audioSentenceFile": "ES1K_198_encender_sentence.mp3",
             "mediaFile": "ES1K_encender_turnon_image.jpg",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2563,6 +2751,7 @@
             "audioSentenceFile": "ES1K_202_meter_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2575,7 +2764,11 @@
             "audioWordFile": "ES1K_203_caja_word.mp3",
             "audioSentenceFile": "ES1K_203_caja_sentence.mp3",
             "mediaFile": "ES1K_caja_box_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Objects",
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0204",
@@ -2587,6 +2780,7 @@
             "audioSentenceFile": "ES1K_204_levantar_sentence.mp3",
             "mediaFile": "ES1K_levantar_lift_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2600,6 +2794,7 @@
             "audioSentenceFile": "ES1K_205_pesar_sentence.mp3",
             "mediaFile": "ES1K_pesar_pesar_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2625,7 +2820,10 @@
             "audioWordFile": "ES1K_207_junto_word.mp3",
             "audioSentenceFile": "ES1K_207_junto_sentence.mp3",
             "mediaFile": "ES1K_junto_together_image.jpg",
-            "tags": []
+            "tags": [
+                "Position",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0208",
@@ -2647,7 +2845,9 @@
             "audioWordFile": "ES1K_209_alrededor_word.mp3",
             "audioSentenceFile": "ES1K_209_alrededor_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0210",
@@ -2658,7 +2858,10 @@
             "audioWordFile": "ES1K_210_sueño_word.mp3",
             "audioSentenceFile": "ES1K_210_sueño_sentence.mp3",
             "mediaFile": "ES1K_sueño_sleep_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts",
+                "Daily Routine"
+            ]
         },
         {
             "id": "es1k_c0211",
@@ -2683,6 +2886,7 @@
             "audioSentenceFile": "ES1K_212_compartir_sentence.mp3",
             "mediaFile": "ES1K_compartir_share_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2696,6 +2900,7 @@
             "audioSentenceFile": "ES1K_213_montar_sentence.mp3",
             "mediaFile": "ES1K_montar_ride_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2709,6 +2914,7 @@
             "audioSentenceFile": "ES1K_214_caballo_sentence.mp3",
             "mediaFile": "ES1K_caballo_horse_image.jpg",
             "tags": [
+                "Animals",
                 "Nature"
             ]
         },
@@ -2735,6 +2941,7 @@
             "audioSentenceFile": "ES1K_216_enviar_sentence.mp3",
             "mediaFile": "ES1K_enviar_send_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2761,6 +2968,7 @@
             "audioSentenceFile": "ES1K_218_sonar_sentence.mp3",
             "mediaFile": "ES1K_sonar_ring_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2774,6 +2982,7 @@
             "audioSentenceFile": "ES1K_219_cantar_sentence.mp3",
             "mediaFile": "ES1K_cantar_sing_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2810,7 +3019,9 @@
             "audioWordFile": "ES1K_222_avión_word.mp3",
             "audioSentenceFile": "ES1K_222_avión_sentence.mp3",
             "mediaFile": "ES1K_avión_airplane_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0223",
@@ -2821,7 +3032,9 @@
             "audioWordFile": "ES1K_223_ropa_word.mp3",
             "audioSentenceFile": "ES1K_223_ropa_sentence.mp3",
             "mediaFile": "ES1K_ropa_clothes_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es1k_c0224",
@@ -2845,7 +3058,9 @@
             "audioWordFile": "ES1K_225_invierno_word.mp3",
             "audioSentenceFile": "ES1K_225_invierno_sentence.mp3",
             "mediaFile": "ES1K_invierno_winter_image.jpg",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0226",
@@ -2857,6 +3072,7 @@
             "audioSentenceFile": "ES1K_226_gato_sentence.mp3",
             "mediaFile": "ES1K_gato_cat_image.jpg",
             "tags": [
+                "Animals",
                 "Nature"
             ]
         },
@@ -2883,6 +3099,7 @@
             "audioSentenceFile": "ES1K_228_pensar_sentence.mp3",
             "mediaFile": "ES1K_pensar_think_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -2896,6 +3113,7 @@
             "audioSentenceFile": "ES1K_229_abuelo_sentence.mp3",
             "mediaFile": "ES1K_abuelo_grandfather_image.jpg",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -2908,7 +3126,9 @@
             "audioWordFile": "ES1K_230_primo_word.mp3",
             "audioSentenceFile": "ES1K_230_primo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es1k_c0231",
@@ -2919,7 +3139,10 @@
             "audioWordFile": "ES1K_231_vestido_word.mp3",
             "audioSentenceFile": "ES1K_231_vestido_sentence.mp3",
             "mediaFile": "ES1K_vestido_dress_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing",
+                "Daily Routine"
+            ]
         },
         {
             "id": "es1k_c0232",
@@ -2930,7 +3153,9 @@
             "audioWordFile": "ES1K_232_menudo_word.mp3",
             "audioSentenceFile": "ES1K_232_menudo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adverbs"
+            ]
         },
         {
             "id": "es1k_c0233",
@@ -2941,7 +3166,9 @@
             "audioWordFile": "ES1K_233_cita_word.mp3",
             "audioSentenceFile": "ES1K_233_cita_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0234",
@@ -2952,7 +3179,9 @@
             "audioWordFile": "ES1K_234_pelota_word.mp3",
             "audioSentenceFile": "ES1K_234_pelota_sentence.mp3",
             "mediaFile": "ES1K_pelota_ball_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0235",
@@ -2999,6 +3228,8 @@
             "audioSentenceFile": "ES1K_238_naranja_sentence.mp3",
             "mediaFile": "ES1K_naranja_orange_image.jpg",
             "tags": [
+                "Adjectives",
+                "Colors",
                 "Food"
             ]
         },
@@ -3025,7 +3256,8 @@
             "audioSentenceFile": "ES1K_240_desde_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Grammar",
+                "Prepositions"
             ]
         },
         {
@@ -3038,6 +3270,8 @@
             "audioSentenceFile": "ES1K_241_entonces_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
+                "Conjunctions",
                 "Time"
             ]
         },
@@ -3062,7 +3296,8 @@
             "audioSentenceFile": "ES1K_243_ninguno_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Pronouns"
             ]
         },
         {
@@ -3075,6 +3310,7 @@
             "audioSentenceFile": "ES1K_244_entender_sentence.mp3",
             "mediaFile": "ES1K_entender_understand_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3087,7 +3323,10 @@
             "audioWordFile": "ES1K_245_obra_word.mp3",
             "audioSentenceFile": "ES1K_245_obra_sentence.mp3",
             "mediaFile": "ES1K_obra_masterpiece_image.jpg",
-            "tags": []
+            "tags": [
+                "Daily Routine",
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0246",
@@ -3113,7 +3352,8 @@
             "mediaFile": "",
             "tags": [
                 "Adjectives",
-                "Grammar"
+                "Grammar",
+                "Prepositions"
             ]
         },
         {
@@ -3139,7 +3379,8 @@
             "audioSentenceFile": "ES1K_249_blanco_sentence.mp3",
             "mediaFile": "ES1K_blanco_white_image.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Colors"
             ]
         },
         {
@@ -3162,7 +3403,9 @@
             "audioWordFile": "ES1K_251_según_word.mp3",
             "audioSentenceFile": "ES1K_251_según_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0252",
@@ -3198,7 +3441,8 @@
             "audioSentenceFile": "ES1K_254_bastante_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Adverbs"
             ]
         },
         {
@@ -3222,7 +3466,8 @@
             "audioSentenceFile": "ES1K_256_campo_sentence.mp3",
             "mediaFile": "ES1K_campo_country_image.jpg",
             "tags": [
-                "Nature"
+                "Nature",
+                "Places"
             ]
         },
         {
@@ -3235,6 +3480,7 @@
             "audioSentenceFile": "ES1K_257_lograr_sentence.mp3",
             "mediaFile": "ES1K_lograr_succeed_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3247,7 +3493,9 @@
             "audioWordFile": "ES1K_258_fondo_word.mp3",
             "audioSentenceFile": "ES1K_258_fondo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0259",
@@ -3269,7 +3517,9 @@
             "audioWordFile": "ES1K_260_tarjeta_word.mp3",
             "audioSentenceFile": "ES1K_260_tarjeta_sentence.mp3",
             "mediaFile": "ES1K_tarjeta_card_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0261",
@@ -3281,6 +3531,7 @@
             "audioSentenceFile": "ES1K_261_pagar_sentence.mp3",
             "mediaFile": "ES1K_pagar_pay_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3293,7 +3544,9 @@
             "audioWordFile": "ES1K_262_antiguo_word.mp3",
             "audioSentenceFile": "ES1K_262_antiguo_sentence.mp3",
             "mediaFile": "ES1K_antiguo_ancient_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0263",
@@ -3305,6 +3558,7 @@
             "audioSentenceFile": "ES1K_263_escuchar_sentence.mp3",
             "mediaFile": "ES1K_escuchar_listen_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3318,6 +3572,7 @@
             "audioSentenceFile": "ES1K_264_cumplir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3330,7 +3585,9 @@
             "audioWordFile": "ES1K_265_ley_word.mp3",
             "audioSentenceFile": "ES1K_265_ley_sentence.mp3",
             "mediaFile": "ES1K_ley_law_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0266",
@@ -3341,7 +3598,9 @@
             "audioWordFile": "ES1K_266_cerca_word.mp3",
             "audioSentenceFile": "ES1K_266_cerca_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0267",
@@ -3352,7 +3611,9 @@
             "audioWordFile": "ES1K_267_peso_word.mp3",
             "audioSentenceFile": "ES1K_267_peso_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0268",
@@ -3375,6 +3636,8 @@
             "audioSentenceFile": "ES1K_269_subir_sentence.mp3",
             "mediaFile": "ES1K_subir_board_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3398,7 +3661,9 @@
             "audioWordFile": "ES1K_271_respuesta_word.mp3",
             "audioSentenceFile": "ES1K_271_respuesta_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0272",
@@ -3409,7 +3674,9 @@
             "audioWordFile": "ES1K_272_alguien_word.mp3",
             "audioSentenceFile": "ES1K_272_alguien_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Pronouns"
+            ]
         },
         {
             "id": "es1k_c0273",
@@ -3421,6 +3688,7 @@
             "audioSentenceFile": "ES1K_273_elegir_sentence.mp3",
             "mediaFile": "ES1K_elegir_choose_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3492,7 +3760,9 @@
             "audioWordFile": "ES1K_279_carta_word.mp3",
             "audioSentenceFile": "ES1K_279_carta_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0280",
@@ -3504,6 +3774,7 @@
             "audioSentenceFile": "ES1K_280_acordar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3516,7 +3787,9 @@
             "audioWordFile": "ES1K_281_vuelta_word.mp3",
             "audioSentenceFile": "ES1K_281_vuelta_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0282",
@@ -3527,7 +3800,9 @@
             "audioWordFile": "ES1K_282_siquiera_word.mp3",
             "audioSentenceFile": "ES1K_282_siquiera_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions"
+            ]
         },
         {
             "id": "es1k_c0283",
@@ -3552,6 +3827,8 @@
             "audioSentenceFile": "ES1K_284_recoger_sentence.mp3",
             "mediaFile": "ES1K_recoger_pickup_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3613,6 +3890,7 @@
             "audioSentenceFile": "ES1K_289_quitar_sentence.mp3",
             "mediaFile": "ES1K_quitar_remove_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3626,6 +3904,7 @@
             "audioSentenceFile": "ES1K_290_cubrir_sentence.mp3",
             "mediaFile": "ES1K_cubrir_cover_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3638,7 +3917,9 @@
             "audioWordFile": "ES1K_291_paz_word.mp3",
             "audioSentenceFile": "ES1K_291_paz_sentence.mp3",
             "mediaFile": "ES1K_paz_peace_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0292",
@@ -3661,6 +3942,8 @@
             "audioSentenceFile": "ES1K_293_sentar_sentence.mp3",
             "mediaFile": "ES1K_sentar_sit_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3673,7 +3956,9 @@
             "audioWordFile": "ES1K_294_suerte_word.mp3",
             "audioSentenceFile": "ES1K_294_suerte_sentence.mp3",
             "mediaFile": "ES1K_suerte_luck_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0295",
@@ -3685,6 +3970,7 @@
             "audioSentenceFile": "ES1K_295_cruzar_sentence.mp3",
             "mediaFile": "ES1K_cruzar_cross_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3698,6 +3984,9 @@
             "audioSentenceFile": "ES1K_296_despertar_sentence.mp3",
             "mediaFile": "ES1K_despertar_wake_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3746,6 +4035,7 @@
             "audioSentenceFile": "ES1K_300_tirar_sentence.mp3",
             "mediaFile": "ES1K_tirar_throw_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3759,6 +4049,7 @@
             "audioSentenceFile": "ES1K_301_preocupar_sentence.mp3",
             "mediaFile": "ES1K_preocupar_worry_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3772,6 +4063,7 @@
             "audioSentenceFile": "ES1K_302_conducir_sentence.mp3",
             "mediaFile": "ES1K_conducir_drive_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3785,6 +4077,7 @@
             "audioSentenceFile": "ES1K_303_firmar_sentence.mp3",
             "mediaFile": "ES1K_firmar_sign_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3797,7 +4090,9 @@
             "audioWordFile": "ES1K_304_verano_word.mp3",
             "audioSentenceFile": "ES1K_304_verano_sentence.mp3",
             "mediaFile": "ES1K_verano_summer_image.jpg",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0305",
@@ -3820,6 +4115,7 @@
             "audioSentenceFile": "ES1K_306_luchar_sentence.mp3",
             "mediaFile": "ES1K_luchar_wrestle_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3843,7 +4139,9 @@
             "audioWordFile": "ES1K_308_idioma_word.mp3",
             "audioSentenceFile": "ES1K_308_idioma_sentence.mp3",
             "mediaFile": "ES1K_idioma_language_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0309",
@@ -3902,7 +4200,9 @@
             "audioWordFile": "ES1K_313_iglesia_word.mp3",
             "audioSentenceFile": "ES1K_313_iglesia_sentence.mp3",
             "mediaFile": "ES1K_iglesia_church_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0314",
@@ -3913,7 +4213,9 @@
             "audioWordFile": "ES1K_314_barco_word.mp3",
             "audioSentenceFile": "ES1K_314_barco_sentence.mp3",
             "mediaFile": "ES1K_barco_ship_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0315",
@@ -3936,6 +4238,7 @@
             "audioSentenceFile": "ES1K_316_hallar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -3959,7 +4262,10 @@
             "audioWordFile": "ES1K_318_cama_word.mp3",
             "audioSentenceFile": "ES1K_318_cama_sentence.mp3",
             "mediaFile": "ES1K_cama_bed_image.jpg",
-            "tags": []
+            "tags": [
+                "Daily Routine",
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0319",
@@ -3971,6 +4277,7 @@
             "audioSentenceFile": "ES1K_319_temprano_sentence.mp3",
             "mediaFile": "ES1K_temprano_early_image.jpg",
             "tags": [
+                "Adjectives",
                 "Time"
             ]
         },
@@ -4007,7 +4314,9 @@
             "audioWordFile": "ES1K_322_silla_word.mp3",
             "audioSentenceFile": "ES1K_322_silla_sentence.mp3",
             "mediaFile": "ES1K_silla_chair_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0323",
@@ -4029,7 +4338,10 @@
             "audioWordFile": "ES1K_324_cuenta_word.mp3",
             "audioSentenceFile": "ES1K_324_cuenta_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0325",
@@ -4041,6 +4353,7 @@
             "audioSentenceFile": "ES1K_325_volar_sentence.mp3",
             "mediaFile": "ES1K_volar_fly_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4054,6 +4367,7 @@
             "audioSentenceFile": "ES1K_326_pájaro_sentence.mp3",
             "mediaFile": "ES1K_pájaro_bird_image.jpg",
             "tags": [
+                "Animals",
                 "Nature"
             ]
         },
@@ -4080,6 +4394,8 @@
             "audioSentenceFile": "ES1K_328_rendir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4093,7 +4409,8 @@
             "audioSentenceFile": "ES1K_329_amarillo_sentence.mp3",
             "mediaFile": "ES1K_amarillo_yellow_image.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Colors"
             ]
         },
         {
@@ -4105,7 +4422,9 @@
             "audioWordFile": "ES1K_330_salón_word.mp3",
             "audioSentenceFile": "ES1K_330_salón_sentence.mp3",
             "mediaFile": "ES1K_salón_room_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0331",
@@ -4117,6 +4436,7 @@
             "audioSentenceFile": "ES1K_331_agradecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4129,7 +4449,9 @@
             "audioWordFile": "ES1K_332_reloj_word.mp3",
             "audioSentenceFile": "ES1K_332_reloj_sentence.mp3",
             "mediaFile": "ES1K_reloj_clock_image.jpg",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0333",
@@ -4140,7 +4462,9 @@
             "audioWordFile": "ES1K_333_ligero_word.mp3",
             "audioSentenceFile": "ES1K_333_ligero_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0334",
@@ -4151,7 +4475,10 @@
             "audioWordFile": "ES1K_334_traje_word.mp3",
             "audioSentenceFile": "ES1K_334_traje_sentence.mp3",
             "mediaFile": "ES1K_traje_suit_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing",
+                "Daily Routine"
+            ]
         },
         {
             "id": "es1k_c0335",
@@ -4185,7 +4512,9 @@
             "audioSentenceFile": "ES1K_337_baño_sentence.mp3",
             "mediaFile": "ES1K_baño_bathroom_image.jpg",
             "tags": [
-                "Places"
+                "Daily Routine",
+                "Places",
+                "Sports"
             ]
         },
         {
@@ -4208,7 +4537,9 @@
             "audioWordFile": "ES1K_339_caro_word.mp3",
             "audioSentenceFile": "ES1K_339_caro_sentence.mp3",
             "mediaFile": "ES1K_caro_expensive_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0340",
@@ -4242,6 +4573,7 @@
             "audioSentenceFile": "ES1K_342_engañar_sentence.mp3",
             "mediaFile": "ES1K_engañar_cheat_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4255,6 +4587,9 @@
             "audioSentenceFile": "ES1K_343_agotar_sentence.mp3",
             "mediaFile": "ES1K_agotar_exhaust_image.jpg",
             "tags": [
+                "Clothing",
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -4280,7 +4615,9 @@
             "audioWordFile": "ES1K_345_temporada_word.mp3",
             "audioSentenceFile": "ES1K_345_temporada_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0346",
@@ -4291,7 +4628,9 @@
             "audioWordFile": "ES1K_346_primavera_word.mp3",
             "audioSentenceFile": "ES1K_346_primavera_sentence.mp3",
             "mediaFile": "ES1K_primavera_spring_image.jpg",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0347",
@@ -4326,7 +4665,9 @@
             "audioWordFile": "ES1K_349_zapato_word.mp3",
             "audioSentenceFile": "ES1K_349_zapato_sentence.mp3",
             "mediaFile": "ES1K_zapato_shoes_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es1k_c0350",
@@ -4359,7 +4700,9 @@
             "audioWordFile": "ES1K_352_nube_word.mp3",
             "audioSentenceFile": "ES1K_352_nube_sentence.mp3",
             "mediaFile": "ES1K_nube_cloud_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0353",
@@ -4392,7 +4735,10 @@
             "audioWordFile": "ES1K_355_regalo_word.mp3",
             "audioSentenceFile": "ES1K_355_regalo_sentence.mp3",
             "mediaFile": "ES1K_regalo_present_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects",
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0356",
@@ -4415,6 +4761,8 @@
             "audioSentenceFile": "ES1K_357_apagar_sentence.mp3",
             "mediaFile": "ES1K_apagar_turnoff_image.jpg",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4428,7 +4776,8 @@
             "audioSentenceFile": "ES1K_358_vaso_sentence.mp3",
             "mediaFile": "ES1K_vaso_glass_image.jpg",
             "tags": [
-                "Food"
+                "Food",
+                "Objects"
             ]
         },
         {
@@ -4440,7 +4789,9 @@
             "audioWordFile": "ES1K_359_vidrio_word.mp3",
             "audioSentenceFile": "ES1K_359_vidrio_sentence.mp3",
             "mediaFile": "ES1K_vidrio_glass_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0360",
@@ -4484,7 +4835,9 @@
             "audioWordFile": "ES1K_363_camisa_word.mp3",
             "audioSentenceFile": "ES1K_363_camisa_sentence.mp3",
             "mediaFile": "ES1K_camisa_shirt_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es1k_c0364",
@@ -4496,6 +4849,7 @@
             "audioSentenceFile": "ES1K_364_fumar_sentence.mp3",
             "mediaFile": "ES1K_fumar_smoke_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4509,6 +4863,7 @@
             "audioSentenceFile": "ES1K_365_lamentar_sentence.mp3",
             "mediaFile": "ES1K_lamentar_regret_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4554,7 +4909,9 @@
             "audioWordFile": "ES1K_369_sabiduría_word.mp3",
             "audioSentenceFile": "ES1K_369_sabiduría_sentence.mp3",
             "mediaFile": "ES1K_sabiduría_wisdom_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0370",
@@ -4609,7 +4966,9 @@
             "audioWordFile": "ES1K_374_lana_word.mp3",
             "audioSentenceFile": "ES1K_374_lana_sentence.mp3",
             "mediaFile": "ES1K_lana_wool_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0375",
@@ -4620,7 +4979,9 @@
             "audioWordFile": "ES1K_375_hace_word.mp3",
             "audioSentenceFile": "ES1K_375_hace_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0376",
@@ -4631,7 +4992,9 @@
             "audioWordFile": "ES1K_376_aunque_word.mp3",
             "audioSentenceFile": "ES1K_376_aunque_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions"
+            ]
         },
         {
             "id": "es1k_c0377",
@@ -4656,6 +5019,7 @@
             "audioSentenceFile": "ES1K_378_sentir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4693,6 +5057,7 @@
             "audioSentenceFile": "ES1K_381_contar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4705,7 +5070,9 @@
             "audioWordFile": "ES1K_382_tipo_word.mp3",
             "audioSentenceFile": "ES1K_382_tipo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "People"
+            ]
         },
         {
             "id": "es1k_c0383",
@@ -4727,7 +5094,10 @@
             "audioWordFile": "ES1K_384_medio_word.mp3",
             "audioSentenceFile": "ES1K_384_medio_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0385",
@@ -4738,7 +5108,9 @@
             "audioWordFile": "ES1K_385_dentro_word.mp3",
             "audioSentenceFile": "ES1K_385_dentro_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0386",
@@ -4760,7 +5132,9 @@
             "audioWordFile": "ES1K_387_ahí_word.mp3",
             "audioSentenceFile": "ES1K_387_ahí_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adverbs"
+            ]
         },
         {
             "id": "es1k_c0388",
@@ -4782,7 +5156,9 @@
             "audioWordFile": "ES1K_389_cuanto_word.mp3",
             "audioSentenceFile": "ES1K_389_cuanto_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0390",
@@ -4793,7 +5169,9 @@
             "audioWordFile": "ES1K_390_mil_word.mp3",
             "audioSentenceFile": "ES1K_390_mil_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "es1k_c0391",
@@ -4805,6 +5183,7 @@
             "audioSentenceFile": "ES1K_391_sacar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4844,6 +5223,7 @@
             "audioSentenceFile": "ES1K_394_acabar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4881,6 +5261,7 @@
             "audioSentenceFile": "ES1K_397_traer_sentence.mp3",
             "mediaFile": "ES1K_traer_bring_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4894,6 +5275,7 @@
             "audioSentenceFile": "ES1K_398_partir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4907,6 +5289,7 @@
             "audioSentenceFile": "ES1K_399_quizás_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Grammar"
             ]
         },
@@ -4930,7 +5313,9 @@
             "audioWordFile": "ES1K_401_demás_word.mp3",
             "audioSentenceFile": "ES1K_401_demás_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Daily Routine"
+            ]
         },
         {
             "id": "es1k_c0402",
@@ -4966,6 +5351,8 @@
             "audioSentenceFile": "ES1K_404_preguntar_sentence.mp3",
             "mediaFile": "ES1K_preguntar_ask_image.jpg",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -4979,7 +5366,9 @@
             "audioSentenceFile": "ES1K_405_allá_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Grammar"
+                "Adverbs",
+                "Grammar",
+                "Prepositions"
             ]
         },
         {
@@ -4992,6 +5381,8 @@
             "audioSentenceFile": "ES1K_406_tocar_sentence.mp3",
             "mediaFile": "ES1K_tocar_touch_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -5005,6 +5396,8 @@
             "audioSentenceFile": "ES1K_407_alcanzar_sentence.mp3",
             "mediaFile": "ES1K_alcanzar_reach_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5018,6 +5411,7 @@
             "audioSentenceFile": "ES1K_408_dirigir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5031,6 +5425,10 @@
             "audioSentenceFile": "ES1K_409_correr_sentence.mp3",
             "mediaFile": "ES1K_correr_run_image.jpg",
             "tags": [
+                "Conjunctions",
+                "Places",
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -5043,7 +5441,9 @@
             "audioWordFile": "ES1K_410_a_través_word.mp3",
             "audioSentenceFile": "ES1K_410_a_través_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0411",
@@ -5054,7 +5454,9 @@
             "audioWordFile": "ES1K_411_a_pesar_de_word.mp3",
             "audioSentenceFile": "ES1K_411_a_pesar_de_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0412",
@@ -5066,6 +5468,7 @@
             "audioSentenceFile": "ES1K_412_intentar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5079,6 +5482,7 @@
             "audioSentenceFile": "ES1K_413_valer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5103,6 +5507,7 @@
             "audioSentenceFile": "ES1K_415_mañana_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -5116,6 +5521,7 @@
             "audioSentenceFile": "ES1K_416_fijar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5129,6 +5535,7 @@
             "audioSentenceFile": "ES1K_417_muerte_sentence.mp3",
             "mediaFile": "ES1K_muerte_death_image.jpg",
             "tags": [
+                "Concepts",
                 "Nature"
             ]
         },
@@ -5141,7 +5548,9 @@
             "audioWordFile": "ES1K_418_partido_word.mp3",
             "audioSentenceFile": "ES1K_418_partido_sentence.mp3",
             "mediaFile": "ES1K_partido_match_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0419",
@@ -5152,7 +5561,10 @@
             "audioWordFile": "ES1K_419_encima_word.mp3",
             "audioSentenceFile": "ES1K_419_encima_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0420",
@@ -5163,7 +5575,9 @@
             "audioWordFile": "ES1K_420_abierto_word.mp3",
             "audioSentenceFile": "ES1K_420_abierto_sentence.mp3",
             "mediaFile": "ES1K_abierto_open_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0421",
@@ -5175,6 +5589,8 @@
             "audioSentenceFile": "ES1K_421_cerrar_sentence.mp3",
             "mediaFile": "ES1K_cerrar_close_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5188,6 +5604,7 @@
             "audioSentenceFile": "ES1K_422_echar_sentence.mp3",
             "mediaFile": "ES1K_echar_throwout_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5200,7 +5617,9 @@
             "audioWordFile": "ES1K_423_lejos_word.mp3",
             "audioSentenceFile": "ES1K_423_lejos_sentence.mp3",
             "mediaFile": "ES1K_lejos_far_image.jpg",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0424",
@@ -5211,7 +5630,11 @@
             "audioWordFile": "ES1K_424_atrás_word.mp3",
             "audioSentenceFile": "ES1K_424_atrás_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Body",
+                "Directions",
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0425",
@@ -5222,7 +5645,9 @@
             "audioWordFile": "ES1K_425_carrera_word.mp3",
             "audioSentenceFile": "ES1K_425_carrera_sentence.mp3",
             "mediaFile": "ES1K_carrera_race_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0426",
@@ -5245,6 +5670,7 @@
             "audioSentenceFile": "ES1K_427_señalar_sentence.mp3",
             "mediaFile": "ES1K_señalar_point_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5258,6 +5684,7 @@
             "audioSentenceFile": "ES1K_428_reunir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5271,6 +5698,7 @@
             "audioSentenceFile": "ES1K_429_faltar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5284,6 +5712,7 @@
             "audioSentenceFile": "ES1K_430_hacer_falta_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5307,7 +5736,9 @@
             "audioWordFile": "ES1K_432_adelante_word.mp3",
             "audioSentenceFile": "ES1K_432_adelante_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0433",
@@ -5330,6 +5761,7 @@
             "audioSentenceFile": "ES1K_434_enseñar_sentence.mp3",
             "mediaFile": "ES1K_enseñar_teach_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5343,6 +5775,7 @@
             "audioSentenceFile": "ES1K_435_mandar_sentence.mp3",
             "mediaFile": "ES1K_mandar_send_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5355,7 +5788,9 @@
             "audioWordFile": "ES1K_436_tras_word.mp3",
             "audioSentenceFile": "ES1K_436_tras_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0437",
@@ -5367,6 +5802,7 @@
             "audioSentenceFile": "ES1K_437_andar_sentence.mp3",
             "mediaFile": "ES1K_andar_walk_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5392,7 +5828,10 @@
             "audioWordFile": "ES1K_439_arriba_word.mp3",
             "audioSentenceFile": "ES1K_439_arriba_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0440",
@@ -5404,6 +5843,7 @@
             "audioSentenceFile": "ES1K_440_crecer_sentence.mp3",
             "mediaFile": "ES1K_crecer_grow_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5417,6 +5857,8 @@
             "audioSentenceFile": "ES1K_441_surgir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -5430,6 +5872,7 @@
             "audioSentenceFile": "ES1K_442_matar_sentence.mp3",
             "mediaFile": "ES1K_matar_kill_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5443,6 +5886,8 @@
             "audioSentenceFile": "ES1K_443_entregar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5456,6 +5901,7 @@
             "audioSentenceFile": "ES1K_444_colocar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5469,6 +5915,7 @@
             "audioSentenceFile": "ES1K_445_guardar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5504,6 +5951,7 @@
             "audioSentenceFile": "ES1K_448_pretender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5528,6 +5976,7 @@
             "audioSentenceFile": "ES1K_450_lanzar_sentence.mp3",
             "mediaFile": "ES1K_lanzar_launch_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5541,6 +5990,7 @@
             "audioSentenceFile": "ES1K_451_aprovechar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5567,6 +6017,7 @@
             "audioSentenceFile": "ES1K_453_apoyar_sentence.mp3",
             "mediaFile": "ES1K_apoyar_support_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5579,7 +6030,9 @@
             "audioWordFile": "ES1K_454_mitad_word.mp3",
             "audioSentenceFile": "ES1K_454_mitad_sentence.mp3",
             "mediaFile": "ES1K_mitad_half_image.jpg",
-            "tags": []
+            "tags": [
+                "Position"
+            ]
         },
         {
             "id": "es1k_c0455",
@@ -5602,6 +6055,7 @@
             "audioSentenceFile": "ES1K_456_exigir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5615,6 +6069,7 @@
             "audioSentenceFile": "ES1K_457_aumentar_sentence.mp3",
             "mediaFile": "ES1K_aumentar_increase_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5641,6 +6096,7 @@
             "audioSentenceFile": "ES1K_459_pertenecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5654,6 +6110,7 @@
             "audioSentenceFile": "ES1K_460_disponer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5691,6 +6148,7 @@
             "audioSentenceFile": "ES1K_463_marcar_sentence.mp3",
             "mediaFile": "ES1K_marcar_dial_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5703,7 +6161,9 @@
             "audioWordFile": "ES1K_464_pleno_word.mp3",
             "audioSentenceFile": "ES1K_464_pleno_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0465",
@@ -5736,7 +6196,9 @@
             "audioWordFile": "ES1K_467_dispuesto_word.mp3",
             "audioSentenceFile": "ES1K_467_dispuesto_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0468",
@@ -5748,6 +6210,7 @@
             "audioSentenceFile": "ES1K_468_caber_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5761,6 +6224,7 @@
             "audioSentenceFile": "ES1K_469_atender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5784,7 +6248,9 @@
             "audioWordFile": "ES1K_471_detrás_word.mp3",
             "audioSentenceFile": "ES1K_471_detrás_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0472",
@@ -5807,6 +6273,7 @@
             "audioSentenceFile": "ES1K_473_merecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5819,7 +6286,10 @@
             "audioWordFile": "ES1K_474_tender_word.mp3",
             "audioSentenceFile": "ES1K_474_tender_sentence.mp3",
             "mediaFile": "ES1K_tender_lay_image.jpg",
-            "tags": []
+            "tags": [
+                "Prepositions",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0475",
@@ -5830,7 +6300,9 @@
             "audioWordFile": "ES1K_475_voluntad_word.mp3",
             "audioSentenceFile": "ES1K_475_voluntad_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0476",
@@ -5842,6 +6314,8 @@
             "audioSentenceFile": "ES1K_476_cargar_sentence.mp3",
             "mediaFile": "ES1K_cargar_charge_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5877,6 +6351,7 @@
             "audioSentenceFile": "ES1K_479_prestar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5901,6 +6376,7 @@
             "audioSentenceFile": "ES1K_481_jamás_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -5924,7 +6400,9 @@
             "audioWordFile": "ES1K_483_terreno_word.mp3",
             "audioSentenceFile": "ES1K_483_terreno_sentence.mp3",
             "mediaFile": "ES1K_terreno_ground_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0484",
@@ -5936,6 +6414,7 @@
             "audioSentenceFile": "ES1K_484_regresar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -5959,7 +6438,9 @@
             "audioWordFile": "ES1K_486_revista_word.mp3",
             "audioSentenceFile": "ES1K_486_revista_sentence.mp3",
             "mediaFile": "ES1K_revista_magazine_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0487",
@@ -5971,6 +6452,7 @@
             "audioSentenceFile": "ES1K_487_recorrer_sentence.mp3",
             "mediaFile": "ES1K_recorrer_travel_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6008,6 +6490,7 @@
             "audioSentenceFile": "ES1K_490_durar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6021,6 +6504,7 @@
             "audioSentenceFile": "ES1K_491_retirar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6034,6 +6518,7 @@
             "audioSentenceFile": "ES1K_492_permanecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6068,7 +6553,9 @@
             "audioWordFile": "ES1K_495_encuentro_word.mp3",
             "audioSentenceFile": "ES1K_495_encuentro_sentence.mp3",
             "mediaFile": "ES1K_encuentro_meeting_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0496",
@@ -6091,6 +6578,7 @@
             "audioSentenceFile": "ES1K_497_cuidar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6104,6 +6592,7 @@
             "audioSentenceFile": "ES1K_498_comprobar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6117,6 +6606,8 @@
             "audioSentenceFile": "ES1K_499_dormir_sentence.mp3",
             "mediaFile": "ES1K_dormir_sleep_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6130,6 +6621,7 @@
             "audioSentenceFile": "ES1K_500_discutir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6143,6 +6635,8 @@
             "audioSentenceFile": "ES1K_501_enfrentar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Body",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6191,7 +6685,8 @@
             "audioSentenceFile": "ES1K_505_verde_sentence.mp3",
             "mediaFile": "ES1K_verde_green_image.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Colors"
             ]
         },
         {
@@ -6203,7 +6698,9 @@
             "audioWordFile": "ES1K_506_banco_word.mp3",
             "audioSentenceFile": "ES1K_506_banco_sentence.mp3",
             "mediaFile": "ES1K_banco_bank_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0507",
@@ -6215,6 +6712,8 @@
             "audioSentenceFile": "ES1K_507_sostener_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6240,7 +6739,9 @@
             "audioWordFile": "ES1K_509_delante_word.mp3",
             "audioSentenceFile": "ES1K_509_delante_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0510",
@@ -6252,6 +6753,7 @@
             "audioSentenceFile": "ES1K_510_advertir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6264,7 +6766,9 @@
             "audioWordFile": "ES1K_511_mediante_word.mp3",
             "audioSentenceFile": "ES1K_511_mediante_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0512",
@@ -6298,6 +6802,8 @@
             "audioSentenceFile": "ES1K_514_plantear_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -6322,6 +6828,7 @@
             "audioSentenceFile": "ES1K_516_manejar_sentence.mp3",
             "mediaFile": "ES1K_manejar_drive_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6345,7 +6852,9 @@
             "audioWordFile": "ES1K_518_sencillo_word.mp3",
             "audioSentenceFile": "ES1K_518_sencillo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0519",
@@ -6356,7 +6865,10 @@
             "audioWordFile": "ES1K_519_salvo_word.mp3",
             "audioSentenceFile": "ES1K_519_salvo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0520",
@@ -6368,6 +6880,7 @@
             "audioSentenceFile": "ES1K_520_atravesar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6381,6 +6894,7 @@
             "audioSentenceFile": "ES1K_521_destacar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6394,6 +6908,7 @@
             "audioSentenceFile": "ES1K_522_maestro_sentence.mp3",
             "mediaFile": "ES1K_maestro_teacher_image.jpg",
             "tags": [
+                "Jobs",
                 "People"
             ]
         },
@@ -6407,6 +6922,7 @@
             "audioSentenceFile": "ES1K_523_convenir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6419,7 +6935,10 @@
             "audioWordFile": "ES1K_524_alumno_word.mp3",
             "audioSentenceFile": "ES1K_524_alumno_sentence.mp3",
             "mediaFile": "ES1K_alumno_student_image.jpg",
-            "tags": []
+            "tags": [
+                "Jobs",
+                "People"
+            ]
         },
         {
             "id": "es1k_c0525",
@@ -6444,6 +6963,7 @@
             "audioSentenceFile": "ES1K_526_superar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6456,7 +6976,9 @@
             "audioWordFile": "ES1K_527_vía_word.mp3",
             "audioSentenceFile": "ES1K_527_vía_sentence.mp3",
             "mediaFile": "ES1K_vía_way_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0528",
@@ -6468,7 +6990,8 @@
             "audioSentenceFile": "ES1K_528_alma_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Body"
+                "Body",
+                "Concepts"
             ]
         },
         {
@@ -6505,6 +7028,7 @@
             "audioSentenceFile": "ES1K_531_parar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6518,6 +7042,8 @@
             "audioSentenceFile": "ES1K_532_devolver_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Body",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6531,6 +7057,8 @@
             "audioSentenceFile": "ES1K_533_ejercer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -6544,6 +7072,7 @@
             "audioSentenceFile": "ES1K_534_poseer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6557,6 +7086,8 @@
             "audioSentenceFile": "ES1K_535_cobrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6614,6 +7145,7 @@
             "audioSentenceFile": "ES1K_540_acudir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6627,6 +7159,7 @@
             "audioSentenceFile": "ES1K_541_encargar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6662,6 +7195,7 @@
             "audioSentenceFile": "ES1K_544_sur_sentence.mp3",
             "mediaFile": "ES1K_sur_south_image.jpg",
             "tags": [
+                "Directions",
                 "Places"
             ]
         },
@@ -6675,6 +7209,7 @@
             "audioSentenceFile": "ES1K_545_manifestar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6688,6 +7223,8 @@
             "audioSentenceFile": "ES1K_546_saltar_sentence.mp3",
             "mediaFile": "ES1K_saltar_jump_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -6700,7 +7237,11 @@
             "audioWordFile": "ES1K_547_acaso_word.mp3",
             "audioSentenceFile": "ES1K_547_acaso_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adverbs",
+                "Concepts",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0548",
@@ -6745,6 +7286,7 @@
             "audioSentenceFile": "ES1K_551_perseguir_sentence.mp3",
             "mediaFile": "ES1K_perseguir_chase_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6758,6 +7300,7 @@
             "audioSentenceFile": "ES1K_552_procurar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6793,6 +7336,7 @@
             "audioSentenceFile": "ES1K_555_someter_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6830,6 +7374,7 @@
             "audioSentenceFile": "ES1K_558_arrastrar_sentence.mp3",
             "mediaFile": "ES1K_arrastrar_drag_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6842,7 +7387,9 @@
             "audioWordFile": "ES1K_559_alimento_word.mp3",
             "audioSentenceFile": "ES1K_559_alimento_sentence.mp3",
             "mediaFile": "ES1K_alimento_food_image.jpg",
-            "tags": []
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es1k_c0560",
@@ -6875,7 +7422,9 @@
             "audioWordFile": "ES1K_562_temor_word.mp3",
             "audioSentenceFile": "ES1K_562_temor_sentence.mp3",
             "mediaFile": "ES1K_temor_fear_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0563",
@@ -6898,6 +7447,7 @@
             "audioSentenceFile": "ES1K_564_repartir_sentence.mp3",
             "mediaFile": "ES1K_repartir_divide_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6910,7 +7460,9 @@
             "audioWordFile": "ES1K_565_partida_word.mp3",
             "audioSentenceFile": "ES1K_565_partida_sentence.mp3",
             "mediaFile": "ES1K_partida_departure_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0566",
@@ -6922,6 +7474,7 @@
             "audioSentenceFile": "ES1K_566_rodear_sentence.mp3",
             "mediaFile": "ES1K_rodear_surround_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6935,7 +7488,10 @@
             "audioSentenceFile": "ES1K_567_ajeno_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Prepositions",
+                "Pronouns",
+                "Verbs"
             ]
         },
         {
@@ -6970,6 +7526,7 @@
             "audioSentenceFile": "ES1K_570_rechazar_sentence.mp3",
             "mediaFile": "ES1K_rechazar_reject_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -6994,6 +7551,7 @@
             "audioSentenceFile": "ES1K_572_vencer_sentence.mp3",
             "mediaFile": "ES1K_vencer_conquer_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7007,6 +7565,9 @@
             "audioSentenceFile": "ES1K_573_marchar_sentence.mp3",
             "mediaFile": "ES1K_marchar_march_image.jpg",
             "tags": [
+                "Months",
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -7032,7 +7593,9 @@
             "audioWordFile": "ES1K_575_ejército_word.mp3",
             "audioSentenceFile": "ES1K_575_ejército_sentence.mp3",
             "mediaFile": "ES1K_ejército_army_image.jpg",
-            "tags": []
+            "tags": [
+                "Jobs"
+            ]
         },
         {
             "id": "es1k_c0576",
@@ -7044,6 +7607,7 @@
             "audioSentenceFile": "ES1K_576_trasladar_sentence.mp3",
             "mediaFile": "ES1K_trasladar_move_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7068,6 +7632,7 @@
             "audioSentenceFile": "ES1K_578_figurar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7080,7 +7645,9 @@
             "audioWordFile": "ES1K_579_torno_word.mp3",
             "audioSentenceFile": "ES1K_579_torno_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0580",
@@ -7102,7 +7669,11 @@
             "audioWordFile": "ES1K_581_ánimo_word.mp3",
             "audioSentenceFile": "ES1K_581_ánimo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Body",
+                "Prepositions",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0582",
@@ -7127,6 +7698,8 @@
             "audioSentenceFile": "ES1K_583_descansar_sentence.mp3",
             "mediaFile": "ES1K_descansar_rest_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7140,6 +7713,8 @@
             "audioSentenceFile": "ES1K_584_arrancar_sentence.mp3",
             "mediaFile": "ES1K_arrancar_start_image.jpg",
             "tags": [
+                "Objects",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7153,6 +7728,7 @@
             "audioSentenceFile": "ES1K_585_disfrutar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7166,6 +7742,7 @@
             "audioSentenceFile": "ES1K_586_molestar_sentence.mp3",
             "mediaFile": "ES1K_molestar_bother_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7179,6 +7756,7 @@
             "audioSentenceFile": "ES1K_587_atrever_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7191,7 +7769,11 @@
             "audioWordFile": "ES1K_588_plata_word.mp3",
             "audioSentenceFile": "ES1K_588_plata_sentence.mp3",
             "mediaFile": "ES1K_plata_silver_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Colors",
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0589",
@@ -7203,6 +7785,7 @@
             "audioSentenceFile": "ES1K_589_ceder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7238,6 +7821,7 @@
             "audioSentenceFile": "ES1K_592_gozar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7264,6 +7848,7 @@
             "audioSentenceFile": "ES1K_594_conceder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7276,7 +7861,9 @@
             "audioWordFile": "ES1K_595_bello_word.mp3",
             "audioSentenceFile": "ES1K_595_bello_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0596",
@@ -7288,6 +7875,7 @@
             "audioSentenceFile": "ES1K_596_arreglar_sentence.mp3",
             "mediaFile": "ES1K_arreglar_fix_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7334,6 +7922,7 @@
             "audioSentenceFile": "ES1K_600_apuntar_sentence.mp3",
             "mediaFile": "ES1K_apuntar_point_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7347,6 +7936,8 @@
             "audioSentenceFile": "ES1K_601_liberar_sentence.mp3",
             "mediaFile": "ES1K_liberar_free_image.jpg",
             "tags": [
+                "Adjectives",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7360,6 +7951,7 @@
             "audioSentenceFile": "ES1K_602_añadir_sentence.mp3",
             "mediaFile": "ES1K_añadir_add_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7373,6 +7965,8 @@
             "audioSentenceFile": "ES1K_603_girar_sentence.mp3",
             "mediaFile": "ES1K_girar_turn_image.jpg",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7385,7 +7979,9 @@
             "audioWordFile": "ES1K_604_remedio_word.mp3",
             "audioSentenceFile": "ES1K_604_remedio_sentence.mp3",
             "mediaFile": "ES1K_remedio_cure_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0605",
@@ -7397,6 +7993,8 @@
             "audioSentenceFile": "ES1K_605_encantar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7409,7 +8007,9 @@
             "audioWordFile": "ES1K_606_techo_word.mp3",
             "audioSentenceFile": "ES1K_606_techo_sentence.mp3",
             "mediaFile": "ES1K_techo_roof_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0607",
@@ -7432,6 +8032,7 @@
             "audioSentenceFile": "ES1K_608_pegar_sentence.mp3",
             "mediaFile": "ES1K_pegar_stick_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7445,6 +8046,7 @@
             "audioSentenceFile": "ES1K_609_juzgar_sentence.mp3",
             "mediaFile": "ES1K_juzgar_judge_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7457,7 +8059,9 @@
             "audioWordFile": "ES1K_610_limpio_word.mp3",
             "audioSentenceFile": "ES1K_610_limpio_sentence.mp3",
             "mediaFile": "ES1K_limpio_clean_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0611",
@@ -7469,6 +8073,7 @@
             "audioSentenceFile": "ES1K_611_confiar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7481,7 +8086,9 @@
             "audioWordFile": "ES1K_612_alegría_word.mp3",
             "audioSentenceFile": "ES1K_612_alegría_sentence.mp3",
             "mediaFile": "ES1K_alegría_joy_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0613",
@@ -7504,6 +8111,7 @@
             "audioSentenceFile": "ES1K_614_grabar_sentence.mp3",
             "mediaFile": "ES1K_grabar_record_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7538,7 +8146,9 @@
             "audioWordFile": "ES1K_617_listo_word.mp3",
             "audioSentenceFile": "ES1K_617_listo_sentence.mp3",
             "mediaFile": "ES1K_listo_ready_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0618",
@@ -7550,6 +8160,8 @@
             "audioSentenceFile": "ES1K_618_equivocar_sentence.mp3",
             "mediaFile": "ES1K_equivocar_wrong_image.jpg",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7584,7 +8196,10 @@
             "audioWordFile": "ES1K_621_seguido_word.mp3",
             "audioSentenceFile": "ES1K_621_seguido_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adverbs",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0622",
@@ -7596,6 +8211,7 @@
             "audioSentenceFile": "ES1K_622_llorar_sentence.mp3",
             "mediaFile": "ES1K_llorar_cry_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7630,7 +8246,10 @@
             "audioWordFile": "ES1K_625_rato_word.mp3",
             "audioSentenceFile": "ES1K_625_rato_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Conjunctions",
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0626",
@@ -7666,6 +8285,7 @@
             "audioSentenceFile": "ES1K_628_reclamar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7690,6 +8310,7 @@
             "audioSentenceFile": "ES1K_630_quemar_sentence.mp3",
             "mediaFile": "ES1K_quemar_burn_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7703,6 +8324,8 @@
             "audioSentenceFile": "ES1K_631_gastar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7716,6 +8339,7 @@
             "audioSentenceFile": "ES1K_632_quejar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7728,7 +8352,9 @@
             "audioWordFile": "ES1K_633_cifra_word.mp3",
             "audioSentenceFile": "ES1K_633_cifra_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "es1k_c0634",
@@ -7740,6 +8366,7 @@
             "audioSentenceFile": "ES1K_634_ocultar_sentence.mp3",
             "mediaFile": "ES1K_ocultar_hide_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7764,6 +8391,7 @@
             "audioSentenceFile": "ES1K_636_decepcionar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7777,6 +8405,7 @@
             "audioSentenceFile": "ES1K_637_enterar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7812,6 +8441,7 @@
             "audioSentenceFile": "ES1K_640_recurrir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7836,6 +8466,8 @@
             "audioSentenceFile": "ES1K_642_huir_sentence.mp3",
             "mediaFile": "ES1K_huir_flee_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -7849,6 +8481,7 @@
             "audioSentenceFile": "ES1K_643_transcurrir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7861,7 +8494,10 @@
             "audioWordFile": "ES1K_644_desgracia_word.mp3",
             "audioSentenceFile": "ES1K_644_desgracia_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0645",
@@ -7873,6 +8509,7 @@
             "audioSentenceFile": "ES1K_645_pisar_sentence.mp3",
             "mediaFile": "ES1K_pisar_step_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7897,6 +8534,7 @@
             "audioSentenceFile": "ES1K_647_padecer_sentence.mp3",
             "mediaFile": "ES1K_padecer_suffer_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7910,6 +8548,7 @@
             "audioSentenceFile": "ES1K_648_elaborar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7923,6 +8562,8 @@
             "audioSentenceFile": "ES1K_649_soñar_sentence.mp3",
             "mediaFile": "ES1K_soñar_dream_image.jpg",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7936,6 +8577,7 @@
             "audioSentenceFile": "ES1K_650_gritar_sentence.mp3",
             "mediaFile": "ES1K_gritar_shout_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7949,6 +8591,8 @@
             "audioSentenceFile": "ES1K_651_sumar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7984,6 +8628,7 @@
             "audioSentenceFile": "ES1K_654_carecer_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -7996,7 +8641,9 @@
             "audioWordFile": "ES1K_655_arena_word.mp3",
             "audioSentenceFile": "ES1K_655_arena_sentence.mp3",
             "mediaFile": "ES1K_arena_sand_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0656",
@@ -8054,6 +8701,7 @@
             "audioSentenceFile": "ES1K_660_constar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8077,7 +8725,9 @@
             "audioWordFile": "ES1K_662_caída_word.mp3",
             "audioSentenceFile": "ES1K_662_caída_sentence.mp3",
             "mediaFile": "ES1K_caída_fall_image.jpg",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0663",
@@ -8089,6 +8739,7 @@
             "audioSentenceFile": "ES1K_663_fallar_sentence.mp3",
             "mediaFile": "ES1K_fallar_fail_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8135,6 +8786,7 @@
             "audioSentenceFile": "ES1K_667_agregar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8192,6 +8844,7 @@
             "audioSentenceFile": "ES1K_672_aportar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8205,6 +8858,7 @@
             "audioSentenceFile": "ES1K_673_proporcionar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8218,6 +8872,7 @@
             "audioSentenceFile": "ES1K_674_saludar_sentence.mp3",
             "mediaFile": "ES1K_saludar_greet_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8231,6 +8886,7 @@
             "audioSentenceFile": "ES1K_675_ubicar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8255,6 +8911,7 @@
             "audioSentenceFile": "ES1K_677_lavar_sentence.mp3",
             "mediaFile": "ES1K_lavar_wash_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8267,7 +8924,9 @@
             "audioWordFile": "ES1K_678_mentira_word.mp3",
             "audioSentenceFile": "ES1K_678_mentira_sentence.mp3",
             "mediaFile": "ES1K_mentira_lie_image.jpg",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0679",
@@ -8301,6 +8960,7 @@
             "audioSentenceFile": "ES1K_681_ingresar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8314,6 +8974,7 @@
             "audioSentenceFile": "ES1K_682_esconder_sentence.mp3",
             "mediaFile": "ES1K_esconder_hide_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8351,6 +9012,7 @@
             "audioSentenceFile": "ES1K_685_desprender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8364,6 +9026,7 @@
             "audioSentenceFile": "ES1K_686_pelear_sentence.mp3",
             "mediaFile": "ES1K_pelear_fight_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8376,7 +9039,9 @@
             "audioWordFile": "ES1K_687_biblioteca_word.mp3",
             "audioSentenceFile": "ES1K_687_biblioteca_sentence.mp3",
             "mediaFile": "ES1K_biblioteca_library_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0688",
@@ -8388,6 +9053,7 @@
             "audioSentenceFile": "ES1K_688_arrojar_sentence.mp3",
             "mediaFile": "ES1K_arrojar_throw_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8401,6 +9067,7 @@
             "audioSentenceFile": "ES1K_689_hundir_sentence.mp3",
             "mediaFile": "ES1K_hundir_sink_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8436,6 +9103,7 @@
             "audioSentenceFile": "ES1K_692_encerrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8471,6 +9139,7 @@
             "audioSentenceFile": "ES1K_695_denominar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8484,6 +9153,7 @@
             "audioSentenceFile": "ES1K_696_impulsar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8497,6 +9167,7 @@
             "audioSentenceFile": "ES1K_697_empujar_sentence.mp3",
             "mediaFile": "ES1K_empujar_shove_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8510,6 +9181,7 @@
             "audioSentenceFile": "ES1K_698_chocar_sentence.mp3",
             "mediaFile": "ES1K_chocar_crash_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8534,6 +9206,7 @@
             "audioSentenceFile": "ES1K_700_borrar_sentence.mp3",
             "mediaFile": "ES1K_borrar_erase_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8558,6 +9231,8 @@
             "audioSentenceFile": "ES1K_702_aguantar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8571,6 +9246,7 @@
             "audioSentenceFile": "ES1K_703_coger_sentence.mp3",
             "mediaFile": "ES1K_coger_catch_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8583,7 +9259,9 @@
             "audioWordFile": "ES1K_704_clave_word.mp3",
             "audioSentenceFile": "ES1K_704_clave_sentence.mp3",
             "mediaFile": "ES1K_clave_key_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0705",
@@ -8595,6 +9273,7 @@
             "audioSentenceFile": "ES1K_705_golpear_sentence.mp3",
             "mediaFile": "ES1K_golpear_hit_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8618,7 +9297,10 @@
             "audioWordFile": "ES1K_707_bolsa_word.mp3",
             "audioSentenceFile": "ES1K_707_bolsa_sentence.mp3",
             "mediaFile": "ES1K_bolsa_bag_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing",
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0708",
@@ -8652,6 +9334,8 @@
             "audioSentenceFile": "ES1K_710_despedir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Nature",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8664,7 +9348,9 @@
             "audioWordFile": "ES1K_711_muro_word.mp3",
             "audioSentenceFile": "ES1K_711_muro_sentence.mp3",
             "mediaFile": "ES1K_muro_wall_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0712",
@@ -8687,6 +9373,7 @@
             "audioSentenceFile": "ES1K_713_provenir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8700,6 +9387,8 @@
             "audioSentenceFile": "ES1K_714_criar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8712,7 +9401,9 @@
             "audioWordFile": "ES1K_715_polvo_word.mp3",
             "audioSentenceFile": "ES1K_715_polvo_sentence.mp3",
             "mediaFile": "ES1K_polvo_dust_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0716",
@@ -8735,6 +9426,8 @@
             "audioSentenceFile": "ES1K_717_doblar_sentence.mp3",
             "mediaFile": "ES1K_doblar_bend_image.jpg",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8748,6 +9441,7 @@
             "audioSentenceFile": "ES1K_718_disminuir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8761,6 +9455,7 @@
             "audioSentenceFile": "ES1K_719_averiguar_sentence.mp3",
             "mediaFile": "ES1K_averiguar_investigate_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8774,6 +9469,7 @@
             "audioSentenceFile": "ES1K_720_pasear_sentence.mp3",
             "mediaFile": "ES1K_pasear_stroll_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8830,7 +9526,9 @@
             "audioWordFile": "ES1K_725_jornada_word.mp3",
             "audioSentenceFile": "ES1K_725_jornada_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es1k_c0726",
@@ -8863,7 +9561,9 @@
             "audioWordFile": "ES1K_728_deporte_word.mp3",
             "audioSentenceFile": "ES1K_728_deporte_sentence.mp3",
             "mediaFile": "ES1K_deporte_sport_image.jpg",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0729",
@@ -8886,6 +9586,7 @@
             "audioSentenceFile": "ES1K_730_influir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8922,7 +9623,9 @@
             "audioWordFile": "ES1K_733_rostro_word.mp3",
             "audioSentenceFile": "ES1K_733_rostro_sentence.mp3",
             "mediaFile": "ES1K_rostro_face_image.jpg",
-            "tags": []
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es1k_c0734",
@@ -8934,6 +9637,7 @@
             "audioSentenceFile": "ES1K_734_escoger_sentence.mp3",
             "mediaFile": "ES1K_escoger_choose_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8947,6 +9651,8 @@
             "audioSentenceFile": "ES1K_735_colgar_sentence.mp3",
             "mediaFile": "ES1K_colgar_hangup_image.jpg",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8959,7 +9665,9 @@
             "audioWordFile": "ES1K_736_pata_word.mp3",
             "audioSentenceFile": "ES1K_736_pata_sentence.mp3",
             "mediaFile": "ES1K_pata_leg_image.jpg",
-            "tags": []
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es1k_c0737",
@@ -8970,7 +9678,9 @@
             "audioWordFile": "ES1K_737_asiento_word.mp3",
             "audioSentenceFile": "ES1K_737_asiento_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0738",
@@ -8982,6 +9692,8 @@
             "audioSentenceFile": "ES1K_738_aproximar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -8995,6 +9707,7 @@
             "audioSentenceFile": "ES1K_739_bailar_sentence.mp3",
             "mediaFile": "ES1K_bailar_dance_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9008,6 +9721,7 @@
             "audioSentenceFile": "ES1K_740_inspirar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9021,6 +9735,7 @@
             "audioSentenceFile": "ES1K_741_agarrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9046,7 +9761,9 @@
             "audioWordFile": "ES1K_743_varón_word.mp3",
             "audioSentenceFile": "ES1K_743_varón_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "People"
+            ]
         },
         {
             "id": "es1k_c0744",
@@ -9069,6 +9786,7 @@
             "audioSentenceFile": "ES1K_745_desempeñar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9093,6 +9811,7 @@
             "audioSentenceFile": "ES1K_747_prever_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9140,7 +9859,9 @@
             "audioWordFile": "ES1K_751_bolsillo_word.mp3",
             "audioSentenceFile": "ES1K_751_bolsillo_sentence.mp3",
             "mediaFile": "ES1K_bolsillo_pocket_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es1k_c0752",
@@ -9151,7 +9872,9 @@
             "audioWordFile": "ES1K_752_fresco_word.mp3",
             "audioSentenceFile": "ES1K_752_fresco_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0753",
@@ -9187,6 +9910,7 @@
             "audioSentenceFile": "ES1K_755_tapar_sentence.mp3",
             "mediaFile": "ES1K_tapar_cover_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9199,7 +9923,10 @@
             "audioWordFile": "ES1K_756_amo_word.mp3",
             "audioSentenceFile": "ES1K_756_amo_sentence.mp3",
             "mediaFile": "ES1K_amo_boss_image.jpg",
-            "tags": []
+            "tags": [
+                "Jobs",
+                "People"
+            ]
         },
         {
             "id": "es1k_c0757",
@@ -9211,6 +9938,7 @@
             "audioSentenceFile": "ES1K_757_acceder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9246,6 +9974,7 @@
             "audioSentenceFile": "ES1K_760_disparar_sentence.mp3",
             "mediaFile": "ES1K_disparar_shoot_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9270,6 +9999,9 @@
             "audioSentenceFile": "ES1K_762_atar_sentence.mp3",
             "mediaFile": "ES1K_atar_tieup_image.jpg",
             "tags": [
+                "Clothing",
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9282,7 +10014,9 @@
             "audioWordFile": "ES1K_763_dama_word.mp3",
             "audioSentenceFile": "ES1K_763_dama_sentence.mp3",
             "mediaFile": "ES1K_dama_lady_image.jpg",
-            "tags": []
+            "tags": [
+                "People"
+            ]
         },
         {
             "id": "es1k_c0764",
@@ -9305,6 +10039,7 @@
             "audioSentenceFile": "ES1K_765_abarcar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9329,6 +10064,8 @@
             "audioSentenceFile": "ES1K_767_brindar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Food",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9374,7 +10111,9 @@
             "audioWordFile": "ES1K_771_casualidad_word.mp3",
             "audioSentenceFile": "ES1K_771_casualidad_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0772",
@@ -9418,7 +10157,10 @@
             "audioWordFile": "ES1K_775_ave_word.mp3",
             "audioSentenceFile": "ES1K_775_ave_sentence.mp3",
             "mediaFile": "ES1K_ave_bird_image.jpg",
-            "tags": []
+            "tags": [
+                "Animals",
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0776",
@@ -9429,7 +10171,9 @@
             "audioWordFile": "ES1K_776_rodilla_word.mp3",
             "audioSentenceFile": "ES1K_776_rodilla_sentence.mp3",
             "mediaFile": "ES1K_rodilla_knee_image.jpg",
-            "tags": []
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es1k_c0777",
@@ -9452,6 +10196,7 @@
             "audioSentenceFile": "ES1K_778_otorgar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9475,7 +10220,9 @@
             "audioWordFile": "ES1K_780_vaca_word.mp3",
             "audioSentenceFile": "ES1K_780_vaca_sentence.mp3",
             "mediaFile": "ES1K_vaca_cow_image.jpg",
-            "tags": []
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "es1k_c0781",
@@ -9486,7 +10233,11 @@
             "audioWordFile": "ES1K_781_madrugada_word.mp3",
             "audioSentenceFile": "ES1K_781_madrugada_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Time",
+                "Time of Day"
+            ]
         },
         {
             "id": "es1k_c0782",
@@ -9497,7 +10248,9 @@
             "audioWordFile": "ES1K_782_cariño_word.mp3",
             "audioSentenceFile": "ES1K_782_cariño_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0783",
@@ -9509,6 +10262,8 @@
             "audioSentenceFile": "ES1K_783_vigilar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -9522,6 +10277,7 @@
             "audioSentenceFile": "ES1K_784_portar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9557,6 +10313,7 @@
             "audioSentenceFile": "ES1K_787_avisar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9581,6 +10338,7 @@
             "audioSentenceFile": "ES1K_789_soltar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9594,6 +10352,7 @@
             "audioSentenceFile": "ES1K_790_abordar_sentence.mp3",
             "mediaFile": "ES1K_abordar_board_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9607,6 +10366,7 @@
             "audioSentenceFile": "ES1K_791_calificar_sentence.mp3",
             "mediaFile": "ES1K_calificar_grade_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9631,7 +10391,8 @@
             "audioSentenceFile": "ES1K_793_gris_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Colors"
             ]
         },
         {
@@ -9654,7 +10415,9 @@
             "audioWordFile": "ES1K_795_meta_word.mp3",
             "audioSentenceFile": "ES1K_795_meta_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Sports"
+            ]
         },
         {
             "id": "es1k_c0796",
@@ -9676,7 +10439,10 @@
             "audioWordFile": "ES1K_797_moreno_word.mp3",
             "audioSentenceFile": "ES1K_797_moreno_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Colors"
+            ]
         },
         {
             "id": "es1k_c0798",
@@ -9698,7 +10464,9 @@
             "audioWordFile": "ES1K_799_hielo_word.mp3",
             "audioSentenceFile": "ES1K_799_hielo_sentence.mp3",
             "mediaFile": "ES1K_hielo_ice_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0800",
@@ -9709,7 +10477,9 @@
             "audioWordFile": "ES1K_800_pantalla_word.mp3",
             "audioSentenceFile": "ES1K_800_pantalla_sentence.mp3",
             "mediaFile": "ES1K_pantalla_screen_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0801",
@@ -9743,6 +10513,10 @@
             "audioSentenceFile": "ES1K_803_conquistar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Body",
+                "Prepositions",
+                "Pronouns",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -9756,6 +10530,7 @@
             "audioSentenceFile": "ES1K_804_envolver_sentence.mp3",
             "mediaFile": "ES1K_envolver_wrap_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9780,6 +10555,7 @@
             "audioSentenceFile": "ES1K_806_emprender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9792,7 +10568,9 @@
             "audioWordFile": "ES1K_807_taller_word.mp3",
             "audioSentenceFile": "ES1K_807_taller_sentence.mp3",
             "mediaFile": "ES1K_taller_workshop_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0808",
@@ -9804,6 +10582,7 @@
             "audioSentenceFile": "ES1K_808_quebrar_sentence.mp3",
             "mediaFile": "ES1K_quebrar_break_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9830,6 +10609,7 @@
             "audioSentenceFile": "ES1K_810_asomar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9864,7 +10644,9 @@
             "audioWordFile": "ES1K_813_azar_word.mp3",
             "audioSentenceFile": "ES1K_813_azar_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0814",
@@ -9876,6 +10658,7 @@
             "audioSentenceFile": "ES1K_814_estallar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9889,6 +10672,7 @@
             "audioSentenceFile": "ES1K_815_apretar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -9947,7 +10731,9 @@
             "audioWordFile": "ES1K_820_oriente_word.mp3",
             "audioSentenceFile": "ES1K_820_oriente_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0821",
@@ -9970,6 +10756,7 @@
             "audioSentenceFile": "ES1K_822_contratar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10026,7 +10813,9 @@
             "audioWordFile": "ES1K_827_pluma_word.mp3",
             "audioSentenceFile": "ES1K_827_pluma_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0828",
@@ -10038,6 +10827,8 @@
             "audioSentenceFile": "ES1K_828_prender_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10050,7 +10841,9 @@
             "audioWordFile": "ES1K_829_almacén_word.mp3",
             "audioSentenceFile": "ES1K_829_almacén_sentence.mp3",
             "mediaFile": "ES1K_almacén_store_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0830",
@@ -10083,7 +10876,9 @@
             "audioWordFile": "ES1K_832_despacho_word.mp3",
             "audioSentenceFile": "ES1K_832_despacho_sentence.mp3",
             "mediaFile": "ES1K_despacho_office_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0833",
@@ -10127,7 +10922,9 @@
             "audioWordFile": "ES1K_836_lata_word.mp3",
             "audioSentenceFile": "ES1K_836_lata_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0837",
@@ -10138,7 +10935,9 @@
             "audioWordFile": "ES1K_837_herramienta_word.mp3",
             "audioSentenceFile": "ES1K_837_herramienta_sentence.mp3",
             "mediaFile": "ES1K_herramienta_tool_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0838",
@@ -10150,6 +10949,7 @@
             "audioSentenceFile": "ES1K_838_imprimir_sentence.mp3",
             "mediaFile": "ES1K_imprimir_print_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10185,6 +10985,7 @@
             "audioSentenceFile": "ES1K_841_alzar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10209,6 +11010,8 @@
             "audioSentenceFile": "ES1K_843_efectuar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10244,6 +11047,8 @@
             "audioSentenceFile": "ES1K_846_proseguir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10267,7 +11072,9 @@
             "audioWordFile": "ES1K_848_nave_word.mp3",
             "audioSentenceFile": "ES1K_848_nave_sentence.mp3",
             "mediaFile": "ES1K_nave_ship_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0849",
@@ -10278,7 +11085,9 @@
             "audioWordFile": "ES1K_849_oración_word.mp3",
             "audioSentenceFile": "ES1K_849_oración_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es1k_c0850",
@@ -10300,7 +11109,10 @@
             "audioWordFile": "ES1K_851_trampa_word.mp3",
             "audioSentenceFile": "ES1K_851_trampa_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0852",
@@ -10334,6 +11146,8 @@
             "audioSentenceFile": "ES1K_854_librar_sentence.mp3",
             "mediaFile": "ES1K_librar_release_image.jpg",
             "tags": [
+                "Adjectives",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10347,6 +11161,7 @@
             "audioSentenceFile": "ES1K_855_rescatar_sentence.mp3",
             "mediaFile": "ES1K_rescatar_rescue_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10371,6 +11186,7 @@
             "audioSentenceFile": "ES1K_857_extrañar_sentence.mp3",
             "mediaFile": "ES1K_extrañar_miss_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10384,6 +11200,7 @@
             "audioSentenceFile": "ES1K_858_asustar_sentence.mp3",
             "mediaFile": "ES1K_asustar_scare_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10397,6 +11214,7 @@
             "audioSentenceFile": "ES1K_859_remontar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10410,6 +11228,7 @@
             "audioSentenceFile": "ES1K_860_pescado_sentence.mp3",
             "mediaFile": "ES1K_pescado_fish_image.jpg",
             "tags": [
+                "Animals",
                 "Food"
             ]
         },
@@ -10434,6 +11253,7 @@
             "audioSentenceFile": "ES1K_862_jurar_sentence.mp3",
             "mediaFile": "ES1K_jurar_vow_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10447,6 +11267,7 @@
             "audioSentenceFile": "ES1K_863_convocar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10459,7 +11280,10 @@
             "audioWordFile": "ES1K_864_harto_word.mp3",
             "audioSentenceFile": "ES1K_864_harto_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Position",
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0865",
@@ -10492,7 +11316,9 @@
             "audioWordFile": "ES1K_867_lazo_word.mp3",
             "audioSentenceFile": "ES1K_867_lazo_sentence.mp3",
             "mediaFile": "ES1K_lazo_bow_image.jpg",
-            "tags": []
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es1k_c0868",
@@ -10626,7 +11452,9 @@
             "audioWordFile": "ES1K_879_juguete_word.mp3",
             "audioSentenceFile": "ES1K_879_juguete_sentence.mp3",
             "mediaFile": "ES1K_juguete_toy_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0880",
@@ -10649,6 +11477,7 @@
             "audioSentenceFile": "ES1K_881_esposo_sentence.mp3",
             "mediaFile": "ES1K_esposo_husband_image.jpg",
             "tags": [
+                "Family",
                 "People"
             ]
         },
@@ -10661,7 +11490,9 @@
             "audioWordFile": "ES1K_882_respaldo_word.mp3",
             "audioSentenceFile": "ES1K_882_respaldo_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es1k_c0883",
@@ -10672,7 +11503,9 @@
             "audioWordFile": "ES1K_883_incendio_word.mp3",
             "audioSentenceFile": "ES1K_883_incendio_sentence.mp3",
             "mediaFile": "ES1K_incendio_fire_image.jpg",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0884",
@@ -10683,7 +11516,10 @@
             "audioWordFile": "ES1K_884_dorado_word.mp3",
             "audioSentenceFile": "ES1K_884_dorado_sentence.mp3",
             "mediaFile": "ES1K_dorado_gold_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Colors"
+            ]
         },
         {
             "id": "es1k_c0885",
@@ -10694,7 +11530,9 @@
             "audioWordFile": "ES1K_885_enseguida_word.mp3",
             "audioSentenceFile": "ES1K_885_enseguida_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0886",
@@ -10717,6 +11555,7 @@
             "audioSentenceFile": "ES1K_887_acoger_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10730,6 +11569,8 @@
             "audioSentenceFile": "ES1K_888_sembrar_sentence.mp3",
             "mediaFile": "ES1K_sembrar_sow_image.jpg",
             "tags": [
+                "Nature",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10742,7 +11583,9 @@
             "audioWordFile": "ES1K_889_barra_word.mp3",
             "audioSentenceFile": "ES1K_889_barra_sentence.mp3",
             "mediaFile": "ES1K_barra_bar_image.jpg",
-            "tags": []
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es1k_c0890",
@@ -10754,6 +11597,8 @@
             "audioSentenceFile": "ES1K_890_retroceder_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Body",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10767,6 +11612,7 @@
             "audioSentenceFile": "ES1K_891_relatar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10791,6 +11637,7 @@
             "audioSentenceFile": "ES1K_893_lucir_sentence.mp3",
             "mediaFile": "ES1K_lucir_shine_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10838,7 +11685,11 @@
             "audioWordFile": "ES1K_897_porvenir_word.mp3",
             "audioSentenceFile": "ES1K_897_porvenir_sentence.mp3",
             "mediaFile": "ES1K_porvenir_future_image.jpg",
-            "tags": []
+            "tags": [
+                "Prepositions",
+                "Time",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0898",
@@ -10850,6 +11701,9 @@
             "audioSentenceFile": "ES1K_898_ahorrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Concepts",
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -10863,6 +11717,7 @@
             "audioSentenceFile": "ES1K_899_perjudicar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10887,6 +11742,7 @@
             "audioSentenceFile": "ES1K_901_enterrar_sentence.mp3",
             "mediaFile": "ES1K_enterrar_bury_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -10899,7 +11755,9 @@
             "audioWordFile": "ES1K_902_blando_word.mp3",
             "audioSentenceFile": "ES1K_902_blando_sentence.mp3",
             "mediaFile": "ES1K_blando_soft_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0903",
@@ -10965,7 +11823,10 @@
             "audioWordFile": "ES1K_908_recto_word.mp3",
             "audioSentenceFile": "ES1K_908_recto_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts",
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0909",
@@ -10977,6 +11838,7 @@
             "audioSentenceFile": "ES1K_909_ahogar_sentence.mp3",
             "mediaFile": "ES1K_ahogar_drown_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11012,6 +11874,7 @@
             "audioSentenceFile": "ES1K_912_restar_sentence.mp3",
             "mediaFile": "ES1K_restar_subtract_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11036,6 +11899,7 @@
             "audioSentenceFile": "ES1K_914_picar_sentence.mp3",
             "mediaFile": "ES1K_picar_itchy_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11060,6 +11924,7 @@
             "audioSentenceFile": "ES1K_916_rezar_sentence.mp3",
             "mediaFile": "ES1K_rezar_pray_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11072,7 +11937,9 @@
             "audioWordFile": "ES1K_917_cuero_word.mp3",
             "audioSentenceFile": "ES1K_917_cuero_sentence.mp3",
             "mediaFile": "ES1K_cuero_leather_image.jpg",
-            "tags": []
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es1k_c0918",
@@ -11095,6 +11962,7 @@
             "audioSentenceFile": "ES1K_919_inducir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11108,6 +11976,7 @@
             "audioSentenceFile": "ES1K_920_privar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11121,6 +11990,7 @@
             "audioSentenceFile": "ES1K_921_abrazar_sentence.mp3",
             "mediaFile": "ES1K_abrazar_hug_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11134,6 +12004,7 @@
             "audioSentenceFile": "ES1K_922_sujetar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11223,7 +12094,9 @@
             "audioWordFile": "ES1K_930_índole_word.mp3",
             "audioSentenceFile": "ES1K_930_índole_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es1k_c0931",
@@ -11245,7 +12118,9 @@
             "audioWordFile": "ES1K_932_cuchillo_word.mp3",
             "audioSentenceFile": "ES1K_932_cuchillo_sentence.mp3",
             "mediaFile": "ES1K_cuchillo_knife_image.jpg",
-            "tags": []
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "es1k_c0933",
@@ -11268,6 +12143,7 @@
             "audioSentenceFile": "ES1K_934_frenar_sentence.mp3",
             "mediaFile": "ES1K_frenar_brake_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11281,6 +12157,7 @@
             "audioSentenceFile": "ES1K_935_adivinar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11293,7 +12170,9 @@
             "audioWordFile": "ES1K_936_mosca_word.mp3",
             "audioSentenceFile": "ES1K_936_mosca_sentence.mp3",
             "mediaFile": "ES1K_mosca_fly_image.jpg",
-            "tags": []
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "es1k_c0937",
@@ -11305,6 +12184,7 @@
             "audioSentenceFile": "ES1K_937_tragar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11318,6 +12198,7 @@
             "audioSentenceFile": "ES1K_938_cena_sentence.mp3",
             "mediaFile": "ES1K_cena_cena_image.jpg",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -11341,7 +12222,9 @@
             "audioWordFile": "ES1K_940_tierno_word.mp3",
             "audioSentenceFile": "ES1K_940_tierno_sentence.mp3",
             "mediaFile": "ES1K_tierno_tender_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es1k_c0941",
@@ -11353,6 +12236,8 @@
             "audioSentenceFile": "ES1K_941_sobrar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Directions",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11366,6 +12251,7 @@
             "audioSentenceFile": "ES1K_942_brotar_sentence.mp3",
             "mediaFile": "ES1K_brotar_sprout_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11378,7 +12264,9 @@
             "audioWordFile": "ES1K_943_postre_word.mp3",
             "audioSentenceFile": "ES1K_943_postre_sentence.mp3",
             "mediaFile": "ES1K_postre_dessert_image.jpg",
-            "tags": []
+            "tags": [
+                "Prepositions"
+            ]
         },
         {
             "id": "es1k_c0944",
@@ -11412,6 +12300,7 @@
             "audioSentenceFile": "ES1K_946_aliviar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11458,6 +12347,7 @@
             "audioSentenceFile": "ES1K_950_suscitar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11493,6 +12383,7 @@
             "audioSentenceFile": "ES1K_953_resumir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11517,6 +12408,7 @@
             "audioSentenceFile": "ES1K_955_burlar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11530,6 +12422,7 @@
             "audioSentenceFile": "ES1K_956_encajar_sentence.mp3",
             "mediaFile": "ES1K_encajar_fit_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11543,6 +12436,8 @@
             "audioSentenceFile": "ES1K_957_nadar_sentence.mp3",
             "mediaFile": "ES1K_nadar_swim_image.jpg",
             "tags": [
+                "Prepositions",
+                "Sports",
                 "Verbs"
             ]
         },
@@ -11555,7 +12450,11 @@
             "audioWordFile": "ES1K_958_amanecer_word.mp3",
             "audioSentenceFile": "ES1K_958_amanecer_sentence.mp3",
             "mediaFile": "ES1K_amanecer_daybreak_image.jpg",
-            "tags": []
+            "tags": [
+                "Prepositions",
+                "Time of Day",
+                "Verbs"
+            ]
         },
         {
             "id": "es1k_c0959",
@@ -11578,6 +12477,7 @@
             "audioSentenceFile": "ES1K_960_desplegar_sentence.mp3",
             "mediaFile": "ES1K_desplegar_unfold_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11591,6 +12491,7 @@
             "audioSentenceFile": "ES1K_961_desembocar_sentence.mp3",
             "mediaFile": "ES1K_desembocar_flow_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11626,6 +12527,7 @@
             "audioSentenceFile": "ES1K_964_cazar_sentence.mp3",
             "mediaFile": "ES1K_cazar_hunt_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11638,7 +12540,10 @@
             "audioWordFile": "ES1K_965_ojalá_word.mp3",
             "audioSentenceFile": "ES1K_965_ojalá_sentence.mp3",
             "mediaFile": "",
-            "tags": []
+            "tags": [
+                "Concepts",
+                "Pronouns"
+            ]
         },
         {
             "id": "es1k_c0966",
@@ -11672,6 +12577,9 @@
             "audioSentenceFile": "ES1K_968_acostar_sentence.mp3",
             "mediaFile": "ES1K_acostar_gotobed_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Objects",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11709,6 +12617,7 @@
             "audioSentenceFile": "ES1K_971_almuerzo_sentence.mp3",
             "mediaFile": "ES1K_almuerzo_lunch_image.jpg",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -11746,6 +12655,7 @@
             "audioSentenceFile": "ES1K_974_desayuno_sentence.mp3",
             "mediaFile": "ES1K_desayuno_breakfast_image.jpg",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -11770,6 +12680,9 @@
             "audioSentenceFile": "ES1K_976_enamorar_sentence.mp3",
             "mediaFile": "ES1K_enamorar_love_image.jpg",
             "tags": [
+                "Concepts",
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -11805,6 +12718,9 @@
             "audioSentenceFile": "ES1K_979_cenar_sentence.mp3",
             "mediaFile": "ES1K_cenar_havedinner_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Food",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11829,6 +12745,7 @@
             "audioSentenceFile": "ES1K_981_presumir_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11852,7 +12769,10 @@
             "audioWordFile": "ES1K_983_despacio_word.mp3",
             "audioSentenceFile": "ES1K_983_despacio_sentence.mp3",
             "mediaFile": "ES1K_despacio_slowly_image.jpg",
-            "tags": []
+            "tags": [
+                "Adjectives",
+                "Adverbs"
+            ]
         },
         {
             "id": "es1k_c0984",
@@ -11907,7 +12827,9 @@
             "audioWordFile": "ES1K_988_liso_word.mp3",
             "audioSentenceFile": "ES1K_988_liso_sentence.mp3",
             "mediaFile": "ES1K_liso_straight_image.jpg",
-            "tags": []
+            "tags": [
+                "Directions"
+            ]
         },
         {
             "id": "es1k_c0989",
@@ -11919,6 +12841,7 @@
             "audioSentenceFile": "ES1K_989_charlar_sentence.mp3",
             "mediaFile": "ES1K_charlar_chat_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11932,6 +12855,7 @@
             "audioSentenceFile": "ES1K_990_mudar_sentence.mp3",
             "mediaFile": "ES1K_mudar_move_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11956,6 +12880,9 @@
             "audioSentenceFile": "ES1K_992_estrenar_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Numbers",
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -11980,6 +12907,7 @@
             "audioSentenceFile": "ES1K_994_hervir_sentence.mp3",
             "mediaFile": "ES1K_hervir_boil_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -11993,6 +12921,7 @@
             "audioSentenceFile": "ES1K_995_planchar_sentence.mp3",
             "mediaFile": "ES1K_planchar_iron_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -12017,6 +12946,7 @@
             "audioSentenceFile": "ES1K_997_espantar_sentence.mp3",
             "mediaFile": "ES1K_espantar_frighten_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -12030,6 +12960,8 @@
             "audioSentenceFile": "ES1K_998_estropear_sentence.mp3",
             "mediaFile": "",
             "tags": [
+                "Position",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -12043,6 +12975,8 @@
             "audioSentenceFile": "ES1K_999_duchar_sentence.mp3",
             "mediaFile": "ES1K_duchar_shower_image.jpg",
             "tags": [
+                "Daily Routine",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -12056,6 +12990,7 @@
             "audioSentenceFile": "ES1K_1000_esfumar_sentence.mp3",
             "mediaFile": "ES1K_esfumar_disappear_image.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         }

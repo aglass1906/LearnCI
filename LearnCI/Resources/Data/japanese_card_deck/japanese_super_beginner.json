@@ -36,7 +36,8 @@
             "audioSentenceFile": "ja_arigato_sentence.mp3",
             "mediaFile": "ja_a1_arigato.jpg",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -49,7 +50,8 @@
             "audioSentenceFile": "ja_sumimasen_sentence.mp3",
             "mediaFile": "ja_a1_sumimasen.jpg",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -114,6 +116,7 @@
             "audioSentenceFile": "ja_mizu_sentence.mp3",
             "mediaFile": "ja_a1_mizu.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -127,6 +130,7 @@
             "audioSentenceFile": "ja_tabemono_sentence.mp3",
             "mediaFile": "ja_a1_tabemono.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -140,7 +144,8 @@
             "audioSentenceFile": "ja_neko_sentence.mp3",
             "mediaFile": "ja_a1_neko.jpg",
             "tags": [
-                "Animals"
+                "Animals",
+                "Nature"
             ]
         },
         {
@@ -153,7 +158,8 @@
             "audioSentenceFile": "ja_inu_sentence.mp3",
             "mediaFile": "ja_a1_inu.jpg",
             "tags": [
-                "Animals"
+                "Animals",
+                "Nature"
             ]
         },
         {
@@ -166,7 +172,8 @@
             "audioSentenceFile": "ja_ie_sentence.mp3",
             "mediaFile": "ja_a1_ie.jpg",
             "tags": [
-                "Home"
+                "Home",
+                "Places"
             ]
         },
         {
@@ -244,7 +251,8 @@
             "audioSentenceFile": "ja_asa_sentence.mp3",
             "mediaFile": "ja_a1_asa.jpg",
             "tags": [
-                "Time"
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -257,7 +265,8 @@
             "audioSentenceFile": "ja_yoru_sentence.mp3",
             "mediaFile": "ja_a1_yoru.jpg",
             "tags": [
-                "Time"
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -270,6 +279,7 @@
             "audioSentenceFile": "ja_kyo_sentence.mp3",
             "mediaFile": "ja_a1_kyo.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -283,6 +293,7 @@
             "audioSentenceFile": "ja_kinou_sentence.mp3",
             "mediaFile": "ja_a1_kinou.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -296,6 +307,8 @@
             "audioSentenceFile": "ja_gakko_sentence.mp3",
             "mediaFile": "ja_a1_gakko.jpg",
             "tags": [
+                "Daily Routine",
+                "Places",
                 "School"
             ]
         },
@@ -309,6 +322,8 @@
             "audioSentenceFile": "ja_sensei_sentence.mp3",
             "mediaFile": "ja_a1_sensei.jpg",
             "tags": [
+                "Jobs",
+                "People",
                 "School"
             ]
         },
@@ -322,6 +337,8 @@
             "audioSentenceFile": "ja_gakusei_sentence.mp3",
             "mediaFile": "ja_a1_gakusei.jpg",
             "tags": [
+                "Jobs",
+                "People",
                 "School"
             ]
         },
@@ -335,6 +352,7 @@
             "audioSentenceFile": "ja_ureshii_sentence.mp3",
             "mediaFile": "ja_a1_ureshii.jpg",
             "tags": [
+                "Adjectives",
                 "Emotions"
             ]
         }

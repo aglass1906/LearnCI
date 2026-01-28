@@ -23,7 +23,8 @@
             "audioSentenceFile": "ko_jeo_sentence.mp3",
             "mediaFile": "ko_jeo.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -36,7 +37,8 @@
             "audioSentenceFile": "ko_neo_sentence.mp3",
             "mediaFile": "ko_neo.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -49,7 +51,8 @@
             "audioSentenceFile": "ko_geu_sentence.mp3",
             "mediaFile": "ko_geu.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -62,7 +65,8 @@
             "audioSentenceFile": "ko_geunyeo_sentence.mp3",
             "mediaFile": "ko_geunyeo.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -75,6 +79,7 @@
             "audioSentenceFile": "ko_saram_sentence.mp3",
             "mediaFile": "ko_saram.jpg",
             "tags": [
+                "People",
                 "People & Family"
             ]
         },
@@ -88,6 +93,7 @@
             "audioSentenceFile": "ko_namja_sentence.mp3",
             "mediaFile": "ko_namja.jpg",
             "tags": [
+                "People",
                 "People & Family"
             ]
         },
@@ -101,6 +107,7 @@
             "audioSentenceFile": "ko_yeoja_sentence.mp3",
             "mediaFile": "ko_yeoja.jpg",
             "tags": [
+                "People",
                 "People & Family"
             ]
         },
@@ -114,6 +121,7 @@
             "audioSentenceFile": "ko_ai_sentence.mp3",
             "mediaFile": "ko_ai.jpg",
             "tags": [
+                "Family",
                 "People & Family"
             ]
         },
@@ -127,6 +135,7 @@
             "audioSentenceFile": "ko_abeoji_sentence.mp3",
             "mediaFile": "ko_abeoji.jpg",
             "tags": [
+                "Family",
                 "People & Family"
             ]
         },
@@ -140,6 +149,7 @@
             "audioSentenceFile": "ko_eomeoni_sentence.mp3",
             "mediaFile": "ko_eomeoni.jpg",
             "tags": [
+                "Family",
                 "People & Family"
             ]
         },
@@ -166,6 +176,7 @@
             "audioSentenceFile": "ko_hyeong_sentence.mp3",
             "mediaFile": "ko_hyeong.jpg",
             "tags": [
+                "Family",
                 "People & Family"
             ]
         },
@@ -179,6 +190,7 @@
             "audioSentenceFile": "ko_nuna_sentence.mp3",
             "mediaFile": "ko_nuna.jpg",
             "tags": [
+                "Family",
                 "People & Family"
             ]
         },
@@ -192,6 +204,7 @@
             "audioSentenceFile": "ko_chingu_sentence.mp3",
             "mediaFile": "ko_chingu.jpg",
             "tags": [
+                "People",
                 "People & Family"
             ]
         },
@@ -205,6 +218,7 @@
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
             "mediaFile": "ko_hakgyo.jpg",
             "tags": [
+                "Daily Routine",
                 "Places"
             ]
         },
@@ -257,6 +271,7 @@
             "audioSentenceFile": "ko_sikdang_sentence.mp3",
             "mediaFile": "ko_sikdang.jpg",
             "tags": [
+                "Food",
                 "Places"
             ]
         },
@@ -270,6 +285,7 @@
             "audioSentenceFile": "ko_keopisyop_sentence.mp3",
             "mediaFile": "ko_keopisyop.jpg",
             "tags": [
+                "Food",
                 "Places"
             ]
         },
@@ -283,7 +299,8 @@
             "audioSentenceFile": "ko_jip_sentence.mp3",
             "mediaFile": "ko_jip.jpg",
             "tags": [
-                "Home & Furniture"
+                "Home & Furniture",
+                "Places"
             ]
         },
         {
@@ -296,7 +313,8 @@
             "audioSentenceFile": "ko_bang_sentence.mp3",
             "mediaFile": "ko_bang.jpg",
             "tags": [
-                "Home & Furniture"
+                "Home & Furniture",
+                "Places"
             ]
         },
         {
@@ -309,7 +327,8 @@
             "audioSentenceFile": "ko_hwajangsil_sentence.mp3",
             "mediaFile": "ko_hwajangsil.jpg",
             "tags": [
-                "Home & Furniture"
+                "Home & Furniture",
+                "Places"
             ]
         },
         {
@@ -322,7 +341,8 @@
             "audioSentenceFile": "ko_jubang_sentence.mp3",
             "mediaFile": "ko_jubang.jpg",
             "tags": [
-                "Home & Furniture"
+                "Home & Furniture",
+                "Places"
             ]
         },
         {
@@ -335,7 +355,9 @@
             "audioSentenceFile": "ko_chimdae_sentence.mp3",
             "mediaFile": "ko_chimdae.jpg",
             "tags": [
-                "Home & Furniture"
+                "Daily Routine",
+                "Home & Furniture",
+                "Objects"
             ]
         },
         {
@@ -361,7 +383,8 @@
             "audioSentenceFile": "ko_uija_sentence.mp3",
             "mediaFile": "ko_uija.jpg",
             "tags": [
-                "Home & Furniture"
+                "Home & Furniture",
+                "Objects"
             ]
         },
         {
@@ -439,6 +462,7 @@
             "audioSentenceFile": "ko_don_sentence.mp3",
             "mediaFile": "ko_don.jpg",
             "tags": [
+                "Concepts",
                 "Money"
             ]
         },
@@ -478,7 +502,8 @@
             "audioSentenceFile": "ko_gabang_sentence.mp3",
             "mediaFile": "ko_gabang.jpg",
             "tags": [
-                "Clothing"
+                "Clothing",
+                "Objects"
             ]
         },
         {
@@ -491,6 +516,7 @@
             "audioSentenceFile": "ko_sigan_sentence.mp3",
             "mediaFile": "ko_sigan.jpg",
             "tags": [
+                "Time",
                 "Time & Meals"
             ]
         },
@@ -504,6 +530,8 @@
             "audioSentenceFile": "ko_oneul_sentence.mp3",
             "mediaFile": "ko_oneul.jpg",
             "tags": [
+                "Adverbs",
+                "Time",
                 "Time & Meals"
             ]
         },
@@ -517,6 +545,8 @@
             "audioSentenceFile": "ko_eoje_sentence.mp3",
             "mediaFile": "ko_eoje.jpg",
             "tags": [
+                "Adverbs",
+                "Time",
                 "Time & Meals"
             ]
         },
@@ -530,6 +560,8 @@
             "audioSentenceFile": "ko_naeil_sentence.mp3",
             "mediaFile": "ko_naeil.jpg",
             "tags": [
+                "Adverbs",
+                "Time",
                 "Time & Meals"
             ]
         },
@@ -543,7 +575,11 @@
             "audioSentenceFile": "ko_achim_sentence.mp3",
             "mediaFile": "ko_achim.jpg",
             "tags": [
-                "Time & Meals"
+                "Daily Routine",
+                "Food",
+                "Time",
+                "Time & Meals",
+                "Time of Day"
             ]
         },
         {
@@ -556,6 +592,8 @@
             "audioSentenceFile": "ko_jeomsim_sentence.mp3",
             "mediaFile": "ko_jeomsim.jpg",
             "tags": [
+                "Daily Routine",
+                "Food",
                 "Time & Meals"
             ]
         },
@@ -569,7 +607,11 @@
             "audioSentenceFile": "ko_jeonyeok_sentence.mp3",
             "mediaFile": "ko_jeonyeok.jpg",
             "tags": [
-                "Time & Meals"
+                "Daily Routine",
+                "Food",
+                "Time",
+                "Time & Meals",
+                "Time of Day"
             ]
         },
         {
@@ -582,7 +624,9 @@
             "audioSentenceFile": "ko_bam_sentence.mp3",
             "mediaFile": "ko_bam.jpg",
             "tags": [
-                "Time & Meals"
+                "Time",
+                "Time & Meals",
+                "Time of Day"
             ]
         },
         {
@@ -595,6 +639,7 @@
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
             "mediaFile": "ko_eumsik.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -608,6 +653,7 @@
             "audioSentenceFile": "ko_mul_sentence.mp3",
             "mediaFile": "ko_mul.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -621,6 +667,7 @@
             "audioSentenceFile": "ko_bap_sentence.mp3",
             "mediaFile": "ko_bap.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -634,6 +681,7 @@
             "audioSentenceFile": "ko_gogi_sentence.mp3",
             "mediaFile": "ko_gogi.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -647,6 +695,8 @@
             "audioSentenceFile": "ko_saengseon_sentence.mp3",
             "mediaFile": "ko_saengseon.jpg",
             "tags": [
+                "Animals",
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -660,6 +710,7 @@
             "audioSentenceFile": "ko_yachae_sentence.mp3",
             "mediaFile": "ko_yachae.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -673,6 +724,7 @@
             "audioSentenceFile": "ko_gwail_sentence.mp3",
             "mediaFile": "ko_gwail.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -686,6 +738,7 @@
             "audioSentenceFile": "ko_uyu_sentence.mp3",
             "mediaFile": "ko_uyu.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -699,6 +752,7 @@
             "audioSentenceFile": "ko_ppang_sentence.mp3",
             "mediaFile": "ko_ppang.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -712,6 +766,7 @@
             "audioSentenceFile": "ko_gyeran_sentence.mp3",
             "mediaFile": "ko_gyeran.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -725,7 +780,9 @@
             "audioSentenceFile": "ko_cha_sentence.mp3",
             "mediaFile": "ko_cha.jpg",
             "tags": [
-                "Food & Drink"
+                "Food",
+                "Food & Drink",
+                "Objects"
             ]
         },
         {
@@ -738,6 +795,7 @@
             "audioSentenceFile": "ko_keopi_sentence.mp3",
             "mediaFile": "ko_keopi.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -777,7 +835,8 @@
             "audioSentenceFile": "ko_il_sentence.mp3",
             "mediaFile": "ko_il.jpg",
             "tags": [
-                "Activities"
+                "Activities",
+                "Daily Routine"
             ]
         },
         {
@@ -790,7 +849,8 @@
             "audioSentenceFile": "ko_undong_sentence.mp3",
             "mediaFile": "ko_undong.jpg",
             "tags": [
-                "Activities"
+                "Activities",
+                "Sports"
             ]
         },
         {
@@ -855,6 +915,7 @@
             "audioSentenceFile": "ko_bi_sentence.mp3",
             "mediaFile": "ko_bi.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -868,6 +929,8 @@
             "audioSentenceFile": "ko_nun_sentence.mp3",
             "mediaFile": "ko_nun.jpg",
             "tags": [
+                "Body",
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -881,6 +944,7 @@
             "audioSentenceFile": "ko_baram_sentence.mp3",
             "mediaFile": "ko_baram.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -894,6 +958,7 @@
             "audioSentenceFile": "ko_haneul_sentence.mp3",
             "mediaFile": "ko_haneul.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -907,6 +972,7 @@
             "audioSentenceFile": "ko_gureum_sentence.mp3",
             "mediaFile": "ko_gureum.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -920,6 +986,7 @@
             "audioSentenceFile": "ko_hae_sentence.mp3",
             "mediaFile": "ko_hae.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -933,6 +1000,7 @@
             "audioSentenceFile": "ko_dal_sentence.mp3",
             "mediaFile": "ko_dal.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -946,6 +1014,7 @@
             "audioSentenceFile": "ko_byeol_sentence.mp3",
             "mediaFile": "ko_byeol.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -959,6 +1028,7 @@
             "audioSentenceFile": "ko_san_sentence.mp3",
             "mediaFile": "ko_san.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -972,6 +1042,7 @@
             "audioSentenceFile": "ko_bada_sentence.mp3",
             "mediaFile": "ko_bada.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -985,6 +1056,7 @@
             "audioSentenceFile": "ko_gang_sentence.mp3",
             "mediaFile": "ko_gang.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -998,6 +1070,7 @@
             "audioSentenceFile": "ko_namu_sentence.mp3",
             "mediaFile": "ko_namu.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -1011,6 +1084,7 @@
             "audioSentenceFile": "ko_kkot_sentence.mp3",
             "mediaFile": "ko_kkot.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -1180,7 +1254,8 @@
             "audioSentenceFile": "ko_meolda_sentence.mp3",
             "mediaFile": "ko_meolda.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Position"
             ]
         },
         {
@@ -1193,7 +1268,8 @@
             "audioSentenceFile": "ko_gakkapda_sentence.mp3",
             "mediaFile": "ko_gakkapda.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Position"
             ]
         },
         {
@@ -1284,7 +1360,9 @@
             "audioSentenceFile": "ko_gada_sentence.mp3",
             "mediaFile": "ko_gada.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1297,7 +1375,9 @@
             "audioSentenceFile": "ko_oda_sentence.mp3",
             "mediaFile": "ko_oda.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Prepositions",
+                "Verbs"
             ]
         },
         {
@@ -1310,7 +1390,10 @@
             "audioSentenceFile": "ko_meokda_sentence.mp3",
             "mediaFile": "ko_meokda.jpg",
             "tags": [
-                "Adjectives"
+                "Adjectives",
+                "Food",
+                "Prepositions",
+                "Verbs"
             ]
         }
     ]

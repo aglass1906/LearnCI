@@ -31,7 +31,11 @@
             "audioSentenceFile": "",
             "mediaFile": "",
             "tags": [
-                "Story"
+                "Numbers",
+                "Pronouns",
+                "Story",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -46,6 +50,7 @@
             "audioSentenceFile": "es_el_hombre_se_despierta_cansado.mp3",
             "mediaFile": "es_hombre_despierta.jpg",
             "tags": [
+                "People",
                 "Story"
             ]
         },
@@ -61,6 +66,7 @@
             "audioSentenceFile": "es_el_hombre_prepara_cafe_y_piensa.mp3",
             "mediaFile": "es_hombre_cafe.jpg",
             "tags": [
+                "Food",
                 "Story"
             ]
         },
@@ -76,6 +82,7 @@
             "audioSentenceFile": "es_caminar_observando_calle.mp3",
             "mediaFile": "es_hombre_calle.jpg",
             "tags": [
+                "Places",
                 "Story"
             ]
         },
@@ -91,6 +98,7 @@
             "audioSentenceFile": "es_el_hombre_habla_con_amigo_tiempo.mp3",
             "mediaFile": "es_hombre_amigo.jpg",
             "tags": [
+                "People",
                 "Story"
             ]
         },
@@ -106,7 +114,10 @@
             "audioSentenceFile": "",
             "mediaFile": "",
             "tags": [
-                "Story"
+                "Pronouns",
+                "Story",
+                "Time",
+                "Time of Day"
             ]
         }
     ]

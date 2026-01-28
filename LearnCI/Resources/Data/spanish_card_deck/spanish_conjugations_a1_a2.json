@@ -21,6 +21,7 @@
             "audioWordFile": "es_hablo_word.mp3",
             "audioSentenceFile": "es_hablo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -33,6 +34,7 @@
             "audioWordFile": "es_hablas_word.mp3",
             "audioSentenceFile": "es_hablas_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -45,6 +47,7 @@
             "audioWordFile": "es_habla_word.mp3",
             "audioSentenceFile": "es_habla_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -57,6 +60,7 @@
             "audioWordFile": "es_hablamos_word.mp3",
             "audioSentenceFile": "es_hablamos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -69,6 +73,7 @@
             "audioWordFile": "es_hablan_word.mp3",
             "audioSentenceFile": "es_hablan_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -81,6 +86,8 @@
             "audioWordFile": "es_como_word.mp3",
             "audioSentenceFile": "es_como_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -93,6 +100,8 @@
             "audioWordFile": "es_comes_word.mp3",
             "audioSentenceFile": "es_comes_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -105,6 +114,7 @@
             "audioWordFile": "es_come_word.mp3",
             "audioSentenceFile": "es_come_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -117,6 +127,8 @@
             "audioWordFile": "es_comemos_word.mp3",
             "audioSentenceFile": "es_comemos_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -129,6 +141,8 @@
             "audioWordFile": "es_comen_word.mp3",
             "audioSentenceFile": "es_comen_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -141,6 +155,7 @@
             "audioWordFile": "es_vivo_word.mp3",
             "audioSentenceFile": "es_vivo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -153,6 +168,7 @@
             "audioWordFile": "es_vives_word.mp3",
             "audioSentenceFile": "es_vives_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -165,6 +181,7 @@
             "audioWordFile": "es_vive_word.mp3",
             "audioSentenceFile": "es_vive_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -177,6 +194,7 @@
             "audioWordFile": "es_vivimos_word.mp3",
             "audioSentenceFile": "es_vivimos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -189,6 +207,7 @@
             "audioWordFile": "es_viven_word.mp3",
             "audioSentenceFile": "es_viven_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -201,6 +220,7 @@
             "audioWordFile": "es_soy_word.mp3",
             "audioSentenceFile": "es_soy_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -213,6 +233,7 @@
             "audioWordFile": "es_eres_word.mp3",
             "audioSentenceFile": "es_eres_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -225,6 +246,7 @@
             "audioWordFile": "es_es_word.mp3",
             "audioSentenceFile": "es_es_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -237,6 +259,7 @@
             "audioWordFile": "es_somos_word.mp3",
             "audioSentenceFile": "es_somos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -249,6 +272,7 @@
             "audioWordFile": "es_son_word.mp3",
             "audioSentenceFile": "es_son_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -261,6 +285,7 @@
             "audioWordFile": "es_estoy_word.mp3",
             "audioSentenceFile": "es_estoy_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -273,6 +298,7 @@
             "audioWordFile": "es_estas_word.mp3",
             "audioSentenceFile": "es_estas_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -285,6 +311,7 @@
             "audioWordFile": "es_esta_word.mp3",
             "audioSentenceFile": "es_esta_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -297,6 +324,7 @@
             "audioWordFile": "es_estamos_word.mp3",
             "audioSentenceFile": "es_estamos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -309,6 +337,7 @@
             "audioWordFile": "es_estan_word.mp3",
             "audioSentenceFile": "es_estan_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -321,6 +350,7 @@
             "audioWordFile": "es_tengo_word.mp3",
             "audioSentenceFile": "es_tengo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -333,6 +363,7 @@
             "audioWordFile": "es_tienes_word.mp3",
             "audioSentenceFile": "es_tienes_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -345,6 +376,7 @@
             "audioWordFile": "es_tiene_word.mp3",
             "audioSentenceFile": "es_tiene_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -357,6 +389,7 @@
             "audioWordFile": "es_tenemos_word.mp3",
             "audioSentenceFile": "es_tenemos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -369,6 +402,7 @@
             "audioWordFile": "es_tienen_word.mp3",
             "audioSentenceFile": "es_tienen_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -381,6 +415,7 @@
             "audioWordFile": "es_voy_word.mp3",
             "audioSentenceFile": "es_voy_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -393,6 +428,7 @@
             "audioWordFile": "es_vas_word.mp3",
             "audioSentenceFile": "es_vas_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -405,6 +441,7 @@
             "audioWordFile": "es_va_word.mp3",
             "audioSentenceFile": "es_va_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -417,6 +454,7 @@
             "audioWordFile": "es_vamos_word.mp3",
             "audioSentenceFile": "es_vamos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -429,6 +467,7 @@
             "audioWordFile": "es_van_word.mp3",
             "audioSentenceFile": "es_van_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -441,6 +480,7 @@
             "audioWordFile": "es_hago_word.mp3",
             "audioSentenceFile": "es_hago_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -453,6 +493,7 @@
             "audioWordFile": "es_haces_word.mp3",
             "audioSentenceFile": "es_haces_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -465,6 +506,7 @@
             "audioWordFile": "es_hace_word.mp3",
             "audioSentenceFile": "es_hace_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -477,6 +519,7 @@
             "audioWordFile": "es_hacemos_word.mp3",
             "audioSentenceFile": "es_hacemos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -489,6 +532,7 @@
             "audioWordFile": "es_hacen_word.mp3",
             "audioSentenceFile": "es_hacen_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -501,6 +545,7 @@
             "audioWordFile": "es_hable_word.mp3",
             "audioSentenceFile": "es_hable_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -513,6 +558,7 @@
             "audioWordFile": "es_hablaste_word.mp3",
             "audioSentenceFile": "es_hablaste_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -525,6 +571,7 @@
             "audioWordFile": "es_hablo_past_word.mp3",
             "audioSentenceFile": "es_hablo_past_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -537,6 +584,8 @@
             "audioWordFile": "es_hablamos_past_word.mp3",
             "audioSentenceFile": "es_hablamos_past_sentence.mp3",
             "tags": [
+                "Pronouns",
+                "Time",
                 "Verbs"
             ]
         },
@@ -549,6 +598,7 @@
             "audioWordFile": "es_hablaron_word.mp3",
             "audioSentenceFile": "es_hablaron_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -561,6 +611,7 @@
             "audioWordFile": "es_comi_word.mp3",
             "audioSentenceFile": "es_comi_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -573,6 +624,7 @@
             "audioWordFile": "es_comiste_word.mp3",
             "audioSentenceFile": "es_comiste_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -585,6 +637,7 @@
             "audioWordFile": "es_comio_word.mp3",
             "audioSentenceFile": "es_comio_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -597,6 +650,7 @@
             "audioWordFile": "es_comimos_past_word.mp3",
             "audioSentenceFile": "es_comimos_past_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -609,6 +663,7 @@
             "audioWordFile": "es_comieron_word.mp3",
             "audioSentenceFile": "es_comieron_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -621,6 +676,7 @@
             "audioWordFile": "es_vivi_word.mp3",
             "audioSentenceFile": "es_vivi_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -633,6 +689,7 @@
             "audioWordFile": "es_viviste_word.mp3",
             "audioSentenceFile": "es_viviste_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -645,6 +702,7 @@
             "audioWordFile": "es_vivio_word.mp3",
             "audioSentenceFile": "es_vivio_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -657,6 +715,8 @@
             "audioWordFile": "es_vivimos_past_word.mp3",
             "audioSentenceFile": "es_vivimos_past_sentence.mp3",
             "tags": [
+                "Pronouns",
+                "Time",
                 "Verbs"
             ]
         },
@@ -669,6 +729,7 @@
             "audioWordFile": "es_vivieron_word.mp3",
             "audioSentenceFile": "es_vivieron_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -681,6 +742,7 @@
             "audioWordFile": "es_fui_word.mp3",
             "audioSentenceFile": "es_fui_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -693,6 +755,7 @@
             "audioWordFile": "es_fuiste_word.mp3",
             "audioSentenceFile": "es_fuiste_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -705,6 +768,7 @@
             "audioWordFile": "es_fue_word.mp3",
             "audioSentenceFile": "es_fue_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -717,6 +781,7 @@
             "audioWordFile": "es_fuimos_word.mp3",
             "audioSentenceFile": "es_fuimos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -729,6 +794,7 @@
             "audioWordFile": "es_fueron_word.mp3",
             "audioSentenceFile": "es_fueron_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -741,6 +807,7 @@
             "audioWordFile": "es_llamo_word.mp3",
             "audioSentenceFile": "es_llamo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -753,6 +820,7 @@
             "audioWordFile": "es_llamas_word.mp3",
             "audioSentenceFile": "es_llamas_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -765,6 +833,7 @@
             "audioWordFile": "es_llama_word.mp3",
             "audioSentenceFile": "es_llama_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -777,6 +846,7 @@
             "audioWordFile": "es_llamamos_word.mp3",
             "audioSentenceFile": "es_llamamos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -789,6 +859,7 @@
             "audioWordFile": "es_llaman_word.mp3",
             "audioSentenceFile": "es_llaman_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -801,6 +872,7 @@
             "audioWordFile": "es_entiendo_word.mp3",
             "audioSentenceFile": "es_entiendo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -813,6 +885,7 @@
             "audioWordFile": "es_entiendes_word.mp3",
             "audioSentenceFile": "es_entiendes_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -825,6 +898,7 @@
             "audioWordFile": "es_entiende_word.mp3",
             "audioSentenceFile": "es_entiende_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -837,6 +911,7 @@
             "audioWordFile": "es_entendemos_word.mp3",
             "audioSentenceFile": "es_entendemos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -849,6 +924,7 @@
             "audioWordFile": "es_entienden_word.mp3",
             "audioSentenceFile": "es_entienden_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -861,6 +937,7 @@
             "audioWordFile": "es_quiero_word.mp3",
             "audioSentenceFile": "es_quiero_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -873,6 +950,7 @@
             "audioWordFile": "es_quieres_word.mp3",
             "audioSentenceFile": "es_quieres_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -885,6 +963,7 @@
             "audioWordFile": "es_quiere_word.mp3",
             "audioSentenceFile": "es_quiere_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -897,6 +976,7 @@
             "audioWordFile": "es_queremos_word.mp3",
             "audioSentenceFile": "es_queremos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -909,6 +989,7 @@
             "audioWordFile": "es_quieren_word.mp3",
             "audioSentenceFile": "es_quieren_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -921,6 +1002,7 @@
             "audioWordFile": "es_hice_word.mp3",
             "audioSentenceFile": "es_hice_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -933,6 +1015,7 @@
             "audioWordFile": "es_hiciste_word.mp3",
             "audioSentenceFile": "es_hiciste_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -945,6 +1028,7 @@
             "audioWordFile": "es_hizo_word.mp3",
             "audioSentenceFile": "es_hizo_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -957,6 +1041,7 @@
             "audioWordFile": "es_hicimos_word.mp3",
             "audioSentenceFile": "es_hicimos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -969,6 +1054,7 @@
             "audioWordFile": "es_hicieron_word.mp3",
             "audioSentenceFile": "es_hicieron_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -981,6 +1067,8 @@
             "audioWordFile": "es_pense_word.mp3",
             "audioSentenceFile": "es_pense_sentence.mp3",
             "tags": [
+                "Concepts",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -993,6 +1081,8 @@
             "audioWordFile": "es_pensaste_word.mp3",
             "audioSentenceFile": "es_pensaste_sentence.mp3",
             "tags": [
+                "Concepts",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1005,6 +1095,8 @@
             "audioWordFile": "es_penso_word.mp3",
             "audioSentenceFile": "es_penso_sentence.mp3",
             "tags": [
+                "Concepts",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1017,6 +1109,8 @@
             "audioWordFile": "es_pensamos_past_word.mp3",
             "audioSentenceFile": "es_pensamos_past_sentence.mp3",
             "tags": [
+                "Concepts",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1029,6 +1123,8 @@
             "audioWordFile": "es_pensaron_word.mp3",
             "audioSentenceFile": "es_pensaron_sentence.mp3",
             "tags": [
+                "Concepts",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1041,6 +1137,7 @@
             "audioWordFile": "es_hablare_word.mp3",
             "audioSentenceFile": "es_hablare_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1053,6 +1150,7 @@
             "audioWordFile": "es_hablaras_word.mp3",
             "audioSentenceFile": "es_hablaras_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1065,6 +1163,7 @@
             "audioWordFile": "es_hablara_word.mp3",
             "audioSentenceFile": "es_hablara_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1077,6 +1176,7 @@
             "audioWordFile": "es_hablaremos_future_word.mp3",
             "audioSentenceFile": "es_hablaremos_future_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1089,6 +1189,7 @@
             "audioWordFile": "es_hablaran_word.mp3",
             "audioSentenceFile": "es_hablaran_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1101,6 +1202,8 @@
             "audioWordFile": "es_comere_word.mp3",
             "audioSentenceFile": "es_comere_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1113,6 +1216,8 @@
             "audioWordFile": "es_comeras_word.mp3",
             "audioSentenceFile": "es_comeras_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1125,6 +1230,8 @@
             "audioWordFile": "es_comera_word.mp3",
             "audioSentenceFile": "es_comera_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1137,6 +1244,8 @@
             "audioWordFile": "es_comeremos_word.mp3",
             "audioSentenceFile": "es_comeremos_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1149,6 +1258,8 @@
             "audioWordFile": "es_comeran_word.mp3",
             "audioSentenceFile": "es_comeran_sentence.mp3",
             "tags": [
+                "Food",
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1161,6 +1272,7 @@
             "audioWordFile": "es_vere_word.mp3",
             "audioSentenceFile": "es_vere_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1173,6 +1285,7 @@
             "audioWordFile": "es_veras_word.mp3",
             "audioSentenceFile": "es_veras_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1185,6 +1298,7 @@
             "audioWordFile": "es_vera_word.mp3",
             "audioSentenceFile": "es_vera_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1197,6 +1311,7 @@
             "audioWordFile": "es_veremos_word.mp3",
             "audioSentenceFile": "es_veremos_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         },
@@ -1209,6 +1324,7 @@
             "audioWordFile": "es_veran_word.mp3",
             "audioSentenceFile": "es_veran_sentence.mp3",
             "tags": [
+                "Pronouns",
                 "Verbs"
             ]
         }

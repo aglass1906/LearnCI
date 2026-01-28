@@ -30,7 +30,8 @@
             "sentenceTarget": "Merci beaucoup pour votre aide.",
             "sentenceNative": "Thank you very much for your help.",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -80,7 +81,8 @@
             "sentenceTarget": "Je voudrais un verre d'eau.",
             "sentenceNative": "I would like a glass of water.",
             "tags": [
-                "Basics"
+                "Basics",
+                "Food"
             ]
         },
         {
@@ -90,7 +92,8 @@
             "sentenceTarget": "La nourriture est très bonne.",
             "sentenceNative": "The food is very good.",
             "tags": [
-                "Basics"
+                "Basics",
+                "Food"
             ]
         },
         {
@@ -100,7 +103,8 @@
             "sentenceTarget": "Il est mon meilleur ami.",
             "sentenceNative": "He is my best friend.",
             "tags": [
-                "Daily Life"
+                "Daily Life",
+                "People"
             ]
         },
         {
@@ -110,7 +114,8 @@
             "sentenceTarget": "Ma maison est petite mais jolie.",
             "sentenceNative": "My house is small but pretty.",
             "tags": [
-                "Daily Life"
+                "Daily Life",
+                "Places"
             ]
         },
         {
@@ -120,7 +125,9 @@
             "sentenceTarget": "Le chat dort sur le canapé.",
             "sentenceNative": "The cat sleeps on the sofa.",
             "tags": [
-                "Daily Life"
+                "Animals",
+                "Daily Life",
+                "Nature"
             ]
         },
         {
@@ -130,7 +137,9 @@
             "sentenceTarget": "Le chien court dans le parc.",
             "sentenceNative": "The dog runs in the park.",
             "tags": [
-                "Daily Life"
+                "Animals",
+                "Daily Life",
+                "Nature"
             ]
         },
         {

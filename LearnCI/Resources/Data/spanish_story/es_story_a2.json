@@ -35,7 +35,11 @@
                 "story_only"
             ],
             "tags": [
-                "Story"
+                "Numbers",
+                "Pronouns",
+                "Story",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -50,6 +54,7 @@
             "audioSentenceFile": "",
             "mediaFile": "es_b1_01_hombre_despierta.png",
             "tags": [
+                "People",
                 "Story"
             ]
         },
@@ -65,6 +70,7 @@
             "audioSentenceFile": "",
             "mediaFile": "es_b1_02_hombre_cafe.png",
             "tags": [
+                "Food",
                 "Story"
             ]
         },
@@ -80,6 +86,7 @@
             "audioSentenceFile": "",
             "mediaFile": "es_b1_03_hombre_calle.png",
             "tags": [
+                "Places",
                 "Story"
             ]
         },
@@ -95,6 +102,7 @@
             "audioSentenceFile": "",
             "mediaFile": "es_b1_04_hombre_amigo.png",
             "tags": [
+                "People",
                 "Story"
             ]
         },
@@ -131,7 +139,10 @@
                 "story_only"
             ],
             "tags": [
-                "Story"
+                "Pronouns",
+                "Story",
+                "Time",
+                "Time of Day"
             ]
         },
         {

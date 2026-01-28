@@ -36,7 +36,8 @@
             "audioSentenceFile": "ko_gamsahamnida_sentence.mp3",
             "mediaFile": "ko_a1_gamsahamnida.jpg",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -49,7 +50,8 @@
             "audioSentenceFile": "ko_joesonghamnida_sentence.mp3",
             "mediaFile": "ko_a1_joesonghamnida.jpg",
             "tags": [
-                "Greetings & Basics"
+                "Greetings & Basics",
+                "Pronouns"
             ]
         },
         {
@@ -88,6 +90,7 @@
             "audioSentenceFile": "ko_mul_sentence.mp3",
             "mediaFile": "ko_a1_mul.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -101,6 +104,7 @@
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
             "mediaFile": "ko_a1_eumsik.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -114,7 +118,8 @@
             "audioSentenceFile": "ko_jip_sentence.mp3",
             "mediaFile": "ko_a1_jip.jpg",
             "tags": [
-                "Home & People"
+                "Home & People",
+                "Places"
             ]
         },
         {
@@ -127,7 +132,8 @@
             "audioSentenceFile": "ko_chingu_sentence.mp3",
             "mediaFile": "ko_a1_chingu.jpg",
             "tags": [
-                "Home & People"
+                "Home & People",
+                "People"
             ]
         },
         {
@@ -140,7 +146,8 @@
             "audioSentenceFile": "ko_goyangi_sentence.mp3",
             "mediaFile": "ko_a1_goyangi.jpg",
             "tags": [
-                "Animals"
+                "Animals",
+                "Nature"
             ]
         },
         {
@@ -153,7 +160,8 @@
             "audioSentenceFile": "ko_gangaji_sentence.mp3",
             "mediaFile": "ko_a1_gangaji.jpg",
             "tags": [
-                "Animals"
+                "Animals",
+                "Nature"
             ]
         },
         {
@@ -218,6 +226,8 @@
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
             "mediaFile": "ko_a1_hakgyo.jpg",
             "tags": [
+                "Daily Routine",
+                "Places",
                 "School"
             ]
         },
@@ -231,6 +241,7 @@
             "audioSentenceFile": "ko_oneul_sentence.mp3",
             "mediaFile": "ko_a1_oneul.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -244,6 +255,7 @@
             "audioSentenceFile": "ko_naeil_sentence.mp3",
             "mediaFile": "ko_a1_naeil.jpg",
             "tags": [
+                "Adverbs",
                 "Time"
             ]
         },
@@ -257,7 +269,10 @@
             "audioSentenceFile": "ko_achim_sentence.mp3",
             "mediaFile": "ko_a1_achim.jpg",
             "tags": [
-                "Time"
+                "Daily Routine",
+                "Food",
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -270,7 +285,8 @@
             "audioSentenceFile": "ko_bam_sentence.mp3",
             "mediaFile": "ko_a1_bam.jpg",
             "tags": [
-                "Time"
+                "Time",
+                "Time of Day"
             ]
         },
         {
@@ -283,6 +299,8 @@
             "audioSentenceFile": "ko_seonsaengnim_sentence.mp3",
             "mediaFile": "ko_a1_seonsaengnim.jpg",
             "tags": [
+                "Jobs",
+                "People",
                 "School & People"
             ]
         },
@@ -296,6 +314,8 @@
             "audioSentenceFile": "ko_haksaeng_sentence.mp3",
             "mediaFile": "ko_a1_haksaeng.jpg",
             "tags": [
+                "Jobs",
+                "People",
                 "School & People"
             ]
         },
@@ -309,7 +329,9 @@
             "audioSentenceFile": "ko_saranghae_sentence.mp3",
             "mediaFile": "ko_a1_saranghae.jpg",
             "tags": [
-                "Emotions"
+                "Concepts",
+                "Emotions",
+                "Pronouns"
             ]
         },
         {
@@ -322,7 +344,8 @@
             "audioSentenceFile": "ko_joahae_sentence.mp3",
             "mediaFile": "ko_a1_joahae.jpg",
             "tags": [
-                "Emotions"
+                "Emotions",
+                "Pronouns"
             ]
         },
         {
@@ -335,6 +358,7 @@
             "audioSentenceFile": "ko_haengbokhae_sentence.mp3",
             "mediaFile": "ko_a1_haengbokhae.jpg",
             "tags": [
+                "Adjectives",
                 "Emotions"
             ]
         }

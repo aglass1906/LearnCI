@@ -1,0 +1,949 @@
+{
+    "schema": {
+        "name": "language_learning_taxonomy",
+        "version": "1.0.0",
+        "normalized_model": true,
+        "notes": [
+            "Domains/Subdomains describe language categories (taxonomy).",
+            "Items have ONE primary domain/subdomain (canonical home).",
+            "Cards can be classified into MANY domains/subdomains (learning contexts).",
+            "Decks (card_sets) should be filters over card metadata, not hard-coded lists."
+        ]
+    },
+    "language": {
+        "target": "es",
+        "native": "en",
+        "default_cefr": "A2"
+    },
+    "taxonomy": {
+        "domains": [
+            {
+                "domain_id": "time_calendar",
+                "domain_name": "Time & Calendar",
+                "description": "Time, dates, schedules, frequency, and temporal reference.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "numbers_quantity",
+                "domain_name": "Numbers & Quantity",
+                "description": "Counting, prices, measurements, quantities, and approximation.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "people_identity",
+                "domain_name": "People & Identity",
+                "description": "People, relationships, roles, pronouns, and identity expressions.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "places_location",
+                "domain_name": "Places & Location",
+                "description": "Places, directions, spatial prepositions, and location expressions.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "actions_verbs",
+                "domain_name": "Actions & Verbs",
+                "description": "Core verbs and verb patterns used to describe actions and events.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "states_descriptions",
+                "domain_name": "States & Descriptions",
+                "description": "Adjectives and descriptive language: traits, emotions, conditions, comparisons.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "possession_reference",
+                "domain_name": "Possession & Reference",
+                "description": "Articles, demonstratives, possession, and reference words.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "daily_life",
+                "domain_name": "Daily Life & Routines",
+                "description": "Everyday contexts: routines, errands, school/work, household, health basics.",
+                "tags": [
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "food_drink",
+                "domain_name": "Food & Drink",
+                "description": "Meals, ingredients, ordering, preferences, cooking and eating contexts.",
+                "tags": [
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "travel_movement",
+                "domain_name": "Travel & Movement",
+                "description": "Transport, navigation, lodging, reservations, and travel problem-solving.",
+                "tags": [
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "grammar_meaning",
+                "domain_name": "Grammar as Meaning",
+                "description": "Tense/aspect/mood/voice/agreement expressed through examples (not rules-only).",
+                "tags": [
+                    "foundational"
+                ]
+            },
+            {
+                "domain_id": "sentence_connectors",
+                "domain_name": "Sentence Structure & Connectors",
+                "description": "Connectors and structures for linking ideas, sequencing, and complex sentences.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "social_pragmatics",
+                "domain_name": "Social Language & Pragmatics",
+                "description": "Greetings, politeness, requests, reactions, discourse markers, real speech.",
+                "tags": [
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "questions_information",
+                "domain_name": "Questions & Information",
+                "description": "Question forms, question words, clarifying, and information-seeking patterns.",
+                "tags": [
+                    "foundational",
+                    "high_frequency"
+                ]
+            },
+            {
+                "domain_id": "opinions_argumentation",
+                "domain_name": "Opinions & Argumentation",
+                "description": "Opinions, reasons, agreement/disagreement, persuasion, stance.",
+                "tags": [
+                    "skill_building"
+                ]
+            },
+            {
+                "domain_id": "culture_society",
+                "domain_name": "Culture & Society",
+                "description": "Culture-specific terms, holidays, social norms, slang, regional variation.",
+                "tags": [
+                    "context"
+                ]
+            },
+            {
+                "domain_id": "media_communication",
+                "domain_name": "Media & Communication",
+                "description": "Technology, internet, social media, news, and modern communication language.",
+                "tags": [
+                    "context"
+                ]
+            },
+            {
+                "domain_id": "abstract_concepts",
+                "domain_name": "Abstract Concepts",
+                "description": "Abstract language: values, probability, uncertainty, complex cause/effect.",
+                "tags": [
+                    "advanced"
+                ]
+            },
+            {
+                "domain_id": "storytelling_narrative",
+                "domain_name": "Storytelling & Narrative",
+                "description": "Narrative tools: sequencing events, settings, reported speech, storytelling.",
+                "tags": [
+                    "skill_building"
+                ]
+            },
+            {
+                "domain_id": "learning_meta_language",
+                "domain_name": "Learning Meta-Language",
+                "description": "Classroom/app instructions, feedback, and learning support language (optional).",
+                "tags": [
+                    "optional"
+                ]
+            }
+        ],
+        "subdomains": [
+            {
+                "subdomain_id": "days_of_week",
+                "subdomain_name": "Days of the Week",
+                "domain_id": "time_calendar",
+                "description": "Monday–Sunday and scheduling expressions."
+            },
+            {
+                "subdomain_id": "months_of_year",
+                "subdomain_name": "Months of the Year",
+                "domain_id": "time_calendar",
+                "description": "January–December and date expressions."
+            },
+            {
+                "subdomain_id": "seasons",
+                "subdomain_name": "Seasons",
+                "domain_id": "time_calendar",
+                "description": "Spring/summer/fall/winter and seasonal references."
+            },
+            {
+                "subdomain_id": "parts_of_day",
+                "subdomain_name": "Parts of the Day",
+                "domain_id": "time_calendar",
+                "description": "Morning/afternoon/night and time-of-day phrases."
+            },
+            {
+                "subdomain_id": "dates_years",
+                "subdomain_name": "Dates & Years",
+                "domain_id": "time_calendar",
+                "description": "Dates, years, and talking about the calendar."
+            },
+            {
+                "subdomain_id": "frequency_words",
+                "subdomain_name": "Frequency Words",
+                "domain_id": "time_calendar",
+                "description": "Always/sometimes/never, often/rarely, etc."
+            },
+            {
+                "subdomain_id": "duration_expressions",
+                "subdomain_name": "Duration Expressions",
+                "domain_id": "time_calendar",
+                "description": "For two hours, all day, in a week, since/for, etc."
+            },
+            {
+                "subdomain_id": "relative_time",
+                "subdomain_name": "Relative Time",
+                "domain_id": "time_calendar",
+                "description": "Today/tomorrow/yesterday, already/yet, soon/late."
+            },
+            {
+                "subdomain_id": "time_prepositions",
+                "subdomain_name": "Time Prepositions",
+                "domain_id": "time_calendar",
+                "description": "At/on/in/before/after and equivalents."
+            },
+            {
+                "subdomain_id": "cardinal_numbers",
+                "subdomain_name": "Cardinal Numbers",
+                "domain_id": "numbers_quantity",
+                "description": "0–100, then 100–1000 and beyond."
+            },
+            {
+                "subdomain_id": "ordinal_numbers",
+                "subdomain_name": "Ordinal Numbers",
+                "domain_id": "numbers_quantity",
+                "description": "First/second/third, etc."
+            },
+            {
+                "subdomain_id": "prices_money",
+                "subdomain_name": "Prices & Money",
+                "domain_id": "numbers_quantity",
+                "description": "Costs, currency, payments, change."
+            },
+            {
+                "subdomain_id": "measurements",
+                "subdomain_name": "Measurements",
+                "domain_id": "numbers_quantity",
+                "description": "Weight, length, temperature, units."
+            },
+            {
+                "subdomain_id": "fractions_percentages",
+                "subdomain_name": "Fractions & Percentages",
+                "domain_id": "numbers_quantity",
+                "description": "Half, quarter, percent, etc."
+            },
+            {
+                "subdomain_id": "approximation_words",
+                "subdomain_name": "Approximation",
+                "domain_id": "numbers_quantity",
+                "description": "About, around, more or less."
+            },
+            {
+                "subdomain_id": "quantity_modifiers",
+                "subdomain_name": "Quantity Modifiers",
+                "domain_id": "numbers_quantity",
+                "description": "Many/few/enough/too much, etc."
+            },
+            {
+                "subdomain_id": "family",
+                "subdomain_name": "Family",
+                "domain_id": "people_identity",
+                "description": "Family members and kinship."
+            },
+            {
+                "subdomain_id": "relationships",
+                "subdomain_name": "Relationships",
+                "domain_id": "people_identity",
+                "description": "Friends/partners/colleagues and relationship terms."
+            },
+            {
+                "subdomain_id": "professions",
+                "subdomain_name": "Professions",
+                "domain_id": "people_identity",
+                "description": "Jobs, roles, and work identity."
+            },
+            {
+                "subdomain_id": "nationalities",
+                "subdomain_name": "Nationalities",
+                "domain_id": "people_identity",
+                "description": "Nationality and origin terms."
+            },
+            {
+                "subdomain_id": "titles_honorifics",
+                "subdomain_name": "Titles & Honorifics",
+                "domain_id": "people_identity",
+                "description": "Mr./Ms., doctor, etc. (language/culture-specific)."
+            },
+            {
+                "subdomain_id": "personal_identity",
+                "subdomain_name": "Personal Identity",
+                "domain_id": "people_identity",
+                "description": "Age, origin, status, basic identity phrases."
+            },
+            {
+                "subdomain_id": "pronouns_subject",
+                "subdomain_name": "Subject Pronouns",
+                "domain_id": "people_identity",
+                "description": "I/you/he/she/we/they, etc."
+            },
+            {
+                "subdomain_id": "pronouns_object",
+                "subdomain_name": "Object Pronouns",
+                "domain_id": "people_identity",
+                "description": "Me/him/her/us/them, etc."
+            },
+            {
+                "subdomain_id": "pronouns_possessive",
+                "subdomain_name": "Possessive Pronouns",
+                "domain_id": "people_identity",
+                "description": "Mine/yours/hers, etc."
+            },
+            {
+                "subdomain_id": "countries_cities",
+                "subdomain_name": "Countries & Cities",
+                "domain_id": "places_location",
+                "description": "Geographic names and references."
+            },
+            {
+                "subdomain_id": "buildings_places",
+                "subdomain_name": "Buildings & Places",
+                "domain_id": "places_location",
+                "description": "School, store, hospital, etc."
+            },
+            {
+                "subdomain_id": "rooms_house",
+                "subdomain_name": "Rooms & House",
+                "domain_id": "places_location",
+                "description": "Kitchen, bedroom, etc."
+            },
+            {
+                "subdomain_id": "transportation_places",
+                "subdomain_name": "Transportation Places",
+                "domain_id": "places_location",
+                "description": "Station, airport, stop, etc."
+            },
+            {
+                "subdomain_id": "prepositions_place",
+                "subdomain_name": "Prepositions of Place",
+                "domain_id": "places_location",
+                "description": "In/on/under/next to, etc."
+            },
+            {
+                "subdomain_id": "directions",
+                "subdomain_name": "Directions",
+                "domain_id": "places_location",
+                "description": "Left/right/straight/north/south, etc."
+            },
+            {
+                "subdomain_id": "distance_location",
+                "subdomain_name": "Distance & Location",
+                "domain_id": "places_location",
+                "description": "Near/far, here/there, etc."
+            },
+            {
+                "subdomain_id": "daily_actions",
+                "subdomain_name": "Daily Actions",
+                "domain_id": "actions_verbs",
+                "description": "Eat, go, work, sleep, etc."
+            },
+            {
+                "subdomain_id": "movement_verbs",
+                "subdomain_name": "Movement Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Come/go/arrive/leave, etc."
+            },
+            {
+                "subdomain_id": "communication_verbs",
+                "subdomain_name": "Communication Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Say/tell/ask/call, etc."
+            },
+            {
+                "subdomain_id": "mental_verbs",
+                "subdomain_name": "Mental Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Think/know/remember/understand."
+            },
+            {
+                "subdomain_id": "modal_verbs",
+                "subdomain_name": "Modal Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Can/must/want/need (language-specific patterns)."
+            },
+            {
+                "subdomain_id": "light_verbs",
+                "subdomain_name": "Light Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Do/make/take (high frequency)."
+            },
+            {
+                "subdomain_id": "reflexive_verbs",
+                "subdomain_name": "Reflexive Verbs",
+                "domain_id": "actions_verbs",
+                "description": "Language-specific reflexive constructions."
+            },
+            {
+                "subdomain_id": "verb_patterns",
+                "subdomain_name": "Verb Patterns",
+                "domain_id": "actions_verbs",
+                "description": "Verb + preposition patterns, complements, common frames."
+            },
+            {
+                "subdomain_id": "physical_description",
+                "subdomain_name": "Physical Description",
+                "domain_id": "states_descriptions",
+                "description": "Appearance, body, physical traits."
+            },
+            {
+                "subdomain_id": "personality_traits",
+                "subdomain_name": "Personality Traits",
+                "domain_id": "states_descriptions",
+                "description": "Friendly, shy, honest, etc."
+            },
+            {
+                "subdomain_id": "emotions_feelings",
+                "subdomain_name": "Emotions & Feelings",
+                "domain_id": "states_descriptions",
+                "description": "Happy/sad/tired/excited, etc."
+            },
+            {
+                "subdomain_id": "condition_states",
+                "subdomain_name": "Conditions & States",
+                "domain_id": "states_descriptions",
+                "description": "Open/closed/broken/sick, etc."
+            },
+            {
+                "subdomain_id": "size_shape_color",
+                "subdomain_name": "Size, Shape & Color",
+                "domain_id": "states_descriptions",
+                "description": "Big/small/round/blue, etc."
+            },
+            {
+                "subdomain_id": "comparatives",
+                "subdomain_name": "Comparatives",
+                "domain_id": "states_descriptions",
+                "description": "Bigger than, more/less, etc."
+            },
+            {
+                "subdomain_id": "superlatives",
+                "subdomain_name": "Superlatives",
+                "domain_id": "states_descriptions",
+                "description": "The biggest, the best, etc."
+            },
+            {
+                "subdomain_id": "articles_definite",
+                "subdomain_name": "Definite Articles",
+                "domain_id": "possession_reference",
+                "description": "The (language-specific forms)."
+            },
+            {
+                "subdomain_id": "articles_indefinite",
+                "subdomain_name": "Indefinite Articles",
+                "domain_id": "possession_reference",
+                "description": "A/an/some (language-specific forms)."
+            },
+            {
+                "subdomain_id": "demonstratives",
+                "subdomain_name": "Demonstratives",
+                "domain_id": "possession_reference",
+                "description": "This/that/these/those."
+            },
+            {
+                "subdomain_id": "possessive_adjectives",
+                "subdomain_name": "Possessive Adjectives",
+                "domain_id": "possession_reference",
+                "description": "My/your/his/her, etc."
+            },
+            {
+                "subdomain_id": "possessive_pronouns",
+                "subdomain_name": "Possessive Pronouns",
+                "domain_id": "possession_reference",
+                "description": "Mine/yours, etc."
+            },
+            {
+                "subdomain_id": "reference_words",
+                "subdomain_name": "Reference Words",
+                "domain_id": "possession_reference",
+                "description": "Thing/one/same/other (language-dependent)."
+            },
+            {
+                "subdomain_id": "morning_routine",
+                "subdomain_name": "Morning Routine",
+                "domain_id": "daily_life",
+                "description": "Wake up, shower, breakfast, etc."
+            },
+            {
+                "subdomain_id": "work_school",
+                "subdomain_name": "Work & School",
+                "domain_id": "daily_life",
+                "description": "Classes, meetings, tasks, schedules."
+            },
+            {
+                "subdomain_id": "household_chores",
+                "subdomain_name": "Household & Chores",
+                "domain_id": "daily_life",
+                "description": "Cleaning, laundry, cooking at home."
+            },
+            {
+                "subdomain_id": "free_time_hobbies",
+                "subdomain_name": "Free Time & Hobbies",
+                "domain_id": "daily_life",
+                "description": "Sports, hobbies, leisure."
+            },
+            {
+                "subdomain_id": "shopping_errands",
+                "subdomain_name": "Shopping & Errands",
+                "domain_id": "daily_life",
+                "description": "Buying things, running errands."
+            },
+            {
+                "subdomain_id": "health_body_basics",
+                "subdomain_name": "Health & Body (Basics)",
+                "domain_id": "daily_life",
+                "description": "Symptoms, body parts, basic wellness."
+            },
+            {
+                "subdomain_id": "meals",
+                "subdomain_name": "Meals",
+                "domain_id": "food_drink",
+                "description": "Breakfast/lunch/dinner and meal language."
+            },
+            {
+                "subdomain_id": "ingredients",
+                "subdomain_name": "Ingredients",
+                "domain_id": "food_drink",
+                "description": "Common ingredients and food items."
+            },
+            {
+                "subdomain_id": "drinks",
+                "subdomain_name": "Drinks",
+                "domain_id": "food_drink",
+                "description": "Water, coffee, juice, etc."
+            },
+            {
+                "subdomain_id": "ordering_food",
+                "subdomain_name": "Ordering Food",
+                "domain_id": "food_drink",
+                "description": "Restaurant ordering phrases."
+            },
+            {
+                "subdomain_id": "preferences",
+                "subdomain_name": "Preferences",
+                "domain_id": "food_drink",
+                "description": "Likes/dislikes, dietary needs."
+            },
+            {
+                "subdomain_id": "cooking_verbs",
+                "subdomain_name": "Cooking Verbs",
+                "domain_id": "food_drink",
+                "description": "Cook, cut, boil, fry, etc."
+            },
+            {
+                "subdomain_id": "transport_modes",
+                "subdomain_name": "Transport Modes",
+                "domain_id": "travel_movement",
+                "description": "Bus/train/car/plane, etc."
+            },
+            {
+                "subdomain_id": "tickets_reservations",
+                "subdomain_name": "Tickets & Reservations",
+                "domain_id": "travel_movement",
+                "description": "Bookings, tickets, confirmations."
+            },
+            {
+                "subdomain_id": "accommodation",
+                "subdomain_name": "Accommodation",
+                "domain_id": "travel_movement",
+                "description": "Hotel, check-in, room issues."
+            },
+            {
+                "subdomain_id": "navigation_phrases",
+                "subdomain_name": "Navigation Phrases",
+                "domain_id": "travel_movement",
+                "description": "How to get to..., where is..., etc."
+            },
+            {
+                "subdomain_id": "travel_problems",
+                "subdomain_name": "Travel Problems",
+                "domain_id": "travel_movement",
+                "description": "Delays, lost items, emergencies."
+            },
+            {
+                "subdomain_id": "customs_immigration",
+                "subdomain_name": "Customs & Immigration",
+                "domain_id": "travel_movement",
+                "description": "Border control and documents (as needed)."
+            },
+            {
+                "subdomain_id": "verb_tenses",
+                "subdomain_name": "Verb Tenses",
+                "domain_id": "grammar_meaning",
+                "description": "Present/past/future, etc. (example-driven)."
+            },
+            {
+                "subdomain_id": "verb_aspect",
+                "subdomain_name": "Verb Aspect",
+                "domain_id": "grammar_meaning",
+                "description": "Ongoing vs completed, habitual, etc."
+            },
+            {
+                "subdomain_id": "mood_indicative",
+                "subdomain_name": "Indicative Mood",
+                "domain_id": "grammar_meaning",
+                "description": "Statements of fact (example-driven)."
+            },
+            {
+                "subdomain_id": "mood_subjunctive",
+                "subdomain_name": "Subjunctive Mood",
+                "domain_id": "grammar_meaning",
+                "description": "Desire, doubt, emotion, etc. (example-driven)."
+            },
+            {
+                "subdomain_id": "voice_active_passive",
+                "subdomain_name": "Active & Passive Voice",
+                "domain_id": "grammar_meaning",
+                "description": "Voice choices and meaning differences."
+            },
+            {
+                "subdomain_id": "agreement",
+                "subdomain_name": "Agreement",
+                "domain_id": "grammar_meaning",
+                "description": "Gender/number agreement (example-driven)."
+            },
+            {
+                "subdomain_id": "question_forms",
+                "subdomain_name": "Question Forms",
+                "domain_id": "grammar_meaning",
+                "description": "How questions are formed (example-driven)."
+            },
+            {
+                "subdomain_id": "negation",
+                "subdomain_name": "Negation",
+                "domain_id": "grammar_meaning",
+                "description": "Not/never/nothing, etc. (example-driven)."
+            },
+            {
+                "subdomain_id": "basic_connectors",
+                "subdomain_name": "Basic Connectors",
+                "domain_id": "sentence_connectors",
+                "description": "And/or/but/so, etc."
+            },
+            {
+                "subdomain_id": "cause_effect",
+                "subdomain_name": "Cause & Effect",
+                "domain_id": "sentence_connectors",
+                "description": "Because/therefore/so that..."
+            },
+            {
+                "subdomain_id": "contrast_concession",
+                "subdomain_name": "Contrast & Concession",
+                "domain_id": "sentence_connectors",
+                "description": "However/although/even if..."
+            },
+            {
+                "subdomain_id": "conditionals",
+                "subdomain_name": "Conditionals",
+                "domain_id": "sentence_connectors",
+                "description": "If/when/unless and conditional patterns."
+            },
+            {
+                "subdomain_id": "sequencing",
+                "subdomain_name": "Sequencing",
+                "domain_id": "sentence_connectors",
+                "description": "First/then/after/before/finally..."
+            },
+            {
+                "subdomain_id": "relative_clauses",
+                "subdomain_name": "Relative Clauses",
+                "domain_id": "sentence_connectors",
+                "description": "That/which/who clauses (language-specific)."
+            },
+            {
+                "subdomain_id": "greetings_farewells",
+                "subdomain_name": "Greetings & Farewells",
+                "domain_id": "social_pragmatics",
+                "description": "Hello/goodbye and openings/closings."
+            },
+            {
+                "subdomain_id": "politeness_forms",
+                "subdomain_name": "Politeness & Formality",
+                "domain_id": "social_pragmatics",
+                "description": "Please/thank you/formal forms."
+            },
+            {
+                "subdomain_id": "requests",
+                "subdomain_name": "Requests",
+                "domain_id": "social_pragmatics",
+                "description": "Can you...?, I’d like..., etc."
+            },
+            {
+                "subdomain_id": "apologies",
+                "subdomain_name": "Apologies",
+                "domain_id": "social_pragmatics",
+                "description": "Sorry/excuse me and repair language."
+            },
+            {
+                "subdomain_id": "opinions_reactions",
+                "subdomain_name": "Opinions & Reactions",
+                "domain_id": "social_pragmatics",
+                "description": "Nice!/Really?/No way!/I see."
+            },
+            {
+                "subdomain_id": "discourse_markers",
+                "subdomain_name": "Discourse Markers",
+                "domain_id": "social_pragmatics",
+                "description": "Well/so/anyway/like (language-specific)."
+            },
+            {
+                "subdomain_id": "fillers_hesitation",
+                "subdomain_name": "Fillers & Hesitation",
+                "domain_id": "social_pragmatics",
+                "description": "Um/uh/let me think..."
+            },
+            {
+                "subdomain_id": "question_words",
+                "subdomain_name": "Question Words",
+                "domain_id": "questions_information",
+                "description": "Who/what/where/when/why/how."
+            },
+            {
+                "subdomain_id": "yes_no_questions",
+                "subdomain_name": "Yes/No Questions",
+                "domain_id": "questions_information",
+                "description": "Basic yes/no question patterns."
+            },
+            {
+                "subdomain_id": "indirect_questions",
+                "subdomain_name": "Indirect Questions",
+                "domain_id": "questions_information",
+                "description": "Could you tell me..., I wonder if..."
+            },
+            {
+                "subdomain_id": "clarification_requests",
+                "subdomain_name": "Clarification Requests",
+                "domain_id": "questions_information",
+                "description": "What does that mean? Can you repeat?"
+            },
+            {
+                "subdomain_id": "follow_up_questions",
+                "subdomain_name": "Follow-up Questions",
+                "domain_id": "questions_information",
+                "description": "And you? What about...?"
+            },
+            {
+                "subdomain_id": "expressing_opinions",
+                "subdomain_name": "Expressing Opinions",
+                "domain_id": "opinions_argumentation",
+                "description": "I think/in my opinion/from my view..."
+            },
+            {
+                "subdomain_id": "agreeing_disagreeing",
+                "subdomain_name": "Agreeing & Disagreeing",
+                "domain_id": "opinions_argumentation",
+                "description": "I agree/I don’t agree, maybe, it depends..."
+            },
+            {
+                "subdomain_id": "giving_reasons",
+                "subdomain_name": "Giving Reasons",
+                "domain_id": "opinions_argumentation",
+                "description": "Because, the reason is..., due to..."
+            },
+            {
+                "subdomain_id": "comparison_opinions",
+                "subdomain_name": "Comparing Options",
+                "domain_id": "opinions_argumentation",
+                "description": "Better/worse/than, prefer, rather..."
+            },
+            {
+                "subdomain_id": "persuasion_language",
+                "subdomain_name": "Persuasion",
+                "domain_id": "opinions_argumentation",
+                "description": "You should/it’s worth/consider..."
+            },
+            {
+                "subdomain_id": "holidays_festivals",
+                "subdomain_name": "Holidays & Festivals",
+                "domain_id": "culture_society",
+                "description": "Common holidays and cultural events."
+            },
+            {
+                "subdomain_id": "cultural_concepts",
+                "subdomain_name": "Cultural Concepts",
+                "domain_id": "culture_society",
+                "description": "Culture-bound words/ideas."
+            },
+            {
+                "subdomain_id": "food_culture",
+                "subdomain_name": "Food Culture",
+                "domain_id": "culture_society",
+                "description": "Dining norms, typical foods, etiquette."
+            },
+            {
+                "subdomain_id": "social_norms",
+                "subdomain_name": "Social Norms",
+                "domain_id": "culture_society",
+                "description": "Politeness norms, expectations, behavior."
+            },
+            {
+                "subdomain_id": "slang_informal",
+                "subdomain_name": "Slang & Informal Speech",
+                "domain_id": "culture_society",
+                "description": "Informal expressions (tag by region)."
+            },
+            {
+                "subdomain_id": "regional_variants",
+                "subdomain_name": "Regional Variants",
+                "domain_id": "culture_society",
+                "description": "Vocabulary/pronunciation variants by region."
+            },
+            {
+                "subdomain_id": "phone_internet",
+                "subdomain_name": "Phone & Internet",
+                "domain_id": "media_communication",
+                "description": "Calls, texting, connectivity, apps."
+            },
+            {
+                "subdomain_id": "social_media",
+                "subdomain_name": "Social Media",
+                "domain_id": "media_communication",
+                "description": "Posting, commenting, sharing, profiles."
+            },
+            {
+                "subdomain_id": "news_media",
+                "subdomain_name": "News & Media",
+                "domain_id": "media_communication",
+                "description": "News, headlines, media consumption."
+            },
+            {
+                "subdomain_id": "technology_terms",
+                "subdomain_name": "Technology Terms",
+                "domain_id": "media_communication",
+                "description": "Devices, settings, troubleshooting basics."
+            },
+            {
+                "subdomain_id": "formal_writing",
+                "subdomain_name": "Formal Writing",
+                "domain_id": "media_communication",
+                "description": "Emails, forms, official language (as needed)."
+            },
+            {
+                "subdomain_id": "probability_uncertainty",
+                "subdomain_name": "Probability & Uncertainty",
+                "domain_id": "abstract_concepts",
+                "description": "Maybe/probably/it seems/uncertainty markers."
+            },
+            {
+                "subdomain_id": "values_morality",
+                "subdomain_name": "Values & Morality",
+                "domain_id": "abstract_concepts",
+                "description": "Fairness, responsibility, values, ethics."
+            },
+            {
+                "subdomain_id": "cause_effect_abstract",
+                "subdomain_name": "Abstract Cause & Effect",
+                "domain_id": "abstract_concepts",
+                "description": "Complex reasoning and abstract links."
+            },
+            {
+                "subdomain_id": "time_abstract",
+                "subdomain_name": "Abstract Time Concepts",
+                "domain_id": "abstract_concepts",
+                "description": "Deadlines, phases, long-term planning, etc."
+            },
+            {
+                "subdomain_id": "narrative_tenses",
+                "subdomain_name": "Narrative Tenses",
+                "domain_id": "storytelling_narrative",
+                "description": "Past narration patterns (language-specific)."
+            },
+            {
+                "subdomain_id": "sequencing_events_narrative",
+                "subdomain_name": "Sequencing Events",
+                "domain_id": "storytelling_narrative",
+                "description": "Then/suddenly/meanwhile/after that..."
+            },
+            {
+                "subdomain_id": "setting_description",
+                "subdomain_name": "Setting & Description",
+                "domain_id": "storytelling_narrative",
+                "description": "Scene-setting and descriptive narration."
+            },
+            {
+                "subdomain_id": "character_actions",
+                "subdomain_name": "Character Actions",
+                "domain_id": "storytelling_narrative",
+                "description": "Character movement and intent in narrative."
+            },
+            {
+                "subdomain_id": "reported_speech",
+                "subdomain_name": "Reported Speech",
+                "domain_id": "storytelling_narrative",
+                "description": "He said/she asked, indirect speech."
+            },
+            {
+                "subdomain_id": "classroom_phrases",
+                "subdomain_name": "Classroom Phrases",
+                "domain_id": "learning_meta_language",
+                "description": "In-class/app phrases: I don’t understand, etc."
+            },
+            {
+                "subdomain_id": "instructions",
+                "subdomain_name": "Instructions",
+                "domain_id": "learning_meta_language",
+                "description": "Repeat, choose, match, listen, etc."
+            },
+            {
+                "subdomain_id": "feedback_language",
+                "subdomain_name": "Feedback Language",
+                "domain_id": "learning_meta_language",
+                "description": "Good job, try again, almost, etc."
+            },
+            {
+                "subdomain_id": "learning_clarification",
+                "subdomain_name": "Learning Clarification",
+                "domain_id": "learning_meta_language",
+                "description": "What does X mean? How do you say...?"
+            }
+        ]
+    }
+}

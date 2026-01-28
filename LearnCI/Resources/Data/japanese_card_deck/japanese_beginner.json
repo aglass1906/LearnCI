@@ -23,7 +23,8 @@
             "audioSentenceFile": "ja_watashi_sentence.mp3",
             "mediaFile": "ja_watashi.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -36,7 +37,8 @@
             "audioSentenceFile": "ja_anata_sentence.mp3",
             "mediaFile": "ja_anata.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -49,7 +51,8 @@
             "audioSentenceFile": "ja_kare_sentence.mp3",
             "mediaFile": "ja_kare.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -62,7 +65,8 @@
             "audioSentenceFile": "ja_kanojo_sentence.mp3",
             "mediaFile": "ja_kanojo.jpg",
             "tags": [
-                "People & Pronouns"
+                "People & Pronouns",
+                "Pronouns"
             ]
         },
         {
@@ -101,7 +105,9 @@
             "audioSentenceFile": "ja_are_sentence.mp3",
             "mediaFile": "ja_are.jpg",
             "tags": [
-                "Demonstratives"
+                "Adverbs",
+                "Demonstratives",
+                "Prepositions"
             ]
         },
         {
@@ -127,6 +133,7 @@
             "audioSentenceFile": "ja_itsu_sentence.mp3",
             "mediaFile": "ja_itsu.jpg",
             "tags": [
+                "Conjunctions",
                 "Questions"
             ]
         },
@@ -257,6 +264,8 @@
             "audioSentenceFile": "ja_taberu_sentence.mp3",
             "mediaFile": "ja_taberu.jpg",
             "tags": [
+                "Food",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -270,6 +279,8 @@
             "audioSentenceFile": "ja_nomu_sentence.mp3",
             "mediaFile": "ja_nomu.jpg",
             "tags": [
+                "Food",
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -283,6 +294,7 @@
             "audioSentenceFile": "ja_iku_sentence.mp3",
             "mediaFile": "ja_iku.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -296,6 +308,7 @@
             "audioSentenceFile": "ja_kuru_sentence.mp3",
             "mediaFile": "ja_kuru.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -309,6 +322,8 @@
             "audioSentenceFile": "ja_miru_sentence.mp3",
             "mediaFile": "ja_miru.jpg",
             "tags": [
+                "Prepositions",
+                "Time",
                 "Verbs"
             ]
         },
@@ -322,6 +337,7 @@
             "audioSentenceFile": "ja_kiku_sentence.mp3",
             "mediaFile": "ja_kiku.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -335,6 +351,7 @@
             "audioSentenceFile": "ja_kaku_sentence.mp3",
             "mediaFile": "ja_kaku.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -348,6 +365,7 @@
             "audioSentenceFile": "ja_yomu_sentence.mp3",
             "mediaFile": "ja_yomu.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -361,6 +379,7 @@
             "audioSentenceFile": "ja_hanasu_sentence.mp3",
             "mediaFile": "ja_hanasu.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -374,6 +393,7 @@
             "audioSentenceFile": "ja_wakaru_sentence.mp3",
             "mediaFile": "ja_wakaru.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -387,6 +407,7 @@
             "audioSentenceFile": "ja_kau_sentence.mp3",
             "mediaFile": "ja_kau.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -400,6 +421,7 @@
             "audioSentenceFile": "ja_matsu_sentence.mp3",
             "mediaFile": "ja_matsu.jpg",
             "tags": [
+                "Prepositions",
                 "Verbs"
             ]
         },
@@ -426,6 +448,7 @@
             "audioSentenceFile": "ja_shigoto_sentence.mp3",
             "mediaFile": "ja_shigoto.jpg",
             "tags": [
+                "Daily Routine",
                 "Work"
             ]
         },
@@ -439,6 +462,7 @@
             "audioSentenceFile": "ja_okane_sentence.mp3",
             "mediaFile": "ja_okane.jpg",
             "tags": [
+                "Concepts",
                 "Money"
             ]
         },
@@ -452,6 +476,7 @@
             "audioSentenceFile": "ja_denwa_sentence.mp3",
             "mediaFile": "ja_denwa.jpg",
             "tags": [
+                "Objects",
                 "Technology"
             ]
         },
@@ -465,6 +490,7 @@
             "audioSentenceFile": "ja_gohan_sentence.mp3",
             "mediaFile": "ja_gohan.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -478,6 +504,7 @@
             "audioSentenceFile": "ja_ocha_sentence.mp3",
             "mediaFile": "ja_ocha.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -491,6 +518,7 @@
             "audioSentenceFile": "ja_niku_sentence.mp3",
             "mediaFile": "ja_niku.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -504,6 +532,8 @@
             "audioSentenceFile": "ja_sakana_sentence.mp3",
             "mediaFile": "ja_sakana.jpg",
             "tags": [
+                "Animals",
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -530,6 +560,7 @@
             "audioSentenceFile": "ja_kudamono_sentence.mp3",
             "mediaFile": "ja_kudamono.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -543,6 +574,7 @@
             "audioSentenceFile": "ja_tamago_sentence.mp3",
             "mediaFile": "ja_tamago.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -556,6 +588,7 @@
             "audioSentenceFile": "ja_pan_sentence.mp3",
             "mediaFile": "ja_pan.jpg",
             "tags": [
+                "Food",
                 "Food & Drink"
             ]
         },
@@ -569,6 +602,7 @@
             "audioSentenceFile": "ja_kuruma_sentence.mp3",
             "mediaFile": "ja_kuruma.jpg",
             "tags": [
+                "Objects",
                 "Transport"
             ]
         },
@@ -582,6 +616,8 @@
             "audioSentenceFile": "ja_densha_sentence.mp3",
             "mediaFile": "ja_densha.jpg",
             "tags": [
+                "Objects",
+                "Sports",
                 "Transport"
             ]
         },
@@ -595,6 +631,7 @@
             "audioSentenceFile": "ja_jitensha_sentence.mp3",
             "mediaFile": "ja_jitensha.jpg",
             "tags": [
+                "Objects",
                 "Transport"
             ]
         },
@@ -660,7 +697,8 @@
             "audioSentenceFile": "ja_ie_sentence.mp3",
             "mediaFile": "ja_ie.jpg",
             "tags": [
-                "Home"
+                "Home",
+                "Places"
             ]
         },
         {
@@ -673,7 +711,8 @@
             "audioSentenceFile": "ja_heya_sentence.mp3",
             "mediaFile": "ja_heya.jpg",
             "tags": [
-                "Home"
+                "Home",
+                "Places"
             ]
         },
         {
@@ -686,7 +725,8 @@
             "audioSentenceFile": "ja_mado_sentence.mp3",
             "mediaFile": "ja_mado.jpg",
             "tags": [
-                "Home"
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -725,6 +765,7 @@
             "audioSentenceFile": "ja_ame_sentence.mp3",
             "mediaFile": "ja_ame.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -738,6 +779,7 @@
             "audioSentenceFile": "ja_yuki_sentence.mp3",
             "mediaFile": "ja_yuki.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -751,6 +793,7 @@
             "audioSentenceFile": "ja_kaze_sentence.mp3",
             "mediaFile": "ja_kaze.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -764,6 +807,7 @@
             "audioSentenceFile": "ja_sora_sentence.mp3",
             "mediaFile": "ja_sora.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -777,6 +821,7 @@
             "audioSentenceFile": "ja_yama_sentence.mp3",
             "mediaFile": "ja_yama.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -790,6 +835,7 @@
             "audioSentenceFile": "ja_kawa_sentence.mp3",
             "mediaFile": "ja_kawa.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -803,6 +849,7 @@
             "audioSentenceFile": "ja_umi_sentence.mp3",
             "mediaFile": "ja_umi.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -842,6 +889,7 @@
             "audioSentenceFile": "ja_hana_sentence.mp3",
             "mediaFile": "ja_hana.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -855,6 +903,7 @@
             "audioSentenceFile": "ja_ki_sentence.mp3",
             "mediaFile": "ja_ki.jpg",
             "tags": [
+                "Nature",
                 "Nature & Weather"
             ]
         },
@@ -868,6 +917,7 @@
             "audioSentenceFile": "ja_iro_sentence.mp3",
             "mediaFile": "ja_iro.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -881,6 +931,7 @@
             "audioSentenceFile": "ja_aka_sentence.mp3",
             "mediaFile": "ja_aka.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -894,6 +945,7 @@
             "audioSentenceFile": "ja_ao_sentence.mp3",
             "mediaFile": "ja_ao.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -907,6 +959,7 @@
             "audioSentenceFile": "ja_shiro_sentence.mp3",
             "mediaFile": "ja_shiro.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -920,6 +973,7 @@
             "audioSentenceFile": "ja_kuro_sentence.mp3",
             "mediaFile": "ja_kuro.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -933,7 +987,8 @@
             "audioSentenceFile": "ja_tsuki_sentence.mp3",
             "mediaFile": "ja_tsuki.jpg",
             "tags": [
-                "Nature"
+                "Nature",
+                "Time"
             ]
         },
         {
@@ -959,6 +1014,7 @@
             "audioSentenceFile": "ja_suiyobi_sentence.mp3",
             "mediaFile": "ja_suiyobi.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -972,6 +1028,7 @@
             "audioSentenceFile": "ja_mokuyobi_sentence.mp3",
             "mediaFile": "ja_mokuyobi.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -985,6 +1042,7 @@
             "audioSentenceFile": "ja_kinyobi_sentence.mp3",
             "mediaFile": "ja_kinyobi.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -998,6 +1056,7 @@
             "audioSentenceFile": "ja_doyobi_sentence.mp3",
             "mediaFile": "ja_doyobi.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1011,6 +1070,7 @@
             "audioSentenceFile": "ja_nichiyobi_sentence.mp3",
             "mediaFile": "ja_nichiyobi.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1024,6 +1084,7 @@
             "audioSentenceFile": "ja_karada_sentence.mp3",
             "mediaFile": "ja_karada.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1037,6 +1098,7 @@
             "audioSentenceFile": "ja_atama_sentence.mp3",
             "mediaFile": "ja_atama.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1050,6 +1112,7 @@
             "audioSentenceFile": "ja_me_sentence.mp3",
             "mediaFile": "ja_me.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1063,6 +1126,7 @@
             "audioSentenceFile": "ja_mimi_sentence.mp3",
             "mediaFile": "ja_mimi.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1076,6 +1140,7 @@
             "audioSentenceFile": "ja_kuchi_sentence.mp3",
             "mediaFile": "ja_kuchi.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1089,6 +1154,7 @@
             "audioSentenceFile": "ja_te_sentence.mp3",
             "mediaFile": "ja_te.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1102,6 +1168,7 @@
             "audioSentenceFile": "ja_ashi_sentence.mp3",
             "mediaFile": "ja_ashi.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1115,6 +1182,7 @@
             "audioSentenceFile": "ja_kokoro_sentence.mp3",
             "mediaFile": "ja_kokoro.jpg",
             "tags": [
+                "Body",
                 "Body & Health"
             ]
         },
@@ -1154,7 +1222,9 @@
             "audioSentenceFile": "ja_kinou_sentence.mp3",
             "mediaFile": "ja_kinou.jpg",
             "tags": [
-                "Body & Health"
+                "Adverbs",
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1167,7 +1237,9 @@
             "audioSentenceFile": "ja_kyo_sentence.mp3",
             "mediaFile": "ja_kyo.jpg",
             "tags": [
-                "Body & Health"
+                "Adverbs",
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1180,7 +1252,9 @@
             "audioSentenceFile": "ja_ashita_sentence.mp3",
             "mediaFile": "ja_ashita.jpg",
             "tags": [
-                "Body & Health"
+                "Adverbs",
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1193,7 +1267,8 @@
             "audioSentenceFile": "ja_maishu_sentence.mp3",
             "mediaFile": "ja_maishu.jpg",
             "tags": [
-                "Body & Health"
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1206,7 +1281,8 @@
             "audioSentenceFile": "ja_sengetsu_sentence.mp3",
             "mediaFile": "ja_sengetsu.jpg",
             "tags": [
-                "Body & Health"
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1219,7 +1295,8 @@
             "audioSentenceFile": "ja_rainen_sentence.mp3",
             "mediaFile": "ja_rainen.jpg",
             "tags": [
-                "Body & Health"
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1232,7 +1309,8 @@
             "audioSentenceFile": "ja_mainichi_sentence.mp3",
             "mediaFile": "ja_mainichi.jpg",
             "tags": [
-                "Body & Health"
+                "Body & Health",
+                "Time"
             ]
         },
         {
@@ -1245,6 +1323,7 @@
             "audioSentenceFile": "ja_tokidoki_sentence.mp3",
             "mediaFile": "ja_tokidoki.jpg",
             "tags": [
+                "Adverbs",
                 "Body & Health"
             ]
         },
@@ -1258,7 +1337,8 @@
             "audioSentenceFile": "ja_zenzen_sentence.mp3",
             "mediaFile": "ja_zenzen.jpg",
             "tags": [
-                "Body & Health"
+                "Body & Health",
+                "Prepositions"
             ]
         },
         {
@@ -1284,6 +1364,7 @@
             "audioSentenceFile": "ja_muzukashii_sentence.mp3",
             "mediaFile": "ja_muzukashii.jpg",
             "tags": [
+                "Adjectives",
                 "Body & Health"
             ]
         },
@@ -1297,6 +1378,7 @@
             "audioSentenceFile": "ja_yasashii_sentence.mp3",
             "mediaFile": "ja_yasashii.jpg",
             "tags": [
+                "Adjectives",
                 "Body & Health"
             ]
         },

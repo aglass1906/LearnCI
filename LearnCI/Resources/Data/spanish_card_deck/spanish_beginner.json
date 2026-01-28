@@ -26,7 +26,8 @@
             "audioSentenceFile": "es_hombre_sentence.mp3",
             "mediaFile": "es_hombre.png",
             "tags": [
-                "Family"
+                "Family",
+                "People"
             ]
         },
         {
@@ -39,7 +40,8 @@
             "audioSentenceFile": "es_mujer_sentence.mp3",
             "mediaFile": "es_mujer.png",
             "tags": [
-                "Family"
+                "Family",
+                "People"
             ]
         },
         {
@@ -52,7 +54,8 @@
             "audioSentenceFile": "es_nino_sentence.mp3",
             "mediaFile": "es_nino.png",
             "tags": [
-                "Family"
+                "Family",
+                "People"
             ]
         },
         {
@@ -65,7 +68,8 @@
             "audioSentenceFile": "es_nina_sentence.mp3",
             "mediaFile": "es_nina.png",
             "tags": [
-                "Family"
+                "Family",
+                "People"
             ]
         },
         {
@@ -156,7 +160,8 @@
             "audioSentenceFile": "es_mesa_sentence.mp3",
             "mediaFile": "es_mesa.png",
             "tags": [
-                "Home"
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -169,7 +174,8 @@
             "audioSentenceFile": "es_silla_sentence.mp3",
             "mediaFile": "es_silla.png",
             "tags": [
-                "Home"
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -182,7 +188,9 @@
             "audioSentenceFile": "es_cama_sentence.mp3",
             "mediaFile": "es_cama.png",
             "tags": [
-                "Home"
+                "Daily Routine",
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -195,7 +203,8 @@
             "audioSentenceFile": "es_puerta_sentence.mp3",
             "mediaFile": "es_puerta.png",
             "tags": [
-                "Home"
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -208,7 +217,8 @@
             "audioSentenceFile": "es_ventana_sentence.mp3",
             "mediaFile": "es_ventana.png",
             "tags": [
-                "Home"
+                "Home",
+                "Objects"
             ]
         },
         {
@@ -221,7 +231,8 @@
             "audioSentenceFile": "es_cocina_sentence.mp3",
             "mediaFile": "es_cocina.png",
             "tags": [
-                "Home"
+                "Home",
+                "Places"
             ]
         },
         {
@@ -247,6 +258,7 @@
             "audioSentenceFile": "es_desayuno_sentence.mp3",
             "mediaFile": "es_desayuno.png",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -260,6 +272,7 @@
             "audioSentenceFile": "es_almuerzo_sentence.mp3",
             "mediaFile": "es_almuerzo.png",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -273,6 +286,7 @@
             "audioSentenceFile": "es_cena_sentence.mp3",
             "mediaFile": "es_cena.png",
             "tags": [
+                "Daily Routine",
                 "Food"
             ]
         },
@@ -325,7 +339,8 @@
             "audioSentenceFile": "es_reloj_sentence.mp3",
             "mediaFile": "es_reloj.png",
             "tags": [
-                "Clothing"
+                "Clothing",
+                "Time"
             ]
         },
         {
@@ -338,6 +353,7 @@
             "audioSentenceFile": "es_libro_sentence.mp3",
             "mediaFile": "es_libro.png",
             "tags": [
+                "Objects",
                 "School"
             ]
         },
@@ -351,6 +367,7 @@
             "audioSentenceFile": "es_lapiz_sentence.mp3",
             "mediaFile": "es_lapiz.png",
             "tags": [
+                "Objects",
                 "School"
             ]
         },
@@ -364,6 +381,7 @@
             "audioSentenceFile": "es_papel_sentence.mp3",
             "mediaFile": "es_papel.png",
             "tags": [
+                "Objects",
                 "School"
             ]
         },
@@ -377,7 +395,8 @@
             "audioSentenceFile": "es_dinero_sentence.mp3",
             "mediaFile": "es_dinero.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Concepts"
             ]
         },
         {
@@ -390,7 +409,8 @@
             "audioSentenceFile": "es_mercado_sentence.mp3",
             "mediaFile": "es_mercado.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Places"
             ]
         },
         {
@@ -403,7 +423,8 @@
             "audioSentenceFile": "es_tienda_sentence.mp3",
             "mediaFile": "es_tienda.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Places"
             ]
         },
         {
@@ -416,7 +437,8 @@
             "audioSentenceFile": "es_trabajo_sentence.mp3",
             "mediaFile": "es_trabajo.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Daily Routine"
             ]
         },
         {
@@ -429,6 +451,7 @@
             "audioSentenceFile": "es_coche_sentence.mp3",
             "mediaFile": "es_coche.png",
             "tags": [
+                "Objects",
                 "Transport"
             ]
         },
@@ -442,6 +465,7 @@
             "audioSentenceFile": "es_bus_sentence.mp3",
             "mediaFile": "es_bus.png",
             "tags": [
+                "Objects",
                 "Transport"
             ]
         },
@@ -455,6 +479,8 @@
             "audioSentenceFile": "es_tren_sentence.mp3",
             "mediaFile": "es_tren.png",
             "tags": [
+                "Objects",
+                "Sports",
                 "Transport"
             ]
         },
@@ -468,6 +494,7 @@
             "audioSentenceFile": "es_avion_sentence.mp3",
             "mediaFile": "es_avion.png",
             "tags": [
+                "Objects",
                 "Transport"
             ]
         },
@@ -481,7 +508,8 @@
             "audioSentenceFile": "es_calle_sentence.mp3",
             "mediaFile": "es_calle.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Places"
             ]
         },
         {
@@ -494,7 +522,8 @@
             "audioSentenceFile": "es_parque_sentence.mp3",
             "mediaFile": "es_parque.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Places"
             ]
         },
         {
@@ -520,7 +549,9 @@
             "audioSentenceFile": "es_restaurante_sentence.mp3",
             "mediaFile": "es_restaurante.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Food",
+                "Places"
             ]
         },
         {
@@ -533,7 +564,8 @@
             "audioSentenceFile": "es_hotel_sentence.mp3",
             "mediaFile": "es_hotel.png",
             "tags": [
-                "City Life"
+                "City Life",
+                "Places"
             ]
         },
         {
@@ -754,6 +786,7 @@
             "audioSentenceFile": "es_pescado_sentence.mp3",
             "mediaFile": "es_pescado.jpg",
             "tags": [
+                "Animals",
                 "Food"
             ]
         },
@@ -1027,6 +1060,8 @@
             "audioSentenceFile": "es_medico_sentence.mp3",
             "mediaFile": "es_medico.png",
             "tags": [
+                "Jobs",
+                "People",
                 "Society"
             ]
         },
@@ -1053,6 +1088,7 @@
             "audioSentenceFile": "es_hospital_sentence.mp3",
             "mediaFile": "es_hospital.jpg",
             "tags": [
+                "Places",
                 "Society"
             ]
         },
@@ -1066,6 +1102,8 @@
             "audioSentenceFile": "es_policia_sentence.mp3",
             "mediaFile": "es_policia.jpg",
             "tags": [
+                "Jobs",
+                "People",
                 "Society"
             ]
         },
@@ -1079,6 +1117,7 @@
             "audioSentenceFile": "es_bombero_sentence.mp3",
             "mediaFile": "es_bombero.jpg",
             "tags": [
+                "Jobs",
                 "Society"
             ]
         },
@@ -1092,6 +1131,7 @@
             "audioSentenceFile": "es_ciudad_sentence.mp3",
             "mediaFile": "es_ciudad.jpg",
             "tags": [
+                "Places",
                 "World"
             ]
         },
@@ -1105,6 +1145,8 @@
             "audioSentenceFile": "es_campo_sentence.mp3",
             "mediaFile": "es_campo.jpg",
             "tags": [
+                "Nature",
+                "Places",
                 "World"
             ]
         },
@@ -1118,6 +1160,7 @@
             "audioSentenceFile": "es_mundo_sentence.mp3",
             "mediaFile": "es_mundo.jpg",
             "tags": [
+                "Nature",
                 "World"
             ]
         },
@@ -1131,6 +1174,7 @@
             "audioSentenceFile": "es_guerra_sentence.mp3",
             "mediaFile": "es_guerra.jpg",
             "tags": [
+                "Concepts",
                 "World"
             ]
         },
@@ -1144,6 +1188,7 @@
             "audioSentenceFile": "es_paz_sentence.mp3",
             "mediaFile": "es_paz.jpg",
             "tags": [
+                "Concepts",
                 "World"
             ]
         },
@@ -1157,6 +1202,7 @@
             "audioSentenceFile": "es_amor_sentence.mp3",
             "mediaFile": "es_amor.jpg",
             "tags": [
+                "Concepts",
                 "World"
             ]
         },
@@ -1170,6 +1216,7 @@
             "audioSentenceFile": "es_odio_sentence.mp3",
             "mediaFile": "es_odio.jpg",
             "tags": [
+                "Concepts",
                 "World"
             ]
         },
@@ -1235,6 +1282,7 @@
             "audioSentenceFile": "es_lunes_sentence.mp3",
             "mediaFile": "es_lunes.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1248,6 +1296,7 @@
             "audioSentenceFile": "es_martes_sentence.mp3",
             "mediaFile": "es_martes.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1261,6 +1310,7 @@
             "audioSentenceFile": "es_sabado_sentence.mp3",
             "mediaFile": "es_sabado.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1274,6 +1324,7 @@
             "audioSentenceFile": "es_domingo_sentence.mp3",
             "mediaFile": "es_domingo.jpg",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1287,6 +1338,7 @@
             "audioSentenceFile": "es_color_sentence.mp3",
             "mediaFile": "es_color.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1300,6 +1352,7 @@
             "audioSentenceFile": "es_blanco_sentence.mp3",
             "mediaFile": "es_blanco.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1313,6 +1366,7 @@
             "audioSentenceFile": "es_negro_sentence.mp3",
             "mediaFile": "es_negro.jpg",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1326,6 +1380,7 @@
             "audioSentenceFile": "es_rojo_sentence.mp3",
             "mediaFile": "es_rojo.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1339,6 +1394,7 @@
             "audioSentenceFile": "es_azul_sentence.mp3",
             "mediaFile": "es_azul.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1352,6 +1408,7 @@
             "audioSentenceFile": "es_verde_sentence.mp3",
             "mediaFile": "es_verde.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1365,6 +1422,7 @@
             "audioSentenceFile": "es_amarillo_sentence.mp3",
             "mediaFile": "es_amarillo.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1378,7 +1436,9 @@
             "audioSentenceFile": "es_naranja_sentence.mp3",
             "mediaFile": "es_naranja.png",
             "tags": [
-                "Colors"
+                "Adjectives",
+                "Colors",
+                "Food"
             ]
         },
         {
@@ -1391,6 +1451,7 @@
             "audioSentenceFile": "es_morado_sentence.mp3",
             "mediaFile": "es_morado.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1404,6 +1465,7 @@
             "audioSentenceFile": "es_rosa_sentence.mp3",
             "mediaFile": "es_rosa.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1417,6 +1479,7 @@
             "audioSentenceFile": "es_gris_sentence.mp3",
             "mediaFile": "es_gris.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1430,6 +1493,7 @@
             "audioSentenceFile": "es_marron_sentence.mp3",
             "mediaFile": "es_marron.png",
             "tags": [
+                "Adjectives",
                 "Colors"
             ]
         },
@@ -1443,6 +1507,7 @@
             "audioSentenceFile": "es_miercoles_sentence.mp3",
             "mediaFile": "es_miercoles.png",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1456,6 +1521,7 @@
             "audioSentenceFile": "es_jueves_sentence.mp3",
             "mediaFile": "es_jueves.png",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1469,6 +1535,7 @@
             "audioSentenceFile": "es_viernes_sentence.mp3",
             "mediaFile": "es_viernes.png",
             "tags": [
+                "Days",
                 "Time"
             ]
         },
@@ -1482,6 +1549,7 @@
             "audioSentenceFile": "es_enero_sentence.mp3",
             "mediaFile": "es_enero.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1495,6 +1563,7 @@
             "audioSentenceFile": "es_febrero_sentence.mp3",
             "mediaFile": "es_febrero.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1508,6 +1577,7 @@
             "audioSentenceFile": "es_marzo_sentence.mp3",
             "mediaFile": "es_marzo.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1521,6 +1591,7 @@
             "audioSentenceFile": "es_abril_sentence.mp3",
             "mediaFile": "es_abril.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1534,7 +1605,9 @@
             "audioSentenceFile": "es_mayo_sentence.mp3",
             "mediaFile": "es_mayo.png",
             "tags": [
-                "Time"
+                "Months",
+                "Time",
+                "Verbs"
             ]
         },
         {
@@ -1547,6 +1620,7 @@
             "audioSentenceFile": "es_junio_sentence.mp3",
             "mediaFile": "es_junio.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1560,6 +1634,7 @@
             "audioSentenceFile": "es_julio_sentence.mp3",
             "mediaFile": "es_julio.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1573,6 +1648,7 @@
             "audioSentenceFile": "es_agosto_sentence.mp3",
             "mediaFile": "es_agosto.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1586,6 +1662,7 @@
             "audioSentenceFile": "es_septiembre_sentence.mp3",
             "mediaFile": "es_septiembre.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1599,6 +1676,7 @@
             "audioSentenceFile": "es_octubre_sentence.mp3",
             "mediaFile": "es_octubre.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1612,6 +1690,7 @@
             "audioSentenceFile": "es_noviembre_sentence.mp3",
             "mediaFile": "es_noviembre.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         },
@@ -1625,6 +1704,7 @@
             "audioSentenceFile": "es_diciembre_sentence.mp3",
             "mediaFile": "es_diciembre.png",
             "tags": [
+                "Months",
                 "Time"
             ]
         }

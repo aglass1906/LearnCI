@@ -25,6 +25,7 @@ struct ActiveCardStack: View {
                         isFlipped.toggle()
                     }
                 })
+                .id(card.id) // Force reset of state (isImageRevealed, etc.) when card changes
                 .opacity(isFlipped ? 0 : 1)
                 .accessibilityHidden(isFlipped)
                 

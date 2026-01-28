@@ -22,7 +22,9 @@
             "audioWordFile": "es_hola_word.mp3",
             "audioSentenceFile": "es_hola_sentence.mp3",
             "mediaFile": "es_a1_hola.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c2",
@@ -33,7 +35,9 @@
             "audioWordFile": "es_gracias_word.mp3",
             "audioSentenceFile": "es_gracias_sentence.mp3",
             "mediaFile": "es_a1_gracias.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c3",
@@ -44,7 +48,9 @@
             "audioWordFile": "es_porfavor_word.mp3",
             "audioSentenceFile": "es_porfavor_sentence.mp3",
             "mediaFile": "es_a1_porfavor.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c4",
@@ -55,7 +61,9 @@
             "audioWordFile": "es_adios_word.mp3",
             "audioSentenceFile": "es_adios_sentence.mp3",
             "mediaFile": "es_a1_adios.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c5",
@@ -66,7 +74,9 @@
             "audioWordFile": "es_si_word.mp3",
             "audioSentenceFile": "es_si_sentence.mp3",
             "mediaFile": "es_a1_si.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c6",
@@ -77,7 +87,9 @@
             "audioWordFile": "es_no_word.mp3",
             "audioSentenceFile": "es_no_sentence.mp3",
             "mediaFile": "es_a1_no.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "es_sb_c7",
@@ -88,7 +100,9 @@
             "audioWordFile": "es_agua_word.mp3",
             "audioSentenceFile": "es_agua_sentence.mp3",
             "mediaFile": "es_a1_agua.jpg",
-            "domain": "Basics"
+            "tags": [
+                "Basics"
+            ]
         },
         {
             "id": "es_sb_c8",
@@ -99,7 +113,9 @@
             "audioWordFile": "es_comida_word.mp3",
             "audioSentenceFile": "es_comida_sentence.mp3",
             "mediaFile": "es_a1_comida.jpg",
-            "domain": "Basics"
+            "tags": [
+                "Basics"
+            ]
         },
         {
             "id": "es_sb_c9",
@@ -110,7 +126,9 @@
             "audioWordFile": "es_amigo_word.mp3",
             "audioSentenceFile": "es_amigo_sentence.mp3",
             "mediaFile": "es_a1_amigo.jpg",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "es_sb_c10",
@@ -121,7 +139,9 @@
             "audioWordFile": "es_casa_word.mp3",
             "audioSentenceFile": "es_casa_sentence.mp3",
             "mediaFile": "es_a1_casa.jpg",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "es_sb_c11",
@@ -132,7 +152,9 @@
             "audioWordFile": "es_gato_word.mp3",
             "audioSentenceFile": "es_gato_sentence.mp3",
             "mediaFile": "es_a1_gato.jpg",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "es_sb_c12",
@@ -143,7 +165,9 @@
             "audioWordFile": "es_perro_word.mp3",
             "audioSentenceFile": "es_perro_sentence.mp3",
             "mediaFile": "es_a1_perro.jpg",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "es_sb_c13",
@@ -154,7 +178,9 @@
             "audioWordFile": "es_uno_word.mp3",
             "audioSentenceFile": "es_uno_sentence.mp3",
             "mediaFile": "es_a1_uno.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "es_sb_c14",
@@ -165,7 +191,9 @@
             "audioWordFile": "es_dos_word.mp3",
             "audioSentenceFile": "es_dos_sentence.mp3",
             "mediaFile": "es_a1_dos.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "es_sb_c15",
@@ -176,7 +204,9 @@
             "audioWordFile": "es_tres_word.mp3",
             "audioSentenceFile": "es_tres_sentence.mp3",
             "mediaFile": "es_a1_tres.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "es_sb_c16",
@@ -187,7 +217,9 @@
             "audioWordFile": "es_libro_word.mp3",
             "audioSentenceFile": "es_libro_sentence.mp3",
             "mediaFile": "es_a1_libro.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es_sb_c17",
@@ -198,7 +230,9 @@
             "audioWordFile": "es_escuela_word.mp3",
             "audioSentenceFile": "es_escuela_sentence.mp3",
             "mediaFile": "es_a1_escuela.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es_sb_c18",
@@ -209,7 +243,9 @@
             "audioWordFile": "es_pueblo_word.mp3",
             "audioSentenceFile": "es_pueblo_sentence.mp3",
             "mediaFile": "es_a1_pueblo.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es_sb_c19",
@@ -220,7 +256,9 @@
             "audioWordFile": "es_ciudad_word.mp3",
             "audioSentenceFile": "es_ciudad_sentence.mp3",
             "mediaFile": "es_a1_ciudad.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es_sb_c20",
@@ -231,7 +269,9 @@
             "audioWordFile": "es_bano_word.mp3",
             "audioSentenceFile": "es_bano_sentence.mp3",
             "mediaFile": "es_a1_bano.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "es_sb_c21",
@@ -242,7 +282,9 @@
             "audioWordFile": "es_manana_word.mp3",
             "audioSentenceFile": "es_manana_sentence.mp3",
             "mediaFile": "es_a1_manana.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_sb_c22",
@@ -253,7 +295,9 @@
             "audioWordFile": "es_noche_word.mp3",
             "audioSentenceFile": "es_noche_sentence.mp3",
             "mediaFile": "es_a1_noche.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_sb_c23",
@@ -264,7 +308,9 @@
             "audioWordFile": "es_hoy_word.mp3",
             "audioSentenceFile": "es_hoy_sentence.mp3",
             "mediaFile": "es_a1_hoy.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_sb_c24",
@@ -275,7 +321,9 @@
             "audioWordFile": "es_tiempo_word.mp3",
             "audioSentenceFile": "es_tiempo_sentence.mp3",
             "mediaFile": "es_a1_tiempo.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_sb_c25",
@@ -286,7 +334,9 @@
             "audioWordFile": "es_feliz_word.mp3",
             "audioSentenceFile": "es_feliz_sentence.mp3",
             "mediaFile": "es_a1_feliz.jpg",
-            "domain": "Emotions"
+            "tags": [
+                "Emotions"
+            ]
         }
     ]
 }

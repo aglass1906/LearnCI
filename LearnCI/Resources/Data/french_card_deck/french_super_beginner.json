@@ -19,7 +19,9 @@
             "wordNative": "Hello",
             "sentenceTarget": "Bonjour, comment ça va ?",
             "sentenceNative": "Hello, how are you?",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c2",
@@ -27,7 +29,9 @@
             "wordNative": "Thank you",
             "sentenceTarget": "Merci beaucoup pour votre aide.",
             "sentenceNative": "Thank you very much for your help.",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c3",
@@ -35,7 +39,9 @@
             "wordNative": "Please",
             "sentenceTarget": "Un café, s'il vous plaît.",
             "sentenceNative": "A coffee, please.",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c4",
@@ -43,7 +49,9 @@
             "wordNative": "Goodbye",
             "sentenceTarget": "Au revoir, à demain.",
             "sentenceNative": "Goodbye, see you tomorrow.",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c5",
@@ -51,7 +59,9 @@
             "wordNative": "Yes",
             "sentenceTarget": "Oui, j'aime beaucoup ça.",
             "sentenceNative": "Yes, I like that a lot.",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c6",
@@ -59,7 +69,9 @@
             "wordNative": "No",
             "sentenceTarget": "Non, je n'ai pas faim.",
             "sentenceNative": "No, I am not hungry.",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "fr_sb_c7",
@@ -67,7 +79,9 @@
             "wordNative": "Water",
             "sentenceTarget": "Je voudrais un verre d'eau.",
             "sentenceNative": "I would like a glass of water.",
-            "domain": "Basics"
+            "tags": [
+                "Basics"
+            ]
         },
         {
             "id": "fr_sb_c8",
@@ -75,7 +89,9 @@
             "wordNative": "Food",
             "sentenceTarget": "La nourriture est très bonne.",
             "sentenceNative": "The food is very good.",
-            "domain": "Basics"
+            "tags": [
+                "Basics"
+            ]
         },
         {
             "id": "fr_sb_c9",
@@ -83,7 +99,9 @@
             "wordNative": "Friend",
             "sentenceTarget": "Il est mon meilleur ami.",
             "sentenceNative": "He is my best friend.",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "fr_sb_c10",
@@ -91,7 +109,9 @@
             "wordNative": "House",
             "sentenceTarget": "Ma maison est petite mais jolie.",
             "sentenceNative": "My house is small but pretty.",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "fr_sb_c11",
@@ -99,7 +119,9 @@
             "wordNative": "Cat",
             "sentenceTarget": "Le chat dort sur le canapé.",
             "sentenceNative": "The cat sleeps on the sofa.",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "fr_sb_c12",
@@ -107,7 +129,9 @@
             "wordNative": "Dog",
             "sentenceTarget": "Le chien court dans le parc.",
             "sentenceNative": "The dog runs in the park.",
-            "domain": "Daily Life"
+            "tags": [
+                "Daily Life"
+            ]
         },
         {
             "id": "fr_sb_c13",
@@ -115,7 +139,9 @@
             "wordNative": "One",
             "sentenceTarget": "J'en ai un seul.",
             "sentenceNative": "I have only one.",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "fr_sb_c14",
@@ -123,7 +149,9 @@
             "wordNative": "Two",
             "sentenceTarget": "Deux cafés, s'il vous plaît.",
             "sentenceNative": "Two coffees, please.",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "fr_sb_c15",
@@ -131,7 +159,9 @@
             "wordNative": "Three",
             "sentenceTarget": "Il y a trois oiseaux dans l'arbre.",
             "sentenceNative": "There are three birds in the tree.",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         }
     ]
 }

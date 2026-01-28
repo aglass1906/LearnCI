@@ -40,7 +40,7 @@ class DataManager {
     
     // Discover decks and return them
     @discardableResult
-    func discoverDecks(language: Language, level: LearningLevel) -> [DeckMetadata] {
+    func discoverDecks(language: Language, level: LearningLevel?) -> [DeckMetadata] {
         let discovered = internalDiscover(language: language, level: level)
         
         // Deduplicate
@@ -56,6 +56,111 @@ class DataManager {
         }
         
         return uniqueDecks
+    }
+        
+    // Register a virtual deck (in-memory only)
+    func registerVirtualDeck(_ deck: CardDeck) {
+        deckCache[deck.id] = deck
+    }
+    
+    func loadDeck(from metadata: DeckMetadata) -> CardDeck? {
+        // 1. Check Cache
+        if let cached = deckCache[metadata.id] {
+            self.loadedDeck = cached // Update observable property
+            return cached
+        }
+        
+        // 2. Check if Virtual (should be in cache if registered, but safeguard)
+        if metadata.folderName == "Virtual" {
+            print("Error: Virtual deck \(metadata.id) not found in cache.")
+            self.errorMessage = "Virtual deck \(metadata.id) not found in cache."
+            return nil
+        }
+        
+        // 3. Load from File
+        guard let url = resolveURL(folderName: metadata.folderName, filename: metadata.filename) else {
+            print("Starting load for deck: \(metadata.title)")
+            print("Failed to resolve URL for deck: \(metadata.title), folder: \(metadata.folderName), file: \(metadata.filename)")
+            self.errorMessage = "Could not find deck file for \(metadata.title)"
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            var deck = try JSONDecoder().decode(CardDeck.self, from: data)
+            
+            // Enrich with folder name for image resolution relative to deck
+            deck.baseFolderName = metadata.folderName
+            
+            // Cache it
+            deckCache[metadata.id] = deck
+            self.loadedDeck = deck // Update observable property
+            return deck
+        } catch {
+            print("Failed to load deck: \(error)")
+            errorMessage = "Failed to load deck: \(error.localizedDescription)"
+            return nil
+        }
+    }
+        
+    // Discover unique tags across all decks for a language
+    func discoverTags(language: Language) -> [String] {
+        let decks = discoverDecks(language: language, level: nil) // level nil = all levels
+        var tags = Set<String>()
+        
+        for meta in decks {
+             // We need to load the deck to see its cards/tags
+             if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
+                 do {
+                     let data = try Data(contentsOf: url)
+                     let deck = try JSONDecoder().decode(CardDeck.self, from: data)
+                     for card in deck.cards {
+                         if let cardTags = card.tags {
+                             tags.formUnion(cardTags)
+                         }
+                     }
+                 } catch {
+                     print("Error scanning tags for \(meta.title): \(error)")
+                 }
+             }
+        }
+        
+        return Array(tags).sorted()
+    }
+    
+    // Create a virtual deck from a specific tag
+    func createVirtualDeck(tag: String, language: Language) -> CardDeck {
+        let decks = discoverDecks(language: language, level: nil)
+        var combinedCards: [LearningCard] = []
+        
+        for meta in decks {
+              if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
+                  do {
+                      let data = try Data(contentsOf: url)
+                      let deck = try JSONDecoder().decode(CardDeck.self, from: data)
+                      let matching = deck.cards.filter { $0.tags?.contains(tag) == true }
+                      combinedCards.append(contentsOf: matching)
+                  } catch {
+                       print("Error loading deck for virtual creation: \(error)")
+                  }
+              }
+        }
+        
+        // Create a unique deterministic ID for valid caching if needed
+        let virtualId = "virtual_\(language.code)_\(tag.lowercased().replacingOccurrences(of: " ", with: "_"))"
+        
+        return CardDeck(
+            id: virtualId,
+            language: language,
+            level: .intermediate, // Mixed levels, default to intermediate? Or use a new "Mixed" level
+            title: "Focus: \(tag)",
+            cards: combinedCards.shuffled(), // Randomize by default?
+            supportedModes: [.flashcards, .memoryMatch], // Support all basic modes
+            baseFolderName: nil // Virtual decks don't have a single folder, images might break if not handled carefully.
+            // WARNING: Images in cards rely on baseFolderName if not absolute.
+            // We need to ensure resolveURL can handle finding images from their ORIGINAL decks or flattened Assets.
+            // DataManager.resolveURL searches recursively, so it should be fine.
+        )
     }
     
     // Internal helper to reuse logic

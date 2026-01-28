@@ -22,7 +22,9 @@
             "audioWordFile": "ko_annyeong_word.mp3",
             "audioSentenceFile": "ko_annyeong_sentence.mp3",
             "mediaFile": "ko_a1_annyeong.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ko_sb_c2",
@@ -33,7 +35,9 @@
             "audioWordFile": "ko_gamsahamnida_word.mp3",
             "audioSentenceFile": "ko_gamsahamnida_sentence.mp3",
             "mediaFile": "ko_a1_gamsahamnida.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ko_sb_c3",
@@ -44,7 +48,9 @@
             "audioWordFile": "ko_joesonghamnida_word.mp3",
             "audioSentenceFile": "ko_joesonghamnida_sentence.mp3",
             "mediaFile": "ko_a1_joesonghamnida.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ko_sb_c4",
@@ -55,7 +61,9 @@
             "audioWordFile": "ko_ne_word.mp3",
             "audioSentenceFile": "ko_ne_sentence.mp3",
             "mediaFile": "ko_a1_ne.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ko_sb_c5",
@@ -66,7 +74,9 @@
             "audioWordFile": "ko_aniyo_word.mp3",
             "audioSentenceFile": "ko_aniyo_sentence.mp3",
             "mediaFile": "ko_a1_aniyo.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ko_sb_c6",
@@ -77,7 +87,9 @@
             "audioWordFile": "ko_mul_word.mp3",
             "audioSentenceFile": "ko_mul_sentence.mp3",
             "mediaFile": "ko_a1_mul.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_sb_c7",
@@ -88,7 +100,9 @@
             "audioWordFile": "ko_eumsik_word.mp3",
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
             "mediaFile": "ko_a1_eumsik.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_sb_c8",
@@ -99,7 +113,9 @@
             "audioWordFile": "ko_jip_word.mp3",
             "audioSentenceFile": "ko_jip_sentence.mp3",
             "mediaFile": "ko_a1_jip.jpg",
-            "domain": "Home & People"
+            "tags": [
+                "Home & People"
+            ]
         },
         {
             "id": "ko_sb_c9",
@@ -110,7 +126,9 @@
             "audioWordFile": "ko_chingu_word.mp3",
             "audioSentenceFile": "ko_chingu_sentence.mp3",
             "mediaFile": "ko_a1_chingu.jpg",
-            "domain": "Home & People"
+            "tags": [
+                "Home & People"
+            ]
         },
         {
             "id": "ko_sb_c10",
@@ -121,7 +139,9 @@
             "audioWordFile": "ko_goyangi_word.mp3",
             "audioSentenceFile": "ko_goyangi_sentence.mp3",
             "mediaFile": "ko_a1_goyangi.jpg",
-            "domain": "Animals"
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "ko_sb_c11",
@@ -132,7 +152,9 @@
             "audioWordFile": "ko_gangaji_word.mp3",
             "audioSentenceFile": "ko_gangaji_sentence.mp3",
             "mediaFile": "ko_a1_gangaji.jpg",
-            "domain": "Animals"
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "ko_sb_c12",
@@ -143,7 +165,9 @@
             "audioWordFile": "ko_il_word.mp3",
             "audioSentenceFile": "ko_il_sentence.mp3",
             "mediaFile": "ko_a1_il.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ko_sb_c13",
@@ -154,7 +178,9 @@
             "audioWordFile": "ko_i_word.mp3",
             "audioSentenceFile": "ko_i_sentence.mp3",
             "mediaFile": "ko_a1_i.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ko_sb_c14",
@@ -165,7 +191,9 @@
             "audioWordFile": "ko_sam_word.mp3",
             "audioSentenceFile": "ko_sam_sentence.mp3",
             "mediaFile": "ko_a1_sam.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ko_sb_c15",
@@ -176,7 +204,9 @@
             "audioWordFile": "ko_chaek_word.mp3",
             "audioSentenceFile": "ko_chaek_sentence.mp3",
             "mediaFile": "ko_a1_chaek.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_sb_c16",
@@ -187,7 +217,9 @@
             "audioWordFile": "ko_hakgyo_word.mp3",
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
             "mediaFile": "ko_a1_hakgyo.jpg",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "ko_sb_c17",
@@ -198,7 +230,9 @@
             "audioWordFile": "ko_oneul_word.mp3",
             "audioSentenceFile": "ko_oneul_sentence.mp3",
             "mediaFile": "ko_a1_oneul.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ko_sb_c18",
@@ -209,7 +243,9 @@
             "audioWordFile": "ko_naeil_word.mp3",
             "audioSentenceFile": "ko_naeil_sentence.mp3",
             "mediaFile": "ko_a1_naeil.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ko_sb_c19",
@@ -220,7 +256,9 @@
             "audioWordFile": "ko_achim_word.mp3",
             "audioSentenceFile": "ko_achim_sentence.mp3",
             "mediaFile": "ko_a1_achim.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ko_sb_c20",
@@ -231,7 +269,9 @@
             "audioWordFile": "ko_bam_word.mp3",
             "audioSentenceFile": "ko_bam_sentence.mp3",
             "mediaFile": "ko_a1_bam.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ko_sb_c21",
@@ -242,7 +282,9 @@
             "audioWordFile": "ko_seonsaengnim_word.mp3",
             "audioSentenceFile": "ko_seonsaengnim_sentence.mp3",
             "mediaFile": "ko_a1_seonsaengnim.jpg",
-            "domain": "School & People"
+            "tags": [
+                "School & People"
+            ]
         },
         {
             "id": "ko_sb_c22",
@@ -253,7 +295,9 @@
             "audioWordFile": "ko_haksaeng_word.mp3",
             "audioSentenceFile": "ko_haksaeng_sentence.mp3",
             "mediaFile": "ko_a1_haksaeng.jpg",
-            "domain": "School & People"
+            "tags": [
+                "School & People"
+            ]
         },
         {
             "id": "ko_sb_c23",
@@ -264,7 +308,9 @@
             "audioWordFile": "ko_saranghae_word.mp3",
             "audioSentenceFile": "ko_saranghae_sentence.mp3",
             "mediaFile": "ko_a1_saranghae.jpg",
-            "domain": "Emotions"
+            "tags": [
+                "Emotions"
+            ]
         },
         {
             "id": "ko_sb_c24",
@@ -275,7 +321,9 @@
             "audioWordFile": "ko_joahae_word.mp3",
             "audioSentenceFile": "ko_joahae_sentence.mp3",
             "mediaFile": "ko_a1_joahae.jpg",
-            "domain": "Emotions"
+            "tags": [
+                "Emotions"
+            ]
         },
         {
             "id": "ko_sb_c25",
@@ -286,7 +334,9 @@
             "audioWordFile": "ko_haengbokhae_word.mp3",
             "audioSentenceFile": "ko_haengbokhae_sentence.mp3",
             "mediaFile": "ko_a1_haengbokhae.jpg",
-            "domain": "Emotions"
+            "tags": [
+                "Emotions"
+            ]
         }
     ]
 }

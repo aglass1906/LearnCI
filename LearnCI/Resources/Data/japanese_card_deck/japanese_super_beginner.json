@@ -22,7 +22,9 @@
             "audioWordFile": "ja_konnichiwa_word.mp3",
             "audioSentenceFile": "ja_konnichiwa_sentence.mp3",
             "mediaFile": "ja_a1_konnichiwa.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c2",
@@ -33,7 +35,9 @@
             "audioWordFile": "ja_arigato_word.mp3",
             "audioSentenceFile": "ja_arigato_sentence.mp3",
             "mediaFile": "ja_a1_arigato.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c3",
@@ -44,7 +48,9 @@
             "audioWordFile": "ja_sumimasen_word.mp3",
             "audioSentenceFile": "ja_sumimasen_sentence.mp3",
             "mediaFile": "ja_a1_sumimasen.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c4",
@@ -55,7 +61,9 @@
             "audioWordFile": "ja_hai_word.mp3",
             "audioSentenceFile": "ja_hai_sentence.mp3",
             "mediaFile": "ja_a1_hai.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c5",
@@ -66,7 +74,9 @@
             "audioWordFile": "ja_iie_word.mp3",
             "audioSentenceFile": "ja_iie_sentence.mp3",
             "mediaFile": "ja_a1_iie.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c6",
@@ -77,7 +87,9 @@
             "audioWordFile": "ja_sayonara_word.mp3",
             "audioSentenceFile": "ja_sayonara_sentence.mp3",
             "mediaFile": "ja_a1_sayonara.jpg",
-            "domain": "Greetings & Basics"
+            "tags": [
+                "Greetings & Basics"
+            ]
         },
         {
             "id": "ja_sb_c7",
@@ -88,7 +100,9 @@
             "audioWordFile": "ja_onegaishimasu_word.mp3",
             "audioSentenceFile": "ja_onegaishimasu_sentence.mp3",
             "mediaFile": "ja_a1_onegaishimasu.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ja_sb_c8",
@@ -99,7 +113,9 @@
             "audioWordFile": "ja_mizu_word.mp3",
             "audioSentenceFile": "ja_mizu_sentence.mp3",
             "mediaFile": "ja_a1_mizu.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ja_sb_c9",
@@ -110,7 +126,9 @@
             "audioWordFile": "ja_tabemono_word.mp3",
             "audioSentenceFile": "ja_tabemono_sentence.mp3",
             "mediaFile": "ja_a1_tabemono.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ja_sb_c10",
@@ -121,7 +139,9 @@
             "audioWordFile": "ja_neko_word.mp3",
             "audioSentenceFile": "ja_neko_sentence.mp3",
             "mediaFile": "ja_a1_neko.jpg",
-            "domain": "Animals"
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "ja_sb_c11",
@@ -132,7 +152,9 @@
             "audioWordFile": "ja_inu_word.mp3",
             "audioSentenceFile": "ja_inu_sentence.mp3",
             "mediaFile": "ja_a1_inu.jpg",
-            "domain": "Animals"
+            "tags": [
+                "Animals"
+            ]
         },
         {
             "id": "ja_sb_c12",
@@ -143,7 +165,9 @@
             "audioWordFile": "ja_ie_word.mp3",
             "audioSentenceFile": "ja_ie_sentence.mp3",
             "mediaFile": "ja_a1_ie.jpg",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "ja_sb_c13",
@@ -154,7 +178,9 @@
             "audioWordFile": "ja_tomodachi_word.mp3",
             "audioSentenceFile": "ja_tomodachi_sentence.mp3",
             "mediaFile": "ja_a1_tomodachi.jpg",
-            "domain": "People"
+            "tags": [
+                "People"
+            ]
         },
         {
             "id": "ja_sb_c14",
@@ -165,7 +191,9 @@
             "audioWordFile": "ja_hon_word.mp3",
             "audioSentenceFile": "ja_hon_sentence.mp3",
             "mediaFile": "ja_a1_hon.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ja_sb_c15",
@@ -176,7 +204,9 @@
             "audioWordFile": "ja_ichi_word.mp3",
             "audioSentenceFile": "ja_ichi_sentence.mp3",
             "mediaFile": "ja_a1_ichi.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ja_sb_c16",
@@ -187,7 +217,9 @@
             "audioWordFile": "ja_ni_word.mp3",
             "audioSentenceFile": "ja_ni_sentence.mp3",
             "mediaFile": "ja_a1_ni.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ja_sb_c17",
@@ -198,7 +230,9 @@
             "audioWordFile": "ja_san_word.mp3",
             "audioSentenceFile": "ja_san_sentence.mp3",
             "mediaFile": "ja_a1_san.jpg",
-            "domain": "Numbers"
+            "tags": [
+                "Numbers"
+            ]
         },
         {
             "id": "ja_sb_c18",
@@ -209,7 +243,9 @@
             "audioWordFile": "ja_asa_word.mp3",
             "audioSentenceFile": "ja_asa_sentence.mp3",
             "mediaFile": "ja_a1_asa.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ja_sb_c19",
@@ -220,7 +256,9 @@
             "audioWordFile": "ja_yoru_word.mp3",
             "audioSentenceFile": "ja_yoru_sentence.mp3",
             "mediaFile": "ja_a1_yoru.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ja_sb_c20",
@@ -231,7 +269,9 @@
             "audioWordFile": "ja_kyo_word.mp3",
             "audioSentenceFile": "ja_kyo_sentence.mp3",
             "mediaFile": "ja_a1_kyo.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ja_sb_c21",
@@ -242,7 +282,9 @@
             "audioWordFile": "ja_kinou_word.mp3",
             "audioSentenceFile": "ja_kinou_sentence.mp3",
             "mediaFile": "ja_a1_kinou.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "ja_sb_c22",
@@ -253,7 +295,9 @@
             "audioWordFile": "ja_gakko_word.mp3",
             "audioSentenceFile": "ja_gakko_sentence.mp3",
             "mediaFile": "ja_a1_gakko.jpg",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "ja_sb_c23",
@@ -264,7 +308,9 @@
             "audioWordFile": "ja_sensei_word.mp3",
             "audioSentenceFile": "ja_sensei_sentence.mp3",
             "mediaFile": "ja_a1_sensei.jpg",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "ja_sb_c24",
@@ -275,7 +321,9 @@
             "audioWordFile": "ja_gakusei_word.mp3",
             "audioSentenceFile": "ja_gakusei_sentence.mp3",
             "mediaFile": "ja_a1_gakusei.jpg",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "ja_sb_c25",
@@ -286,7 +334,9 @@
             "audioWordFile": "ja_ureshii_word.mp3",
             "audioSentenceFile": "ja_ureshii_sentence.mp3",
             "mediaFile": "ja_a1_ureshii.jpg",
-            "domain": "Emotions"
+            "tags": [
+                "Emotions"
+            ]
         }
     ]
 }

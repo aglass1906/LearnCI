@@ -25,7 +25,9 @@
             "audioWordFile": "es_desarrollar_word.mp3",
             "audioSentenceFile": "es_desarrollar_sentence.mp3",
             "mediaFile": "es_desarrollar.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c2",
@@ -36,7 +38,9 @@
             "audioWordFile": "es_aprovechar_word.mp3",
             "audioSentenceFile": "es_aprovechar_sentence.mp3",
             "mediaFile": "es_aprovechar.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c3",
@@ -47,7 +51,9 @@
             "audioWordFile": "es_sinembargo_word.mp3",
             "audioSentenceFile": "es_sinembargo_sentence.mp3",
             "mediaFile": "es_sinembargo.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c4",
@@ -58,7 +64,9 @@
             "audioWordFile": "es_realizar_word.mp3",
             "audioSentenceFile": "es_realizar_sentence.mp3",
             "mediaFile": "es_realizar.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c5",
@@ -69,7 +77,9 @@
             "audioWordFile": "es_aunque_word.mp3",
             "audioSentenceFile": "es_aunque_sentence.mp3",
             "mediaFile": "es_aunque.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c6",
@@ -80,7 +90,9 @@
             "audioWordFile": "es_sino_word.mp3",
             "audioSentenceFile": "es_sino_sentence.mp3",
             "mediaFile": "es_sino.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c7",
@@ -91,7 +103,9 @@
             "audioWordFile": "es_derecho_word.mp3",
             "audioSentenceFile": "es_derecho_sentence.mp3",
             "mediaFile": "es_derecho.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c8",
@@ -102,7 +116,9 @@
             "audioWordFile": "es_izquierda_word.mp3",
             "audioSentenceFile": "es_izquierda_sentence.mp3",
             "mediaFile": "es_izquierda.jpg",
-            "domain": "Verbs & Concepts"
+            "tags": [
+                "Verbs & Concepts"
+            ]
         },
         {
             "id": "es_i_c9",
@@ -113,7 +129,9 @@
             "audioWordFile": "es_encima_word.mp3",
             "audioSentenceFile": "es_encima_sentence.mp3",
             "mediaFile": "es_encima.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c10",
@@ -124,7 +142,9 @@
             "audioWordFile": "es_debajo_word.mp3",
             "audioSentenceFile": "es_debajo_sentence.mp3",
             "mediaFile": "es_debajo.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c11",
@@ -135,7 +155,9 @@
             "audioWordFile": "es_detras_word.mp3",
             "audioSentenceFile": "es_detras_sentence.mp3",
             "mediaFile": "es_detras.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c12",
@@ -146,7 +168,9 @@
             "audioWordFile": "es_delante_word.mp3",
             "audioSentenceFile": "es_delante_sentence.mp3",
             "mediaFile": "es_delante.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c13",
@@ -157,7 +181,9 @@
             "audioWordFile": "es_cerca_word.mp3",
             "audioSentenceFile": "es_cerca_sentence.mp3",
             "mediaFile": "es_cerca.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c14",
@@ -168,7 +194,9 @@
             "audioWordFile": "es_lejos_word.mp3",
             "audioSentenceFile": "es_lejos_sentence.mp3",
             "mediaFile": "es_lejos.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c15",
@@ -179,7 +207,9 @@
             "audioWordFile": "es_temprano_word.mp3",
             "audioSentenceFile": "es_temprano_sentence.mp3",
             "mediaFile": "es_temprano.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c16",
@@ -190,7 +220,9 @@
             "audioWordFile": "es_tarde_word.mp3",
             "audioSentenceFile": "es_tarde_sentence.mp3",
             "mediaFile": "es_tarde.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c17",
@@ -201,7 +233,9 @@
             "audioWordFile": "es_pronto_word.mp3",
             "audioSentenceFile": "es_pronto_sentence.mp3",
             "mediaFile": "es_pronto.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c18",
@@ -212,7 +246,9 @@
             "audioWordFile": "es_despues_word.mp3",
             "audioSentenceFile": "es_despues_sentence.mp3",
             "mediaFile": "es_despues.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c19",
@@ -223,7 +259,9 @@
             "audioWordFile": "es_antes_word.mp3",
             "audioSentenceFile": "es_antes_sentence.mp3",
             "mediaFile": "es_antes.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c20",
@@ -234,7 +272,9 @@
             "audioWordFile": "es_todavia_word.mp3",
             "audioSentenceFile": "es_todavia_sentence.mp3",
             "mediaFile": "es_todavia.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c21",
@@ -245,7 +285,9 @@
             "audioWordFile": "es_quizas_word.mp3",
             "audioSentenceFile": "es_quizas_sentence.mp3",
             "mediaFile": "es_quizas.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c22",
@@ -256,7 +298,9 @@
             "audioWordFile": "es_bastante_word.mp3",
             "audioSentenceFile": "es_bastante_sentence.mp3",
             "mediaFile": "es_bastante.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c23",
@@ -267,7 +311,9 @@
             "audioWordFile": "es_demasiado_word.mp3",
             "audioSentenceFile": "es_demasiado_sentence.mp3",
             "mediaFile": "es_demasiado.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c24",
@@ -278,7 +324,9 @@
             "audioWordFile": "es_ya_word.mp3",
             "audioSentenceFile": "es_ya_sentence.mp3",
             "mediaFile": "es_ya.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c25",
@@ -289,7 +337,9 @@
             "audioWordFile": "es_tambien_word.mp3",
             "audioSentenceFile": "es_tambien_sentence.mp3",
             "mediaFile": "es_tambien.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c26",
@@ -300,7 +350,9 @@
             "audioWordFile": "es_tampoco_word.mp3",
             "audioSentenceFile": "es_tampoco_sentence.mp3",
             "mediaFile": "es_tampoco.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c27",
@@ -311,7 +363,9 @@
             "audioWordFile": "es_seguro_word.mp3",
             "audioSentenceFile": "es_seguro_sentence.mp3",
             "mediaFile": "es_seguro.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c28",
@@ -322,7 +376,9 @@
             "audioWordFile": "es_posible_word.mp3",
             "audioSentenceFile": "es_posible_sentence.mp3",
             "mediaFile": "es_posible.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c29",
@@ -333,7 +389,9 @@
             "audioWordFile": "es_imposible_word.mp3",
             "audioSentenceFile": "es_imposible_sentence.mp3",
             "mediaFile": "es_imposible.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c30",
@@ -344,7 +402,9 @@
             "audioWordFile": "es_facil_word.mp3",
             "audioSentenceFile": "es_facil_sentence.mp3",
             "mediaFile": "es_facil.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c31",
@@ -355,7 +415,9 @@
             "audioWordFile": "es_dificil_word.mp3",
             "audioSentenceFile": "es_dificil_sentence.mp3",
             "mediaFile": "es_dificil.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c32",
@@ -366,7 +428,9 @@
             "audioWordFile": "es_diferente_word.mp3",
             "audioSentenceFile": "es_diferente_sentence.mp3",
             "mediaFile": "es_diferente.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c33",
@@ -377,7 +441,9 @@
             "audioWordFile": "es_igual_word.mp3",
             "audioSentenceFile": "es_igual_sentence.mp3",
             "mediaFile": "es_igual.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c34",
@@ -388,7 +454,9 @@
             "audioWordFile": "es_importante_word.mp3",
             "audioSentenceFile": "es_importante_sentence.mp3",
             "mediaFile": "es_importante.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c35",
@@ -399,7 +467,9 @@
             "audioWordFile": "es_util_word.mp3",
             "audioSentenceFile": "es_util_sentence.mp3",
             "mediaFile": "es_util.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c36",
@@ -410,7 +480,9 @@
             "audioWordFile": "es_inutil_word.mp3",
             "audioSentenceFile": "es_inutil_sentence.mp3",
             "mediaFile": "es_inutil.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "es_i_c37",
@@ -421,7 +493,9 @@
             "audioWordFile": "es_nuevo_word.mp3",
             "audioSentenceFile": "es_nuevo_sentence.mp3",
             "mediaFile": "es_nuevo.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c38",
@@ -432,7 +506,9 @@
             "audioWordFile": "es_viejo_word.mp3",
             "audioSentenceFile": "es_viejo_sentence.mp3",
             "mediaFile": "es_viejo.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c39",
@@ -443,7 +519,9 @@
             "audioWordFile": "es_mucho_word.mp3",
             "audioSentenceFile": "es_mucho_sentence.mp3",
             "mediaFile": "es_mucho.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c40",
@@ -454,7 +532,9 @@
             "audioWordFile": "es_poco_word.mp3",
             "audioSentenceFile": "es_poco_sentence.mp3",
             "mediaFile": "es_poco.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c41",
@@ -465,7 +545,9 @@
             "audioWordFile": "es_varios_word.mp3",
             "audioSentenceFile": "es_varios_sentence.mp3",
             "mediaFile": "es_varios.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c42",
@@ -476,7 +558,9 @@
             "audioWordFile": "es_alguno_word.mp3",
             "audioSentenceFile": "es_alguno_sentence.mp3",
             "mediaFile": "es_alguno.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c43",
@@ -487,7 +571,9 @@
             "audioWordFile": "es_ninguno_word.mp3",
             "audioSentenceFile": "es_ninguno_sentence.mp3",
             "mediaFile": "es_ninguno.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c44",
@@ -498,7 +584,9 @@
             "audioWordFile": "es_cada_word.mp3",
             "audioSentenceFile": "es_cada_sentence.mp3",
             "mediaFile": "es_cada.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c45",
@@ -509,7 +597,9 @@
             "audioWordFile": "es_cualquier_word.mp3",
             "audioSentenceFile": "es_cualquier_sentence.mp3",
             "mediaFile": "es_cualquier.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c46",
@@ -520,7 +610,9 @@
             "audioWordFile": "es_ambos_word.mp3",
             "audioSentenceFile": "es_ambos_sentence.mp3",
             "mediaFile": "es_ambos.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c47",
@@ -531,7 +623,9 @@
             "audioWordFile": "es_mismo_word.mp3",
             "audioSentenceFile": "es_mismo_sentence.mp3",
             "mediaFile": "es_mismo.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c48",
@@ -542,7 +636,9 @@
             "audioWordFile": "es_siguiente_word.mp3",
             "audioSentenceFile": "es_siguiente_sentence.mp3",
             "mediaFile": "es_siguiente.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c49",
@@ -553,7 +649,9 @@
             "audioWordFile": "es_anterior_word.mp3",
             "audioSentenceFile": "es_anterior_sentence.mp3",
             "mediaFile": "es_anterior.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c50",
@@ -564,7 +662,9 @@
             "audioWordFile": "es_ultimo_word.mp3",
             "audioSentenceFile": "es_ultimo_sentence.mp3",
             "mediaFile": "es_ultimo.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c51",
@@ -575,7 +675,9 @@
             "audioWordFile": "es_primero_word.mp3",
             "audioSentenceFile": "es_primero_sentence.mp3",
             "mediaFile": "es_primero.jpg",
-            "domain": "Determiners & Ordinals"
+            "tags": [
+                "Determiners & Ordinals"
+            ]
         },
         {
             "id": "es_i_c52",
@@ -586,7 +688,9 @@
             "audioWordFile": "es_alrededor_word.mp3",
             "audioSentenceFile": "es_alrededor_sentence.mp3",
             "mediaFile": "es_alrededor.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c53",
@@ -597,7 +701,9 @@
             "audioWordFile": "es_dentro_word.mp3",
             "audioSentenceFile": "es_dentro_sentence.mp3",
             "mediaFile": "es_dentro.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c54",
@@ -608,7 +714,9 @@
             "audioWordFile": "es_fuera_word.mp3",
             "audioSentenceFile": "es_fuera_sentence.mp3",
             "mediaFile": "es_fuera.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c55",
@@ -619,7 +727,9 @@
             "audioWordFile": "es_arriba_word.mp3",
             "audioSentenceFile": "es_arriba_sentence.mp3",
             "mediaFile": "es_arriba.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c56",
@@ -630,7 +740,9 @@
             "audioWordFile": "es_abajo_word.mp3",
             "audioSentenceFile": "es_abajo_sentence.mp3",
             "mediaFile": "es_abajo.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c57",
@@ -641,7 +753,9 @@
             "audioWordFile": "es_proximo_word.mp3",
             "audioSentenceFile": "es_proximo_sentence.mp3",
             "mediaFile": "es_proximo.jpg",
-            "domain": "Location"
+            "tags": [
+                "Location"
+            ]
         },
         {
             "id": "es_i_c58",
@@ -652,7 +766,9 @@
             "audioWordFile": "es_entonces_word.mp3",
             "audioSentenceFile": "es_entonces_sentence.mp3",
             "mediaFile": "es_entonces.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c59",
@@ -663,7 +779,9 @@
             "audioWordFile": "es_luego_word.mp3",
             "audioSentenceFile": "es_luego_sentence.mp3",
             "mediaFile": "es_luego.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c60",
@@ -674,7 +792,9 @@
             "audioWordFile": "es_mientras_word.mp3",
             "audioSentenceFile": "es_mientras_sentence.mp3",
             "mediaFile": "es_mientras.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c61",
@@ -685,7 +805,9 @@
             "audioWordFile": "es_siempre_word.mp3",
             "audioSentenceFile": "es_siempre_sentence.mp3",
             "mediaFile": "es_siempre.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c62",
@@ -696,7 +818,9 @@
             "audioWordFile": "es_nunca_word.mp3",
             "audioSentenceFile": "es_nunca_sentence.mp3",
             "mediaFile": "es_nunca.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c63",
@@ -707,7 +831,9 @@
             "audioWordFile": "es_jamas_word.mp3",
             "audioSentenceFile": "es_jamas_sentence.mp3",
             "mediaFile": "es_jamas.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_i_c64",
@@ -718,7 +844,9 @@
             "audioWordFile": "es_aveces_word.mp3",
             "audioSentenceFile": "es_aveces_sentence.mp3",
             "mediaFile": "es_aveces.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c65",
@@ -729,7 +857,9 @@
             "audioWordFile": "es_amenudo_word.mp3",
             "audioSentenceFile": "es_amenudo_sentence.mp3",
             "mediaFile": "es_amenudo.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c66",
@@ -740,7 +870,9 @@
             "audioWordFile": "es_casi_word.mp3",
             "audioSentenceFile": "es_casi_sentence.mp3",
             "mediaFile": "es_casi.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c67",
@@ -751,7 +883,9 @@
             "audioWordFile": "es_solo_word.mp3",
             "audioSentenceFile": "es_solo_sentence.mp3",
             "mediaFile": "es_solo.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c68",
@@ -762,7 +896,9 @@
             "audioWordFile": "es_demasiado_word.mp3",
             "audioSentenceFile": "es_demasiado_sentence.mp3",
             "mediaFile": "es_demasiado.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c69",
@@ -773,7 +909,9 @@
             "audioWordFile": "es_muy_word.mp3",
             "audioSentenceFile": "es_muy_sentence.mp3",
             "mediaFile": "es_muy.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c70",
@@ -784,7 +922,9 @@
             "audioWordFile": "es_mucho_word.mp3",
             "audioSentenceFile": "es_mucho_sentence.mp3",
             "mediaFile": "es_mucho.jpg",
-            "domain": "Quantity"
+            "tags": [
+                "Quantity"
+            ]
         },
         {
             "id": "es_i_c71",
@@ -795,7 +935,9 @@
             "audioWordFile": "es_que_word.mp3",
             "audioSentenceFile": "es_que_sentence.mp3",
             "mediaFile": "es_que.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c72",
@@ -806,7 +948,9 @@
             "audioWordFile": "es_quien_word.mp3",
             "audioSentenceFile": "es_quien_sentence.mp3",
             "mediaFile": "es_quien.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c73",
@@ -817,7 +961,9 @@
             "audioWordFile": "es_donde_word.mp3",
             "audioSentenceFile": "es_donde_sentence.mp3",
             "mediaFile": "es_donde.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c74",
@@ -828,7 +974,9 @@
             "audioWordFile": "es_cuando_word.mp3",
             "audioSentenceFile": "es_cuando_sentence.mp3",
             "mediaFile": "es_cuando.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c75",
@@ -839,7 +987,9 @@
             "audioWordFile": "es_como_word.mp3",
             "audioSentenceFile": "es_como_sentence.mp3",
             "mediaFile": "es_como.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c76",
@@ -850,7 +1000,9 @@
             "audioWordFile": "es_porque_word.mp3",
             "audioSentenceFile": "es_porque_sentence.mp3",
             "mediaFile": "es_porque.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c77",
@@ -861,7 +1013,9 @@
             "audioWordFile": "es_cuanto_word.mp3",
             "audioSentenceFile": "es_cuanto_sentence.mp3",
             "mediaFile": "es_cuanto.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c78",
@@ -872,7 +1026,9 @@
             "audioWordFile": "es_cual_word.mp3",
             "audioSentenceFile": "es_cual_sentence.mp3",
             "mediaFile": "es_cual.jpg",
-            "domain": "Questions"
+            "tags": [
+                "Questions"
+            ]
         },
         {
             "id": "es_i_c79",
@@ -883,7 +1039,9 @@
             "audioWordFile": "es_para_word.mp3",
             "audioSentenceFile": "es_para_sentence.mp3",
             "mediaFile": "es_para.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c80",
@@ -894,7 +1052,9 @@
             "audioWordFile": "es_por_word.mp3",
             "audioSentenceFile": "es_por_sentence.mp3",
             "mediaFile": "es_por.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c81",
@@ -905,7 +1065,9 @@
             "audioWordFile": "es_con_word.mp3",
             "audioSentenceFile": "es_con_sentence.mp3",
             "mediaFile": "es_con.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c82",
@@ -916,7 +1078,9 @@
             "audioWordFile": "es_sin_word.mp3",
             "audioSentenceFile": "es_sin_sentence.mp3",
             "mediaFile": "es_sin.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c83",
@@ -927,7 +1091,9 @@
             "audioWordFile": "es_sobre_word.mp3",
             "audioSentenceFile": "es_sobre_sentence.mp3",
             "mediaFile": "es_sobre.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c84",
@@ -938,7 +1104,9 @@
             "audioWordFile": "es_hacia_word.mp3",
             "audioSentenceFile": "es_hacia_sentence.mp3",
             "mediaFile": "es_hacia.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c85",
@@ -949,7 +1117,9 @@
             "audioWordFile": "es_desde_word.mp3",
             "audioSentenceFile": "es_desde_sentence.mp3",
             "mediaFile": "es_desde.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c86",
@@ -960,7 +1130,9 @@
             "audioWordFile": "es_hasta_word.mp3",
             "audioSentenceFile": "es_hasta_sentence.mp3",
             "mediaFile": "es_hasta.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c87",
@@ -971,7 +1143,9 @@
             "audioWordFile": "es_entre_word.mp3",
             "audioSentenceFile": "es_entre_sentence.mp3",
             "mediaFile": "es_entre.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c88",
@@ -982,7 +1156,9 @@
             "audioWordFile": "es_contra_word.mp3",
             "audioSentenceFile": "es_contra_sentence.mp3",
             "mediaFile": "es_contra.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c89",
@@ -993,7 +1169,9 @@
             "audioWordFile": "es_segun_word.mp3",
             "audioSentenceFile": "es_segun_sentence.mp3",
             "mediaFile": "es_segun.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c90",
@@ -1004,7 +1182,9 @@
             "audioWordFile": "es_bajo_word.mp3",
             "audioSentenceFile": "es_bajo_sentence.mp3",
             "mediaFile": "es_bajo.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c91",
@@ -1015,7 +1195,9 @@
             "audioWordFile": "es_cualquier_word.mp3",
             "audioSentenceFile": "es_cualquier_sentence.mp3",
             "mediaFile": "es_cualquier.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c92",
@@ -1026,7 +1208,9 @@
             "audioWordFile": "es_propio_word.mp3",
             "audioSentenceFile": "es_propio_sentence.mp3",
             "mediaFile": "es_propio.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c93",
@@ -1037,7 +1221,9 @@
             "audioWordFile": "es_extrano_word.mp3",
             "audioSentenceFile": "es_extrano_sentence.mp3",
             "mediaFile": "es_extrano.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c94",
@@ -1048,7 +1234,9 @@
             "audioWordFile": "es_parecer_word.mp3",
             "audioSentenceFile": "es_parecer_sentence.mp3",
             "mediaFile": "es_parecer.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c95",
@@ -1059,7 +1247,9 @@
             "audioWordFile": "es_pasar_word.mp3",
             "audioSentenceFile": "es_pasar_sentence.mp3",
             "mediaFile": "es_pasar.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c96",
@@ -1070,7 +1260,9 @@
             "audioWordFile": "es_dejar_word.mp3",
             "audioSentenceFile": "es_dejar_sentence.mp3",
             "mediaFile": "es_dejar.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c97",
@@ -1081,7 +1273,9 @@
             "audioWordFile": "es_llegar_word.mp3",
             "audioSentenceFile": "es_llegar_sentence.mp3",
             "mediaFile": "es_llegar.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c98",
@@ -1092,7 +1286,9 @@
             "audioWordFile": "es_encontrar_word.mp3",
             "audioSentenceFile": "es_encontrar_sentence.mp3",
             "mediaFile": "es_encontrar.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c99",
@@ -1103,7 +1299,9 @@
             "audioWordFile": "es_creer_word.mp3",
             "audioSentenceFile": "es_creer_sentence.mp3",
             "mediaFile": "es_creer.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         },
         {
             "id": "es_i_c100",
@@ -1114,7 +1312,9 @@
             "audioWordFile": "es_saber_word.mp3",
             "audioSentenceFile": "es_saber_sentence.mp3",
             "mediaFile": "es_saber.jpg",
-            "domain": "Concepts"
+            "tags": [
+                "Concepts"
+            ]
         }
     ]
 }

@@ -25,7 +25,9 @@
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_hombre_sentence.mp3",
             "mediaFile": "es_hombre.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c2",
@@ -36,7 +38,9 @@
             "audioWordFile": "es_mujer_word.mp3",
             "audioSentenceFile": "es_mujer_sentence.mp3",
             "mediaFile": "es_mujer.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c3",
@@ -47,7 +51,9 @@
             "audioWordFile": "es_nino_word.mp3",
             "audioSentenceFile": "es_nino_sentence.mp3",
             "mediaFile": "es_nino.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c4",
@@ -58,7 +64,9 @@
             "audioWordFile": "es_nina_word.mp3",
             "audioSentenceFile": "es_nina_sentence.mp3",
             "mediaFile": "es_nina.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c5",
@@ -69,7 +77,9 @@
             "audioWordFile": "es_hermano_word.mp3",
             "audioSentenceFile": "es_hermano_sentence.mp3",
             "mediaFile": "es_hermano.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c6",
@@ -80,7 +90,9 @@
             "audioWordFile": "es_hermana_word.mp3",
             "audioSentenceFile": "es_hermana_sentence.mp3",
             "mediaFile": "es_hermana.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c7",
@@ -91,7 +103,9 @@
             "audioWordFile": "es_padre_word.mp3",
             "audioSentenceFile": "es_padre_sentence.mp3",
             "mediaFile": "es_padre.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c8",
@@ -102,7 +116,9 @@
             "audioWordFile": "es_madre_word.mp3",
             "audioSentenceFile": "es_madre_sentence.mp3",
             "mediaFile": "es_madre.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c9",
@@ -113,7 +129,9 @@
             "audioWordFile": "es_abuelo_word.mp3",
             "audioSentenceFile": "es_abuelo_sentence.mp3",
             "mediaFile": "es_abuelo.png",
-            "domain": "Family"
+            "tags": [
+                "Family"
+            ]
         },
         {
             "id": "es_b_c10",
@@ -124,7 +142,9 @@
             "audioWordFile": "es_aguja_word.mp3",
             "audioSentenceFile": "es_aguja_sentence.mp3",
             "mediaFile": "es_aguja.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c11",
@@ -135,7 +155,9 @@
             "audioWordFile": "es_mesa_word.mp3",
             "audioSentenceFile": "es_mesa_sentence.mp3",
             "mediaFile": "es_mesa.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c12",
@@ -146,7 +168,9 @@
             "audioWordFile": "es_silla_word.mp3",
             "audioSentenceFile": "es_silla_sentence.mp3",
             "mediaFile": "es_silla.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c13",
@@ -157,7 +181,9 @@
             "audioWordFile": "es_cama_word.mp3",
             "audioSentenceFile": "es_cama_sentence.mp3",
             "mediaFile": "es_cama.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c14",
@@ -168,7 +194,9 @@
             "audioWordFile": "es_puerta_word.mp3",
             "audioSentenceFile": "es_puerta_sentence.mp3",
             "mediaFile": "es_puerta.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c15",
@@ -179,7 +207,9 @@
             "audioWordFile": "es_ventana_word.mp3",
             "audioSentenceFile": "es_ventana_sentence.mp3",
             "mediaFile": "es_ventana.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c16",
@@ -190,7 +220,9 @@
             "audioWordFile": "es_cocina_word.mp3",
             "audioSentenceFile": "es_cocina_sentence.mp3",
             "mediaFile": "es_cocina.png",
-            "domain": "Home"
+            "tags": [
+                "Home"
+            ]
         },
         {
             "id": "es_b_c17",
@@ -201,7 +233,9 @@
             "audioWordFile": "es_comida_word.mp3",
             "audioSentenceFile": "es_comida_sentence.mp3",
             "mediaFile": "es_comida.png",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c18",
@@ -212,7 +246,9 @@
             "audioWordFile": "es_desayuno_word.mp3",
             "audioSentenceFile": "es_desayuno_sentence.mp3",
             "mediaFile": "es_desayuno.png",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c19",
@@ -223,7 +259,9 @@
             "audioWordFile": "es_almuerzo_word.mp3",
             "audioSentenceFile": "es_almuerzo_sentence.mp3",
             "mediaFile": "es_almuerzo.png",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c20",
@@ -234,7 +272,9 @@
             "audioWordFile": "es_cena_word.mp3",
             "audioSentenceFile": "es_cena_sentence.mp3",
             "mediaFile": "es_cena.png",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c21",
@@ -245,7 +285,9 @@
             "audioWordFile": "es_ropa_word.mp3",
             "audioSentenceFile": "es_ropa_sentence.mp3",
             "mediaFile": "es_ropa.png",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es_b_c22",
@@ -256,7 +298,9 @@
             "audioWordFile": "es_zapatos_word.mp3",
             "audioSentenceFile": "es_zapatos_sentence.mp3",
             "mediaFile": "es_zapatos.png",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es_b_c23",
@@ -267,7 +311,9 @@
             "audioWordFile": "es_sombrero_word.mp3",
             "audioSentenceFile": "es_sombrero_sentence.mp3",
             "mediaFile": "es_sombrero.png",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es_b_c24",
@@ -278,7 +324,9 @@
             "audioWordFile": "es_reloj_word.mp3",
             "audioSentenceFile": "es_reloj_sentence.mp3",
             "mediaFile": "es_reloj.png",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "es_b_c25",
@@ -289,7 +337,9 @@
             "audioWordFile": "es_libro_word.mp3",
             "audioSentenceFile": "es_libro_sentence.mp3",
             "mediaFile": "es_libro.png",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "es_b_c26",
@@ -300,7 +350,9 @@
             "audioWordFile": "es_lapiz_word.mp3",
             "audioSentenceFile": "es_lapiz_sentence.mp3",
             "mediaFile": "es_lapiz.png",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "es_b_c27",
@@ -311,7 +363,9 @@
             "audioWordFile": "es_papel_word.mp3",
             "audioSentenceFile": "es_papel_sentence.mp3",
             "mediaFile": "es_papel.png",
-            "domain": "School"
+            "tags": [
+                "School"
+            ]
         },
         {
             "id": "es_b_c28",
@@ -322,7 +376,9 @@
             "audioWordFile": "es_dinero_word.mp3",
             "audioSentenceFile": "es_dinero_sentence.mp3",
             "mediaFile": "es_dinero.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c29",
@@ -333,7 +389,9 @@
             "audioWordFile": "es_mercado_word.mp3",
             "audioSentenceFile": "es_mercado_sentence.mp3",
             "mediaFile": "es_mercado.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c30",
@@ -344,7 +402,9 @@
             "audioWordFile": "es_tienda_word.mp3",
             "audioSentenceFile": "es_tienda_sentence.mp3",
             "mediaFile": "es_tienda.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c31",
@@ -355,7 +415,9 @@
             "audioWordFile": "es_trabajo_word.mp3",
             "audioSentenceFile": "es_trabajo_sentence.mp3",
             "mediaFile": "es_trabajo.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c32",
@@ -366,7 +428,9 @@
             "audioWordFile": "es_coche_word.mp3",
             "audioSentenceFile": "es_coche_sentence.mp3",
             "mediaFile": "es_coche.png",
-            "domain": "Transport"
+            "tags": [
+                "Transport"
+            ]
         },
         {
             "id": "es_b_c33",
@@ -377,7 +441,9 @@
             "audioWordFile": "es_bus_word.mp3",
             "audioSentenceFile": "es_bus_sentence.mp3",
             "mediaFile": "es_bus.png",
-            "domain": "Transport"
+            "tags": [
+                "Transport"
+            ]
         },
         {
             "id": "es_b_c34",
@@ -388,7 +454,9 @@
             "audioWordFile": "es_tren_word.mp3",
             "audioSentenceFile": "es_tren_sentence.mp3",
             "mediaFile": "es_tren.png",
-            "domain": "Transport"
+            "tags": [
+                "Transport"
+            ]
         },
         {
             "id": "es_b_c35",
@@ -399,7 +467,9 @@
             "audioWordFile": "es_avion_word.mp3",
             "audioSentenceFile": "es_avion_sentence.mp3",
             "mediaFile": "es_avion.png",
-            "domain": "Transport"
+            "tags": [
+                "Transport"
+            ]
         },
         {
             "id": "es_b_c36",
@@ -410,7 +480,9 @@
             "audioWordFile": "es_calle_word.mp3",
             "audioSentenceFile": "es_calle_sentence.mp3",
             "mediaFile": "es_calle.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c37",
@@ -421,7 +493,9 @@
             "audioWordFile": "es_parque_word.mp3",
             "audioSentenceFile": "es_parque_sentence.mp3",
             "mediaFile": "es_parque.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c38",
@@ -432,7 +506,9 @@
             "audioWordFile": "es_cine_word.mp3",
             "audioSentenceFile": "es_cine_sentence.mp3",
             "mediaFile": "es_cine.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c39",
@@ -443,7 +519,9 @@
             "audioWordFile": "es_restaurante_word.mp3",
             "audioSentenceFile": "es_restaurante_sentence.mp3",
             "mediaFile": "es_restaurante.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c40",
@@ -454,7 +532,9 @@
             "audioWordFile": "es_hotel_word.mp3",
             "audioSentenceFile": "es_hotel_sentence.mp3",
             "mediaFile": "es_hotel.png",
-            "domain": "City Life"
+            "tags": [
+                "City Life"
+            ]
         },
         {
             "id": "es_b_c41",
@@ -465,7 +545,9 @@
             "audioWordFile": "es_playa_word.mp3",
             "audioSentenceFile": "es_playa_sentence.mp3",
             "mediaFile": "es_playa.png",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c42",
@@ -476,7 +558,9 @@
             "audioWordFile": "es_montana_word.mp3",
             "audioSentenceFile": "es_montana_sentence.mp3",
             "mediaFile": "es_montana.png",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c43",
@@ -487,7 +571,9 @@
             "audioWordFile": "es_sol_word.mp3",
             "audioSentenceFile": "es_sol_sentence.mp3",
             "mediaFile": "es_sol.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c44",
@@ -498,7 +584,9 @@
             "audioWordFile": "es_luna_word.mp3",
             "audioSentenceFile": "es_luna_sentence.mp3",
             "mediaFile": "es_luna.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c45",
@@ -509,7 +597,9 @@
             "audioWordFile": "es_estrella_word.mp3",
             "audioSentenceFile": "es_estrella_sentence.mp3",
             "mediaFile": "es_estrella.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c46",
@@ -520,7 +610,9 @@
             "audioWordFile": "es_cielo_word.mp3",
             "audioSentenceFile": "es_cielo_sentence.mp3",
             "mediaFile": "es_cielo.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c47",
@@ -531,7 +623,9 @@
             "audioWordFile": "es_mar_word.mp3",
             "audioSentenceFile": "es_mar_sentence.mp3",
             "mediaFile": "es_mar.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c48",
@@ -542,7 +636,9 @@
             "audioWordFile": "es_flor_word.mp3",
             "audioSentenceFile": "es_flor_sentence.mp3",
             "mediaFile": "es_flor.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c49",
@@ -553,7 +649,9 @@
             "audioWordFile": "es_arbol_word.mp3",
             "audioSentenceFile": "es_arbol_sentence.mp3",
             "mediaFile": "es_arbol.jpg",
-            "domain": "Nature"
+            "tags": [
+                "Nature"
+            ]
         },
         {
             "id": "es_b_c50",
@@ -564,7 +662,9 @@
             "audioWordFile": "es_fruta_word.mp3",
             "audioSentenceFile": "es_fruta_sentence.mp3",
             "mediaFile": "es_fruta.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c51",
@@ -575,7 +675,9 @@
             "audioWordFile": "es_manzana_word.mp3",
             "audioSentenceFile": "es_manzana_sentence.mp3",
             "mediaFile": "es_manzana.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c52",
@@ -586,7 +688,9 @@
             "audioWordFile": "es_pera_word.mp3",
             "audioSentenceFile": "es_pera_sentence.mp3",
             "mediaFile": "es_pera.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c53",
@@ -597,7 +701,9 @@
             "audioWordFile": "es_leche_word.mp3",
             "audioSentenceFile": "es_leche_sentence.mp3",
             "mediaFile": "es_leche.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c54",
@@ -608,7 +714,9 @@
             "audioWordFile": "es_pan_word.mp3",
             "audioSentenceFile": "es_pan_sentence.mp3",
             "mediaFile": "es_pan.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c55",
@@ -619,7 +727,9 @@
             "audioWordFile": "es_queso_word.mp3",
             "audioSentenceFile": "es_queso_sentence.mp3",
             "mediaFile": "es_queso.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c56",
@@ -630,7 +740,9 @@
             "audioWordFile": "es_carne_word.mp3",
             "audioSentenceFile": "es_carne_sentence.mp3",
             "mediaFile": "es_carne.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c57",
@@ -641,7 +753,9 @@
             "audioWordFile": "es_pescado_word.mp3",
             "audioSentenceFile": "es_pescado_sentence.mp3",
             "mediaFile": "es_pescado.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c58",
@@ -652,7 +766,9 @@
             "audioWordFile": "es_arroz_word.mp3",
             "audioSentenceFile": "es_arroz_sentence.mp3",
             "mediaFile": "es_arroz.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c59",
@@ -663,7 +779,9 @@
             "audioWordFile": "es_huevo_word.mp3",
             "audioSentenceFile": "es_huevo_sentence.mp3",
             "mediaFile": "es_huevo.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c60",
@@ -674,7 +792,9 @@
             "audioWordFile": "es_sal_word.mp3",
             "audioSentenceFile": "es_sal_sentence.mp3",
             "mediaFile": "es_sal.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c61",
@@ -685,7 +805,9 @@
             "audioWordFile": "es_azucar_word.mp3",
             "audioSentenceFile": "es_azucar_sentence.mp3",
             "mediaFile": "es_azucar.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c62",
@@ -696,7 +818,9 @@
             "audioWordFile": "es_te_word.mp3",
             "audioSentenceFile": "es_te_sentence.mp3",
             "mediaFile": "es_te.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c63",
@@ -707,7 +831,9 @@
             "audioWordFile": "es_cafe_word.mp3",
             "audioSentenceFile": "es_cafe_sentence.mp3",
             "mediaFile": "es_cafe.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c64",
@@ -718,7 +844,9 @@
             "audioWordFile": "es_cerveza_word.mp3",
             "audioSentenceFile": "es_cerveza_sentence.mp3",
             "mediaFile": "es_cerveza.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c65",
@@ -729,7 +857,9 @@
             "audioWordFile": "es_vino_word.mp3",
             "audioSentenceFile": "es_vino_sentence.mp3",
             "mediaFile": "es_vino.jpg",
-            "domain": "Food"
+            "tags": [
+                "Food"
+            ]
         },
         {
             "id": "es_b_c66",
@@ -740,7 +870,9 @@
             "audioWordFile": "es_cuerpo_word.mp3",
             "audioSentenceFile": "es_cuerpo_sentence.mp3",
             "mediaFile": "es_cuerpo.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c67",
@@ -751,7 +883,9 @@
             "audioWordFile": "es_cabeza_word.mp3",
             "audioSentenceFile": "es_cabeza_sentence.mp3",
             "mediaFile": "es_cabeza.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c68",
@@ -762,7 +896,9 @@
             "audioWordFile": "es_cara_word.mp3",
             "audioSentenceFile": "es_cara_sentence.mp3",
             "mediaFile": "es_cara.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c69",
@@ -773,7 +909,9 @@
             "audioWordFile": "es_ojo_word.mp3",
             "audioSentenceFile": "es_ojo_sentence.mp3",
             "mediaFile": "es_ojo.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c70",
@@ -784,7 +922,9 @@
             "audioWordFile": "es_nariz_word.mp3",
             "audioSentenceFile": "es_nariz_sentence.mp3",
             "mediaFile": "es_nariz.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c71",
@@ -795,7 +935,9 @@
             "audioWordFile": "es_boca_word.mp3",
             "audioSentenceFile": "es_boca_sentence.mp3",
             "mediaFile": "es_boca.jpg",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c72",
@@ -806,7 +948,9 @@
             "audioWordFile": "es_oreja_word.mp3",
             "audioSentenceFile": "es_oreja_sentence.mp3",
             "mediaFile": "es_oreja.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c73",
@@ -817,7 +961,9 @@
             "audioWordFile": "es_pelo_word.mp3",
             "audioSentenceFile": "es_pelo_sentence.mp3",
             "mediaFile": "es_pelo.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c74",
@@ -828,7 +974,9 @@
             "audioWordFile": "es_mano_word.mp3",
             "audioSentenceFile": "es_mano_sentence.mp3",
             "mediaFile": "es_mano.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c75",
@@ -839,7 +987,9 @@
             "audioWordFile": "es_brazo_word.mp3",
             "audioSentenceFile": "es_brazo_sentence.mp3",
             "mediaFile": "es_brazo.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c76",
@@ -850,7 +1000,9 @@
             "audioWordFile": "es_pierna_word.mp3",
             "audioSentenceFile": "es_pierna_sentence.mp3",
             "mediaFile": "es_pierna.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c77",
@@ -861,7 +1013,9 @@
             "audioWordFile": "es_pie_word.mp3",
             "audioSentenceFile": "es_pie_sentence.mp3",
             "mediaFile": "es_pie.png",
-            "domain": "Body"
+            "tags": [
+                "Body"
+            ]
         },
         {
             "id": "es_b_c78",
@@ -872,7 +1026,9 @@
             "audioWordFile": "es_medico_word.mp3",
             "audioSentenceFile": "es_medico_sentence.mp3",
             "mediaFile": "es_medico.png",
-            "domain": "Society"
+            "tags": [
+                "Society"
+            ]
         },
         {
             "id": "es_b_c79",
@@ -883,7 +1039,9 @@
             "audioWordFile": "es_enfermo_word.mp3",
             "audioSentenceFile": "es_enfermo_sentence.mp3",
             "mediaFile": "es_enfermo.png",
-            "domain": "Society"
+            "tags": [
+                "Society"
+            ]
         },
         {
             "id": "es_b_c80",
@@ -894,7 +1052,9 @@
             "audioWordFile": "es_hospital_word.mp3",
             "audioSentenceFile": "es_hospital_sentence.mp3",
             "mediaFile": "es_hospital.jpg",
-            "domain": "Society"
+            "tags": [
+                "Society"
+            ]
         },
         {
             "id": "es_b_c81",
@@ -905,7 +1065,9 @@
             "audioWordFile": "es_policia_word.mp3",
             "audioSentenceFile": "es_policia_sentence.mp3",
             "mediaFile": "es_policia.jpg",
-            "domain": "Society"
+            "tags": [
+                "Society"
+            ]
         },
         {
             "id": "es_b_c82",
@@ -916,7 +1078,9 @@
             "audioWordFile": "es_bombero_word.mp3",
             "audioSentenceFile": "es_bombero_sentence.mp3",
             "mediaFile": "es_bombero.jpg",
-            "domain": "Society"
+            "tags": [
+                "Society"
+            ]
         },
         {
             "id": "es_b_c83",
@@ -927,7 +1091,9 @@
             "audioWordFile": "es_ciudad_word.mp3",
             "audioSentenceFile": "es_ciudad_sentence.mp3",
             "mediaFile": "es_ciudad.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c84",
@@ -938,7 +1104,9 @@
             "audioWordFile": "es_campo_word.mp3",
             "audioSentenceFile": "es_campo_sentence.mp3",
             "mediaFile": "es_campo.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c85",
@@ -949,7 +1117,9 @@
             "audioWordFile": "es_mundo_word.mp3",
             "audioSentenceFile": "es_mundo_sentence.mp3",
             "mediaFile": "es_mundo.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c86",
@@ -960,7 +1130,9 @@
             "audioWordFile": "es_guerra_word.mp3",
             "audioSentenceFile": "es_guerra_sentence.mp3",
             "mediaFile": "es_guerra.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c87",
@@ -971,7 +1143,9 @@
             "audioWordFile": "es_paz_word.mp3",
             "audioSentenceFile": "es_paz_sentence.mp3",
             "mediaFile": "es_paz.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c88",
@@ -982,7 +1156,9 @@
             "audioWordFile": "es_amor_word.mp3",
             "audioSentenceFile": "es_amor_sentence.mp3",
             "mediaFile": "es_amor.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c89",
@@ -993,7 +1169,9 @@
             "audioWordFile": "es_odio_word.mp3",
             "audioSentenceFile": "es_odio_sentence.mp3",
             "mediaFile": "es_odio.jpg",
-            "domain": "World"
+            "tags": [
+                "World"
+            ]
         },
         {
             "id": "es_b_c90",
@@ -1004,7 +1182,9 @@
             "audioWordFile": "es_verano_word.mp3",
             "audioSentenceFile": "es_verano_sentence.mp3",
             "mediaFile": "es_verano.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c91",
@@ -1015,7 +1195,9 @@
             "audioWordFile": "es_invierno_word.mp3",
             "audioSentenceFile": "es_invierno_sentence.mp3",
             "mediaFile": "es_invierno.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c92",
@@ -1026,7 +1208,9 @@
             "audioWordFile": "es_primavera_word.mp3",
             "audioSentenceFile": "es_primavera_sentence.mp3",
             "mediaFile": "es_primavera.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c93",
@@ -1037,7 +1221,9 @@
             "audioWordFile": "es_otono_word.mp3",
             "audioSentenceFile": "es_otono_sentence.mp3",
             "mediaFile": "es_otono.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c94",
@@ -1048,7 +1234,9 @@
             "audioWordFile": "es_lunes_word.mp3",
             "audioSentenceFile": "es_lunes_sentence.mp3",
             "mediaFile": "es_lunes.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c95",
@@ -1059,7 +1247,9 @@
             "audioWordFile": "es_martes_word.mp3",
             "audioSentenceFile": "es_martes_sentence.mp3",
             "mediaFile": "es_martes.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c96",
@@ -1070,7 +1260,9 @@
             "audioWordFile": "es_sabado_word.mp3",
             "audioSentenceFile": "es_sabado_sentence.mp3",
             "mediaFile": "es_sabado.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c97",
@@ -1081,7 +1273,9 @@
             "audioWordFile": "es_domingo_word.mp3",
             "audioSentenceFile": "es_domingo_sentence.mp3",
             "mediaFile": "es_domingo.jpg",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c98",
@@ -1092,7 +1286,9 @@
             "audioWordFile": "es_color_word.mp3",
             "audioSentenceFile": "es_color_sentence.mp3",
             "mediaFile": "es_color.jpg",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c99",
@@ -1103,7 +1299,9 @@
             "audioWordFile": "es_blanco_word.mp3",
             "audioSentenceFile": "es_blanco_sentence.mp3",
             "mediaFile": "es_blanco.jpg",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c100",
@@ -1114,7 +1312,9 @@
             "audioWordFile": "es_negro_word.mp3",
             "audioSentenceFile": "es_negro_sentence.mp3",
             "mediaFile": "es_negro.jpg",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c101",
@@ -1125,7 +1325,9 @@
             "audioWordFile": "es_rojo_word.mp3",
             "audioSentenceFile": "es_rojo_sentence.mp3",
             "mediaFile": "es_rojo.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c102",
@@ -1136,7 +1338,9 @@
             "audioWordFile": "es_azul_word.mp3",
             "audioSentenceFile": "es_azul_sentence.mp3",
             "mediaFile": "es_azul.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c103",
@@ -1147,7 +1351,9 @@
             "audioWordFile": "es_verde_word.mp3",
             "audioSentenceFile": "es_verde_sentence.mp3",
             "mediaFile": "es_verde.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c104",
@@ -1158,7 +1364,9 @@
             "audioWordFile": "es_amarillo_word.mp3",
             "audioSentenceFile": "es_amarillo_sentence.mp3",
             "mediaFile": "es_amarillo.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c105",
@@ -1169,7 +1377,9 @@
             "audioWordFile": "es_naranja_word.mp3",
             "audioSentenceFile": "es_naranja_sentence.mp3",
             "mediaFile": "es_naranja.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c106",
@@ -1180,7 +1390,9 @@
             "audioWordFile": "es_morado_word.mp3",
             "audioSentenceFile": "es_morado_sentence.mp3",
             "mediaFile": "es_morado.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c107",
@@ -1191,7 +1403,9 @@
             "audioWordFile": "es_rosa_word.mp3",
             "audioSentenceFile": "es_rosa_sentence.mp3",
             "mediaFile": "es_rosa.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c108",
@@ -1202,7 +1416,9 @@
             "audioWordFile": "es_gris_word.mp3",
             "audioSentenceFile": "es_gris_sentence.mp3",
             "mediaFile": "es_gris.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c109",
@@ -1213,7 +1429,9 @@
             "audioWordFile": "es_marron_word.mp3",
             "audioSentenceFile": "es_marron_sentence.mp3",
             "mediaFile": "es_marron.png",
-            "domain": "Colors"
+            "tags": [
+                "Colors"
+            ]
         },
         {
             "id": "es_b_c110",
@@ -1224,7 +1442,9 @@
             "audioWordFile": "es_miercoles_word.mp3",
             "audioSentenceFile": "es_miercoles_sentence.mp3",
             "mediaFile": "es_miercoles.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c111",
@@ -1235,7 +1455,9 @@
             "audioWordFile": "es_jueves_word.mp3",
             "audioSentenceFile": "es_jueves_sentence.mp3",
             "mediaFile": "es_jueves.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c112",
@@ -1246,7 +1468,9 @@
             "audioWordFile": "es_viernes_word.mp3",
             "audioSentenceFile": "es_viernes_sentence.mp3",
             "mediaFile": "es_viernes.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c113",
@@ -1257,7 +1481,9 @@
             "audioWordFile": "es_enero_word.mp3",
             "audioSentenceFile": "es_enero_sentence.mp3",
             "mediaFile": "es_enero.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c114",
@@ -1268,7 +1494,9 @@
             "audioWordFile": "es_febrero_word.mp3",
             "audioSentenceFile": "es_febrero_sentence.mp3",
             "mediaFile": "es_febrero.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c115",
@@ -1279,7 +1507,9 @@
             "audioWordFile": "es_marzo_word.mp3",
             "audioSentenceFile": "es_marzo_sentence.mp3",
             "mediaFile": "es_marzo.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c116",
@@ -1290,7 +1520,9 @@
             "audioWordFile": "es_abril_word.mp3",
             "audioSentenceFile": "es_abril_sentence.mp3",
             "mediaFile": "es_abril.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c117",
@@ -1301,7 +1533,9 @@
             "audioWordFile": "es_mayo_word.mp3",
             "audioSentenceFile": "es_mayo_sentence.mp3",
             "mediaFile": "es_mayo.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c118",
@@ -1312,7 +1546,9 @@
             "audioWordFile": "es_junio_word.mp3",
             "audioSentenceFile": "es_junio_sentence.mp3",
             "mediaFile": "es_junio.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c119",
@@ -1323,7 +1559,9 @@
             "audioWordFile": "es_julio_word.mp3",
             "audioSentenceFile": "es_julio_sentence.mp3",
             "mediaFile": "es_julio.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c120",
@@ -1334,7 +1572,9 @@
             "audioWordFile": "es_agosto_word.mp3",
             "audioSentenceFile": "es_agosto_sentence.mp3",
             "mediaFile": "es_agosto.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c121",
@@ -1345,7 +1585,9 @@
             "audioWordFile": "es_septiembre_word.mp3",
             "audioSentenceFile": "es_septiembre_sentence.mp3",
             "mediaFile": "es_septiembre.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c122",
@@ -1356,7 +1598,9 @@
             "audioWordFile": "es_octubre_word.mp3",
             "audioSentenceFile": "es_octubre_sentence.mp3",
             "mediaFile": "es_octubre.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c123",
@@ -1367,7 +1611,9 @@
             "audioWordFile": "es_noviembre_word.mp3",
             "audioSentenceFile": "es_noviembre_sentence.mp3",
             "mediaFile": "es_noviembre.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         },
         {
             "id": "es_b_c124",
@@ -1378,7 +1624,9 @@
             "audioWordFile": "es_diciembre_word.mp3",
             "audioSentenceFile": "es_diciembre_sentence.mp3",
             "mediaFile": "es_diciembre.png",
-            "domain": "Time"
+            "tags": [
+                "Time"
+            ]
         }
     ]
 }

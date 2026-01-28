@@ -25,6 +25,7 @@ struct GameConfigurationView: View {
     
     // Sheet State
     @State private var showDeckPicker = false
+    @State private var showTagSelection = false
     @State private var showDisplayConfig = false
     @State private var showSessionOptions = false
     
@@ -68,7 +69,7 @@ struct GameConfigurationView: View {
                         SettingsRow(
                             icon: "menucard.fill",
                             iconColor: .blue,
-                            text: selectedDeck?.title ?? "Select a Deck...",
+                            text: selectedDeck?.folderName == "Virtual" ? "Deck: Custom" : (selectedDeck?.title ?? "Select a Deck..."),
                             subText: selectedDeck == nil ? "Compatible with \(selectedGameType.rawValue)" : "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(sessionLevel.rawValue)",
                             customImage: deckImage
                         )
@@ -76,8 +77,21 @@ struct GameConfigurationView: View {
                     
                     Divider()
                         .padding(.leading, 50)
+                    
+                    // Row 3: Tag Selection (Virtual Decks)
+                    Button(action: { showTagSelection = true }) {
+                        SettingsRow(
+                            icon: "tag.fill",
+                            iconColor: .mint,
+                            text: selectedDeck?.folderName == "Virtual" ? (selectedDeck?.title ?? "Filter by Tag") : "Filter by Tag",
+                            subText: "Create a custom deck from all cards"
+                        )
+                    }
+                    
+                    Divider()
+                        .padding(.leading, 50)
 
-                    // Row 2: Display Mode
+                    // Row 4: Display Mode
                     if selectedGameType == .flashcards {
                         Button(action: { showDisplayConfig = true }) {
                             SettingsRow(
@@ -100,7 +114,7 @@ struct GameConfigurationView: View {
                             .padding(.leading, 50)
                     }
                     
-                    // Row 3: Session Options
+                    // Row 5: Session Options
                     Button(action: { showSessionOptions = true }) {
                         SettingsRow(
                             icon: "gearshape.fill",
@@ -159,6 +173,12 @@ struct GameConfigurationView: View {
                 language: $sessionLanguage,
                 level: $sessionLevel,
                 selectedGameType: $selectedGameType
+            )
+        }
+        .sheet(isPresented: $showTagSelection) {
+            TagSelectionSheet(
+                language: sessionLanguage,
+                selectedDeck: $selectedDeck
             )
         }
         .sheet(isPresented: $showDisplayConfig) {

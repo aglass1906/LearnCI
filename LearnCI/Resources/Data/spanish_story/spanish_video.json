@@ -33,7 +33,9 @@
             "usage": [
                 "story_only"
             ],
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_video_001_c2",
@@ -46,7 +48,9 @@
             "audioWordFile": "",
             "audioSentenceFile": "",
             "mediaFile": "DUO_Pizza_Gratis.mov",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_video_001_c3",
@@ -62,7 +66,9 @@
             "usage": [
                 "story_only"
             ],
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         }
     ]
 }

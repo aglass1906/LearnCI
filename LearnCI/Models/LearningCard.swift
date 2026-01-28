@@ -67,6 +67,7 @@ struct LearningCard: Identifiable, Codable, Hashable {
     var type: CardType = .standard
     var order: Int = 0
     var usage: Set<String>? // e.g. ["story_only"]
+    var tags: [String]? // e.g. ["Food", "Breakfast"]
     
     var isMastered: Bool?
     
@@ -78,13 +79,13 @@ struct LearningCard: Identifiable, Codable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, wordTarget, wordNative, sentenceTarget, sentenceNative
         case audioWordFile, audioSentenceFile, mediaFile, imageFile
-        case type, order, usage, isMastered
+        case type, order, usage, tags, isMastered
         
         // Legacy keys
-        case targetWord, nativeTranslation
+        case targetWord, nativeTranslation, domain
     }
     
-    init(id: String, wordTarget: String, wordNative: String, sentenceTarget: String, sentenceNative: String, audioWordFile: String? = nil, audioSentenceFile: String? = nil, mediaFile: String? = nil, type: CardType = .standard, order: Int = 0, usage: Set<String>? = nil, isMastered: Bool? = nil) {
+    init(id: String, wordTarget: String, wordNative: String, sentenceTarget: String, sentenceNative: String, audioWordFile: String? = nil, audioSentenceFile: String? = nil, mediaFile: String? = nil, type: CardType = .standard, order: Int = 0, usage: Set<String>? = nil, tags: [String]? = nil, isMastered: Bool? = nil) {
         self.id = id
         self.wordTarget = wordTarget
         self.wordNative = wordNative
@@ -96,6 +97,7 @@ struct LearningCard: Identifiable, Codable, Hashable {
         self.type = type
         self.order = order
         self.usage = usage
+        self.tags = tags
         self.isMastered = isMastered
     }
     
@@ -127,6 +129,15 @@ struct LearningCard: Identifiable, Codable, Hashable {
         self.order = try container.decodeIfPresent(Int.self, forKey: .order) ?? 0
         self.usage = try container.decodeIfPresent(Set<String>.self, forKey: .usage)
         
+        // Tags Decoding (with 'domain' fallback)
+        if let tagsList = try container.decodeIfPresent([String].self, forKey: .tags) {
+            self.tags = tagsList
+        } else if let legacyDomain = try container.decodeIfPresent(String.self, forKey: .domain) {
+            self.tags = [legacyDomain]
+        } else {
+            self.tags = nil
+        }
+        
         // Media File Fallback
         if let media = try container.decodeIfPresent(String.self, forKey: .mediaFile) {
             self.mediaFile = media
@@ -149,6 +160,7 @@ struct LearningCard: Identifiable, Codable, Hashable {
         try container.encode(type, forKey: .type)
         try container.encode(order, forKey: .order)
         try container.encodeIfPresent(usage, forKey: .usage)
+        try container.encodeIfPresent(tags, forKey: .tags)
     }
 }
 

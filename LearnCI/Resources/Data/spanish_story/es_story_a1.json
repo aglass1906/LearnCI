@@ -35,7 +35,9 @@
             "usage": [
                 "story_only"
             ],
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c2",
@@ -48,7 +50,9 @@
             "audioWordFile": "es_hombre_word.mp3",
             "audioSentenceFile": "es_el_hombre_se_despierta.mp3",
             "mediaFile": "es_b1_01_hombre_despierta.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c3",
@@ -61,7 +65,9 @@
             "audioWordFile": "es_cafe_word.mp3",
             "audioSentenceFile": "es_el_hombre_bebe_cafe.mp3",
             "mediaFile": "es_b1_02_hombre_cafe.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c4",
@@ -74,7 +80,9 @@
             "audioWordFile": "es_calle_word.mp3",
             "audioSentenceFile": "es_el_hombre_camina_calle.mp3",
             "mediaFile": "es_b1_03_hombre_calle.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c5",
@@ -87,7 +95,9 @@
             "audioWordFile": "es_amigo_word.mp3",
             "audioSentenceFile": "es_el_hombre_ve_amigo.mp3",
             "mediaFile": "es_b1_04_hombre_amigo.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c6",
@@ -100,7 +110,9 @@
             "audioWordFile": "es_conversa_word.mp3",
             "audioSentenceFile": "es_el_hombre_conversa_amigo.mp3",
             "mediaFile": "es_b1_05_hombre_conversa.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c7",
@@ -113,7 +125,9 @@
             "audioWordFile": "es_adios_word.mp3",
             "audioSentenceFile": "es_el_hombre_se_despide.mp3",
             "mediaFile": "es_b1_06_hombre_despedida.png",
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         },
         {
             "id": "es_story_002_c8",
@@ -129,7 +143,9 @@
             "usage": [
                 "story_only"
             ],
-            "domain": "Story"
+            "tags": [
+                "Story"
+            ]
         }
     ]
 }

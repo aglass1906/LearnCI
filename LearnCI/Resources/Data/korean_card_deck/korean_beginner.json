@@ -22,7 +22,9 @@
             "audioWordFile": "ko_jeo_word.mp3",
             "audioSentenceFile": "ko_jeo_sentence.mp3",
             "mediaFile": "ko_jeo.jpg",
-            "domain": "People & Pronouns"
+            "tags": [
+                "People & Pronouns"
+            ]
         },
         {
             "id": "ko_b_c2",
@@ -33,7 +35,9 @@
             "audioWordFile": "ko_neo_word.mp3",
             "audioSentenceFile": "ko_neo_sentence.mp3",
             "mediaFile": "ko_neo.jpg",
-            "domain": "People & Pronouns"
+            "tags": [
+                "People & Pronouns"
+            ]
         },
         {
             "id": "ko_b_c3",
@@ -44,7 +48,9 @@
             "audioWordFile": "ko_geu_word.mp3",
             "audioSentenceFile": "ko_geu_sentence.mp3",
             "mediaFile": "ko_geu.jpg",
-            "domain": "People & Pronouns"
+            "tags": [
+                "People & Pronouns"
+            ]
         },
         {
             "id": "ko_b_c4",
@@ -55,7 +61,9 @@
             "audioWordFile": "ko_geunyeo_word.mp3",
             "audioSentenceFile": "ko_geunyeo_sentence.mp3",
             "mediaFile": "ko_geunyeo.jpg",
-            "domain": "People & Pronouns"
+            "tags": [
+                "People & Pronouns"
+            ]
         },
         {
             "id": "ko_b_c5",
@@ -66,7 +74,9 @@
             "audioWordFile": "ko_saram_word.mp3",
             "audioSentenceFile": "ko_saram_sentence.mp3",
             "mediaFile": "ko_saram.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c6",
@@ -77,7 +87,9 @@
             "audioWordFile": "ko_namja_word.mp3",
             "audioSentenceFile": "ko_namja_sentence.mp3",
             "mediaFile": "ko_namja.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c7",
@@ -88,7 +100,9 @@
             "audioWordFile": "ko_yeoja_word.mp3",
             "audioSentenceFile": "ko_yeoja_sentence.mp3",
             "mediaFile": "ko_yeoja.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c8",
@@ -99,7 +113,9 @@
             "audioWordFile": "ko_ai_word.mp3",
             "audioSentenceFile": "ko_ai_sentence.mp3",
             "mediaFile": "ko_ai.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c9",
@@ -110,7 +126,9 @@
             "audioWordFile": "ko_abeoji_word.mp3",
             "audioSentenceFile": "ko_abeoji_sentence.mp3",
             "mediaFile": "ko_abeoji.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c10",
@@ -121,7 +139,9 @@
             "audioWordFile": "ko_eomeoni_word.mp3",
             "audioSentenceFile": "ko_eomeoni_sentence.mp3",
             "mediaFile": "ko_eomeoni.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c11",
@@ -132,7 +152,9 @@
             "audioWordFile": "ko_dongsaeng_word.mp3",
             "audioSentenceFile": "ko_dongsaeng_sentence.mp3",
             "mediaFile": "ko_dongsaeng.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c12",
@@ -143,7 +165,9 @@
             "audioWordFile": "ko_hyeong_word.mp3",
             "audioSentenceFile": "ko_hyeong_sentence.mp3",
             "mediaFile": "ko_hyeong.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c13",
@@ -154,7 +178,9 @@
             "audioWordFile": "ko_nuna_word.mp3",
             "audioSentenceFile": "ko_nuna_sentence.mp3",
             "mediaFile": "ko_nuna.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c14",
@@ -165,7 +191,9 @@
             "audioWordFile": "ko_chingu_word.mp3",
             "audioSentenceFile": "ko_chingu_sentence.mp3",
             "mediaFile": "ko_chingu.jpg",
-            "domain": "People & Family"
+            "tags": [
+                "People & Family"
+            ]
         },
         {
             "id": "ko_b_c15",
@@ -176,7 +204,9 @@
             "audioWordFile": "ko_hakgyo_word.mp3",
             "audioSentenceFile": "ko_hakgyo_sentence.mp3",
             "mediaFile": "ko_hakgyo.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c16",
@@ -187,7 +217,9 @@
             "audioWordFile": "ko_hoesa_word.mp3",
             "audioSentenceFile": "ko_hoesa_sentence.mp3",
             "mediaFile": "ko_hoesa.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c17",
@@ -198,7 +230,9 @@
             "audioWordFile": "ko_byeongwon_word.mp3",
             "audioSentenceFile": "ko_byeongwon_sentence.mp3",
             "mediaFile": "ko_byeongwon.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c18",
@@ -209,7 +243,9 @@
             "audioWordFile": "ko_sijang_word.mp3",
             "audioSentenceFile": "ko_sijang_sentence.mp3",
             "mediaFile": "ko_sijang.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c19",
@@ -220,7 +256,9 @@
             "audioWordFile": "ko_sikdang_word.mp3",
             "audioSentenceFile": "ko_sikdang_sentence.mp3",
             "mediaFile": "ko_sikdang.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c20",
@@ -231,7 +269,9 @@
             "audioWordFile": "ko_keopisyop_word.mp3",
             "audioSentenceFile": "ko_keopisyop_sentence.mp3",
             "mediaFile": "ko_keopisyop.jpg",
-            "domain": "Places"
+            "tags": [
+                "Places"
+            ]
         },
         {
             "id": "ko_b_c21",
@@ -242,7 +282,9 @@
             "audioWordFile": "ko_jip_word.mp3",
             "audioSentenceFile": "ko_jip_sentence.mp3",
             "mediaFile": "ko_jip.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c22",
@@ -253,7 +295,9 @@
             "audioWordFile": "ko_bang_word.mp3",
             "audioSentenceFile": "ko_bang_sentence.mp3",
             "mediaFile": "ko_bang.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c23",
@@ -264,7 +308,9 @@
             "audioWordFile": "ko_hwajangsil_word.mp3",
             "audioSentenceFile": "ko_hwajangsil_sentence.mp3",
             "mediaFile": "ko_hwajangsil.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c24",
@@ -275,7 +321,9 @@
             "audioWordFile": "ko_jubang_word.mp3",
             "audioSentenceFile": "ko_jubang_sentence.mp3",
             "mediaFile": "ko_jubang.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c25",
@@ -286,7 +334,9 @@
             "audioWordFile": "ko_chimdae_word.mp3",
             "audioSentenceFile": "ko_chimdae_sentence.mp3",
             "mediaFile": "ko_chimdae.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c26",
@@ -297,7 +347,9 @@
             "audioWordFile": "ko_chaeksang_word.mp3",
             "audioSentenceFile": "ko_chaeksang_sentence.mp3",
             "mediaFile": "ko_chaeksang.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c27",
@@ -308,7 +360,9 @@
             "audioWordFile": "ko_uija_word.mp3",
             "audioSentenceFile": "ko_uija_sentence.mp3",
             "mediaFile": "ko_uija.jpg",
-            "domain": "Home & Furniture"
+            "tags": [
+                "Home & Furniture"
+            ]
         },
         {
             "id": "ko_b_c28",
@@ -319,7 +373,9 @@
             "audioWordFile": "ko_jeonhwa_word.mp3",
             "audioSentenceFile": "ko_jeonhwa_sentence.mp3",
             "mediaFile": "ko_jeonhwa.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_b_c29",
@@ -330,7 +386,9 @@
             "audioWordFile": "ko_keompyuteo_word.mp3",
             "audioSentenceFile": "ko_keompyuteo_sentence.mp3",
             "mediaFile": "ko_keompyuteo.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_b_c30",
@@ -341,7 +399,9 @@
             "audioWordFile": "ko_chaek_word.mp3",
             "audioSentenceFile": "ko_chaek_sentence.mp3",
             "mediaFile": "ko_chaek.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_b_c31",
@@ -352,7 +412,9 @@
             "audioWordFile": "ko_yeonpil_word.mp3",
             "audioSentenceFile": "ko_yeonpil_sentence.mp3",
             "mediaFile": "ko_yeonpil.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_b_c32",
@@ -363,7 +425,9 @@
             "audioWordFile": "ko_jong_i_word.mp3",
             "audioSentenceFile": "ko_jong_i_sentence.mp3",
             "mediaFile": "ko_jong_i.jpg",
-            "domain": "Objects"
+            "tags": [
+                "Objects"
+            ]
         },
         {
             "id": "ko_b_c33",
@@ -374,7 +438,9 @@
             "audioWordFile": "ko_don_word.mp3",
             "audioSentenceFile": "ko_don_sentence.mp3",
             "mediaFile": "ko_don.jpg",
-            "domain": "Money"
+            "tags": [
+                "Money"
+            ]
         },
         {
             "id": "ko_b_c34",
@@ -385,7 +451,9 @@
             "audioWordFile": "ko_ot_word.mp3",
             "audioSentenceFile": "ko_ot_sentence.mp3",
             "mediaFile": "ko_ot.jpg",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "ko_b_c35",
@@ -396,7 +464,9 @@
             "audioWordFile": "ko_sinbal_word.mp3",
             "audioSentenceFile": "ko_sinbal_sentence.mp3",
             "mediaFile": "ko_sinbal.jpg",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "ko_b_c36",
@@ -407,7 +477,9 @@
             "audioWordFile": "ko_gabang_word.mp3",
             "audioSentenceFile": "ko_gabang_sentence.mp3",
             "mediaFile": "ko_gabang.jpg",
-            "domain": "Clothing"
+            "tags": [
+                "Clothing"
+            ]
         },
         {
             "id": "ko_b_c37",
@@ -418,7 +490,9 @@
             "audioWordFile": "ko_sigan_word.mp3",
             "audioSentenceFile": "ko_sigan_sentence.mp3",
             "mediaFile": "ko_sigan.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c38",
@@ -429,7 +503,9 @@
             "audioWordFile": "ko_oneul_word.mp3",
             "audioSentenceFile": "ko_oneul_sentence.mp3",
             "mediaFile": "ko_oneul.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c39",
@@ -440,7 +516,9 @@
             "audioWordFile": "ko_eoje_word.mp3",
             "audioSentenceFile": "ko_eoje_sentence.mp3",
             "mediaFile": "ko_eoje.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c40",
@@ -451,7 +529,9 @@
             "audioWordFile": "ko_naeil_word.mp3",
             "audioSentenceFile": "ko_naeil_sentence.mp3",
             "mediaFile": "ko_naeil.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c41",
@@ -462,7 +542,9 @@
             "audioWordFile": "ko_achim_word.mp3",
             "audioSentenceFile": "ko_achim_sentence.mp3",
             "mediaFile": "ko_achim.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c42",
@@ -473,7 +555,9 @@
             "audioWordFile": "ko_jeomsim_word.mp3",
             "audioSentenceFile": "ko_jeomsim_sentence.mp3",
             "mediaFile": "ko_jeomsim.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c43",
@@ -484,7 +568,9 @@
             "audioWordFile": "ko_jeonyeok_word.mp3",
             "audioSentenceFile": "ko_jeonyeok_sentence.mp3",
             "mediaFile": "ko_jeonyeok.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c44",
@@ -495,7 +581,9 @@
             "audioWordFile": "ko_bam_word.mp3",
             "audioSentenceFile": "ko_bam_sentence.mp3",
             "mediaFile": "ko_bam.jpg",
-            "domain": "Time & Meals"
+            "tags": [
+                "Time & Meals"
+            ]
         },
         {
             "id": "ko_b_c45",
@@ -506,7 +594,9 @@
             "audioWordFile": "ko_eumsik_word.mp3",
             "audioSentenceFile": "ko_eumsik_sentence.mp3",
             "mediaFile": "ko_eumsik.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c46",
@@ -517,7 +607,9 @@
             "audioWordFile": "ko_mul_word.mp3",
             "audioSentenceFile": "ko_mul_sentence.mp3",
             "mediaFile": "ko_mul.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c47",
@@ -528,7 +620,9 @@
             "audioWordFile": "ko_bap_word.mp3",
             "audioSentenceFile": "ko_bap_sentence.mp3",
             "mediaFile": "ko_bap.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c48",
@@ -539,7 +633,9 @@
             "audioWordFile": "ko_gogi_word.mp3",
             "audioSentenceFile": "ko_gogi_sentence.mp3",
             "mediaFile": "ko_gogi.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c49",
@@ -550,7 +646,9 @@
             "audioWordFile": "ko_saengseon_word.mp3",
             "audioSentenceFile": "ko_saengseon_sentence.mp3",
             "mediaFile": "ko_saengseon.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c50",
@@ -561,7 +659,9 @@
             "audioWordFile": "ko_yachae_word.mp3",
             "audioSentenceFile": "ko_yachae_sentence.mp3",
             "mediaFile": "ko_yachae.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c51",
@@ -572,7 +672,9 @@
             "audioWordFile": "ko_gwail_word.mp3",
             "audioSentenceFile": "ko_gwail_sentence.mp3",
             "mediaFile": "ko_gwail.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c52",
@@ -583,7 +685,9 @@
             "audioWordFile": "ko_uyu_word.mp3",
             "audioSentenceFile": "ko_uyu_sentence.mp3",
             "mediaFile": "ko_uyu.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c53",
@@ -594,7 +698,9 @@
             "audioWordFile": "ko_ppang_word.mp3",
             "audioSentenceFile": "ko_ppang_sentence.mp3",
             "mediaFile": "ko_ppang.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c54",
@@ -605,7 +711,9 @@
             "audioWordFile": "ko_gyeran_word.mp3",
             "audioSentenceFile": "ko_gyeran_sentence.mp3",
             "mediaFile": "ko_gyeran.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c55",
@@ -616,7 +724,9 @@
             "audioWordFile": "ko_cha_word.mp3",
             "audioSentenceFile": "ko_cha_sentence.mp3",
             "mediaFile": "ko_cha.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c56",
@@ -627,7 +737,9 @@
             "audioWordFile": "ko_keopi_word.mp3",
             "audioSentenceFile": "ko_keopi_sentence.mp3",
             "mediaFile": "ko_keopi.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c57",
@@ -638,7 +750,9 @@
             "audioWordFile": "ko_sul_word.mp3",
             "audioSentenceFile": "ko_sul_sentence.mp3",
             "mediaFile": "ko_sul.jpg",
-            "domain": "Food & Drink"
+            "tags": [
+                "Food & Drink"
+            ]
         },
         {
             "id": "ko_b_c58",
@@ -649,7 +763,9 @@
             "audioWordFile": "ko_gongbu_word.mp3",
             "audioSentenceFile": "ko_gongbu_sentence.mp3",
             "mediaFile": "ko_gongbu.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c59",
@@ -660,7 +776,9 @@
             "audioWordFile": "ko_il_word.mp3",
             "audioSentenceFile": "ko_il_sentence.mp3",
             "mediaFile": "ko_il.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c60",
@@ -671,7 +789,9 @@
             "audioWordFile": "ko_undong_word.mp3",
             "audioSentenceFile": "ko_undong_sentence.mp3",
             "mediaFile": "ko_undong.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c61",
@@ -682,7 +802,9 @@
             "audioWordFile": "ko_yeohaeng_word.mp3",
             "audioSentenceFile": "ko_yeohaeng_sentence.mp3",
             "mediaFile": "ko_yeohaeng.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c62",
@@ -693,7 +815,9 @@
             "audioWordFile": "ko_norae_word.mp3",
             "audioSentenceFile": "ko_norae_sentence.mp3",
             "mediaFile": "ko_norae.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c63",
@@ -704,7 +828,9 @@
             "audioWordFile": "ko_yeonghwa_word.mp3",
             "audioSentenceFile": "ko_yeonghwa_sentence.mp3",
             "mediaFile": "ko_yeonghwa.jpg",
-            "domain": "Activities"
+            "tags": [
+                "Activities"
+            ]
         },
         {
             "id": "ko_b_c64",
@@ -715,7 +841,9 @@
             "audioWordFile": "ko_nalssi_word.mp3",
             "audioSentenceFile": "ko_nalssi_sentence.mp3",
             "mediaFile": "ko_nalssi.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c65",
@@ -726,7 +854,9 @@
             "audioWordFile": "ko_bi_word.mp3",
             "audioSentenceFile": "ko_bi_sentence.mp3",
             "mediaFile": "ko_bi.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c66",
@@ -737,7 +867,9 @@
             "audioWordFile": "ko_nun_word.mp3",
             "audioSentenceFile": "ko_nun_sentence.mp3",
             "mediaFile": "ko_nun.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c67",
@@ -748,7 +880,9 @@
             "audioWordFile": "ko_baram_word.mp3",
             "audioSentenceFile": "ko_baram_sentence.mp3",
             "mediaFile": "ko_baram.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c68",
@@ -759,7 +893,9 @@
             "audioWordFile": "ko_haneul_word.mp3",
             "audioSentenceFile": "ko_haneul_sentence.mp3",
             "mediaFile": "ko_haneul.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c69",
@@ -770,7 +906,9 @@
             "audioWordFile": "ko_gureum_word.mp3",
             "audioSentenceFile": "ko_gureum_sentence.mp3",
             "mediaFile": "ko_gureum.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c70",
@@ -781,7 +919,9 @@
             "audioWordFile": "ko_hae_word.mp3",
             "audioSentenceFile": "ko_hae_sentence.mp3",
             "mediaFile": "ko_hae.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c71",
@@ -792,7 +932,9 @@
             "audioWordFile": "ko_dal_word.mp3",
             "audioSentenceFile": "ko_dal_sentence.mp3",
             "mediaFile": "ko_dal.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c72",
@@ -803,7 +945,9 @@
             "audioWordFile": "ko_byeol_word.mp3",
             "audioSentenceFile": "ko_byeol_sentence.mp3",
             "mediaFile": "ko_byeol.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c73",
@@ -814,7 +958,9 @@
             "audioWordFile": "ko_san_word.mp3",
             "audioSentenceFile": "ko_san_sentence.mp3",
             "mediaFile": "ko_san.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c74",
@@ -825,7 +971,9 @@
             "audioWordFile": "ko_bada_word.mp3",
             "audioSentenceFile": "ko_bada_sentence.mp3",
             "mediaFile": "ko_bada.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c75",
@@ -836,7 +984,9 @@
             "audioWordFile": "ko_gang_word.mp3",
             "audioSentenceFile": "ko_gang_sentence.mp3",
             "mediaFile": "ko_gang.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c76",
@@ -847,7 +997,9 @@
             "audioWordFile": "ko_namu_word.mp3",
             "audioSentenceFile": "ko_namu_sentence.mp3",
             "mediaFile": "ko_namu.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c77",
@@ -858,7 +1010,9 @@
             "audioWordFile": "ko_kkot_word.mp3",
             "audioSentenceFile": "ko_kkot_sentence.mp3",
             "mediaFile": "ko_kkot.jpg",
-            "domain": "Nature & Weather"
+            "tags": [
+                "Nature & Weather"
+            ]
         },
         {
             "id": "ko_b_c78",
@@ -869,7 +1023,9 @@
             "audioWordFile": "ko_keuda_word.mp3",
             "audioSentenceFile": "ko_keuda_sentence.mp3",
             "mediaFile": "ko_keuda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c79",
@@ -880,7 +1036,9 @@
             "audioWordFile": "ko_jakda_word.mp3",
             "audioSentenceFile": "ko_jakda_sentence.mp3",
             "mediaFile": "ko_jakda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c80",
@@ -891,7 +1049,9 @@
             "audioWordFile": "ko_manta_word.mp3",
             "audioSentenceFile": "ko_manta_sentence.mp3",
             "mediaFile": "ko_manta.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c81",
@@ -902,7 +1062,9 @@
             "audioWordFile": "ko_jeokda_word.mp3",
             "audioSentenceFile": "ko_jeokda_sentence.mp3",
             "mediaFile": "ko_jeokda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c82",
@@ -913,7 +1075,9 @@
             "audioWordFile": "ko_bissada_word.mp3",
             "audioSentenceFile": "ko_bissada_sentence.mp3",
             "mediaFile": "ko_bissada.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c83",
@@ -924,7 +1088,9 @@
             "audioWordFile": "ko_ssada_word.mp3",
             "audioSentenceFile": "ko_ssada_sentence.mp3",
             "mediaFile": "ko_ssada.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c84",
@@ -935,7 +1101,9 @@
             "audioWordFile": "ko_jota_word.mp3",
             "audioSentenceFile": "ko_jota_sentence.mp3",
             "mediaFile": "ko_jota.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c85",
@@ -946,7 +1114,9 @@
             "audioWordFile": "ko_nappeuda_word.mp3",
             "audioSentenceFile": "ko_nappeuda_sentence.mp3",
             "mediaFile": "ko_nappeuda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c86",
@@ -957,7 +1127,9 @@
             "audioWordFile": "ko_eoryeopda_word.mp3",
             "audioSentenceFile": "ko_eoryeopda_sentence.mp3",
             "mediaFile": "ko_eoryeopda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c87",
@@ -968,7 +1140,9 @@
             "audioWordFile": "ko_swipda_word.mp3",
             "audioSentenceFile": "ko_swipda_sentence.mp3",
             "mediaFile": "ko_swipda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c88",
@@ -979,7 +1153,9 @@
             "audioWordFile": "ko_jaemiitda_word.mp3",
             "audioSentenceFile": "ko_jaemiitda_sentence.mp3",
             "mediaFile": "ko_jaemiitda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c89",
@@ -990,7 +1166,9 @@
             "audioWordFile": "ko_jaemieopda_word.mp3",
             "audioSentenceFile": "ko_jaemieopda_sentence.mp3",
             "mediaFile": "ko_jaemieopda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c90",
@@ -1001,7 +1179,9 @@
             "audioWordFile": "ko_meolda_word.mp3",
             "audioSentenceFile": "ko_meolda_sentence.mp3",
             "mediaFile": "ko_meolda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c91",
@@ -1012,7 +1192,9 @@
             "audioWordFile": "ko_gakkapda_word.mp3",
             "audioSentenceFile": "ko_gakkapda_sentence.mp3",
             "mediaFile": "ko_gakkapda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c92",
@@ -1023,7 +1205,9 @@
             "audioWordFile": "ko_deopda_word.mp3",
             "audioSentenceFile": "ko_deopda_sentence.mp3",
             "mediaFile": "ko_deopda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c93",
@@ -1034,7 +1218,9 @@
             "audioWordFile": "ko_chupda_word.mp3",
             "audioSentenceFile": "ko_chupda_sentence.mp3",
             "mediaFile": "ko_chupda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c94",
@@ -1045,7 +1231,9 @@
             "audioWordFile": "ko_bappeuda_word.mp3",
             "audioSentenceFile": "ko_bappeuda_sentence.mp3",
             "mediaFile": "ko_bappeuda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c95",
@@ -1056,7 +1244,9 @@
             "audioWordFile": "ko_hangahada_word.mp3",
             "audioSentenceFile": "ko_hangahada_sentence.mp3",
             "mediaFile": "ko_hangahada.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c96",
@@ -1067,7 +1257,9 @@
             "audioWordFile": "ko_masitda_word.mp3",
             "audioSentenceFile": "ko_masitda_sentence.mp3",
             "mediaFile": "ko_masitda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c97",
@@ -1078,7 +1270,9 @@
             "audioWordFile": "ko_madeopda_word.mp3",
             "audioSentenceFile": "ko_madeopda_sentence.mp3",
             "mediaFile": "ko_madeopda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c98",
@@ -1089,7 +1283,9 @@
             "audioWordFile": "ko_gada_word.mp3",
             "audioSentenceFile": "ko_gada_sentence.mp3",
             "mediaFile": "ko_gada.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c99",
@@ -1100,7 +1296,9 @@
             "audioWordFile": "ko_oda_word.mp3",
             "audioSentenceFile": "ko_oda_sentence.mp3",
             "mediaFile": "ko_oda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         },
         {
             "id": "ko_b_c100",
@@ -1111,7 +1309,9 @@
             "audioWordFile": "ko_meokda_word.mp3",
             "audioSentenceFile": "ko_meokda_sentence.mp3",
             "mediaFile": "ko_meokda.jpg",
-            "domain": "Adjectives"
+            "tags": [
+                "Adjectives"
+            ]
         }
     ]
 }

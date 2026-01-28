@@ -20,7 +20,9 @@
             "sentenceNative": "I speak a little Spanish.",
             "audioWordFile": "es_hablo_word.mp3",
             "audioSentenceFile": "es_hablo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_2",
@@ -30,7 +32,9 @@
             "sentenceNative": "Do you speak English?",
             "audioWordFile": "es_hablas_word.mp3",
             "audioSentenceFile": "es_hablas_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_3",
@@ -40,7 +44,9 @@
             "sentenceNative": "He speaks very fast.",
             "audioWordFile": "es_habla_word.mp3",
             "audioSentenceFile": "es_habla_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_4",
@@ -50,7 +56,9 @@
             "sentenceNative": "We speak every day.",
             "audioWordFile": "es_hablamos_word.mp3",
             "audioSentenceFile": "es_hablamos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_5",
@@ -60,7 +68,9 @@
             "sentenceNative": "They speak French.",
             "audioWordFile": "es_hablan_word.mp3",
             "audioSentenceFile": "es_hablan_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_6",
@@ -70,7 +80,9 @@
             "sentenceNative": "I eat an apple.",
             "audioWordFile": "es_como_word.mp3",
             "audioSentenceFile": "es_como_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_7",
@@ -80,7 +92,9 @@
             "sentenceNative": "What are you eating today?",
             "audioWordFile": "es_comes_word.mp3",
             "audioSentenceFile": "es_comes_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_8",
@@ -90,7 +104,9 @@
             "sentenceNative": "She eats a lot of fruit.",
             "audioWordFile": "es_come_word.mp3",
             "audioSentenceFile": "es_come_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_9",
@@ -100,7 +116,9 @@
             "sentenceNative": "We eat together on Sundays.",
             "audioWordFile": "es_comemos_word.mp3",
             "audioSentenceFile": "es_comemos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_10",
@@ -110,7 +128,9 @@
             "sentenceNative": "They eat meat.",
             "audioWordFile": "es_comen_word.mp3",
             "audioSentenceFile": "es_comen_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_11",
@@ -120,7 +140,9 @@
             "sentenceNative": "I live in Madrid.",
             "audioWordFile": "es_vivo_word.mp3",
             "audioSentenceFile": "es_vivo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_12",
@@ -130,7 +152,9 @@
             "sentenceNative": "Where do you live?",
             "audioWordFile": "es_vives_word.mp3",
             "audioSentenceFile": "es_vives_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_13",
@@ -140,7 +164,9 @@
             "sentenceNative": "My friend lives far away.",
             "audioWordFile": "es_vive_word.mp3",
             "audioSentenceFile": "es_vive_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_14",
@@ -150,7 +176,9 @@
             "sentenceNative": "We live in a small house.",
             "audioWordFile": "es_vivimos_word.mp3",
             "audioSentenceFile": "es_vivimos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_15",
@@ -160,7 +188,9 @@
             "sentenceNative": "They live in the country.",
             "audioWordFile": "es_viven_word.mp3",
             "audioSentenceFile": "es_viven_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_16",
@@ -170,7 +200,9 @@
             "sentenceNative": "I am a student.",
             "audioWordFile": "es_soy_word.mp3",
             "audioSentenceFile": "es_soy_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_17",
@@ -180,7 +212,9 @@
             "sentenceNative": "You are very nice.",
             "audioWordFile": "es_eres_word.mp3",
             "audioSentenceFile": "es_eres_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_18",
@@ -190,7 +224,9 @@
             "sentenceNative": "He is from Spain.",
             "audioWordFile": "es_es_word.mp3",
             "audioSentenceFile": "es_es_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_19",
@@ -200,7 +236,9 @@
             "sentenceNative": "We are friends.",
             "audioWordFile": "es_somos_word.mp3",
             "audioSentenceFile": "es_somos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_20",
@@ -210,7 +248,9 @@
             "sentenceNative": "They are teachers.",
             "audioWordFile": "es_son_word.mp3",
             "audioSentenceFile": "es_son_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_21",
@@ -220,7 +260,9 @@
             "sentenceNative": "I am very happy.",
             "audioWordFile": "es_estoy_word.mp3",
             "audioSentenceFile": "es_estoy_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_22",
@@ -230,7 +272,9 @@
             "sentenceNative": "How are you?",
             "audioWordFile": "es_estas_word.mp3",
             "audioSentenceFile": "es_estas_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_23",
@@ -240,7 +284,9 @@
             "sentenceNative": "The cat is on the table.",
             "audioWordFile": "es_esta_word.mp3",
             "audioSentenceFile": "es_esta_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_24",
@@ -250,7 +296,9 @@
             "sentenceNative": "We are in class.",
             "audioWordFile": "es_estamos_word.mp3",
             "audioSentenceFile": "es_estamos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_25",
@@ -260,7 +308,9 @@
             "sentenceNative": "They are tired.",
             "audioWordFile": "es_estan_word.mp3",
             "audioSentenceFile": "es_estan_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_26",
@@ -270,7 +320,9 @@
             "sentenceNative": "I have two brothers.",
             "audioWordFile": "es_tengo_word.mp3",
             "audioSentenceFile": "es_tengo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_27",
@@ -280,7 +332,9 @@
             "sentenceNative": "Do you have a pencil?",
             "audioWordFile": "es_tienes_word.mp3",
             "audioSentenceFile": "es_tienes_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_28",
@@ -290,7 +344,9 @@
             "sentenceNative": "She has a blue car.",
             "audioWordFile": "es_tiene_word.mp3",
             "audioSentenceFile": "es_tiene_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_29",
@@ -300,7 +356,9 @@
             "sentenceNative": "We have a lot of time.",
             "audioWordFile": "es_tenemos_word.mp3",
             "audioSentenceFile": "es_tenemos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_30",
@@ -310,7 +368,9 @@
             "sentenceNative": "They are hungry (They have hunger).",
             "audioWordFile": "es_tienen_word.mp3",
             "audioSentenceFile": "es_tienen_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_31",
@@ -320,7 +380,9 @@
             "sentenceNative": "I am going to the market.",
             "audioWordFile": "es_voy_word.mp3",
             "audioSentenceFile": "es_voy_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_32",
@@ -330,7 +392,9 @@
             "sentenceNative": "Where are you going?",
             "audioWordFile": "es_vas_word.mp3",
             "audioSentenceFile": "es_vas_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_33",
@@ -340,7 +404,9 @@
             "sentenceNative": "He goes to school by bus.",
             "audioWordFile": "es_va_word.mp3",
             "audioSentenceFile": "es_va_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_34",
@@ -350,7 +416,9 @@
             "sentenceNative": "We are going to the beach today.",
             "audioWordFile": "es_vamos_word.mp3",
             "audioSentenceFile": "es_vamos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_35",
@@ -360,7 +428,9 @@
             "sentenceNative": "They are going to the park.",
             "audioWordFile": "es_van_word.mp3",
             "audioSentenceFile": "es_van_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_36",
@@ -370,7 +440,9 @@
             "sentenceNative": "I do my homework in the afternoon.",
             "audioWordFile": "es_hago_word.mp3",
             "audioSentenceFile": "es_hago_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_37",
@@ -380,7 +452,9 @@
             "sentenceNative": "What are you doing now?",
             "audioWordFile": "es_haces_word.mp3",
             "audioSentenceFile": "es_haces_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_38",
@@ -390,7 +464,9 @@
             "sentenceNative": "She exercises a lot.",
             "audioWordFile": "es_hace_word.mp3",
             "audioSentenceFile": "es_hace_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_39",
@@ -400,7 +476,9 @@
             "sentenceNative": "We make dinner together.",
             "audioWordFile": "es_hacemos_word.mp3",
             "audioSentenceFile": "es_hacemos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_40",
@@ -410,7 +488,9 @@
             "sentenceNative": "They make a lot of noise.",
             "audioWordFile": "es_hacen_word.mp3",
             "audioSentenceFile": "es_hacen_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_41",
@@ -420,7 +500,9 @@
             "sentenceNative": "Yesterday I spoke with my mother.",
             "audioWordFile": "es_hable_word.mp3",
             "audioSentenceFile": "es_hable_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_42",
@@ -430,7 +512,9 @@
             "sentenceNative": "Did you speak with him yesterday?",
             "audioWordFile": "es_hablaste_word.mp3",
             "audioSentenceFile": "es_hablaste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_43",
@@ -440,7 +524,9 @@
             "sentenceNative": "She spoke at the meeting.",
             "audioWordFile": "es_hablo_past_word.mp3",
             "audioSentenceFile": "es_hablo_past_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_44",
@@ -450,7 +536,9 @@
             "sentenceNative": "We spoke on the phone last night.",
             "audioWordFile": "es_hablamos_past_word.mp3",
             "audioSentenceFile": "es_hablamos_past_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_45",
@@ -460,7 +548,9 @@
             "sentenceNative": "They spoke about the plan.",
             "audioWordFile": "es_hablaron_word.mp3",
             "audioSentenceFile": "es_hablaron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_46",
@@ -470,7 +560,9 @@
             "sentenceNative": "I ate a delicious pizza.",
             "audioWordFile": "es_comi_word.mp3",
             "audioSentenceFile": "es_comi_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_47",
@@ -480,7 +572,9 @@
             "sentenceNative": "What did you eat at noon?",
             "audioWordFile": "es_comiste_word.mp3",
             "audioSentenceFile": "es_comiste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_48",
@@ -490,7 +584,9 @@
             "sentenceNative": "He ate very little.",
             "audioWordFile": "es_comio_word.mp3",
             "audioSentenceFile": "es_comio_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_49",
@@ -500,7 +596,9 @@
             "sentenceNative": "We ate at a new restaurant.",
             "audioWordFile": "es_comimos_past_word.mp3",
             "audioSentenceFile": "es_comimos_past_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_50",
@@ -510,7 +608,9 @@
             "sentenceNative": "They ate all the cake.",
             "audioWordFile": "es_comieron_word.mp3",
             "audioSentenceFile": "es_comieron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_51",
@@ -520,7 +620,9 @@
             "sentenceNative": "I lived in Barcelona for a year.",
             "audioWordFile": "es_vivi_word.mp3",
             "audioSentenceFile": "es_vivi_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_52",
@@ -530,7 +632,9 @@
             "sentenceNative": "Did you ever live abroad?",
             "audioWordFile": "es_viviste_word.mp3",
             "audioSentenceFile": "es_viviste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_53",
@@ -540,7 +644,9 @@
             "sentenceNative": "She lived a long life.",
             "audioWordFile": "es_vivio_word.mp3",
             "audioSentenceFile": "es_vivio_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_54",
@@ -550,7 +656,9 @@
             "sentenceNative": "We lived happily there.",
             "audioWordFile": "es_vivimos_past_word.mp3",
             "audioSentenceFile": "es_vivimos_past_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_55",
@@ -560,7 +668,9 @@
             "sentenceNative": "They lived in that house.",
             "audioWordFile": "es_vivieron_word.mp3",
             "audioSentenceFile": "es_vivieron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_56",
@@ -570,7 +680,9 @@
             "sentenceNative": "I went to the cinema on Saturday.",
             "audioWordFile": "es_fui_word.mp3",
             "audioSentenceFile": "es_fui_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_57",
@@ -580,7 +692,9 @@
             "sentenceNative": "Did you go to the party?",
             "audioWordFile": "es_fuiste_word.mp3",
             "audioSentenceFile": "es_fuiste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_58",
@@ -590,7 +704,9 @@
             "sentenceNative": "It was an incredible day.",
             "audioWordFile": "es_fue_word.mp3",
             "audioSentenceFile": "es_fue_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_59",
@@ -600,7 +716,9 @@
             "sentenceNative": "We were best friends.",
             "audioWordFile": "es_fuimos_word.mp3",
             "audioSentenceFile": "es_fuimos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_60",
@@ -610,7 +728,9 @@
             "sentenceNative": "They went on vacation.",
             "audioWordFile": "es_fueron_word.mp3",
             "audioSentenceFile": "es_fueron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_61",
@@ -620,7 +740,9 @@
             "sentenceNative": "I call my grandmother every week.",
             "audioWordFile": "es_llamo_word.mp3",
             "audioSentenceFile": "es_llamo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_62",
@@ -630,7 +752,9 @@
             "sentenceNative": "Will you call me later?",
             "audioWordFile": "es_llamas_word.mp3",
             "audioSentenceFile": "es_llamas_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_63",
@@ -640,7 +764,9 @@
             "sentenceNative": "She calls her boss.",
             "audioWordFile": "es_llama_word.mp3",
             "audioSentenceFile": "es_llama_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_64",
@@ -650,7 +776,9 @@
             "sentenceNative": "We call customer service.",
             "audioWordFile": "es_llamamos_word.mp3",
             "audioSentenceFile": "es_llamamos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_65",
@@ -660,7 +788,9 @@
             "sentenceNative": "They call the police.",
             "audioWordFile": "es_llaman_word.mp3",
             "audioSentenceFile": "es_llaman_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_66",
@@ -670,7 +800,9 @@
             "sentenceNative": "I perfectly understand what you say.",
             "audioWordFile": "es_entiendo_word.mp3",
             "audioSentenceFile": "es_entiendo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_67",
@@ -680,7 +812,9 @@
             "sentenceNative": "Do you understand the problem?",
             "audioWordFile": "es_entiendes_word.mp3",
             "audioSentenceFile": "es_entiendes_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_68",
@@ -690,7 +824,9 @@
             "sentenceNative": "She doesn't understand anything.",
             "audioWordFile": "es_entiende_word.mp3",
             "audioSentenceFile": "es_entiende_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_69",
@@ -700,7 +836,9 @@
             "sentenceNative": "We understand your position.",
             "audioWordFile": "es_entendemos_word.mp3",
             "audioSentenceFile": "es_entendemos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_70",
@@ -710,7 +848,9 @@
             "sentenceNative": "They understand the rules.",
             "audioWordFile": "es_entienden_word.mp3",
             "audioSentenceFile": "es_entienden_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_71",
@@ -720,7 +860,9 @@
             "sentenceNative": "I want to learn Spanish.",
             "audioWordFile": "es_quiero_word.mp3",
             "audioSentenceFile": "es_quiero_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_72",
@@ -730,7 +872,9 @@
             "sentenceNative": "Do you want some water?",
             "audioWordFile": "es_quieres_word.mp3",
             "audioSentenceFile": "es_quieres_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_73",
@@ -740,7 +884,9 @@
             "sentenceNative": "She wants to study art.",
             "audioWordFile": "es_quiere_word.mp3",
             "audioSentenceFile": "es_quiere_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_74",
@@ -750,7 +896,9 @@
             "sentenceNative": "We want to travel the world.",
             "audioWordFile": "es_queremos_word.mp3",
             "audioSentenceFile": "es_queremos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_75",
@@ -760,7 +908,9 @@
             "sentenceNative": "They want to buy a house.",
             "audioWordFile": "es_quieren_word.mp3",
             "audioSentenceFile": "es_quieren_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_76",
@@ -770,7 +920,9 @@
             "sentenceNative": "I made my bed this morning.",
             "audioWordFile": "es_hice_word.mp3",
             "audioSentenceFile": "es_hice_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_77",
@@ -780,7 +932,9 @@
             "sentenceNative": "Did you do the homework?",
             "audioWordFile": "es_hiciste_word.mp3",
             "audioSentenceFile": "es_hiciste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_78",
@@ -790,7 +944,9 @@
             "sentenceNative": "He made a great effort.",
             "audioWordFile": "es_hizo_word.mp3",
             "audioSentenceFile": "es_hizo_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_79",
@@ -800,7 +956,9 @@
             "sentenceNative": "We made a cake for dessert.",
             "audioWordFile": "es_hicimos_word.mp3",
             "audioSentenceFile": "es_hicimos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_80",
@@ -810,7 +968,9 @@
             "sentenceNative": "They threw a surprise party.",
             "audioWordFile": "es_hicieron_word.mp3",
             "audioSentenceFile": "es_hicieron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_81",
@@ -820,7 +980,9 @@
             "sentenceNative": "I thought you were my friend.",
             "audioWordFile": "es_pense_word.mp3",
             "audioSentenceFile": "es_pense_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_82",
@@ -830,7 +992,9 @@
             "sentenceNative": "What did you think of the movie?",
             "audioWordFile": "es_pensaste_word.mp3",
             "audioSentenceFile": "es_pensaste_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_83",
@@ -840,7 +1004,9 @@
             "sentenceNative": "She thought about the answer a lot.",
             "audioWordFile": "es_penso_word.mp3",
             "audioSentenceFile": "es_penso_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_84",
@@ -850,7 +1016,9 @@
             "sentenceNative": "We thought it was late.",
             "audioWordFile": "es_pensamos_past_word.mp3",
             "audioSentenceFile": "es_pensamos_past_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_85",
@@ -860,7 +1028,9 @@
             "sentenceNative": "They thought you wouldn't come.",
             "audioWordFile": "es_pensaron_word.mp3",
             "audioSentenceFile": "es_pensaron_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_86",
@@ -870,7 +1040,9 @@
             "sentenceNative": "I will speak with him tomorrow.",
             "audioWordFile": "es_hablare_word.mp3",
             "audioSentenceFile": "es_hablare_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_87",
@@ -880,7 +1052,9 @@
             "sentenceNative": "You will speak very well soon.",
             "audioWordFile": "es_hablaras_word.mp3",
             "audioSentenceFile": "es_hablaras_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_88",
@@ -890,7 +1064,9 @@
             "sentenceNative": "He will speak at the conference.",
             "audioWordFile": "es_hablara_word.mp3",
             "audioSentenceFile": "es_hablara_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_89",
@@ -900,7 +1076,9 @@
             "sentenceNative": "We will speak about the topic on Monday.",
             "audioWordFile": "es_hablaremos_future_word.mp3",
             "audioSentenceFile": "es_hablaremos_future_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_90",
@@ -910,7 +1088,9 @@
             "sentenceNative": "They will speak with us.",
             "audioWordFile": "es_hablaran_word.mp3",
             "audioSentenceFile": "es_hablaran_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_91",
@@ -920,7 +1100,9 @@
             "sentenceNative": "I will eat something light tonight.",
             "audioWordFile": "es_comere_word.mp3",
             "audioSentenceFile": "es_comere_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_92",
@@ -930,7 +1112,9 @@
             "sentenceNative": "Will you eat at home today?",
             "audioWordFile": "es_comeras_word.mp3",
             "audioSentenceFile": "es_comeras_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_93",
@@ -940,7 +1124,9 @@
             "sentenceNative": "She will eat with her team.",
             "audioWordFile": "es_comera_word.mp3",
             "audioSentenceFile": "es_comera_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_94",
@@ -950,7 +1136,9 @@
             "sentenceNative": "We will eat at three.",
             "audioWordFile": "es_comeremos_word.mp3",
             "audioSentenceFile": "es_comeremos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_95",
@@ -960,7 +1148,9 @@
             "sentenceNative": "They will eat at the restaurant.",
             "audioWordFile": "es_comeran_word.mp3",
             "audioSentenceFile": "es_comeran_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_96",
@@ -970,7 +1160,9 @@
             "sentenceNative": "I will see the movie later.",
             "audioWordFile": "es_vere_word.mp3",
             "audioSentenceFile": "es_vere_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_97",
@@ -980,7 +1172,9 @@
             "sentenceNative": "You will see it when you arrive.",
             "audioWordFile": "es_veras_word.mp3",
             "audioSentenceFile": "es_veras_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_98",
@@ -990,7 +1184,9 @@
             "sentenceNative": "He will see his doctor soon.",
             "audioWordFile": "es_vera_word.mp3",
             "audioSentenceFile": "es_vera_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_99",
@@ -1000,7 +1196,9 @@
             "sentenceNative": "We'll see what happens.",
             "audioWordFile": "es_veremos_word.mp3",
             "audioSentenceFile": "es_veremos_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         },
         {
             "id": "es_c_100",
@@ -1010,7 +1208,9 @@
             "sentenceNative": "They will see the show tomorrow.",
             "audioWordFile": "es_veran_word.mp3",
             "audioSentenceFile": "es_veran_sentence.mp3",
-            "domain": "Verbs"
+            "tags": [
+                "Verbs"
+            ]
         }
     ]
 }

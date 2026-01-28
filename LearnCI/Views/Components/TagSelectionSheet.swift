@@ -6,8 +6,9 @@ struct TagSelectionSheet: View {
     @Environment(\.dismiss) var dismiss
     @Environment(DataManager.self) private var dataManager
     
-    @State private var tags: [String] = []
+    @State private var tags: [(name: String, count: Int)] = []
     @State private var isLoading = true
+    @State private var selectedTag: String?
     
     let columns = [
         GridItem(.adaptive(minimum: 100), spacing: 12)
@@ -15,44 +16,92 @@ struct TagSelectionSheet: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                if isLoading {
-                    ProgressView("Scanning decks...")
-                        .padding(.top, 40)
-                } else if tags.isEmpty {
-                    ContentUnavailableView("No Tags Found", systemImage: "tag.slash", description: Text("No subject tags were found for this language."))
-                } else {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(tags, id: \.self) { tag in
-                            Button {
-                                selectTag(tag)
-                            } label: {
-                                VStack {
-                                    Image(systemName: "tag.fill")
-                                        .font(.title2)
-                                        .foregroundStyle(.white)
-                                        .padding(.bottom, 4)
-                                    
-                                    Text(tag)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(.white)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 100)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.accentColor.gradient)
+            VStack(spacing: 0) {
+                ScrollView {
+                    if isLoading {
+                        ProgressView("Scanning decks...")
+                            .padding(.top, 40)
+                    } else if tags.isEmpty {
+                        ContentUnavailableView("No Tags Found", systemImage: "tag.slash", description: Text("No subject tags were found for this language."))
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(tags, id: \.name) { tag in
+                                Button {
+                                    selectedTag = tag.name
+                                } label: {
+                                    VStack {
+                                        Image(systemName: "tag.fill")
+                                            .font(.title2)
+                                            .foregroundStyle(selectedTag == tag.name ? .white : .accentColor)
+                                            .padding(.bottom, 4)
+                                        
+                                        Text(tag.name)
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(selectedTag == tag.name ? .white : .primary)
+                                            .multilineTextAlignment(.center)
+                                        
+                                        Text("\(tag.count)")
+                                            .font(.caption2)
+                                            .foregroundStyle(selectedTag == tag.name ? .white.opacity(0.8) : .secondary)
+                                            .padding(.top, 2)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 100)
+                                    .background {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(selectedTag == tag.name ? Color.accentColor : Color(UIColor.secondarySystemGroupedBackground))
+                                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(selectedTag == tag.name ? Color.accentColor : Color.clear, lineWidth: 2)
+                                            )
+                                    }
                                 }
                             }
                         }
+                        .padding()
                     }
-                    .padding()
+                }
+                
+                // Bottom Bar
+                if !isLoading && !tags.isEmpty {
+                    VStack(spacing: 12) {
+                        Divider()
+                        
+                        if let selected = selectedTag, let tagData = tags.first(where: { $0.name == selected }) {
+                             Text("\(tagData.count) cards selected")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Select a tag")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Button(action: {
+                            if let tag = selectedTag {
+                                confirmSelection(tag)
+                            }
+                        }) {
+                            Text("Done")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(selectedTag != nil ? Color.accentColor : Color.gray.opacity(0.3))
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                        .disabled(selectedTag == nil)
+                        .padding(.horizontal)
+                        .padding(.bottom)
+                    }
+                    .background(Color(UIColor.systemBackground))
                 }
             }
             .navigationTitle("Select Topic")
             .navigationBarTitleDisplayMode(.inline)
+            .background(Color(UIColor.systemGroupedBackground))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -65,65 +114,40 @@ struct TagSelectionSheet: View {
     }
     
     private func loadTags() {
-        // Run in background to avoid blocking UI if many files
         let manager = dataManager
         Task {
             let discovered = manager.discoverTags(language: language)
             await MainActor.run {
-                self.tags = discovered
+                // Sort by count descending, then name ascending
+                self.tags = discovered.map { ($0.key, $0.value) }
+                    .sorted {
+                        if $0.count == $1.count {
+                            return $0.name < $1.name
+                        }
+                        return $0.count > $1.count
+                    }
                 self.isLoading = false
             }
         }
     }
     
-    private func selectTag(_ tag: String) {
-        // Create the virtual deck
+    private func confirmSelection(_ tag: String) {
         let virtualDeck = dataManager.createVirtualDeck(tag: tag, language: language)
         
-        // We need to pass this back. 
-        // Problem: `selectedDeck` expects `DeckMetadata`, but `createVirtualDeck` returns `CardDeck`.
-        // We must cache it in DataManager so it can be found by ID, or...
-        // DataManager.discoverDecks returns Metadata.
-        // We can create a fake Metadata for it.
-        
-        // Better implementation: 
-        // 1. DataManager should probably cache this virtual deck in `availableDecks` momentarily?
-        // 2. Or providing a special constructor for DeckMetadata from a CardDeck?
-        
-        // For now, let's inject it into DataManager's loaded cache if possible, or creates a Metadata wrapper.
-        
-        // Let's assume we can create metadata for it.
         let metadata = DeckMetadata(
             id: virtualDeck.id,
             title: virtualDeck.title,
             language: virtualDeck.language,
             level: virtualDeck.level,
-            folderName: "Virtual", // Special marker
+            folderName: "Virtual",
             filename: "",
             supportedModes: virtualDeck.supportedModes ?? [],
             gameConfiguration: nil,
-            coverImage: "tag.fill" // SF Symbol name or similar as placeholder?
+            coverImage: "tag.fill"
         )
         
-        // IMPORTANT: The GameView will try to LOAD this deck using resolveURL.
-        // "Virtual" folderName will fail resolveURL.
-        // DataManager needs to handle Loading of virtual decks specially IF it relies on loading from file.
-        // But `createVirtualDeck` returns the `CardDeck` object directly!
-        // We need a way to pass the *OBJECT* to the game, NOT just the metadata/ID.
-        // OR DataManager.loadDeck(id) needs to know about virtual decks.
-        
-        // Since I can't easily change the entire DataManager architecture right now to support memory-only decks without file backing...
-        // I will focus on updating DataManager to handle `loadDeck` for virtual IDs if they are cached in memory.
-        
-        // For this step, I'll assume I can pass it back. I will add a `virtualDecks` cache to DataManager in a fix-up step if needed.
-        // But first, let's stick to the UI creation.
-        
-        selectedDeck = metadata
-        
-        // Also, we need to ensure DataManager "knows" this deck exists so loadDeck works.
-        // I'll add a quick static cache or something in DataManager in the next step or right here.
         dataManager.registerVirtualDeck(virtualDeck)
-        
+        selectedDeck = metadata
         dismiss()
     }
 }

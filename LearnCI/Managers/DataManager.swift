@@ -72,7 +72,11 @@ class DataManager {
         
         // 2. Check if Virtual (should be in cache if registered, but safeguard)
         if metadata.folderName == "Virtual" {
-            print("Error: Virtual deck \(metadata.id) not found in cache.")
+            print("DEBUG: Checking cache for virtual deck ID: \(metadata.id)")
+            if let cached = deckCache[metadata.id] {
+                 return cached
+            }
+            print("Error: Virtual deck \(metadata.id) not found in cache. Cache keys: \(deckCache.keys)")
             self.errorMessage = "Virtual deck \(metadata.id) not found in cache."
             return nil
         }
@@ -104,9 +108,10 @@ class DataManager {
     }
         
     // Discover unique tags across all decks for a language
-    func discoverTags(language: Language) -> [String] {
+    // Discover unique tags across all decks for a language, with counts
+    func discoverTags(language: Language) -> [String: Int] {
         let decks = discoverDecks(language: language, level: nil) // level nil = all levels
-        var tags = Set<String>()
+        var tagCounts = [String: Int]()
         
         for meta in decks {
              // We need to load the deck to see its cards/tags
@@ -116,7 +121,9 @@ class DataManager {
                      let deck = try JSONDecoder().decode(CardDeck.self, from: data)
                      for card in deck.cards {
                          if let cardTags = card.tags {
-                             tags.formUnion(cardTags)
+                             for tag in cardTags {
+                                 tagCounts[tag] = (tagCounts[tag] ?? 0) + 1
+                             }
                          }
                      }
                  } catch {
@@ -125,7 +132,7 @@ class DataManager {
              }
         }
         
-        return Array(tags).sorted()
+        return tagCounts
     }
     
     // Create a virtual deck from a specific tag
@@ -139,6 +146,7 @@ class DataManager {
                       let data = try Data(contentsOf: url)
                       let deck = try JSONDecoder().decode(CardDeck.self, from: data)
                       let matching = deck.cards.filter { $0.tags?.contains(tag) == true }
+                      print("DEBUG: createVirtualDeck - Found \(matching.count) cards for tag '\(tag)' in deck '\(deck.id)'")
                       combinedCards.append(contentsOf: matching)
                   } catch {
                        print("Error loading deck for virtual creation: \(error)")

@@ -28,6 +28,7 @@ struct GameConfigurationView: View {
     @State private var showTagSelection = false
     @State private var showDisplayConfig = false
     @State private var showSessionOptions = false
+    @State private var currentDeckCount: Int?
     
     
     private var effectiveConfig: GameConfiguration {
@@ -84,7 +85,7 @@ struct GameConfigurationView: View {
                             icon: "tag.fill",
                             iconColor: .mint,
                             text: selectedDeck?.folderName == "Virtual" ? (selectedDeck?.title ?? "Filter by Tag") : "Filter by Tag",
-                            subText: "Create a custom deck from all cards"
+                            subText: selectedDeck?.folderName == "Virtual" ? (currentDeckCount != nil ? "\(currentDeckCount!) cards available" : "Loading...") : "Create a custom deck from all cards"
                         )
                     }
                     
@@ -97,17 +98,9 @@ struct GameConfigurationView: View {
                             SettingsRow(
                                 icon: "slider.horizontal.3",
                                 iconColor: .purple,
-                                text: "Card Layout"
-                            ) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue)
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.primary)
-                                    
-                                    DisplayConfigurationSummaryView(config: effectiveConfig)
-                                }
-                            }
+                                text: "Card Layout",
+                                subText: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
+                            )
                         }
                         
                         Divider()
@@ -119,10 +112,14 @@ struct GameConfigurationView: View {
                         SettingsRow(
                             icon: "gearshape.fill",
                             iconColor: .orange,
-                            text: "\(sessionDuration) min · \(sessionCardGoal) cards",
-                            subText: nil // Use subContent for multi-line
+                            text: "Session Options"
                         ) {
                             VStack(alignment: .leading, spacing: 2) {
+                                Text("\(sessionDuration) min · \(sessionCardGoal) cards")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.primary)
+                                
                                 Text(isRandomOrder ? "Random Order" : "Sequential")
                                 
                                 HStack(spacing: 4) {
@@ -155,7 +152,7 @@ struct GameConfigurationView: View {
                 if selectedDeck == nil {
                     HStack {
                         Image(systemName: "exclamationmark.circle")
-                            .foregroundColor(.orange)
+                        .foregroundColor(.orange)
                         Text("Select a deck to start")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -200,7 +197,8 @@ struct GameConfigurationView: View {
                 navigationStyle: $navigationStyle,
                 autoNextDelay: $autoNextDelay,
                 confirmationStyle: $confirmationStyle,
-                gameType: selectedGameType
+                gameType: selectedGameType,
+                maxCards: currentDeckCount // Pass this to limit max options
             )
         }
         .onChange(of: selectedPreset) { newPreset in
@@ -245,26 +243,63 @@ struct GameConfigurationView: View {
     
     // Extract defaults from metadata without loading full deck
     private func applyDeckDefaults(from deck: DeckMetadata?, for type: GameConfiguration.GameType) {
-        guard let deck = deck, let config = deck.gameConfiguration else { return }
+        guard let deck = deck else { return }
         
-        // Find matching key (case-insensitive)
-        let typeKey = type.rawValue // "Flashcards"
-        
-        var defaults: DeckDefaults?
-        
-        // Iterate keys to find case-insensitive match
-        for (jsonKey, val) in config {
-            if jsonKey.caseInsensitiveCompare(typeKey) == .orderedSame {
-                defaults = val
-                break
+        // Apply defaults if available
+        if let config = deck.gameConfiguration {
+            // Find matching key (case-insensitive)
+            let typeKey = type.rawValue // "Flashcards"
+            
+            var defaults: DeckDefaults?
+            
+            // Iterate keys to find case-insensitive match
+            for (jsonKey, val) in config {
+                if jsonKey.caseInsensitiveCompare(typeKey) == .orderedSame {
+                    defaults = val
+                    break
+                }
+            }
+            
+            if let defaults = defaults {
+                if let random = defaults.randomize {
+                    isRandomOrder = random
+                }
+                // Add other defaults here as needed (e.g. autoplay)
             }
         }
         
-        if let defaults = defaults {
-            if let random = defaults.randomize {
-                isRandomOrder = random
+        // Reset count to show loading state and prevent stale data
+        currentDeckCount = nil
+        
+        // Also update card goal cap based on actual deck size
+        print("DEBUG: applyDeckDefaults - Starting load for \(deck.title)")
+        Task {
+            if let loaded = dataManager.loadDeck(from: deck) {
+                let totalCards = loaded.cards.count
+                print("DEBUG: Loaded deck \(deck.title) with \(totalCards) cards")
+                await MainActor.run {
+                    self.currentDeckCount = totalCards // Store for UI
+                    
+                    // Update goal to match exactly if it's a virtual deck (per user request)
+                    if deck.folderName == "Virtual" {
+                        print("DEBUG: Virtual deck detected. Setting goal from \(sessionCardGoal) to \(totalCards)")
+                        sessionCardGoal = totalCards
+                    } else if sessionCardGoal > totalCards {
+                        print("DEBUG: Normal deck. Capping goal from \(sessionCardGoal) to \(totalCards)")
+                        // Cap for normal decks
+                        sessionCardGoal = totalCards
+                    } else {
+                        print("DEBUG: Goal \(sessionCardGoal) valid for deck size \(totalCards)")
+                    }
+                    
+                    // Optional: If you want to force it to max for virtual decks?
+                    // For now, capping it is safer.
+                    // Also ensure we don't go below 1
+                    if sessionCardGoal < 5 && totalCards >= 5 {
+                         // Keep user preference, but ensure reasonable minimum if possible
+                    }
+                }
             }
-            // Add other defaults here as needed (e.g. autoplay)
         }
     }
     

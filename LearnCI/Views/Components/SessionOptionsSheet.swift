@@ -12,6 +12,7 @@ struct SessionOptionsSheet: View {
     @Binding var confirmationStyle: ConfirmationStyle
     
     var gameType: GameConfiguration.GameType = .flashcards // Default for preview/fallback
+    var maxCards: Int? // Optional maximum limit based on deck size
     
     @Environment(\.dismiss) private var dismiss
     
@@ -25,7 +26,14 @@ struct SessionOptionsSheet: View {
     }
     
     var maxAmount: Int {
-        100
+        if let max = maxCards {
+            return min(max, 100) // Cap at 100 or actual deck size, whichever is lower? 
+                                 // Actually user might want to study 100 cards if deck has 1000.
+                                 // So it should be min(deckSize, 100) is reasonable default cap, 
+                                 // but here we truly want the deck Limit.
+            return max
+        }
+        return 100
     }
     
     var body: some View {

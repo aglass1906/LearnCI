@@ -2,10 +2,10 @@ import Foundation
 
 
 enum Language: String, Codable, CaseIterable, Identifiable {
-    case spanish = "Spanish"
-    case japanese = "Japanese"
-    case korean = "Korean"
-    case french = "French"
+    case spanish = "es"
+    case japanese = "ja"
+    case korean = "ko"
+    case french = "fr"
     
     var id: String { self.rawValue }
     
@@ -18,14 +18,7 @@ enum Language: String, Codable, CaseIterable, Identifiable {
         }
     }
     
-    var code: String {
-        switch self {
-        case .spanish: return "es"
-        case .japanese: return "ja"
-        case .korean: return "ko"
-        case .french: return "fr"
-        }
-    }
+    var code: String { self.rawValue }
 }
 
 enum LearningLevel: String, Codable, CaseIterable, Identifiable {
@@ -174,11 +167,12 @@ struct DeckDefaults: Codable, Equatable {
 struct CardDeck: Codable, Identifiable, Equatable {
     var id: String
     var language: Language
-    var level: LearningLevel
+    var level: LearningLevel?
     var title: String
     var cards: [LearningCard]
     
     // New Fields
+    var proficiencyLevel: Int? // 1-6 Scale
     var supportedModes: Set<GameConfiguration.GameType>?
     var gameConfiguration: [String: DeckDefaults]?
     var defaults: DeckDefaults?

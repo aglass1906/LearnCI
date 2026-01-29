@@ -1,10 +1,7 @@
 {
     "id": "es_beg_001",
-    "language": "Spanish",
-    "languageName": "Spanish",
-    "languageCode": "es",
-    "level": "Beginner",
-    "cefr": "A1",
+    "language": "es",
+    "proficiencyLevel": 2,
     "title": "Spanish Beginner Essentials",
     "supportedModes": [
         "flashcards",
@@ -980,7 +977,7 @@
             "sentenceNative": "My ear is itchy.",
             "audioWordFile": "es_oreja_word.mp3",
             "audioSentenceFile": "es_oreja_sentence.mp3",
-            "mediaFile": "es_oreja.png",
+            "mediaFile": "es_oreja.jpg",
             "tags": [
                 "Body"
             ]
@@ -993,7 +990,7 @@
             "sentenceNative": "She has long hair.",
             "audioWordFile": "es_pelo_word.mp3",
             "audioSentenceFile": "es_pelo_sentence.mp3",
-            "mediaFile": "es_pelo.png",
+            "mediaFile": "es_pelo.jpg",
             "tags": [
                 "Body"
             ]
@@ -1006,7 +1003,7 @@
             "sentenceNative": "Give me your hand.",
             "audioWordFile": "es_mano_word.mp3",
             "audioSentenceFile": "es_mano_sentence.mp3",
-            "mediaFile": "es_mano.png",
+            "mediaFile": "es_mano.jpg",
             "tags": [
                 "Body"
             ]
@@ -1019,7 +1016,7 @@
             "sentenceNative": "My arm is strong.",
             "audioWordFile": "es_brazo_word.mp3",
             "audioSentenceFile": "es_brazo_sentence.mp3",
-            "mediaFile": "es_brazo.png",
+            "mediaFile": "es_brazo.jpg",
             "tags": [
                 "Body"
             ]
@@ -1032,7 +1029,7 @@
             "sentenceNative": "Run with your right leg.",
             "audioWordFile": "es_pierna_word.mp3",
             "audioSentenceFile": "es_pierna_sentence.mp3",
-            "mediaFile": "es_pierna.png",
+            "mediaFile": "es_pierna.jpg",
             "tags": [
                 "Body"
             ]
@@ -1045,7 +1042,7 @@
             "sentenceNative": "My foot hurts.",
             "audioWordFile": "es_pie_word.mp3",
             "audioSentenceFile": "es_pie_sentence.mp3",
-            "mediaFile": "es_pie.png",
+            "mediaFile": "es_pie.jpg",
             "tags": [
                 "Body"
             ]
@@ -1058,7 +1055,7 @@
             "sentenceNative": "I'm going to the doctor.",
             "audioWordFile": "es_medico_word.mp3",
             "audioSentenceFile": "es_medico_sentence.mp3",
-            "mediaFile": "es_medico.png",
+            "mediaFile": "es_medico.jpg",
             "tags": [
                 "Jobs",
                 "People",
@@ -1073,7 +1070,7 @@
             "sentenceNative": "I am very sick.",
             "audioWordFile": "es_enfermo_word.mp3",
             "audioSentenceFile": "es_enfermo_sentence.mp3",
-            "mediaFile": "es_enfermo.png",
+            "mediaFile": "es_enfermo.jpg",
             "tags": [
                 "Society"
             ]
@@ -1378,7 +1375,7 @@
             "sentenceNative": "The apple is red.",
             "audioWordFile": "es_rojo_word.mp3",
             "audioSentenceFile": "es_rojo_sentence.mp3",
-            "mediaFile": "es_rojo.png",
+            "mediaFile": "es_rojo.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1392,7 +1389,7 @@
             "sentenceNative": "The sky is blue.",
             "audioWordFile": "es_azul_word.mp3",
             "audioSentenceFile": "es_azul_sentence.mp3",
-            "mediaFile": "es_azul.png",
+            "mediaFile": "es_azul.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1406,7 +1403,7 @@
             "sentenceNative": "The tree is green.",
             "audioWordFile": "es_verde_word.mp3",
             "audioSentenceFile": "es_verde_sentence.mp3",
-            "mediaFile": "es_verde.png",
+            "mediaFile": "es_verde.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1420,7 +1417,7 @@
             "sentenceNative": "The sun is yellow.",
             "audioWordFile": "es_amarillo_word.mp3",
             "audioSentenceFile": "es_amarillo_sentence.mp3",
-            "mediaFile": "es_amarillo.png",
+            "mediaFile": "es_amarillo.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1434,7 +1431,7 @@
             "sentenceNative": "The orange is orange.",
             "audioWordFile": "es_naranja_word.mp3",
             "audioSentenceFile": "es_naranja_sentence.mp3",
-            "mediaFile": "es_naranja.png",
+            "mediaFile": "es_naranja.jpg",
             "tags": [
                 "Adjectives",
                 "Colors",
@@ -1449,7 +1446,7 @@
             "sentenceNative": "The grapes are purple.",
             "audioWordFile": "es_morado_word.mp3",
             "audioSentenceFile": "es_morado_sentence.mp3",
-            "mediaFile": "es_morado.png",
+            "mediaFile": "es_morado.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1463,7 +1460,7 @@
             "sentenceNative": "The flower is pink.",
             "audioWordFile": "es_rosa_word.mp3",
             "audioSentenceFile": "es_rosa_sentence.mp3",
-            "mediaFile": "es_rosa.png",
+            "mediaFile": "es_rosa.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1477,7 +1474,7 @@
             "sentenceNative": "The sky is grey.",
             "audioWordFile": "es_gris_word.mp3",
             "audioSentenceFile": "es_gris_sentence.mp3",
-            "mediaFile": "es_gris.png",
+            "mediaFile": "es_gris.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1491,7 +1488,7 @@
             "sentenceNative": "The bear is brown.",
             "audioWordFile": "es_marron_word.mp3",
             "audioSentenceFile": "es_marron_sentence.mp3",
-            "mediaFile": "es_marron.png",
+            "mediaFile": "es_marron.jpg",
             "tags": [
                 "Adjectives",
                 "Colors"
@@ -1505,7 +1502,7 @@
             "sentenceNative": "On Wednesday I have class.",
             "audioWordFile": "es_miercoles_word.mp3",
             "audioSentenceFile": "es_miercoles_sentence.mp3",
-            "mediaFile": "es_miercoles.png",
+            "mediaFile": "es_miercoles.jpg",
             "tags": [
                 "Days",
                 "Time"
@@ -1519,7 +1516,7 @@
             "sentenceNative": "See you on Thursday.",
             "audioWordFile": "es_jueves_word.mp3",
             "audioSentenceFile": "es_jueves_sentence.mp3",
-            "mediaFile": "es_jueves.png",
+            "mediaFile": "es_jueves.jpg",
             "tags": [
                 "Days",
                 "Time"
@@ -1533,7 +1530,7 @@
             "sentenceNative": "It's Friday!",
             "audioWordFile": "es_viernes_word.mp3",
             "audioSentenceFile": "es_viernes_sentence.mp3",
-            "mediaFile": "es_viernes.png",
+            "mediaFile": "es_viernes.jpg",
             "tags": [
                 "Days",
                 "Time"
@@ -1547,7 +1544,7 @@
             "sentenceNative": "January is cold.",
             "audioWordFile": "es_enero_word.mp3",
             "audioSentenceFile": "es_enero_sentence.mp3",
-            "mediaFile": "es_enero.png",
+            "mediaFile": "es_enero.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1561,7 +1558,7 @@
             "sentenceNative": "February has twenty-eight days.",
             "audioWordFile": "es_febrero_word.mp3",
             "audioSentenceFile": "es_febrero_sentence.mp3",
-            "mediaFile": "es_febrero.png",
+            "mediaFile": "es_febrero.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1575,7 +1572,7 @@
             "sentenceNative": "March brings spring.",
             "audioWordFile": "es_marzo_word.mp3",
             "audioSentenceFile": "es_marzo_sentence.mp3",
-            "mediaFile": "es_marzo.png",
+            "mediaFile": "es_marzo.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1589,7 +1586,7 @@
             "sentenceNative": "April showers.",
             "audioWordFile": "es_abril_word.mp3",
             "audioSentenceFile": "es_abril_sentence.mp3",
-            "mediaFile": "es_abril.png",
+            "mediaFile": "es_abril.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1603,7 +1600,7 @@
             "sentenceNative": "May is the month of flowers.",
             "audioWordFile": "es_mayo_word.mp3",
             "audioSentenceFile": "es_mayo_sentence.mp3",
-            "mediaFile": "es_mayo.png",
+            "mediaFile": "es_mayo.jpg",
             "tags": [
                 "Months",
                 "Time",
@@ -1618,7 +1615,7 @@
             "sentenceNative": "June marks the start of summer.",
             "audioWordFile": "es_junio_word.mp3",
             "audioSentenceFile": "es_junio_sentence.mp3",
-            "mediaFile": "es_junio.png",
+            "mediaFile": "es_junio.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1632,7 +1629,7 @@
             "sentenceNative": "July is very hot.",
             "audioWordFile": "es_julio_word.mp3",
             "audioSentenceFile": "es_julio_sentence.mp3",
-            "mediaFile": "es_julio.png",
+            "mediaFile": "es_julio.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1646,7 +1643,7 @@
             "sentenceNative": "Holidays in August.",
             "audioWordFile": "es_agosto_word.mp3",
             "audioSentenceFile": "es_agosto_sentence.mp3",
-            "mediaFile": "es_agosto.png",
+            "mediaFile": "es_agosto.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1660,7 +1657,7 @@
             "sentenceNative": "Back to school in September.",
             "audioWordFile": "es_septiembre_word.mp3",
             "audioSentenceFile": "es_septiembre_sentence.mp3",
-            "mediaFile": "es_septiembre.png",
+            "mediaFile": "es_septiembre.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1674,7 +1671,7 @@
             "sentenceNative": "October has red leaves.",
             "audioWordFile": "es_octubre_word.mp3",
             "audioSentenceFile": "es_octubre_sentence.mp3",
-            "mediaFile": "es_octubre.png",
+            "mediaFile": "es_octubre.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1688,7 +1685,7 @@
             "sentenceNative": "November is rainy.",
             "audioWordFile": "es_noviembre_word.mp3",
             "audioSentenceFile": "es_noviembre_sentence.mp3",
-            "mediaFile": "es_noviembre.png",
+            "mediaFile": "es_noviembre.jpg",
             "tags": [
                 "Months",
                 "Time"
@@ -1702,7 +1699,7 @@
             "sentenceNative": "Christmas is in December.",
             "audioWordFile": "es_diciembre_word.mp3",
             "audioSentenceFile": "es_diciembre_sentence.mp3",
-            "mediaFile": "es_diciembre.png",
+            "mediaFile": "es_diciembre.jpg",
             "tags": [
                 "Months",
                 "Time"

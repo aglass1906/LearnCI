@@ -1,0 +1,66 @@
+{
+    "languages": {
+        "en": "English",
+        "es": "Spanish",
+        "ja": "Japanese",
+        "fr": "French",
+        "ko": "Korean",
+        "de": "German"
+    },
+    "levels": {
+        "1": {
+            "default": "Super Beginner",
+            "CEFR": "A1",
+            "JLPT": "N5"
+        },
+        "2": {
+            "default": "Beginner",
+            "CEFR": "A2",
+            "JLPT": "N4"
+        },
+        "3": {
+            "default": "Intermediate",
+            "CEFR": "B1",
+            "JLPT": "N3"
+        },
+        "4": {
+            "default": "Upper Intermediate",
+            "CEFR": "B2",
+            "JLPT": "N2"
+        },
+        "5": {
+            "default": "Advanced",
+            "CEFR": "C1",
+            "JLPT": "N1"
+        },
+        "6": {
+            "default": "Mastery",
+            "CEFR": "C2",
+            "JLPT": "-"
+        }
+    },
+    "scales": {
+        "Simple": {
+            "name": "Simple",
+            "appliesTo": [
+                "all"
+            ]
+        },
+        "CEFR": {
+            "name": "CEFR",
+            "appliesTo": [
+                "es",
+                "fr",
+                "de",
+                "ko",
+                "en"
+            ]
+        },
+        "JLPT": {
+            "name": "JLPT",
+            "appliesTo": [
+                "ja"
+            ]
+        }
+    }
+}

@@ -1,8 +1,8 @@
 {
     "id": "fr_sb_001",
-    "language": "French",
-    "level": "Super Beginner",
-    "title": "French Survival Basics",
+    "language": "fr",
+    "proficiencyLevel": 1,
+    "title": "French Starter Words",
     "supportedModes": [
         "flashcards",
         "memoryMatch"

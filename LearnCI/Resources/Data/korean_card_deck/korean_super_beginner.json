@@ -1,7 +1,7 @@
 {
     "id": "ko_sb_001",
-    "language": "Korean",
-    "level": "Super Beginner",
+    "language": "ko",
+    "proficiencyLevel": 1,
     "title": "Korean Starter Words",
     "supportedModes": [
         "flashcards",

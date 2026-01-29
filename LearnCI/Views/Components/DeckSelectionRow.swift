@@ -3,6 +3,7 @@ import SwiftUI
 struct DeckSelectionRow: View {
     let deck: DeckMetadata
     let selectedDeckId: String?
+    let preferredScale: ProficiencyScale
     let action: () -> Void
     
     @Environment(DataManager.self) private var dataManager
@@ -43,7 +44,8 @@ struct DeckSelectionRow: View {
                         Text("•")
                         Text(deck.language.rawValue)
                         Text("•")
-                        Text(deck.level.rawValue)
+                        let levelInt = deck.proficiencyLevel ?? (deck.level != nil ? LevelManager.shared.normalize(deck.level!) : 1)
+                        Text(LevelManager.shared.displayString(level: levelInt, language: deck.language.code, preferredScale: preferredScale))
                     }
                     .font(.caption2)
                     .foregroundColor(.secondary)

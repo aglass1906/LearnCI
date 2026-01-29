@@ -25,7 +25,7 @@ struct GameView: View {
     @State private var sessionDuration: Int = 15 // Minutes
     @State private var sessionCardGoal: Int = 20
     @State private var sessionLanguage: Language = .spanish
-    @State private var sessionLevel: LearningLevel = .superBeginner
+    @State private var sessionLevel: Int = 1 // 1-6
     
     // Tracking
     @Environment(\.scenePhase) private var scenePhase
@@ -76,24 +76,6 @@ struct GameView: View {
                     gameToolbar
                 }
                 .onAppear(perform: handleAppear)
-                .onChange(of: sessionLanguage) { _, newValue in
-                    // Only clear if the new language ACTUALLY differs from the currently selected deck.
-                    // This allows us to programmatically update sessionLanguage to match a restored deck without clearing it.
-                    if let deck = selectedDeck, deck.language == newValue {
-                        return
-                    }
-                    print("DEBUG: sessionLanguage changed to \(newValue). Clearing selectedDeck.")
-                    dataManager.discoverDecks(language: newValue, level: sessionLevel)
-                    selectedDeck = nil
-                }
-                .onChange(of: sessionLevel) { _, newValue in
-                    if let deck = selectedDeck, deck.level == newValue {
-                        return
-                    }
-                    print("DEBUG: sessionLevel changed to \(newValue). Clearing selectedDeck.")
-                    dataManager.discoverDecks(language: sessionLanguage, level: newValue)
-                    selectedDeck = nil
-                }
                 .onReceive(GameView.timer) { _ in
                     handleTimerTick()
                 }
@@ -104,70 +86,94 @@ struct GameView: View {
                 .onChange(of: dataManager.loadedDeck) { _, newDeck in
                     handleDeckLoaded(newDeck)
                 }
-                .onChange(of: selectedDeck) { _, newDeck in
-                    if let deck = newDeck {
-                        print("DEBUG: selectedDeck CHANGED to: \(deck.title). Saving to profile.")
-                        if let profile = userProfile {
-                            profile.lastSelectedDeckId = deck.id
-                            try? modelContext.save() // Explicitly save change
-                        }
-                    } else {
-                        print("DEBUG: selectedDeck CHANGED to NIL")
-                    }
-                }
-                .onChange(of: dataManager.availableDecks) { _, decks in
-                    print("DEBUG: availableDecks changed. Count: \(decks.count)")
-                    if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
-                        print("DEBUG: Trying restore from availableDecks for \(lastId)")
-                        if let match = decks.first(where: { $0.id == lastId }) {
-                            print("DEBUG: RESTORED deck from availableDecks: \(match.title)")
-                            selectedDeck = match
-                            // Update session state to match the restored deck
-                            if sessionLanguage != match.language { sessionLanguage = match.language }
-                            if sessionLevel != match.level { sessionLevel = match.level }
-                        }
-                    }
-                }
-                // Fix: Watch for profile availability (e.g. after auth restore) to trigger restore
-                .onChange(of: authManager.currentUser) { _, _ in
-                    print("DEBUG: authManager.currentUser changed. Profile available? \(userProfile != nil)")
-                    // If profile just became available and we have decks, try to restore
-                    if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
-                         print("DEBUG: Trying restore from auth change...")
-                         if let match = dataManager.availableDecks.first(where: { $0.id == lastId }) {
-                            selectedDeck = match
-                            if sessionLanguage != match.language { sessionLanguage = match.language }
-                            if sessionLevel != match.level { sessionLevel = match.level }
-                        }
-                    }
-                }
-                .onChange(of: ttsRate) { _, newRate in
-                    if let profile = userProfile {
-                         profile.ttsRate = newRate
-                         // Debounce save? For now explicit save is okay as slider settles
-                         try? modelContext.save()
-                    }
-                }
-                .onChange(of: customConfig) { _, newConfig in
-                    if selectedPreset == .customize, let profile = userProfile {
-                         print("DEBUG: Saving custom config to profile")
-                         profile.customGameConfiguration = newConfig
-                         // Optimization: Don't call try? modelContext.save() on every change if autosave is enabled,
-                         // but explicitly saving ensures persistence on crash/exit.
-                    }
-                }
-                .onChange(of: selectedGameType) { _, newType in
-                    if let profile = userProfile {
-                        print("DEBUG: Saving selectedGameType \(newType.rawValue) to profile")
-                        profile.currentGameType = newType
-                         try? modelContext.save()
-                    }
-                }
+                .background(persistenceLogic)
         }
         .toolbar(gameState == .active ? .hidden : .visible, for: .tabBar)
         .toolbar(gameState == .active ? .hidden : .visible, for: .navigationBar)
     }
 
+    var persistenceLogic: some View {
+        deckLogic
+            .background(appLogic)
+    }
+
+    var deckLogic: some View {
+        EmptyView()
+            .onChange(of: sessionLanguage) { _, newValue in
+                if let deck = selectedDeck, deck.language == newValue { return }
+                print("DEBUG: sessionLanguage changed to \(newValue). Clearing selectedDeck.")
+                dataManager.discoverDecks(language: newValue, proficiency: sessionLevel)
+                selectedDeck = nil
+            }
+            .onChange(of: sessionLevel) { _, newValue in
+                if let deck = selectedDeck {
+                   let deckProf = deck.proficiencyLevel ?? LevelManager.shared.normalize(deck.level)
+                   if deckProf == newValue { return }
+                }
+                print("DEBUG: sessionLevel changed to \(newValue). Clearing selectedDeck.")
+                dataManager.discoverDecks(language: sessionLanguage, proficiency: newValue)
+                selectedDeck = nil
+            }
+            .onChange(of: selectedDeck) { _, newDeck in
+                if let deck = newDeck {
+                    print("DEBUG: selectedDeck CHANGED to: \(deck.title). Saving to profile.")
+                    if let profile = userProfile {
+                        profile.lastSelectedDeckId = deck.id
+                        try? modelContext.save()
+                    }
+                } else {
+                    print("DEBUG: selectedDeck CHANGED to NIL")
+                }
+            }
+            .onChange(of: dataManager.availableDecks) { _, decks in
+                print("DEBUG: availableDecks changed. Count: \(decks.count)")
+                if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
+                    print("DEBUG: Trying restore from availableDecks for \(lastId)")
+                    if let match = decks.first(where: { $0.id == lastId }) {
+                        print("DEBUG: RESTORED deck from availableDecks: \(match.title)")
+                        selectedDeck = match
+                        if sessionLanguage != match.language { sessionLanguage = match.language }
+                        let prof = match.proficiencyLevel ?? (match.level != nil ? LevelManager.shared.normalize(match.level!) : 1)
+                        if sessionLevel != prof { sessionLevel = prof }
+                    }
+                }
+            }
+    }
+
+    var appLogic: some View {
+        EmptyView()
+            .onChange(of: authManager.currentUser) { _, _ in
+                print("DEBUG: authManager.currentUser changed. Profile available? \(userProfile != nil)")
+                if selectedDeck == nil, let profile = userProfile, let lastId = profile.lastSelectedDeckId {
+                     print("DEBUG: Trying restore from auth change...")
+                     if let match = dataManager.availableDecks.first(where: { $0.id == lastId }) {
+                        selectedDeck = match
+                        if sessionLanguage != match.language { sessionLanguage = match.language }
+                        let prof = match.proficiencyLevel ?? (match.level != nil ? LevelManager.shared.normalize(match.level!) : 1)
+                        if sessionLevel != prof { sessionLevel = prof }
+                    }
+                }
+            }
+            .onChange(of: ttsRate) { _, newRate in
+                if let profile = userProfile {
+                     profile.ttsRate = newRate
+                     try? modelContext.save()
+                }
+            }
+            .onChange(of: customConfig) { _, newConfig in
+                if selectedPreset == .customize, let profile = userProfile {
+                     print("DEBUG: Saving custom config to profile")
+                     profile.customGameConfiguration = newConfig
+                }
+            }
+            .onChange(of: selectedGameType) { _, newType in
+                if let profile = userProfile {
+                    print("DEBUG: Saving selectedGameType \(newType.rawValue) to profile")
+                    profile.currentGameType = newType
+                     try? modelContext.save()
+                }
+            }
+    }
     @ViewBuilder
     var mainContent: some View {
         switch gameState {
@@ -211,7 +217,7 @@ struct GameView: View {
     func handleAppear() {
         if gameState == .configuration {
             setupConfiguration()
-            dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
+            dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
     }
     
@@ -271,6 +277,7 @@ struct GameView: View {
         GameConfigurationView(
             sessionLanguage: $sessionLanguage,
             sessionLevel: $sessionLevel,
+            preferredScale: userProfile?.preferredScale ?? .simple,
             selectedDeck: $selectedDeck,
             sessionDuration: $sessionDuration,
             sessionCardGoal: $sessionCardGoal,
@@ -342,7 +349,7 @@ struct GameView: View {
                                 .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
                          )
                      
-                     Text(sessionLevel.rawValue)
+                     Text(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: userProfile?.preferredScale ?? .simple))
                         .font(.caption)
                         .padding(6)
                         .background(Color.gray.opacity(0.2))
@@ -362,8 +369,8 @@ struct GameView: View {
         
         print("DEBUG: Accessing currentLanguage")
         sessionLanguage = profile.currentLanguage
-        print("DEBUG: Accessing currentLevel")
-        sessionLevel = profile.currentLevel
+        print("DEBUG: Accessing proficiencyLevel")
+        sessionLevel = profile.proficiencyLevel
         print("DEBUG: Accessing dailyCardGoal")
         sessionCardGoal = profile.dailyCardGoal ?? 20
         print("DEBUG: Accessing defaultGamePreset")
@@ -406,10 +413,10 @@ struct GameView: View {
                     DispatchQueue.main.async {
                         // Found it! Force state to match this deck
                         self.sessionLanguage = match.language
-                        self.sessionLevel = match.level
+                        self.sessionLevel = match.proficiencyLevel ?? LevelManager.shared.normalize(match.level)
                         
                         // Populate the list for this context
-                        self.dataManager.discoverDecks(language: match.language, level: match.level)
+                        self.dataManager.discoverDecks(language: match.language, proficiency: self.sessionLevel)
                         
                         // Set the deck
                         self.selectedDeck = match
@@ -419,13 +426,13 @@ struct GameView: View {
                      print("DEBUG: Could not find last deck with ID: \(lastId)")
                      // Fallback: Discover based on profile defaults
                      DispatchQueue.main.async {
-                         self.dataManager.discoverDecks(language: self.sessionLanguage, level: self.sessionLevel)
+                         self.dataManager.discoverDecks(language: self.sessionLanguage, proficiency: self.sessionLevel)
                      }
                 }
             }
         } else {
              // No last deck, just discover defaults
-             dataManager.discoverDecks(language: sessionLanguage, level: sessionLevel)
+             dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
     }
     
@@ -737,7 +744,7 @@ struct StatRow: View {
 struct SessionSummaryView: View {
     let deckTitle: String
     let language: Language
-    let level: LearningLevel
+    let level: Int
     let preset: GameConfiguration.Preset
     let gameType: GameConfiguration.GameType
     let duration: Int
@@ -764,7 +771,9 @@ struct SessionSummaryView: View {
                     Text("•")
                         .foregroundColor(.secondary)
                     
-                    Text(level.rawValue)
+                    // We need preferred scale here, but simple fallback is fine for summary logic for now
+                    // Or we can grab it from UserProfile if available, or just display generic normalized string
+                    Text(LevelManager.shared.displayString(level: level, language: language.code, preferredScale: .simple)) 
                         .foregroundColor(.secondary)
                     
                     Spacer()

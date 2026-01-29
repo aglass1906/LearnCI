@@ -7,7 +7,8 @@ struct DeckMetadata: Identifiable, Equatable {
     let id: String
     let title: String
     let language: Language
-    let level: LearningLevel
+    let level: LearningLevel?
+    let proficiencyLevel: Int?
     let folderName: String
     let filename: String
     let supportedModes: Set<GameConfiguration.GameType>
@@ -66,8 +67,8 @@ class DataManager {
     
     // Discover decks and return them
     @discardableResult
-    func discoverDecks(language: Language, level: LearningLevel?) -> [DeckMetadata] {
-        let discovered = internalDiscover(language: language, level: level)
+    func discoverDecks(language: Language, level: LearningLevel? = nil, proficiency: Int? = nil) -> [DeckMetadata] {
+        let discovered = internalDiscover(language: language, level: level, proficiency: proficiency)
         
         // Deduplicate
         let uniqueDecks = discovered.reduce(into: [DeckMetadata]()) { result, deck in
@@ -268,7 +269,7 @@ class DataManager {
     }
     
     // Internal helper to reuse logic
-    private func internalDiscover(language: Language?, level: LearningLevel?) -> [DeckMetadata] {
+    private func internalDiscover(language: Language?, level: LearningLevel?, proficiency: Int? = nil) -> [DeckMetadata] {
         var discoveredDecks: [DeckMetadata] = []
         let fm = FileManager.default
         
@@ -283,7 +284,33 @@ class DataManager {
                     
                     if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
                         let langMatch = language == nil || metadata.language == language!
-                        let levelMatch = level == nil || metadata.level == level!
+                        
+                        // Level Match Logic: Check Proficiency (Int) OR LearningLevel (Enum)
+                        // Fallback: If level matches legacy filter OR if proficiency matches new filter
+                        
+                        // Normalize: Use level if present, else try to derive from proficiency (reverse mapping?) 
+                        // Actually, mapping Int -> Enum is lossy. 
+                        // Better: Normalize Enum -> Int. If Enum is missing, we rely on proficiencyLevel directly.
+                        
+                        let deckProficiency = metadata.proficiencyLevel ?? LevelManager.shared.normalize(metadata.level)
+                        
+                        let levelMatch: Bool
+                        if let targetProf = proficiency {
+                            // If deck has 0 proficiency (unmappable), it fails unless target is 0? 
+                            // 0 means invalid/unknown.
+                             levelMatch = (deckProficiency == targetProf)
+                        } else if let targetLevel = level {
+                            // Legacy filter: deck must have matching level enum
+                            if let deckLevel = metadata.level {
+                                levelMatch = deckLevel == targetLevel
+                            } else {
+                                // Fallback: Check if deck proficiency matches the normalized target level?
+                                let targetProf = LevelManager.shared.normalize(targetLevel)
+                                levelMatch = deckProficiency == targetProf
+                            }
+                        } else {
+                            levelMatch = true // No filter
+                        }
                         
                         if langMatch && levelMatch {
                             discoveredDecks.append(metadata)
@@ -301,7 +328,21 @@ class DataManager {
                     let folderName = fileURL.deletingLastPathComponent().lastPathComponent
                     if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
                         let langMatch = language == nil || metadata.language == language!
-                        let levelMatch = level == nil || metadata.level == level!
+                        let deckProficiency = metadata.proficiencyLevel ?? LevelManager.shared.normalize(metadata.level)
+                        
+                        let levelMatch: Bool
+                        if let targetProf = proficiency {
+                             levelMatch = (deckProficiency == targetProf)
+                        } else if let targetLevel = level {
+                            if let deckLevel = metadata.level {
+                                levelMatch = deckLevel == targetLevel
+                            } else {
+                                let targetProf = LevelManager.shared.normalize(targetLevel)
+                                levelMatch = deckProficiency == targetProf
+                            }
+                        } else {
+                            levelMatch = true // No filter
+                        }
                         
                         if langMatch && levelMatch {
                             // Ensure we don't add duplicates if already found in local path
@@ -334,6 +375,7 @@ class DataManager {
                 title: deck.title,
                 language: deck.language,
                 level: deck.level,
+                proficiencyLevel: deck.proficiencyLevel,
                 folderName: folderName,
                 filename: url.lastPathComponent,
                 supportedModes: deck.supportedModes ?? [.flashcards], // Default to flashcards

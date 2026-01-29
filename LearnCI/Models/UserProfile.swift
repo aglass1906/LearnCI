@@ -7,7 +7,10 @@ final class UserProfile {
     var userID: String? // Supabase Auth ID
     var name: String
     var currentLanguageRaw: String
-    var currentLevelRaw: String
+    var currentLevelRaw: String // Legacy, kept for safety
+    var proficiencyLevel: Int = 1 // 1-6
+    var preferredScaleRaw: String = "Simple"
+    
     var dailyGoalMinutes: Int
     var dailyCardGoal: Int?
     var isPublic: Bool = false
@@ -29,7 +32,17 @@ final class UserProfile {
     // var savedCustomConfig: GameConfiguration? { ... }
     
     var currentLanguage: Language {
-        get { Language(rawValue: currentLanguageRaw) ?? .spanish }
+        get { 
+            if let lang = Language(rawValue: currentLanguageRaw) { return lang }
+            // Legacy Fallback
+            switch currentLanguageRaw {
+            case "Spanish": return .spanish
+            case "Japanese": return .japanese
+            case "Korean": return .korean
+            case "French": return .french
+            default: return .spanish
+            }
+        }
         set { languageRawUpdate(newValue) }
     }
     
@@ -41,6 +54,11 @@ final class UserProfile {
     var defaultGamePreset: GameConfiguration.Preset {
         get { GameConfiguration.Preset(rawValue: defaultGamePresetRaw) ?? .inputFocus }
         set { defaultGamePresetRaw = newValue.rawValue }
+    }
+    
+    var preferredScale: ProficiencyScale {
+        get { ProficiencyScale(rawValue: preferredScaleRaw) ?? .simple }
+        set { preferredScaleRaw = newValue.rawValue }
     }
     
     var currentGameType: GameConfiguration.GameType {
@@ -60,6 +78,10 @@ final class UserProfile {
         self.name = name
         self.currentLanguageRaw = currentLanguage.rawValue
         self.currentLevelRaw = currentLevel.rawValue
+        
+        // Auto-migrate legacy level to int
+        self.proficiencyLevel = LevelManager.shared.normalize(currentLevel)
+        
         self.dailyGoalMinutes = dailyGoalMinutes
         self.dailyCardGoal = dailyCardGoal
         self.isPublic = false

@@ -1,7 +1,7 @@
 {
     "id": "ko_beg_001",
-    "language": "Korean",
-    "level": "Beginner",
+    "language": "ko",
+    "proficiencyLevel": 2,
     "title": "Korean Beginner Essentials",
     "supportedModes": [
         "flashcards",

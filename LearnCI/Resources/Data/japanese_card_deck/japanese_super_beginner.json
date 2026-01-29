@@ -1,7 +1,7 @@
 {
     "id": "ja_sb_001",
-    "language": "Japanese",
-    "level": "Super Beginner",
+    "language": "ja",
+    "proficiencyLevel": 1,
     "title": "Japanese Starter Words",
     "supportedModes": [
         "flashcards",

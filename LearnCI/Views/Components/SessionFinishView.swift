@@ -9,7 +9,7 @@ struct SessionFinishView: View {
     // Config Stats
     let deckTitle: String
     let language: Language
-    let level: LearningLevel
+    let level: Int
     let preset: GameConfiguration.Preset
     let gameType: GameConfiguration.GameType
     let duration: Int

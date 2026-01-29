@@ -155,6 +155,7 @@ struct TagSelectionSheet: View {
             title: virtualDeck.title,
             language: virtualDeck.language,
             level: virtualDeck.level,
+            proficiencyLevel: virtualDeck.proficiencyLevel,
             folderName: "Virtual",
             filename: "",
             supportedModes: virtualDeck.supportedModes ?? [],

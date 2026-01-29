@@ -1,10 +1,7 @@
 {
     "id": "es_int_001",
-    "language": "Spanish",
-    "level": "Intermediate",
-    "languageName": "Spanish",
-    "languageCode": "es",
-    "cefr": "A2",
+    "language": "es",
+    "proficiencyLevel": 3,
     "title": "Spanish Intermediate Immersion",
     "supportedModes": [
         "flashcards",

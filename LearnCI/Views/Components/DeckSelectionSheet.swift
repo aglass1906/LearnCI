@@ -4,7 +4,8 @@ struct DeckSelectionSheet: View {
     let availableDecks: [DeckMetadata]
     @Binding var selectedDeck: DeckMetadata?
     @Binding var language: Language
-    @Binding var level: LearningLevel
+    @Binding var level: Int
+    var preferredScale: ProficiencyScale
     @Binding var selectedGameType: GameConfiguration.GameType
     
     @Environment(\.dismiss) private var dismiss
@@ -50,17 +51,17 @@ struct DeckSelectionSheet: View {
                         
                         // Level Selector
                         Menu {
-                            ForEach(LearningLevel.allCases) { lvl in
+                            ForEach(1...6, id: \.self) { lvl in
                                 Button(action: { level = lvl }) {
                                     HStack {
-                                        Text(lvl.rawValue)
+                                        Text(LevelManager.shared.displayString(level: lvl, language: language.code, preferredScale: preferredScale))
                                         if level == lvl { Image(systemName: "checkmark") }
                                     }
                                 }
                             }
                         } label: {
                             HStack {
-                                Text(level.rawValue)
+                                Text(LevelManager.shared.displayString(level: level, language: language.code, preferredScale: preferredScale))
                                     .fontWeight(.medium)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
@@ -90,7 +91,7 @@ struct DeckSelectionSheet: View {
                             Text("No decks found.")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("No decks match \(language.rawValue) \(level.rawValue) for \(selectedGameType.rawValue).")
+                            Text("No decks match \(language.rawValue) - \(LevelManager.shared.displayString(level: level, language: language.code, preferredScale: preferredScale)) for \(selectedGameType.rawValue).")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -100,7 +101,7 @@ struct DeckSelectionSheet: View {
                         .listRowBackground(Color.clear)
                     } else {
                         ForEach(filteredDecks) { deck in
-                            DeckSelectionRow(deck: deck, selectedDeckId: selectedDeck?.id) {
+                            DeckSelectionRow(deck: deck, selectedDeckId: selectedDeck?.id, preferredScale: preferredScale) {
                                 selectedDeck = deck
                                 dismiss()
                             }

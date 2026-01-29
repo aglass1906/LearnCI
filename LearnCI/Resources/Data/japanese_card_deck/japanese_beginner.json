@@ -1,7 +1,7 @@
 {
     "id": "ja_beg_001",
-    "language": "Japanese",
-    "level": "Beginner",
+    "language": "ja",
+    "proficiencyLevel": 2,
     "title": "Japanese Beginner Essentials",
     "supportedModes": [
         "flashcards",

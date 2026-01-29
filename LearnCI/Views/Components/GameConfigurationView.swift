@@ -2,7 +2,9 @@ import SwiftUI
 
 struct GameConfigurationView: View {
     @Binding var sessionLanguage: Language
-    @Binding var sessionLevel: LearningLevel
+
+    @Binding var sessionLevel: Int // 1-6
+    var preferredScale: ProficiencyScale
     @Binding var selectedDeck: DeckMetadata?
     @Binding var sessionDuration: Int
     @Binding var sessionCardGoal: Int
@@ -71,7 +73,7 @@ struct GameConfigurationView: View {
                             icon: "menucard.fill",
                             iconColor: .blue,
                             text: selectedDeck?.folderName == "Virtual" ? "Deck: Custom" : (selectedDeck?.title ?? "Select a Deck..."),
-                            subText: selectedDeck == nil ? "Compatible with \(selectedGameType.rawValue)" : "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(sessionLevel.rawValue)",
+                            subText: selectedDeck == nil ? "Compatible with \(selectedGameType.rawValue)" : "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: preferredScale))",
                             customImage: deckImage
                         )
                     }
@@ -169,6 +171,7 @@ struct GameConfigurationView: View {
                 selectedDeck: $selectedDeck,
                 language: $sessionLanguage,
                 level: $sessionLevel,
+                preferredScale: preferredScale,
                 selectedGameType: $selectedGameType
             )
         }

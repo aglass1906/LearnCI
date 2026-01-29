@@ -1,8 +1,8 @@
 {
     "id": "es_conj_001",
-    "language": "Spanish",
-    "level": "Beginner",
-    "title": "Spanish A1/A2 Conjugations",
+    "language": "es",
+    "proficiencyLevel": 2,
+    "title": "Spanish Conjugations",
     "supportedModes": [
         "flashcards"
     ],

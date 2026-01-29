@@ -1,8 +1,8 @@
 {
     "id": "es_sb_001",
-    "language": "Spanish",
-    "level": "Super Beginner",
-    "title": "Spanish Survival Basics",
+    "language": "es",
+    "proficiencyLevel": 1,
+    "title": "Spanish Starter Words",
     "supportedModes": [
         "flashcards",
         "memoryMatch"

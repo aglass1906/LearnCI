@@ -1,10 +1,7 @@
 {
     "id": "es_refold_es1k",
-    "language": "Spanish",
-    "languageName": "Spanish",
-    "languageCode": "es",
-    "level": "Beginner",
-    "cefr": "A1",
+    "language": "es",
+    "proficiencyLevel": 1,
     "title": "Refold Spanish 1K",
     "supportedModes": [
         "flashcards",

@@ -6,7 +6,8 @@ struct ProfileLanguageSettingsView: View {
     let profile: UserProfile
     
     @State private var selectedLanguage: Language = .spanish
-    @State private var selectedLevel: LearningLevel = .superBeginner
+    @State private var proficiencyLevel: Int = 1
+    @State private var selectedScale: ProficiencyScale = .simple
     @State private var dailyGoal: Double = 30
     @State private var startingHours: Int = 0
     @State private var isEditing: Bool = false
@@ -17,13 +18,20 @@ struct ProfileLanguageSettingsView: View {
                 if isEditing {
                     Picker("Target Language", selection: $selectedLanguage) {
                         ForEach(Language.allCases) { lang in
-                            Text("\(lang.flag) \(lang.rawValue)").tag(lang)
+                        Text("\(lang.flag) \(lang.rawValue)").tag(lang)
                         }
                     }
                     
-                    Picker("Current Level", selection: $selectedLevel) {
-                        ForEach(LearningLevel.allCases) { level in
-                            Text("\(level.rawValue) (\(level.cerCode))").tag(level)
+                    Picker("Proficiency Scale", selection: $selectedScale) {
+                        ForEach(ProficiencyScale.allCases) { scale in
+                            Text(scale.rawValue).tag(scale)
+                        }
+                    }
+                    
+                    Picker("Current Level", selection: $proficiencyLevel) {
+                        ForEach(1...6, id: \.self) { level in
+                            let label = LevelManager.shared.displayString(level: level, language: selectedLanguage.code, preferredScale: selectedScale)
+                            Text(label).tag(level)
                         }
                     }
                     
@@ -44,7 +52,9 @@ struct ProfileLanguageSettingsView: View {
                     }
                 } else {
                     LabeledContent("Target Language", value: "\(selectedLanguage.flag) \(selectedLanguage.rawValue)")
-                    LabeledContent("Current Level", value: "\(selectedLevel.rawValue) (\(selectedLevel.cerCode))")
+                    LabeledContent("Level System", value: selectedScale.rawValue)
+                    let levelLabel = LevelManager.shared.displayString(level: proficiencyLevel, language: selectedLanguage.code, preferredScale: selectedScale)
+                    LabeledContent("Current Level", value: levelLabel)
                     LabeledContent("Daily Goal", value: "\(Int(dailyGoal)) minutes")
                     LabeledContent("Starting Hours", value: "\(startingHours) hours")
                 }
@@ -89,14 +99,16 @@ struct ProfileLanguageSettingsView: View {
     
     private func loadData() {
         selectedLanguage = profile.currentLanguage
-        selectedLevel = profile.currentLevel
+        proficiencyLevel = profile.proficiencyLevel
+        selectedScale = profile.preferredScale
         dailyGoal = Double(profile.dailyGoalMinutes)
         startingHours = profile.startingHours
     }
     
     private func saveData() {
         profile.currentLanguage = selectedLanguage
-        profile.currentLevel = selectedLevel
+        profile.proficiencyLevel = proficiencyLevel
+        profile.preferredScale = selectedScale
         profile.dailyGoalMinutes = Int(dailyGoal)
         profile.startingHours = startingHours
         profile.updatedAt = Date()

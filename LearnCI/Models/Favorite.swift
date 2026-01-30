@@ -34,6 +34,7 @@ final class Favorite {
     var imageUrl: String?
     var sourceResourceId: String?
     var createdAt: Date
+    var isSynced: Bool = false
     
     var type: FavoriteType {
         get { FavoriteType(rawValue: typeRaw) ?? .other }
@@ -51,5 +52,6 @@ final class Favorite {
         self.imageUrl = imageUrl
         self.sourceResourceId = sourceResourceId
         self.createdAt = Date()
+        self.isSynced = false
     }
 }

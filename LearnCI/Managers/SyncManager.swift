@@ -62,6 +62,9 @@ struct CoachingCheckInDTO: Codable {
             // 1. Sync Profile (Upsert)
             try await syncProfile(context: modelContext, userID: userID)
             
+            // NEW: Push Favorites
+            try await syncFavorites(context: modelContext, userID: userID)
+            
             // 2. Sync Activities (Push new)
             try await syncActivities(context: modelContext, userID: userID)
             
@@ -76,6 +79,9 @@ struct CoachingCheckInDTO: Codable {
             
             // 4. Sync Coaching Check-ins (Push new)
             try await syncCheckIns(context: modelContext, userID: userID)
+            
+            // NEW: Pull Favorites (Server Wins & Deletions)
+            try await pullFavorites(context: modelContext, userID: userID)
             
             // 5. Final Pull (Update Profile Totals after Push triggers)
             try await pullProfile(context: modelContext, userID: userID)
@@ -353,6 +359,102 @@ struct CoachingCheckInDTO: Codable {
     }
     
     @MainActor
+    private func syncFavorites(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<Favorite>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSynced = try context.fetch(descriptor)
+        guard !unSynced.isEmpty else { return }
+        print("Pushing \(unSynced.count) new favorites to Supabase")
+        
+        let dtos = unSynced.compactMap { fav -> FavoriteDTO? in
+             guard let uid = UUID(uuidString: userID) else { return nil }
+             return FavoriteDTO(
+                id: fav.id,
+                user_id: uid,
+                consumption_url: fav.consumptionUrl,
+                type: fav.typeRaw,
+                title: fav.title,
+                author: fav.author,
+                image_url: fav.imageUrl,
+                source_resource_id: fav.sourceResourceId,
+                created_at: fav.createdAt
+             )
+        }
+        
+        guard !dtos.isEmpty else { return }
+        
+        try await authManager.supabase.from("favorites")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+            
+        for fav in unSynced {
+            fav.isSynced = true
+        }
+        try context.save()
+    }
+    
+    @MainActor
+    private func pullFavorites(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+        
+        // 1. Fetch ALL Server Favorites
+        let response = try await authManager.supabase.from("favorites")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+            
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let serverFavorites = try decoder.decode([FavoriteDTO].self, from: response.data)
+        
+        let serverIDs = Set(serverFavorites.map { $0.id })
+        
+        // 2. Fetch ALL Local Favorites
+        let descriptor = FetchDescriptor<Favorite>(predicate: #Predicate { $0.userID == userID })
+        let localFavorites = try context.fetch(descriptor)
+        
+        // 3. Handle Deletions (Local item is synced, but missing from Server)
+        for local in localFavorites {
+            if local.isSynced && !serverIDs.contains(local.id) {
+                print("Sync: Deleting local favorite '\(local.title)' (removed on server)")
+                context.delete(local)
+            }
+        }
+        
+        // 4. Handle Updates / Insertions (Server -> Local)
+        for dto in serverFavorites {
+            if let existing = localFavorites.first(where: { $0.id == dto.id }) {
+                // Update
+                existing.consumptionUrl = dto.consumption_url
+                existing.typeRaw = dto.type
+                existing.title = dto.title
+                existing.author = dto.author
+                existing.imageUrl = dto.image_url
+                existing.sourceResourceId = dto.source_resource_id
+                existing.isSynced = true // Confirm synced
+            } else {
+                // Insert
+                let newFav = Favorite(
+                    userID: userID,
+                    consumptionUrl: dto.consumption_url,
+                    type: FavoriteType(rawValue: dto.type) ?? .other,
+                    title: dto.title,
+                    author: dto.author,
+                    imageUrl: dto.image_url,
+                    sourceResourceId: dto.source_resource_id
+                )
+                newFav.id = dto.id
+                newFav.createdAt = dto.created_at
+                newFav.isSynced = true
+                context.insert(newFav)
+            }
+        }
+        
+        try context.save()
+    }
+
+    @MainActor
     private func syncActivities(context: ModelContext, userID: String) async throws {
         // Fetch un-synced activities for this user
         let descriptor = FetchDescriptor<UserActivity>(
@@ -578,4 +680,16 @@ struct ActivityDTO: Codable {
     let activity_type: String
     let language: String
     let comment: String?
+}
+
+struct FavoriteDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let consumption_url: String
+    let type: String
+    let title: String
+    let author: String?
+    let image_url: String?
+    let source_resource_id: String?
+    let created_at: Date
 }

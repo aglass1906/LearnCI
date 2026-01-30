@@ -5,6 +5,7 @@ struct FavoritesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(YouTubeManager.self) private var youtubeManager
+    @Environment(SyncManager.self) private var syncManager
     @Environment(DataManager.self) private var dataManager // For finding resources if needed, though we store URL.
     
     // We need user profile for language/level if we want to filter, but favorites are user-specific anyway.
@@ -105,6 +106,19 @@ struct FavoritesView: View {
                 }
             }
             .navigationTitle("My Favorites")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task {
+                            await syncManager.syncNow(modelContext: modelContext)
+                        }
+                    } label: {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .symbolEffect(.bounce, value: syncManager.isSyncing)
+                    }
+                    .disabled(syncManager.isSyncing)
+                }
+            }
             .navigationDestination(item: $selectedChannel) { channel in
                 ChannelDetailView(
                     channel: channel,

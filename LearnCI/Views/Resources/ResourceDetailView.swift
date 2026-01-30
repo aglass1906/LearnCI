@@ -1,6 +1,10 @@
 import SwiftUI
 import SwiftData
 
+extension URL: Identifiable {
+    public var id: String { absoluteString }
+}
+
 struct ResourceDetailView: View {
     let resource: LearningResource
     
@@ -12,7 +16,7 @@ struct ResourceDetailView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(DataManager.self) private var dataManager
     
-    @State private var showBrowser = false
+    // @State private var showBrowser = false // Removed in favor of item-based sheet
     @State private var startTime: Date?
     @State private var readingDuration: TimeInterval = 0
     @State private var showTimeLogSheet = false
@@ -24,7 +28,7 @@ struct ResourceDetailView: View {
     func openUrl(_ url: URL) {
         browserUrl = url
         startTime = Date()
-        showBrowser = true
+        // showBrowser = true // No longer needed with sheet(item:)
     }
     
     func getLinkIcon(_ type: String) -> String {
@@ -38,7 +42,7 @@ struct ResourceDetailView: View {
     }
     
     func handleBrowserDismiss() {
-        showBrowser = false
+        browserUrl = nil
         if let start = startTime {
             let end = Date()
             readingDuration = end.timeIntervalSince(start)
@@ -75,6 +79,31 @@ struct ResourceDetailView: View {
         case .youtube: return .watchingVideos
         case .podcast: return .podcasts
         }
+    }
+    
+    // Helper to determine the correct favorite type and ID (Channel ID vs URL)
+    func resolveFavoriteTypeAndId(_ resource: LearningResource) -> (FavoriteType, String) {
+        // Default to website/url
+        var type: FavoriteType = .website
+        var id: String = resource.mainUrl
+        
+        switch resource.type {
+        case .youtube:
+            // Use Central Helper
+            if let resolvedId = FavoritesManager.resolveChannelId(from: resource.mainUrl) {
+                type = .channel
+                id = resolvedId
+            } else {
+                 type = .website
+            }
+            
+        case .podcast:
+            type = .podcast
+        default:
+            type = .website
+        }
+        
+        return (type, id)
     }
 }
 
@@ -181,20 +210,38 @@ extension ResourceDetailView {
                     VStack(spacing: 12) {
                         // Main URL Button
                         if let url = URL(string: resource.mainUrl), !resource.mainUrl.isEmpty {
-                            Button(action: {
-                                openUrl(url)
-                            }) {
-                                HStack {
-                                    Image(systemName: "safari")
-                                    Text("Open Resource")
-                                    Spacer()
-                                    Image(systemName: "arrow.up.right")
-                                        .font(.caption)
+                            HStack {
+                                Button(action: {
+                                    openUrl(url)
+                                }) {
+                                    HStack {
+                                        Image(systemName: "safari")
+                                        Text("Open Resource")
+                                        Spacer()
+                                        Image(systemName: "arrow.up.right")
+                                            .font(.caption)
+                                    }
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(16)
                                 }
-                                .font(.headline)
-                                .foregroundStyle(.white)
+                                
+                                // Favorite Main Resource Link
+                                let (favType, favId) = resolveFavoriteTypeAndId(resource)
+                                
+                                FavoriteButton(
+                                    consumptionUrl: favId,
+                                    type: favType,
+                                    title: resource.title,
+                                    author: resource.author,
+                                    imageUrl: resource.coverImageUrl,
+                                    sourceResourceId: resource.id.uuidString
+                                )
+                                .font(.title2)
                                 .padding()
-                                .background(Color.blue)
+                                .background(Color(UIColor.secondarySystemBackground))
                                 .cornerRadius(16)
                             }
                         }
@@ -203,21 +250,35 @@ extension ResourceDetailView {
                         if let links = resource.resourceLinks {
                             ForEach(links.filter { $0.isActive ?? true }.sorted { ($0.order ?? 0) < ($1.order ?? 0) }) { link in
                                 if let url = URL(string: link.url) {
-                                    Button(action: {
-                                        openUrl(url)
-                                    }) {
-                                        HStack {
-                                            Image(systemName: getLinkIcon(link.type))
-                                            Text(link.label.isEmpty ? "Open Link" : link.label)
-                                            Spacer()
-                                            Image(systemName: "arrow.up.right")
-                                                .font(.caption)
+                                    HStack {
+                                        Button(action: {
+                                            openUrl(url)
+                                        }) {
+                                            HStack {
+                                                Image(systemName: getLinkIcon(link.type))
+                                                Text(link.label.isEmpty ? "Open Link" : link.label)
+                                                Spacer()
+                                                Image(systemName: "arrow.up.right")
+                                                    .font(.caption)
+                                            }
+                                            .font(.subheadline)
+                                            .foregroundStyle(Color.primary)
+                                            .padding()
+                                            .background(Color(UIColor.secondarySystemBackground))
+                                            .cornerRadius(16)
                                         }
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.primary)
+                                        
+                                        // Favorite Link
+                                        FavoriteButton(
+                                            consumptionUrl: link.url,
+                                            type: .other, // TODO: Map link type to FavoriteType more granularly if needed
+                                            title: link.label.isEmpty ? resource.title : link.label,
+                                            author: resource.author,
+                                            subtitle: resource.title,
+                                            imageUrl: resource.coverImageUrl,
+                                            sourceResourceId: resource.id.uuidString
+                                        )
                                         .padding()
-                                        .background(Color(UIColor.secondarySystemBackground))
-                                        .cornerRadius(16)
                                     }
                                 }
                             }
@@ -229,14 +290,12 @@ extension ResourceDetailView {
         }
         .ignoresSafeArea(edges: .top)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .sheet(isPresented: $showBrowser) {
-            if let url = browserUrl {
-                InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
-                    .ignoresSafeArea()
-            }
+        .sheet(item: $browserUrl) { url in
+            InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
+                .ignoresSafeArea()
         }
         .sheet(isPresented: $showTimeLogSheet) {
-            LogWatchTimeSheet(
+            LogActivitySheet(
                 minutes: $logMinutes,
                 comment: $logComment,
                 onSave: saveActivity

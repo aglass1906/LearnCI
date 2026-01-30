@@ -28,7 +28,8 @@ struct LearnCIApp: App {
             UserActivity.self,
             UserProfile.self,
             DailyFeedback.self,
-            CoachingCheckIn.self
+            CoachingCheckIn.self,
+            Favorite.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

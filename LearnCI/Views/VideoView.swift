@@ -88,7 +88,10 @@ struct VideoView: View {
                 
                 Group {
                     if let channel = selectedChannel {
-                        channelDetailView(channel)
+                        ChannelDetailView(
+                            channel: channel,
+                            isVideoWatched: isVideoWatched
+                        )
                     } else {
                         switch mode {
                         case .recommended:
@@ -186,7 +189,7 @@ struct VideoView: View {
                 )
             }
             .sheet(isPresented: $showWatchTimePrompt) {
-                LogWatchTimeSheet(
+                LogActivitySheet(
                     minutes: $watchMinutes,
                     comment: $watchComment,
                     onSave: {
@@ -275,40 +278,7 @@ struct VideoView: View {
         }
     }
     
-    func channelDetailView(_ channel: YouTubeChannel) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 15) {
-                AsyncImage(url: URL(string: channel.thumbnailURL)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Circle().fill(Color.gray.opacity(0.1))
-                }
-                .frame(width: 60, height: 60)
-                .clipShape(Circle())
-                
-                VStack(alignment: .leading) {
-                    Text(channel.title)
-                        .font(.headline)
-                    Text("Latest Videos (\(youtubeManager.channelVideos.count))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            
-            if youtubeManager.isChannelLoading && youtubeManager.channelVideos.isEmpty {
-                Spacer()
-                ProgressView("Loading videos...")
-                Spacer()
-            } else {
-                videoGridView(videos: youtubeManager.channelVideos, isLoading: youtubeManager.isChannelLoading, onLoadMore: youtubeManager.loadMoreChannelVideos)
-            }
-        }
-    }
+    // channelDetailView helper removed - replaced by ChannelDetailView struct
     
     var subscriptionContentView: some View {
         VStack(spacing: 0) {
@@ -345,7 +315,13 @@ struct VideoView: View {
                     description: Text("Try changing the filter or scrolling down.")
                 )
             } else {
-                videoGridView(videos: svideos, isLoading: youtubeManager.isLoading, onLoadMore: youtubeManager.loadMoreFeedVideos)
+                VideoGridView(
+                    videos: svideos,
+                    isLoading: youtubeManager.isLoading,
+                    onLoadMore: youtubeManager.loadMoreFeedVideos,
+                    selectedVideo: $selectedVideo,
+                    isVideoWatched: isVideoWatched
+                )
             }
         }
     }
@@ -383,7 +359,13 @@ struct VideoView: View {
                     .controlSize(.large)
                 }
             } else {
-                videoGridView(videos: youtubeManager.recommendedVideos, isLoading: youtubeManager.isRecommendedLoading, onLoadMore: youtubeManager.loadMoreRecommendedVideos)
+                VideoGridView(
+                    videos: youtubeManager.recommendedVideos,
+                    isLoading: youtubeManager.isRecommendedLoading,
+                    onLoadMore: youtubeManager.loadMoreRecommendedVideos,
+                    selectedVideo: $selectedVideo,
+                    isVideoWatched: isVideoWatched
+                )
             }
         }
     }
@@ -407,50 +389,18 @@ struct VideoView: View {
                     .controlSize(.large)
                 }
             } else {
-                videoGridView(
+                VideoGridView(
                     videos: youtubeManager.discoveryVideos,
                     isLoading: youtubeManager.isDiscoveryLoading,
-                    onLoadMore: youtubeManager.loadMoreDiscoveryVideos
+                    onLoadMore: youtubeManager.loadMoreDiscoveryVideos,
+                    selectedVideo: $selectedVideo,
+                    isVideoWatched: isVideoWatched
                 )
             }
         }
     }
     
-    func videoGridView(videos: [YouTubeVideo], isLoading: Bool = false, onLoadMore: (() -> Void)? = nil) -> some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(videos) { video in
-                    VideoCard(
-                        video: video, 
-                        isWatched: isVideoWatched(video.id)
-                    )
-                    .onTapGesture {
-                        selectedVideo = video
-                    }
-                    .onAppear {
-                        if let onLoadMore = onLoadMore, video.id == videos.last?.id {
-                            onLoadMore()
-                        }
-                    }
-                }
-                
-                if onLoadMore != nil && isLoading {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                            .padding(.trailing, 4)
-                        Text("Loading more...")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    .gridCellColumns(2)
-                    .padding(.vertical, 20)
-                }
-            }
-            .padding()
-        }
-    }
+    // videoGridView helper removed - replaced by VideoGridView struct
     
     private func isVideoWatched(_ videoId: String) -> Bool {
         // Check if any activity comment contains the video ID
@@ -519,234 +469,9 @@ struct VideoView: View {
     }
 }
 
-// MARK: - Enhanced VideoCard
+// MARK: - Previews
+// Components moved to separate files to avoid redundancy.
 
-struct VideoCard: View {
-    let video: YouTubeVideo
-    let isWatched: Bool
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Thumbnail with Overlays
-            ZStack(alignment: .topTrailing) {
-                ZStack(alignment: .bottomTrailing) {
-                    AsyncImage(url: URL(string: video.thumbnailURL)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(16/9, contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.1))
-                            .aspectRatio(16/9, contentMode: .fill)
-                            .overlay { ProgressView().scaleEffect(0.8) }
-                    }
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                    
-                    Text("\(video.durationInMinutes)m")
-                        .font(.caption2.bold())
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.black.opacity(0.75))
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                        .padding(6)
-                }
-                
-                if isWatched {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .background(Circle().fill(.white))
-                        .font(.title3)
-                        .padding(4)
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                // Title
-                Text(video.title)
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                
-                // Channel info & Date
-                HStack {
-                    Text(video.channelTitle)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                    
-                    Text("•")
-                        .foregroundColor(.secondary)
-                    
-                    Text(video.publishedAt, style: .relative)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    if let level = video.level {
-                        Text(level.rawValue)
-                            .font(.system(size: 8, weight: .bold))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.1))
-                            .foregroundColor(.blue)
-                            .clipShape(Capsule())
-                    }
-                }
-                .font(.caption)
-            }
-            .padding(.horizontal, 4)
-        }
-        .padding(8)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
-    }
-}
-
-struct VideoDetailSheet: View {
-    let video: YouTubeVideo
-    let onWatch: () -> Void
-    let onLogTime: (Int) -> Void // Updated to accept minutes
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var watchDuration: TimeInterval = 0
-    @State private var hasLoggedTime = false
-    
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Embedded Player with Tracking
-                    YouTubePlayerView(videoID: video.id, watchDuration: $watchDuration)
-                        .frame(height: 220)
-                        .cornerRadius(12)
-                        .shadow(radius: 5)
-                    
-                    Text(video.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    HStack {
-                        Text(video.channelTitle)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("Duration: \(video.durationInMinutes) min")
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.subheadline)
-                    
-                    // Live Watch Stats
-                    if watchDuration > 0 {
-                        HStack {
-                            Image(systemName: "timer")
-                            Text("Watching: \(Int(watchDuration))s")
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.blue)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Capsule())
-                    }
-                    
-                    Text(video.description)
-                        .font(.body)
-                    
-                    VStack(spacing: 12) {
-                        // Manual Log Button
-                        Button(action: {
-                            onLogTime(Int(max(1, watchDuration / 60)))
-                            hasLoggedTime = true
-                        }) {
-                            Label("Log Watch Time Now", systemImage: "clock.fill")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        
-                        // User can still open external app if needed
-                        Button(action: onWatch) {
-                            Label("Open in YouTube App", systemImage: "arrow.up.right.video.fill")
-                                .font(.headline)
-                                .foregroundColor(.red)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.red.opacity(0.1))
-                                .cornerRadius(10)
-                        }
-                    }
-                    .padding(.top)
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
-            }
-            .onDisappear {
-                // Auto-Log if significant time watched and not manually logged
-                if !hasLoggedTime && watchDuration > 10 {
-                    let minutes = Int(max(1, watchDuration / 60))
-                    onLogTime(minutes)
-                }
-            }
-        }
-    }
-}
-
-struct LogWatchTimeSheet: View {
-    @Binding var minutes: Double
-    @Binding var comment: String
-    let onSave: () -> Void
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Watch Duration")) {
-                    VStack(alignment: .leading) {
-                        Text("Minutes: \(Int(minutes))")
-                            .foregroundStyle(.secondary)
-                        Slider(value: $minutes, in: 1...120, step: 1)
-                    }
-                }
-                
-                Section(header: Text("Notes (Optional)")) {
-                    TextField("Add or edit comment...", text: $comment, axis: .vertical)
-                        .lineLimit(3, reservesSpace: true)
-                }
-            }
-            .navigationTitle("Log Watch Time")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        onSave()
-                        dismiss()
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium])
-    }
-}
 
 #Preview {
     VideoView()

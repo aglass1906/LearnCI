@@ -67,16 +67,19 @@ struct DashboardView: View {
                         // 1. Coaching Section
                         coachingSection
                         
-                        // 2. Input Roadmap
+                        // 2. Favorites
+                        favoritesSection
+                        
+                        // 3. Input Roadmap
                         roadmapSection
                         
-                        // 3. Breakdown
+                        // 4. Breakdown
                         breakdownSection
                         
-                        // 4. Leaderboard
+                        // 5. Leaderboard
                         leaderboardSection
                         
-                        // 5. Word of the Day
+                        // 6. Word of the Day
                         wordOfDaySection
                     }
                 }
@@ -547,6 +550,20 @@ extension DashboardView {
                 }
                 .padding()
             }
+        }
+    }
+    
+    private var favoritesSection: some View {
+        LayoutCardView(
+            title: "My Favorites",
+            subTitle: "Quick Access",
+            accentColor: .pink,
+            icon: "heart.fill",
+            destination: FavoritesView()
+        ) {
+             Text("Jump back into your favorite channels and resources.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }

@@ -53,7 +53,7 @@ struct YouTubeVideo: Identifiable, Codable {
     }
 }
 
-struct YouTubeChannel: Identifiable, Codable {
+struct YouTubeChannel: Identifiable, Codable, Hashable {
     let id: String
     let title: String
     let thumbnailURL: String

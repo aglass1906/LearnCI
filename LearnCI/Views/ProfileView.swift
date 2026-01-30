@@ -8,6 +8,7 @@ struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
     @Query private var allProfiles: [UserProfile]
     @State private var showDeleteConfirmation = false
+    @State private var showClearFavoritesConfirmation = false
     
     var profiles: [UserProfile] {
         allProfiles.filter { $0.userID == authManager.currentUser }
@@ -50,6 +51,9 @@ struct ProfileView: View {
                     Button("Remove All Profiles", role: .destructive) {
                         showDeleteConfirmation = true
                     }
+                    Button("Clear All Favorites", role: .destructive) {
+                        showClearFavoritesConfirmation = true
+                    }
                 }
             }
             .navigationTitle("Profile")
@@ -76,6 +80,14 @@ struct ProfileView: View {
                 }
             } message: {
                 Text("This will delete ALL local profiles, including hidden ones. This cannot be undone.")
+            }
+            .alert("Clear All Favorites?", isPresented: $showClearFavoritesConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear All", role: .destructive) {
+                    deleteAllFavorites()
+                }
+            } message: {
+                Text("This will verify the YouTube fix by resetting your database. All saved items will be removed.")
             }
         }
     }
@@ -107,6 +119,15 @@ struct ProfileView: View {
             dismiss()
         } catch {
             print("Failed to delete profiles: \(error)")
+        }
+    }
+    
+    private func deleteAllFavorites() {
+        do {
+             try modelContext.delete(model: Favorite.self)
+             dismiss()
+        } catch {
+             print("Failed to delete favorites: \(error)")
         }
     }
 }

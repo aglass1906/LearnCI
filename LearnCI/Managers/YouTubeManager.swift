@@ -636,6 +636,81 @@ class YouTubeManager {
         }
     }
     
+    // Resolves a YouTube Handle (e.g. "@DreamingSpanish") to a Channel ID
+    func resolveChannelFromHandle(_ handle: String) async -> String? {
+        print("DEBUG: Resolving handle: '\(handle)'")
+        
+        // Ensure handle starts with @
+        let cleanHandle = handle.hasPrefix("@") ? handle : "@\(handle)"
+        
+        // Fix: Do not manually escape @ to %40, just use standard query encoding.
+        // The API treats @ as a safe character in some contexts but for a query param value it should be fine.
+        // Double encoding (%2540) was the issue.
+        let encodedHandle = cleanHandle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? cleanHandle
+        
+        print("DEBUG: Encoded handle: '\(encodedHandle)'")
+        
+        // 1. Try with OAuth Token
+        if let token = accessToken {
+            print("DEBUG: Using OAuth Token")
+            let urlString = "https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=\(encodedHandle)"
+            if let url = URL(string: urlString) {
+                var request = URLRequest(url: url)
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                if let id = await performChannelIdRequest(request: request) {
+                     return id
+                }
+            }
+        }
+        
+        // 2. Fallback to Public API Key
+        let key = publicApiKey ?? "AIzaSyB71BUNTgtp6uiSS3DyRc-ZA5oQkaVbQe8" // Temporary fallback if plist not reloaded
+        print("DEBUG: Using API Key (Masked: \(key.prefix(4))...)")
+        
+        let urlString = "https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=\(encodedHandle)&key=\(key)"
+        print("DEBUG: Request URL: \(urlString)")
+        
+        if let url = URL(string: urlString) {
+             let request = URLRequest(url: url)
+             if let id = await performChannelIdRequest(request: request) {
+                  return id
+             }
+        } else {
+            print("DEBUG: Invalid URL construction")
+        }
+        
+        return nil
+    }
+    
+    private func performChannelIdRequest(request: URLRequest) async -> String? {
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // Check HTTP Status
+            if let httpResponse = response as? HTTPURLResponse {
+                print("DEBUG: API Response Status: \(httpResponse.statusCode)")
+                if httpResponse.statusCode != 200 {
+                    let body = String(data: data, encoding: .utf8) ?? "N/A"
+                    print("DEBUG: API Error Body: \(body)")
+                    return nil
+                }
+            }
+            
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let items = json["items"] as? [[String: Any]],
+               let first = items.first,
+               let id = first["id"] as? String {
+                print("DEBUG: Success! Found Channel ID: \(id)")
+                return id
+            } else {
+                print("DEBUG: No items found in response")
+            }
+        } catch {
+            print("DEBUG: Channel ID lookup failed: \(error)")
+        }
+        return nil
+    }
+
     // MARK: - Discovery API
     
     func loadMoreDiscoveryVideos() {

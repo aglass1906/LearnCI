@@ -43,11 +43,11 @@ class FavoritesManager {
             let existing = try context.fetch(descriptor)
             if let match = existing.first {
                 // Remove
-                print("DEBUG: Removing favorite for \(consumptionUrl)")
+                Logger.debug("Removing favorite for \(consumptionUrl)", category: .favorites)
                 context.delete(match)
             } else {
                 // Add
-                print("DEBUG: Adding favorite for \(consumptionUrl)")
+                Logger.debug("Adding favorite for \(consumptionUrl)", category: .favorites)
                 
                 // Auto-detect YouTube type if not explicitly set
                 var finalType = type
@@ -68,9 +68,9 @@ class FavoritesManager {
                 context.insert(newFavorite)
             }
             try context.save()
-            print("DEBUG: Favorites saved successfully.")
+            Logger.info("Favorites saved successfully.", category: .favorites)
         } catch {
-            print("Error toggling favorite: \(error)")
+            Logger.error("Error toggling favorite: \(error)", category: .favorites)
         }
     }
     
@@ -90,13 +90,26 @@ class FavoritesManager {
                  }
             }
         }
-        
-        // Legacy Support: Specific handle mappings have been removed in favor 
-        // of the dynamic async resolution in FavoritesView.
-        // This keeps the manager logic pure and relies on the API for resolution.
-        
         return nil
+    }
+    
+    static func resolvePlaylistId(from urlString: String) -> String? {
+        // Logging for debugging
+        Logger.debug("Attempting to resolve Playlist ID from: \(urlString)", category: .favorites)
         
-        return nil
+        guard let url = URL(string: urlString),
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let queryItems = components.queryItems else {
+            Logger.debug("Failed to parse URL components for: \(urlString)", category: .favorites)
+            return nil
+        }
+        
+        if let listId = queryItems.first(where: { $0.name == "list" })?.value {
+            Logger.debug("Found Playlist ID: \(listId)", category: .favorites)
+            return listId
+        } else {
+             Logger.debug("No 'list' query parameter found.", category: .favorites)
+             return nil
+        }
     }
 }

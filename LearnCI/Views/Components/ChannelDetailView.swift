@@ -20,6 +20,7 @@ struct ChannelDetailView: View {
     }
     
     let isVideoWatched: (String) -> Bool
+    // var isPlaylist: Bool = false // Removed, using channel.isPlaylist
     
     var body: some View {
         VStack(spacing: 0) {
@@ -37,7 +38,7 @@ struct ChannelDetailView: View {
                 VStack(alignment: .leading) {
                     Text(channel.title)
                         .font(.headline)
-                    Text("Latest Videos (\(youtubeManager.channelVideos.count))")
+                    Text(channel.isPlaylist ? "Playlist Videos (\(youtubeManager.channelVideos.count))" : "Latest Videos (\(youtubeManager.channelVideos.count))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -46,7 +47,7 @@ struct ChannelDetailView: View {
                 // Favorite Button
                 FavoriteButton(
                     consumptionUrl: channel.id,
-                    type: .channel,
+                    type: channel.isPlaylist ? .youtube : .channel, 
                     title: channel.title,
                     author: channel.title,
                     imageUrl: channel.thumbnailURL
@@ -71,8 +72,18 @@ struct ChannelDetailView: View {
         }
         .task {
             // Load videos if needed when this view appears
+             Logger.debug("ChannelDetailView .task called. Channel: \(channel.title), ID: \(channel.id), isPlaylist: \(channel.isPlaylist)", category: .ui)
+             
              if youtubeManager.channelVideos.isEmpty || youtubeManager.channelVideos.first?.id != channel.id {
-                 youtubeManager.fetchVideosForChannel(channel.id)
+                 if channel.isPlaylist {
+                     Logger.debug("Calling fetchVideosForPlaylist for \(channel.id)", category: .youtube)
+                     youtubeManager.fetchVideosForPlaylist(channel.id)
+                 } else {
+                     Logger.debug("Calling fetchVideosForChannel for \(channel.id)", category: .youtube)
+                     youtubeManager.fetchVideosForChannel(channel.id)
+                 }
+             } else {
+                 Logger.debug("Videos already loaded for this channel/playlist.", category: .ui)
              }
         }
         .sheet(item: $selectedVideo) { video in

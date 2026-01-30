@@ -109,6 +109,7 @@ struct FavoritesView: View {
                 ChannelDetailView(
                     channel: channel,
                     isVideoWatched: isVideoWatched
+                    // isPlaylist is now part of channel model
                 )
             }
             .sheet(item: $browserUrl) { url in
@@ -128,13 +129,21 @@ struct FavoritesView: View {
     // MARK: - Actions
     
     func handleTap(_ fav: Favorite) {
+        Logger.debug("handleTap called for \(fav.title) | Type: \(fav.type) | URL: \(fav.consumptionUrl)", category: .ui)
+        
         // Check if it's explicitly a channel OR if we can resolve it to one (Runtime Fix)
         if fav.type == .channel {
             openChannel(id: fav.consumptionUrl, title: fav.title, thumbnail: fav.imageUrl)
         } else if let resolvedId = FavoritesManager.resolveChannelId(from: fav.consumptionUrl) {
             // Static/Hardcoded resolution (Fast)
-            print("DEBUG: Auto-resolving legacy favorite '\(fav.title)' to Channel ID: \(resolvedId)")
+            Logger.debug("Auto-resolving legacy favorite '\(fav.title)' to Channel ID: \(resolvedId)", category: .favorites)
             openChannel(id: resolvedId, title: fav.title, thumbnail: fav.imageUrl)
+        } else if let playlistId = FavoritesManager.resolvePlaylistId(from: fav.consumptionUrl) {
+             Logger.debug("Detected Playlist ID: \(playlistId)", category: .favorites)
+             
+             // ... rest of the code ...
+             openChannel(id: playlistId, title: fav.title, thumbnail: fav.imageUrl, isPlaylist: true)
+             
         } else if fav.consumptionUrl.contains("@") && (fav.type == .website || fav.type == .youtube) {
             // Async Dynamic Resolution (Slow - requires API)
             Task {
@@ -189,15 +198,21 @@ struct FavoritesView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    func openChannel(id: String, title: String, thumbnail: String?) {
+    func openChannel(id: String, title: String, thumbnail: String?, isPlaylist: Bool = false) {
         let channel = YouTubeChannel(
             id: id,
             title: title,
-            thumbnailURL: thumbnail ?? ""
+            thumbnailURL: thumbnail ?? "",
+            isPlaylist: isPlaylist // Set directly on model
         )
+        // self.isPlaylistNavigation = isPlaylist // Removed state
         selectedChannel = channel
     }
     
+    // ... helpers ...
+    
+    // @State private var isPlaylistNavigation = false // Removed State
+
     // MARK: - Helpers (Duplicated from VideoView - should be extracted if exact match needed)
     
     private func isVideoWatched(_ videoId: String) -> Bool {
@@ -234,7 +249,6 @@ struct FavoriteRow: View {
     let favorite: Favorite
     let action: () -> Void
     
-    var body: some View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {

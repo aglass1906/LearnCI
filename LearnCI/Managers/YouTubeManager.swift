@@ -257,6 +257,60 @@ class YouTubeManager {
         fetchVideosFromChannels(token: token, channelIds: [channelId], target: .singleChannel)
     }
     
+    func fetchVideosForPlaylist(_ playlistId: String) {
+        Logger.debug("fetchVideosForPlaylist started for: \(playlistId)", category: .youtube)
+        guard let token = accessToken else {
+            Logger.error("No access token for playlist fetch", category: .youtube)
+            return
+        }
+        channelVideos = [] // Clear previous results
+        isChannelLoading = true
+        
+        // We reuse the singleChannel target logic but skip the "Channel -> Uploads Playlist" lookup step.
+        // We directly trigger the playlist fetch.
+        
+        // Set state for pagination
+        channelUploadsPlaylistId = playlistId
+        channelNextPageToken = nil
+        
+        // Manually trigger the playlist fetch part of the workflow
+        let urlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(playlistId)&maxResults=50"
+        
+        guard let url = URL(string: urlString) else {
+            isChannelLoading = false
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let items = json["items"] as? [[String: Any]] else {
+                DispatchQueue.main.async { self?.isChannelLoading = false }
+                return
+            }
+            
+            // Capture pagination
+            let nextPageToken = json["nextPageToken"] as? String
+            DispatchQueue.main.async {
+                self?.channelNextPageToken = nextPageToken
+            }
+            
+            let ids = items.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
+            
+            if ids.isEmpty {
+                DispatchQueue.main.async { self?.isChannelLoading = false }
+                return
+            }
+            
+            // Re-use fetchVideoDetails to get full info for these IDs
+            self?.fetchVideoDetails(token: token, videoIds: ids, target: .singleChannel)
+            
+        }.resume()
+    }
+    
     func loadMoreChannelVideos() {
         guard let token = accessToken,
               let playlistId = channelUploadsPlaylistId,
@@ -510,7 +564,7 @@ class YouTubeManager {
         }
         
         dispatchGroup.notify(queue: .main) { [weak self] in
-            print("DEBUG: [YouTubeManager] Finished fetching channel IDs. Total collected: \(allVideoIds.count)")
+            Logger.debug("[YouTubeManager] Finished fetching channel IDs. Total collected: \(allVideoIds.count)", category: .youtube)
             
             if target == .singleChannel {
                 if allVideoIds.isEmpty {
@@ -526,10 +580,10 @@ class YouTubeManager {
             if allVideoIds.isEmpty {
                 // Keep cached videos if we have them, only fallback to samples if totally empty
                 if self?.videos.isEmpty ?? true {
-                    print("DEBUG: [YouTubeManager] No videos and no cache, using samples")
+                    Logger.warning("[YouTubeManager] No videos and no cache, using samples", category: .youtube)
                     self?.videos = self?.createSampleVideos() ?? []
                 } else {
-                    print("DEBUG: [YouTubeManager] No new videos found, maintaining existing cache")
+                    Logger.info("[YouTubeManager] No new videos found, maintaining existing cache", category: .youtube)
                 }
                 self?.isLoading = false
             } else {
@@ -638,7 +692,7 @@ class YouTubeManager {
     
     // Resolves a YouTube Handle (e.g. "@DreamingSpanish") to a Channel ID
     func resolveChannelFromHandle(_ handle: String) async -> String? {
-        print("DEBUG: Resolving handle: '\(handle)'")
+        Logger.debug("Resolving handle: '\(handle)'", category: .youtube)
         
         // Ensure handle starts with @
         let cleanHandle = handle.hasPrefix("@") ? handle : "@\(handle)"
@@ -648,11 +702,11 @@ class YouTubeManager {
         // Double encoding (%2540) was the issue.
         let encodedHandle = cleanHandle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? cleanHandle
         
-        print("DEBUG: Encoded handle: '\(encodedHandle)'")
+        Logger.debug("Encoded handle: '\(encodedHandle)'", category: .youtube)
         
         // 1. Try with OAuth Token
         if let token = accessToken {
-            print("DEBUG: Using OAuth Token")
+            Logger.debug("Using OAuth Token", category: .youtube)
             let urlString = "https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=\(encodedHandle)"
             if let url = URL(string: urlString) {
                 var request = URLRequest(url: url)
@@ -665,10 +719,10 @@ class YouTubeManager {
         
         // 2. Fallback to Public API Key
         let key = publicApiKey ?? "AIzaSyB71BUNTgtp6uiSS3DyRc-ZA5oQkaVbQe8" // Temporary fallback if plist not reloaded
-        print("DEBUG: Using API Key (Masked: \(key.prefix(4))...)")
+        Logger.debug("Using API Key (Masked: \(key.prefix(4))...)", category: .youtube)
         
         let urlString = "https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=\(encodedHandle)&key=\(key)"
-        print("DEBUG: Request URL: \(urlString)")
+        Logger.debug("Request URL: \(urlString)", category: .youtube)
         
         if let url = URL(string: urlString) {
              let request = URLRequest(url: url)
@@ -676,7 +730,7 @@ class YouTubeManager {
                   return id
              }
         } else {
-            print("DEBUG: Invalid URL construction")
+            Logger.error("Invalid URL construction", category: .youtube)
         }
         
         return nil
@@ -691,7 +745,7 @@ class YouTubeManager {
                 print("DEBUG: API Response Status: \(httpResponse.statusCode)")
                 if httpResponse.statusCode != 200 {
                     let body = String(data: data, encoding: .utf8) ?? "N/A"
-                    print("DEBUG: API Error Body: \(body)")
+                    Logger.error("API Error Body: \(body)", category: .youtube)
                     return nil
                 }
             }
@@ -700,13 +754,13 @@ class YouTubeManager {
                let items = json["items"] as? [[String: Any]],
                let first = items.first,
                let id = first["id"] as? String {
-                print("DEBUG: Success! Found Channel ID: \(id)")
+                Logger.info("Success! Found Channel ID: \(id)", category: .youtube)
                 return id
             } else {
-                print("DEBUG: No items found in response")
+                Logger.warning("No items found in response", category: .youtube)
             }
         } catch {
-            print("DEBUG: Channel ID lookup failed: \(error)")
+            Logger.error("Channel ID lookup failed: \(error)", category: .youtube)
         }
         return nil
     }

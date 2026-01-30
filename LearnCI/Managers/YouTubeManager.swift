@@ -404,11 +404,17 @@ class YouTubeManager {
                               let resourceId = snippet["resourceId"] as? [String: Any],
                               let channelId = resourceId["channelId"] as? String,
                               let title = snippet["title"] as? String,
-                              let thumbnails = snippet["thumbnails"] as? [String: Any],
-                              let medium = thumbnails["medium"] as? [String: Any],
-                              let thumbnailURL = medium["url"] as? String else {
+                            let thumbnails = snippet["thumbnails"] as? [String: Any] else {
                             return nil
                         }
+                        
+                        // Prefer High -> Medium -> Default
+                        let thumbDict = (thumbnails["high"] as? [String: Any]) ?? 
+                                      (thumbnails["medium"] as? [String: Any]) ?? 
+                                      (thumbnails["default"] as? [String: Any])
+                                      
+                        guard let thumbnailURL = thumbDict?["url"] as? String else { return nil }
+                        
                         return YouTubeChannel(id: channelId, title: title, thumbnailURL: thumbnailURL)
                     }
                     
@@ -628,12 +634,17 @@ class YouTubeManager {
                           let description = snippet["description"] as? String,
                           let channelTitle = snippet["channelTitle"] as? String,
                           let thumbnails = snippet["thumbnails"] as? [String: Any],
-                          let medium = thumbnails["medium"] as? [String: Any],
-                          let thumbnailURL = medium["url"] as? String,
                           let duration = contentDetails["duration"] as? String,
                           let publishedAtString = snippet["publishedAt"] as? String else {
                         return nil
                     }
+                    
+                    // Prefer High -> Medium -> Default
+                    let thumbDict = (thumbnails["high"] as? [String: Any]) ?? 
+                                  (thumbnails["medium"] as? [String: Any]) ?? 
+                                  (thumbnails["default"] as? [String: Any])
+                                  
+                    let thumbnailURL = thumbDict?["url"] as? String ?? ""
                     
                     let dateFormatter = ISO8601DateFormatter()
                     let publishedAt = dateFormatter.date(from: publishedAtString) 

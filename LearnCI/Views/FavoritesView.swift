@@ -259,8 +259,17 @@ struct FavoriteRow: View {
                     } placeholder: {
                         Color.gray.opacity(0.2)
                     }
-                    .frame(width: 50, height: 50)
+                    .frame(width: favorite.type == .youtube ? 89 : 50, height: 50) // 16:9 for videos, 1:1 for others
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: favorite.type.icon)
+                            .font(.system(size: 10))
+                            .foregroundColor(.white)
+                            .padding(3)
+                            .background(Color.black.opacity(0.6))
+                            .clipShape(Circle())
+                            .offset(x: 4, y: 4) // Slight overhang or sticking to corner
+                    }
                 } else {
                     Image(systemName: favorite.type.icon)
                     .font(.title2)

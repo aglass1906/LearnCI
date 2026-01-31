@@ -46,6 +46,10 @@ struct ContentView: View {
                 }
             }
         }
+        .sheet(isPresented: Bindable(authManager).isPasswordResetRequired) {
+            let _ = print("DEBUG: Presenting ChangePasswordSheet")
+            ChangePasswordSheet()
+        }
     }
 }
 

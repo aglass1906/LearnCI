@@ -50,6 +50,7 @@ struct LearnCIApp: App {
                 .environment(locationManager)
                 .environment(audioManager)
                 .onOpenURL { url in
+                    print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
                     Task {
                         try? await authManager.handleIncomingURL(url)
                     }

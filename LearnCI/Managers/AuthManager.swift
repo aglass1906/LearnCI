@@ -40,6 +40,7 @@ class AuthManager {
     private let supabaseKey = "sb_publishable_xoxgBdG_hlMfn3SxbTJesA_gKfFkq70"
     
     let supabase: SupabaseClient
+    var isPasswordResetRequired = false
 
     init() {
         self.supabase = SupabaseClient(
@@ -50,6 +51,56 @@ class AuthManager {
             )
         )
         checkSession()
+        listenForAuthChanges()
+    }
+    
+    private func listenForAuthChanges() {
+        Task {
+            for await (event, session) in supabase.auth.authStateChanges {
+                print("DEBUG: Auth State Change Event: \(event)")
+                if let session = session {
+                    print("DEBUG: Session Present. User: \(session.user.email ?? "No Email")")
+                } else {
+                    print("DEBUG: Session is NIL")
+                }
+                
+                await MainActor.run {
+                        if event == .passwordRecovery {
+                        print("DEBUG: Password Recovery Event Detected!")
+                        self.isPasswordResetRequired = true
+                        // Do not set unauthenticated here; wait for session to be established
+                        // by the subsequent token exchange.
+                        // Force a session check just in case.
+                        self.checkSession()
+                        return 
+                    }
+                    
+                    if let session = session {
+                        // Update state to authenticated
+                        let metadata = session.user.userMetadata
+                        let fullName = metadata["full_name"]?.value as? String
+                        let avatarUrl = metadata["avatar_url"]?.value as? String
+                        
+                        print("DEBUG: Updating state to .authenticated")
+                        self.state = .authenticated(
+                            userID: session.user.id.uuidString,
+                            email: session.user.email,
+                            fullName: fullName,
+                            avatarURL: avatarUrl
+                        )
+                    } else if event == .signedOut {
+                         print("DEBUG: Event explains sign out. Setting state to .unauthenticated")
+                         self.state = .unauthenticated
+                    } else {
+                        // For other events where session is nil, check session again to be sure
+                        // before declaring unauthenticated, or just leave as is if we trust the event stream.
+                        // Ideally we only go to unauthenticated on specific failure or sign out.
+                         print("DEBUG: Defaulting to .unauthenticated due to nil session")
+                         self.state = .unauthenticated
+                    }
+                }
+            }
+        }
     }
     
     func checkSession() {
@@ -226,7 +277,14 @@ class AuthManager {
     
     @MainActor
     func handleIncomingURL(_ url: URL) async throws {
-        // Handle deep link callback from Supabase (e.g. password resets, email confirmations)
+        print("DEBUG: AuthManager handling incoming URL: \(url.absoluteString)")
+        
+        // Explicitly check for password reset intent from the URL
+        if url.absoluteString.contains("reset-password") {
+            print("DEBUG: Detected reset-password URL scheme. Setting isPasswordResetRequired = true")
+            self.isPasswordResetRequired = true
+        }
+        
         try await supabase.handle(url)
     }
 

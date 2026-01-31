@@ -3,6 +3,7 @@ import WebKit
 
 struct YouTubePlayerView: UIViewRepresentable {
     let videoID: String
+    var videoURL: String? = nil // Optional direct URL
     
     @Binding var watchDuration: TimeInterval
     
@@ -30,56 +31,93 @@ struct YouTubePlayerView: UIViewRepresentable {
         guard context.coordinator.currentVideoID != videoID else { return }
         context.coordinator.currentVideoID = videoID
         
-        let embedHTML = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-        body { margin: 0; background-color: black; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        </style>
-        </head>
-        <body>
-        <div class="video-container">
-        <div id="player"></div>
-        </div>
-        <script>
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        if let videoURL = videoURL, let url = URL(string: videoURL) {
+            // Render HTML5 Video Player
+            let html = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { margin: 0; background-color: black; display: flex; align-items: center; justify-content: center; height: 100vh; }
+video { width: 100%; height: 100%; object-fit: contain; }
+</style>
+</head>
+<body>
+<video id="player" controls playsinline autoplay>
+<source src="\(videoURL)" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+<script>
+var video = document.getElementById('player');
+video.addEventListener('play', function() {
+window.webkit.messageHandlers.playbackHandler.postMessage(1);
+});
+video.addEventListener('pause', function() {
+window.webkit.messageHandlers.playbackHandler.postMessage(2);
+});
+video.addEventListener('ended', function() {
+window.webkit.messageHandlers.playbackHandler.postMessage(0);
+});
+</script>
+</body>
+</html>
+"""
+            uiView.loadHTMLString(html, baseURL: nil)
+            
+        } else {
+            // Render YouTube Player
+            let embedHTML = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { margin: 0; background-color: black; }
+.video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+.video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div class="video-container">
+<div id="player"></div>
+</div>
+<script>
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        var player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                videoId: '\(videoID)',
-                playerVars: {
-                    'playsinline': 1,
-                    'controls': 1,
-                    'rel': 0,
-                    'fs': 1,
-                    'origin': 'https://learnci.app'
-                },
-                events: {
-                    'onStateChange': onPlayerStateChange
-                }
-            });
+var player;
+function onYouTubeIframeAPIReady() {
+player = new YT.Player('player', {
+height: '100%',
+width: '100%',
+videoId: '\(videoID)',
+playerVars: {
+'playsinline': 1,
+'controls': 1,
+'rel': 0,
+'fs': 1,
+'origin': 'https://learnci.app'
+},
+events: {
+'onStateChange': onPlayerStateChange
+}
+});
+}
+
+function onPlayerStateChange(event) {
+// Send state to Swift (1 = Playing, 2 = Paused, 0 = Ended)
+window.webkit.messageHandlers.playbackHandler.postMessage(event.data);
+}
+</script>
+</body>
+</html>
+"""
+            
+            uiView.loadHTMLString(embedHTML, baseURL: URL(string: "https://learnci.app"))
         }
-        
-        function onPlayerStateChange(event) {
-            // Send state to Swift (1 = Playing, 2 = Paused, 0 = Ended)
-            window.webkit.messageHandlers.playbackHandler.postMessage(event.data);
-        }
-        </script>
-        </body>
-        </html>
-        """
-        
-        uiView.loadHTMLString(embedHTML, baseURL: URL(string: "https://learnci.app"))
     }
     
     class Coordinator: NSObject, WKScriptMessageHandler {

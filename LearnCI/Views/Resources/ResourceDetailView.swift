@@ -75,7 +75,7 @@ struct ResourceDetailView: View {
     
     func mapResourceTypeToActivity(_ type: ResourceType) -> ActivityType {
         switch type {
-        case .book, .website: return .reading
+        case .book, .website, .webScan: return .reading
         case .youtube: return .watchingVideos
         case .podcast: return .podcasts
         }
@@ -99,6 +99,8 @@ struct ResourceDetailView: View {
             
         case .podcast:
             type = .podcast
+        case .webScan:
+            type = .webScan
         default:
             type = .website
         }

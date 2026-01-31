@@ -5,6 +5,7 @@ enum ResourceType: String, Codable, CaseIterable, Identifiable {
     case youtube
     case book
     case website
+    case webScan
     
     var id: String { rawValue }
     
@@ -14,6 +15,7 @@ enum ResourceType: String, Codable, CaseIterable, Identifiable {
         case .youtube: return "play.rectangle.fill"
         case .book: return "book.fill"
         case .website: return "globe"
+        case .webScan: return "doc.text.viewfinder"
         }
     }
     
@@ -23,6 +25,7 @@ enum ResourceType: String, Codable, CaseIterable, Identifiable {
         case .youtube: return "YouTube"
         case .book: return "Book"
         case .website: return "Website"
+        case .webScan: return "Web Scan"
         }
     }
 }

@@ -14,7 +14,11 @@ struct VideoDetailSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Embedded Player with Tracking
-                    YouTubePlayerView(videoID: video.id, watchDuration: $watchDuration)
+                    YouTubePlayerView(
+                        videoID: video.id,
+                        videoURL: video.videoStreamURL,
+                        watchDuration: $watchDuration
+                    )
                         .frame(height: 220)
                         .cornerRadius(12)
                         .shadow(radius: 5)

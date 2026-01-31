@@ -5,6 +5,7 @@ enum FavoriteType: String, Codable, CaseIterable, Identifiable {
     case channel
     case website
     case youtube // New dedicated type
+    case webScan // New: Scans page for videos
     case podcast
     case book // If we have book links
     case other
@@ -15,6 +16,7 @@ enum FavoriteType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .channel: return "play.rectangle.fill"
         case .youtube: return "play.circle.fill" 
+        case .webScan: return "doc.text.viewfinder"
         case .podcast: return "headphones"
         case .book: return "book.fill"
         case .website, .other: return "globe"
@@ -37,7 +39,14 @@ final class Favorite {
     var isSynced: Bool = false
     
     var type: FavoriteType {
-        get { FavoriteType(rawValue: typeRaw) ?? .other }
+        get { 
+            // Try exact match first
+            if let exact = FavoriteType(rawValue: typeRaw) {
+                return exact
+            }
+            // Try lowercase match
+            return FavoriteType.allCases.first { $0.rawValue.lowercased() == typeRaw.lowercased() } ?? .other
+        }
         set { typeRaw = newValue.rawValue }
     }
     

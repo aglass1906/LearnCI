@@ -9,6 +9,9 @@ struct YouTubeVideo: Identifiable, Codable {
     let duration: String
     let publishedAt: Date
     
+    // For direct video files (non-YouTube)
+    var videoStreamURL: String?
+    
     // Optional tagging for discovery
     var language: Language?
     var level: LearningLevel?

@@ -24,6 +24,9 @@ struct FavoritesView: View {
     // @State private var showBrowser = false // Removed in favor of item-based sheet
     @State private var browserUrl: URL?
     
+    // Web Scan Navigation
+    @State private var webScanTarget: Favorite? // Holds the favorite to scan
+    
     // Derived Filters
     var filteredFavorites: [Favorite] {
         favorites.filter { fav in
@@ -66,6 +69,7 @@ struct FavoritesView: View {
                             FilterPill(title: "YouTube", isSelected: typeFilter == .youtube) { typeFilter = .youtube }
                             FilterPill(title: "Websites", isSelected: typeFilter == .website) { typeFilter = .website }
                             FilterPill(title: "Podcasts", isSelected: typeFilter == .podcast) { typeFilter = .podcast }
+                            FilterPill(title: "Web Scan", isSelected: typeFilter == .webScan) { typeFilter = .webScan }
                         }
                         .padding(.horizontal)
                     }
@@ -97,9 +101,11 @@ struct FavoritesView: View {
                 } else {
                     List {
                         ForEach(filteredFavorites) { fav in
-                             FavoriteRow(favorite: fav) {
+                             FavoriteRow(favorite: fav, action: {
                                  handleTap(fav)
-                             }
+                             }, onScan: {
+                                 webScanTarget = fav
+                             })
                         }
                     }
                     .listStyle(.plain)
@@ -132,6 +138,13 @@ struct FavoritesView: View {
                 }
                 .ignoresSafeArea()
             }
+            .navigationDestination(item: $webScanTarget) { scanFav in
+                if let url = URL(string: scanFav.consumptionUrl) {
+                    WebScanView(url: url, title: scanFav.title)
+                } else {
+                    ContentUnavailableView("Invalid URL", systemImage: "link.badge.plus")
+                }
+            }
             .alert("Debug Info", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -144,6 +157,11 @@ struct FavoritesView: View {
     
     func handleTap(_ fav: Favorite) {
         Logger.debug("handleTap called for \(fav.title) | Type: \(fav.type) | URL: \(fav.consumptionUrl)", category: .ui)
+        
+        if fav.type == .webScan {
+            webScanTarget = fav
+            return
+        }
         
         // Check if it's explicitly a channel OR if we can resolve it to one (Runtime Fix)
         if fav.type == .channel {
@@ -262,6 +280,7 @@ struct FilterPill: View {
 struct FavoriteRow: View {
     let favorite: Favorite
     let action: () -> Void
+    var onScan: (() -> Void)? = nil
     
     var body: some View {
         Button(action: action) {
@@ -323,6 +342,21 @@ struct FavoriteRow: View {
                  title: favorite.title
             )
             .tint(.red)
+        }
+        .contextMenu {
+            Button {
+                action()
+            } label: {
+                Label("Open", systemImage: "arrow.up.right")
+            }
+            
+            if let onScan = onScan {
+                Button {
+                    onScan()
+                } label: {
+                    Label("Scan for Videos", systemImage: "doc.text.viewfinder")
+                }
+            }
         }
     }
 }

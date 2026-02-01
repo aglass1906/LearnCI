@@ -238,7 +238,11 @@ struct AuthView: View {
 // MARK: - Email Confirmation View
 struct EmailConfirmationView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AuthManager.self) private var authManager
     let email: String
+    
+    @State private var isResending = false
+    @State private var resendMessage: String?
     
     var body: some View {
         VStack(spacing: 30) {
@@ -273,6 +277,18 @@ struct EmailConfirmationView: View {
             
             Spacer()
             
+            if let message = resendMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundColor(message.contains("Error") ? .red : .green)
+            }
+            
+            Button("Resend Verification Email") {
+                resendEmail()
+            }
+            .disabled(isResending)
+            .font(.subheadline)
+            
             Button(action: { dismiss() }) {
                 Text("Got it")
                     .fontWeight(.semibold)
@@ -286,6 +302,26 @@ struct EmailConfirmationView: View {
             .padding(.bottom, 40)
         }
         .padding()
+    }
+    
+    private func resendEmail() {
+        isResending = true
+        resendMessage = nil
+        
+        Task {
+            do {
+                try await authManager.resendVerificationEmail(email: email)
+                await MainActor.run {
+                    resendMessage = "Email resent successfully"
+                    isResending = false
+                }
+            } catch {
+                await MainActor.run {
+                    resendMessage = "Error: \(error.localizedDescription)"
+                    isResending = false
+                }
+            }
+        }
     }
 }
 

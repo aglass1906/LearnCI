@@ -197,23 +197,32 @@ class AuthManager {
     
     @MainActor
     func signUp(email: String, password: String, phone: String, fullName: String) async throws {
+        // Construct redirect URL
+        let redirectURL = AppConfig.webPortalBaseURL
+            .appendingPathComponent("auth")
+            .appendingPathComponent("callback")
+        
+        var components = URLComponents(url: redirectURL, resolvingAgainstBaseURL: true)!
+        components.queryItems = [URLQueryItem(name: "next", value: "/auth/verified")]
+        
         // Sign up with email and password
-        let session = try await supabase.auth.signUp(
+        let _ = try await supabase.auth.signUp(
             email: email,
             password: password,
             data: [
                 "full_name": .string(fullName),
                 "phone": .string(phone)
-            ]
+            ],
+            redirectTo: components.url
         )
         
-        // Update state
-        self.state = .authenticated(
-            userID: session.user.id.uuidString,
-            email: session.user.email,
-            fullName: fullName,
-            avatarURL: nil
-        )
+        // Do NOT update state to .authenticated here.
+        // The user must verify their email first.
+    }
+    
+    @MainActor
+    func resendVerificationEmail(email: String) async throws {
+        try await supabase.auth.resend(email: email, type: .signup)
     }
     
     @MainActor

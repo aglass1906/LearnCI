@@ -7,6 +7,7 @@ struct AuthView: View {
     @State private var name: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var confirmPassword: String = ""
     @State private var phone: String = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -85,6 +86,20 @@ struct AuthView: View {
                             }
                         }
                         .padding(.horizontal)
+                        
+
+                        if mode == .signUp {
+                            HStack {
+                                if isPasswordVisible {
+                                    TextField("Confirm Password", text: $confirmPassword)
+                                        .textFieldStyle(.roundedBorder)
+                                } else {
+                                    SecureField("Confirm Password", text: $confirmPassword)
+                                        .textFieldStyle(.roundedBorder)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                         
                         if mode == .signIn {
                             HStack {
@@ -185,7 +200,8 @@ struct AuthView: View {
         if mode == .signUp {
             return !name.isEmpty && 
                    !email.isEmpty && 
-                   password.count >= 8
+                   password.count >= 8 &&
+                   password == confirmPassword
         } else {
             return !email.isEmpty && !password.isEmpty
         }
@@ -213,7 +229,11 @@ struct AuthView: View {
                         // Clear form
                         name = ""
                         email = ""
+                        // Clear form
+                        name = ""
+                        email = ""
                         password = ""
+                        confirmPassword = ""
                         phone = ""
                     }
                 } else {

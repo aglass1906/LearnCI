@@ -222,7 +222,20 @@ class AuthManager {
     
     @MainActor
     func resendVerificationEmail(email: String) async throws {
-        try await supabase.auth.resend(email: email, type: .signup)
+        // Construct redirect URL
+        let redirectURL = AppConfig.webPortalBaseURL
+            .appendingPathComponent("auth")
+            .appendingPathComponent("callback")
+        
+        var components = URLComponents(url: redirectURL, resolvingAgainstBaseURL: true)!
+        components.queryItems = [URLQueryItem(name: "next", value: "/auth/verified")]
+        
+        
+        try await supabase.auth.resend(
+            email: email, 
+            type: .signup, 
+            options: .init(redirectTo: components.url?.absoluteString)
+        )
     }
     
     @MainActor

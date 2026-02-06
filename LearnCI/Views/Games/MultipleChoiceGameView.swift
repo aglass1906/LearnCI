@@ -227,9 +227,9 @@ struct OptionCard: View {
                  // Given the codebase uses `Image(uiImage: ...)` usually.
                  // I will use a simplified Text placeholder if image fails for now, or assume Bundle Image.
                  
-                 ImageLoaderView(filename: media, folderName: nil) // We'll need to know folder.
+                 ImageLoaderView(filename: media, folderName: nil, fallbackText: card.wordTarget) // We'll need to know folder.
             } else {
-                 Text(card.wordNative) // Fallback
+                 Text(card.wordTarget) // Fallback to Target Word
             }
         } else {
             Text(card.wordNative)
@@ -265,6 +265,7 @@ struct OptionCard: View {
 struct ImageLoaderView: View {
     let filename: String
     let folderName: String?
+    let fallbackText: String?
     
     // We can access DataManager via Environment if needed, or just standard Bundle load
     @Environment(DataManager.self) private var dataManager
@@ -276,9 +277,16 @@ struct ImageLoaderView: View {
                 .aspectRatio(contentMode: .fit)
                 .cornerRadius(8)
         } else {
-             Image(systemName: "photo")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
+             if let fallback = fallbackText {
+                 Text(fallback)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.primary)
+             } else {
+                 Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+             }
         }
     }
 }

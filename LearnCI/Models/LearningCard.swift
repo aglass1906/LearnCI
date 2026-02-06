@@ -6,6 +6,7 @@ enum Language: String, Codable, CaseIterable, Identifiable {
     case japanese = "ja"
     case korean = "ko"
     case french = "fr"
+    case vietnamese = "vi"
     
     var id: String { self.rawValue }
     
@@ -15,6 +16,7 @@ enum Language: String, Codable, CaseIterable, Identifiable {
         case .japanese: return "🇯🇵"
         case .korean: return "🇰🇷"
         case .french: return "🇫🇷"
+        case .vietnamese: return "🇻🇳"
         }
     }
     
@@ -30,12 +32,8 @@ enum LearningLevel: String, Codable, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     
     var cerCode: String {
-        switch self {
-        case .superBeginner: return "A0"
-        case .beginner: return "A1-A2"
-        case .intermediate: return "B1-B2"
-        case .advanced: return "C1-C2"
-        }
+        let levelInt = LevelManager.shared.normalize(self)
+        return LevelManager.shared.cefrCode(for: levelInt)
     }
 }
 

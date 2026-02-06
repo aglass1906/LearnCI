@@ -1,0 +1,221 @@
+{
+    "id": "es_phrases_a1",
+    "language": "es",
+    "proficiencyLevel": 1,
+    "title": "Spanish Common Phrases (A1)",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "audioCloze",
+        "multipleChoice"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "es_p_a1_01",
+            "wordTarget": "Buenos días",
+            "wordNative": "Good morning",
+            "sentenceTarget": "Buenos días, ¿cómo estás?",
+            "sentenceNative": "Good morning, how are you?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_sol.jpg",
+            "tags": [
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_p_a1_02",
+            "wordTarget": "Buenas noches",
+            "wordNative": "Good night",
+            "sentenceTarget": "Buenas noches, hasta mañana.",
+            "sentenceNative": "Good night, see you tomorrow.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_luna.jpg",
+            "tags": [
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_p_a1_03",
+            "wordTarget": "Por favor",
+            "wordNative": "Please",
+            "sentenceTarget": "Un café, por favor.",
+            "sentenceNative": "A coffee, please.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_cafe.jpg",
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_p_a1_04",
+            "wordTarget": "Gracias",
+            "wordNative": "Thank you",
+            "sentenceTarget": "Muchas gracias por la comida.",
+            "sentenceNative": "Thank you very much for the food.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_comida.png",
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_p_a1_05",
+            "wordTarget": "Cuánto cuesta",
+            "wordNative": "How much does it cost?",
+            "sentenceTarget": "¿Cuánto cuesta el sombrero?",
+            "sentenceNative": "How much does the hat cost?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_sombrero.png",
+            "tags": [
+                "Shopping"
+            ]
+        },
+        {
+            "id": "es_p_a1_06",
+            "wordTarget": "La cuenta",
+            "wordNative": "The bill",
+            "sentenceTarget": "La cuenta, por favor.",
+            "sentenceNative": "The bill, please.",
+            "audioWordFile": "es_dinero_word.mp3",
+            "audioSentenceFile": null,
+            "mediaFile": "es_dinero.png",
+            "tags": [
+                "Dining",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_p_a1_07",
+            "wordTarget": "Dónde está",
+            "wordNative": "Where is it?",
+            "sentenceTarget": "¿Dónde está el baño?",
+            "sentenceNative": "Where is the bathroom?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_puerta.png",
+            "tags": [
+                "Essentials",
+                "Travel"
+            ]
+        },
+        {
+            "id": "es_p_a1_08",
+            "wordTarget": "Tengo hambre",
+            "wordNative": "I am hungry",
+            "sentenceTarget": "Tengo hambre, quiero arroz.",
+            "sentenceNative": "I am hungry, I want rice.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_arroz.jpg",
+            "tags": [
+                "Essentials",
+                "Dining"
+            ]
+        },
+        {
+            "id": "es_p_a1_09",
+            "wordTarget": "Tengo sed",
+            "wordNative": "I am thirsty",
+            "sentenceTarget": "Tengo sed, necesito agua.",
+            "sentenceNative": "I am thirsty, I need water.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_leche.jpg",
+            "tags": [
+                "Essentials",
+                "Dining"
+            ]
+        },
+        {
+            "id": "es_p_a1_10",
+            "wordTarget": "Qué hora es",
+            "wordNative": "What time is it",
+            "sentenceTarget": "¿Qué hora es ahora?",
+            "sentenceNative": "What time is it now?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_reloj.png",
+            "tags": [
+                "Essentials",
+                "Time"
+            ]
+        },
+        {
+            "id": "es_p_a1_11",
+            "wordTarget": "No entiendo",
+            "wordNative": "I don't understand",
+            "sentenceTarget": "Lo siento, no entiendo.",
+            "sentenceNative": "Sorry, I don't understand.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_libro.png",
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_p_a1_12",
+            "wordTarget": "Ayuda",
+            "wordNative": "Help",
+            "sentenceTarget": "Necesito ayuda con mi coche.",
+            "sentenceNative": "I need help with my car.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_coche.png",
+            "tags": [
+                "Essentials",
+                "Travel"
+            ]
+        },
+        {
+            "id": "es_p_a1_13",
+            "wordTarget": "Me gusta",
+            "wordNative": "I like",
+            "sentenceTarget": "Me gusta la playa.",
+            "sentenceNative": "I like the beach.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_playa.png",
+            "tags": [
+                "General"
+            ]
+        },
+        {
+            "id": "es_p_a1_14",
+            "wordTarget": "Vamos",
+            "wordNative": "Let's go",
+            "sentenceTarget": "Vamos al mercado.",
+            "sentenceNative": "Let's go to the market.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_mercado.png",
+            "tags": [
+                "General",
+                "Travel"
+            ]
+        },
+        {
+            "id": "es_p_a1_15",
+            "wordTarget": "Eres amable",
+            "wordNative": "You are kind",
+            "sentenceTarget": "Eres muy amable.",
+            "sentenceNative": "You are very kind.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": "es_mujer.png",
+            "tags": [
+                "Compliments"
+            ]
+        }
+    ]
+}

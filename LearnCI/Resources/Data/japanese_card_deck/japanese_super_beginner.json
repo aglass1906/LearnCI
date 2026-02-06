@@ -5,7 +5,9 @@
     "title": "Japanese Starter Words",
     "supportedModes": [
         "flashcards",
-        "memoryMatch"
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze"
     ],
     "gameConfiguration": {
         "flashcards": {

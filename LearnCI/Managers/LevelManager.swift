@@ -132,4 +132,9 @@ class LevelManager {
     func languageName(for code: String) -> String {
         return taxonomy?.languages[code] ?? code.uppercased()
     }
+    
+    // Direct access to CEFR code from taxonomy
+    func cefrCode(for level: Int) -> String {
+        return taxonomy?.levels[String(level)]?.CEFR ?? "A1"
+    }
 }

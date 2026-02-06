@@ -5,7 +5,9 @@
     "title": "Spanish Intermediate Immersion",
     "supportedModes": [
         "flashcards",
-        "memoryMatch"
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze"
     ],
     "gameConfiguration": {
         "flashcards": {

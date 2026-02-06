@@ -178,6 +178,7 @@ struct GameConfigurationView: View {
         .sheet(isPresented: $showTagSelection) {
             TagSelectionSheet(
                 language: sessionLanguage,
+                defaultLevel: mapLevel(sessionLevel),
                 selectedDeck: $selectedDeck
             )
         }
@@ -320,6 +321,16 @@ struct GameConfigurationView: View {
             return "Text Only (Drill)"
         case .story:
             return "Read & Listen (Immersion)"
+        }
+    }
+    
+    private func mapLevel(_ level: Int) -> LearningLevel {
+        switch level {
+        case 1: return .superBeginner
+        case 2: return .beginner
+        case 3, 4: return .intermediate
+        case 5, 6: return .advanced
+        default: return .intermediate
         }
     }
 }

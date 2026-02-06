@@ -1,0 +1,155 @@
+{
+    "id": "es_phrases_a2",
+    "language": "es",
+    "proficiencyLevel": 2,
+    "title": "Spanish Common Phrases (A2)",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "audioCloze",
+        "multipleChoice"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "es_p_a2_01",
+            "wordTarget": "Me duele la cabeza",
+            "wordNative": "My head hurts",
+            "sentenceTarget": "No puedo ir, me duele la cabeza.",
+            "sentenceNative": "I can't go, my head hurts.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Health"
+            ]
+        },
+        {
+            "id": "es_p_a2_02",
+            "wordTarget": "Quisiera reservar",
+            "wordNative": "I would like to reserve",
+            "sentenceTarget": "Quisiera reservar una mesa para dos.",
+            "sentenceNative": "I would like to reserve a table for two.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Dining",
+                "Travel"
+            ]
+        },
+        {
+            "id": "es_p_a2_03",
+            "wordTarget": "¿Cómo llego?",
+            "wordNative": "How do I get to?",
+            "sentenceTarget": "¿Cómo llego a la estación de tren?",
+            "sentenceNative": "How do I get to the train station?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Travel",
+                "Directions"
+            ]
+        },
+        {
+            "id": "es_p_a2_04",
+            "wordTarget": "Ayer fui",
+            "wordNative": "Yesterday I went",
+            "sentenceTarget": "Ayer fui al cine con mis amigos.",
+            "sentenceNative": "Yesterday I went to the movies with my friends.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Past Events",
+                "Social"
+            ]
+        },
+        {
+            "id": "es_p_a2_05",
+            "wordTarget": "Probarme esto",
+            "wordNative": "Try this on",
+            "sentenceTarget": "¿Puedo probarme esto, por favor?",
+            "sentenceNative": "Can I try this on, please?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Shopping"
+            ]
+        },
+        {
+            "id": "es_p_a2_06",
+            "wordTarget": "Vas a hacer",
+            "wordNative": "You are going to do",
+            "sentenceTarget": "¿Qué vas a hacer este fin de semana?",
+            "sentenceNative": "What are you going to do this weekend?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Future Plans",
+                "Social"
+            ]
+        },
+        {
+            "id": "es_p_a2_07",
+            "wordTarget": "No me siento bien",
+            "wordNative": "I don't feel well",
+            "sentenceTarget": "Me voy a casa, no me siento bien.",
+            "sentenceNative": "I'm going home, I don't feel well.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Health"
+            ]
+        },
+        {
+            "id": "es_p_a2_08",
+            "wordTarget": "Estuvo deliciosa",
+            "wordNative": "It was delicious",
+            "sentenceTarget": "La cena estuvo deliciosa, gracias.",
+            "sentenceNative": "Dinner was delicious, thank you.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Dining",
+                "Social"
+            ]
+        },
+        {
+            "id": "es_p_a2_09",
+            "wordTarget": "Gire a la derecha",
+            "wordNative": "Turn right",
+            "sentenceTarget": "Siga todo recto y gire a la derecha.",
+            "sentenceNative": "Go straight ahead and turn right.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Directions",
+                "Travel"
+            ]
+        },
+        {
+            "id": "es_p_a2_10",
+            "wordTarget": "Más despacio",
+            "wordNative": "More slowly",
+            "sentenceTarget": "¿Podría hablar más despacio, por favor?",
+            "sentenceNative": "Could you speak more slowly, please?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Communication"
+            ]
+        }
+    ]
+}

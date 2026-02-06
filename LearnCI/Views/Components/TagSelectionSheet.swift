@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TagSelectionSheet: View {
     let language: Language
+    let defaultLevel: LearningLevel
     @Binding var selectedDeck: DeckMetadata?
     @Environment(\.dismiss) var dismiss
     @Environment(DataManager.self) private var dataManager
@@ -14,9 +15,57 @@ struct TagSelectionSheet: View {
         GridItem(.adaptive(minimum: 100), spacing: 12)
     ]
     
+    @State private var selectedLevel: LearningLevel?
+    private let initialDeck: DeckMetadata? // Capture deck at launch
+    @State private var limitToInitialDeck: Bool = true
+    
+    init(language: Language, defaultLevel: LearningLevel, selectedDeck: Binding<DeckMetadata?>) {
+        self.language = language
+        self.defaultLevel = defaultLevel
+        self._selectedDeck = selectedDeck
+        self._selectedLevel = State(initialValue: defaultLevel)
+        
+        // If the current deck is a real deck (not virtual), use it as a limit
+        if let current = selectedDeck.wrappedValue, !current.id.starts(with: "virtual_") {
+            self.initialDeck = current
+            self._limitToInitialDeck = State(initialValue: true)
+        } else {
+            self.initialDeck = nil
+            self._limitToInitialDeck = State(initialValue: false)
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Filter Bar
+                VStack(spacing: 8) {
+                    // Level Picker
+                    Picker("Level", selection: $selectedLevel) {
+                        Text("All Levels").tag(Optional<LearningLevel>.none)
+                        ForEach(LearningLevel.allCases) { level in
+                            Text(level.rawValue).tag(Optional(level))
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    
+                    // Deck Scope Picker (Only if we have an initial deck)
+                    if let initialDeck = initialDeck {
+                        Picker("Scope", selection: $limitToInitialDeck) {
+                            Text("All Decks").tag(false)
+                            Text(initialDeck.title).tag(true)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .onChange(of: limitToInitialDeck) { _, _ in
+                            loadTags()
+                        }
+                    }
+                }
+                .padding()
+                .onChange(of: selectedLevel) { _, _ in
+                    loadTags()
+                }
+                
                 ScrollView {
                     if isLoading {
                         ProgressView("Scanning decks...")
@@ -138,8 +187,12 @@ struct TagSelectionSheet: View {
     
     private func loadTags() {
         let manager = dataManager
+        let level = selectedLevel
+        let limit = limitToInitialDeck ? initialDeck : nil
+        isLoading = true
+        
         Task {
-            let discovered = manager.discoverDomainTags(language: language)
+            let discovered = manager.discoverDomainTags(language: language, level: level, limitDeck: limit)
             await MainActor.run {
                 self.domainGroups = discovered
                 self.isLoading = false
@@ -148,7 +201,8 @@ struct TagSelectionSheet: View {
     }
     
     private func confirmSelection(_ tag: String) {
-        let virtualDeck = dataManager.createVirtualDeck(tag: tag, language: language)
+        let limit = limitToInitialDeck ? initialDeck : nil
+        let virtualDeck = dataManager.createVirtualDeck(tag: tag, language: language, level: selectedLevel, limitDeck: limit)
         
         let metadata = DeckMetadata(
             id: virtualDeck.id,

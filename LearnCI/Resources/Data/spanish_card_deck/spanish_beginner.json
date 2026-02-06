@@ -5,7 +5,9 @@
     "title": "Spanish Beginner Essentials",
     "supportedModes": [
         "flashcards",
-        "memoryMatch"
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze"
     ],
     "gameConfiguration": {
         "flashcards": {

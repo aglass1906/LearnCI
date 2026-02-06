@@ -4,7 +4,9 @@
     "proficiencyLevel": 2,
     "title": "Spanish Conjugations",
     "supportedModes": [
-        "flashcards"
+        "flashcards",
+        "multipleChoice",
+        "audioCloze"
     ],
     "gameConfiguration": {
         "flashcards": {

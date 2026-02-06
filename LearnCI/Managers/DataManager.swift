@@ -136,8 +136,15 @@ class DataManager {
         
     // Discover unique tags across all decks for a language
     // Discover unique tags across all decks for a language, with counts
-    func discoverTags(language: Language) -> [String: Int] {
-        let decks = discoverDecks(language: language, level: nil) // level nil = all levels
+    // Discover unique tags across all decks for a language, with counts
+    func discoverTags(language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> [String: Int] {
+        let decks: [DeckMetadata]
+        if let limit = limitDeck {
+            decks = [limit]
+        } else {
+            decks = discoverDecks(language: language, level: level)
+        }
+        
         var tagCounts = [String: Int]()
         
         for meta in decks {
@@ -163,12 +170,12 @@ class DataManager {
     }
     
     // Discover tags grouped by domain
-    func discoverDomainTags(language: Language) -> [DomainGroup] {
+    func discoverDomainTags(language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> [DomainGroup] {
         if loadedTaxonomy.isEmpty {
             loadTagTaxonomy()
         }
         
-        let rawCounts = discoverTags(language: language)
+        let rawCounts = discoverTags(language: language, level: level, limitDeck: limitDeck)
         var groupedDomains: [DomainGroup] = []
         var assignedTags = Set<String>()
         
@@ -233,8 +240,14 @@ class DataManager {
     }
     
     // Create a virtual deck from a specific tag
-    func createVirtualDeck(tag: String, language: Language) -> CardDeck {
-        let decks = discoverDecks(language: language, level: nil)
+    func createVirtualDeck(tag: String, language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> CardDeck {
+        let decks: [DeckMetadata]
+        if let limit = limitDeck {
+            decks = [limit]
+        } else {
+            decks = discoverDecks(language: language, level: level)
+        }
+        
         var combinedCards: [LearningCard] = []
         
         for meta in decks {
@@ -252,12 +265,13 @@ class DataManager {
         }
         
         // Create a unique deterministic ID for valid caching if needed
-        let virtualId = "virtual_\(language.code)_\(tag.lowercased().replacingOccurrences(of: " ", with: "_"))"
+        let levelSuffix = level?.rawValue ?? "All"
+        let virtualId = "virtual_\(language.code)_\(tag.lowercased().replacingOccurrences(of: " ", with: "_"))_\(levelSuffix)"
         
         return CardDeck(
             id: virtualId,
             language: language,
-            level: .intermediate, // Mixed levels, default to intermediate? Or use a new "Mixed" level
+            level: level ?? .intermediate, // If specific level, use it. If mixed, intermediate is a safe fallback for UI.
             title: "Focus: \(tag)",
             cards: combinedCards.shuffled(), // Randomize by default?
             supportedModes: [.flashcards, .memoryMatch], // Support all basic modes

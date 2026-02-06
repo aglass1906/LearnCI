@@ -103,10 +103,11 @@ struct GameConfiguration: Codable, Equatable {
     
     enum GameType: String, Codable, CaseIterable, Identifiable {
         case flashcards = "Flashcards"
-        case memoryMatch = "Memory Match"
-        case sentenceBuilder = "Sentence Scramble"
-        case story = "Story" // Renamed for clarity
-        case multipleChoice = "Multiple Choice"
+    case memoryMatch = "Memory Match"
+    case sentenceBuilder = "Sentence Scramble"
+    case story = "Story Mode"
+    case multipleChoice = "Multiple Choice"
+    case audioCloze = "Listening Challenge"
         
         var id: String { rawValue }
         
@@ -116,7 +117,19 @@ struct GameConfiguration: Codable, Equatable {
             case .memoryMatch: return "square.grid.2x2.fill"
             case .sentenceBuilder: return "text.bubble.fill"
             case .story: return "book.fill"
-            case .multipleChoice: return "list.bullet.rectangle.portrait.fill"
+            case .multipleChoice: return "list.bullet.clipboard"
+            case .audioCloze: return "headphones"
+            }
+        }
+        
+        var description: String {
+            switch self {
+            case .flashcards: return "Classic study mode with spaced repetition."
+            case .memoryMatch: return "Match words with their meanings."
+            case .sentenceBuilder: return "Reassemble sentences in the correct order."
+            case .story: return "Read and listen to immersive stories."
+            case .multipleChoice: return "Select the correct answer from 4 options."
+            case .audioCloze: return "Listen and fill in the missing word."
             }
         }
         

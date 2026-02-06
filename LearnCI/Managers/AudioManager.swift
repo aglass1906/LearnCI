@@ -235,7 +235,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         isPlaying = true
     }
     
-    private func speak(text: String, language: Language, gender: String?, rate: Float) {
+    func speak(text: String, language: Language, gender: String?, rate: Float) {
         let utterance = AVSpeechUtterance(string: text)
         
         let voiceCode: String

@@ -95,6 +95,18 @@ struct ActiveSessionView: View {
                         onFinish: onFinish,
                         onNext: onNext // Added to signature
                     )
+                case .audioCloze:
+                    AudioClozeGameView(
+                        deck: deck,
+                        sessionCards: sessionCards,
+                        currentCardIndex: currentCardIndex,
+                        learnedCount: learnedCount,
+                        sessionCardGoal: sessionCardGoal,
+                        sessionConfig: sessionConfig,
+                        onLearned: onLearned,
+                        onFinish: onFinish,
+                        onNext: onNext
+                    )
                 }
             } else {
                 ProgressView("Loading Deck...")

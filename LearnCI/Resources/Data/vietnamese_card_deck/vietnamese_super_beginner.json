@@ -1,0 +1,124 @@
+{
+    "id": "vi_sb_001",
+    "language": "vi",
+    "proficiencyLevel": 1,
+    "title": "Vietnamese Starter Words",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "vi_sb_1",
+            "wordTarget": "Xin chào",
+            "wordNative": "Hello",
+            "sentenceTarget": "Xin chào, bạn khỏe không?",
+            "sentenceNative": "Hello, how are you?",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Greetings"
+            ]
+        },
+        {
+            "id": "vi_sb_2",
+            "wordTarget": "Cảm ơn",
+            "wordNative": "Thank you",
+            "sentenceTarget": "Cảm ơn bạn rất nhiều.",
+            "sentenceNative": "Thank you very much.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "vi_sb_3",
+            "wordTarget": "Tạm biệt",
+            "wordNative": "Goodbye",
+            "sentenceTarget": "Tạm biệt, hẹn gặp lại.",
+            "sentenceNative": "Goodbye, see you again.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Greetings"
+            ]
+        },
+        {
+            "id": "vi_sb_4",
+            "wordTarget": "Có",
+            "wordNative": "Yes",
+            "sentenceTarget": "Có, tôi hiểu.",
+            "sentenceNative": "Yes, I understand.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "vi_sb_5",
+            "wordTarget": "Không",
+            "wordNative": "No",
+            "sentenceTarget": "Không, cảm ơn.",
+            "sentenceNative": "No, thank you.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Essentials"
+            ]
+        },
+        {
+            "id": "vi_sb_6",
+            "wordTarget": "Cơm",
+            "wordNative": "Rice (Cooked)",
+            "sentenceTarget": "Tôi thích ăn cơm.",
+            "sentenceNative": "I like to eat rice.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Food"
+            ]
+        },
+        {
+            "id": "vi_sb_7",
+            "wordTarget": "Phở",
+            "wordNative": "Pho",
+            "sentenceTarget": "Phở là món ăn ngon.",
+            "sentenceNative": "Pho is a delicious dish.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Food"
+            ]
+        },
+        {
+            "id": "vi_sb_8",
+            "wordTarget": "Nước",
+            "wordNative": "Water",
+            "sentenceTarget": "Cho tôi một ly nước.",
+            "sentenceNative": "Give me a glass of water.",
+            "audioWordFile": null,
+            "audioSentenceFile": null,
+            "mediaFile": null,
+            "tags": [
+                "Drinks",
+                "Essentials"
+            ]
+        }
+    ]
+}

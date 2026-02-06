@@ -54,7 +54,7 @@ struct ActiveSessionView: View {
                         onGrade: onGrade
                     )
                 case .memoryMatch:
-                    MemoryGameView(
+                    MemoryMatchConfigView(
                         sessionCards: sessionCards,
                         deck: deck,
                         sessionConfig: sessionConfig,

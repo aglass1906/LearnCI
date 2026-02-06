@@ -4,19 +4,21 @@ struct MemoryGameView: View {
     let sessionCards: [LearningCard]
     let deck: CardDeck
     let sessionConfig: GameConfiguration // Added for ttsRate
+    let matchMode: MemoryMatchMode
     let onGameComplete: () -> Void
     let onMatchFound: () -> Void
     
     @Environment(AudioManager.self) private var audioManager
     @State private var engine: MemoryGameEngine
     
-    init(sessionCards: [LearningCard], deck: CardDeck, sessionConfig: GameConfiguration, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
+    init(sessionCards: [LearningCard], deck: CardDeck, sessionConfig: GameConfiguration, matchMode: MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
         self.sessionCards = sessionCards
         self.deck = deck
         self.sessionConfig = sessionConfig
+        self.matchMode = matchMode
         self.onGameComplete = onGameComplete
         self.onMatchFound = onMatchFound
-        _engine = State(initialValue: MemoryGameEngine(learningCards: sessionCards))
+        _engine = State(initialValue: MemoryGameEngine(learningCards: sessionCards, matchMode: matchMode))
     }
     
     let columns = [
@@ -117,11 +119,41 @@ struct CardTile: View {
                         .stroke(card.isMatched ? Color.green : Color.gray.opacity(0.3), lineWidth: 2)
                 )
                 .overlay(
-                    Text(card.content)
-                        .font(.system(size: 14, weight: .semibold))
-                        .multilineTextAlignment(.center)
-                        .padding(4)
-                        .foregroundColor(.black)
+                    Group {
+                        if let mediaFile = card.mediaFile, !mediaFile.isEmpty {
+                            // Show image if available
+                            AsyncImage(url: imageURL(for: mediaFile)) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        .padding(4)
+                                case .failure(_), .empty:
+                                    // Fallback to text if image fails
+                                    Text(card.content)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .multilineTextAlignment(.center)
+                                        .padding(4)
+                                        .foregroundColor(.black)
+                                @unknown default:
+                                    Text(card.content)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .multilineTextAlignment(.center)
+                                        .padding(4)
+                                        .foregroundColor(.black)
+                                }
+                            }
+                        } else {
+                            // No image, show text
+                            Text(card.content)
+                                .font(.system(size: 14, weight: .semibold))
+                                .multilineTextAlignment(.center)
+                                .padding(4)
+                                .foregroundColor(.black)
+                        }
+                    }
                 )
                 .opacity(card.isFlipped || card.isMatched ? 1 : 0)
                 .rotation3DEffect(
@@ -135,5 +167,19 @@ struct CardTile: View {
             axis: (x: 0.0, y: 1.0, z: 0.0)
         )
         .animation(.default, value: card.isFlipped)
+    }
+    
+    // Helper to resolve image URL
+    private func imageURL(for filename: String) -> URL? {
+        // Try bundle resources first
+        let name = (filename as NSString).deletingPathExtension
+        let ext = (filename as NSString).pathExtension.isEmpty ? "jpg" : (filename as NSString).pathExtension
+        
+        if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Images") ??
+                      Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Resources/Images") {
+            return url
+        }
+        
+        return nil
     }
 }

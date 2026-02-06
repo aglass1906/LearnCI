@@ -1,6 +1,12 @@
 import SwiftUI
 import Combine
 
+enum MemoryMatchMode: String, CaseIterable {
+    case wordToWord = "Word to Word"
+    case wordToPicture = "Word to Picture"
+    case pictureToWord = "Picture to Word"
+}
+
 enum MemoryCardType {
     case target
     case native
@@ -16,6 +22,9 @@ struct MemoryCard: Identifiable, Equatable {
     
     // For audio playback
     var audioFile: String?
+    
+    // For visual representation
+    var mediaFile: String?
 }
 
 @Observable
@@ -25,13 +34,15 @@ class MemoryGameEngine {
     var matchedPairs: Int = 0
     var totalPairs: Int = 0
     var moves: Int = 0
+    var matchMode: MemoryMatchMode
     
     var onGameComplete: (() -> Void)?
     var onMatchFound: (() -> Void)?
     var onMistake: (() -> Void)?
     var playAudio: ((String?, String) -> Void)?
     
-    init(learningCards: [LearningCard]) {
+    init(learningCards: [LearningCard], matchMode: MemoryMatchMode = .pictureToWord) {
+        self.matchMode = matchMode
         setupGame(with: learningCards)
     }
     
@@ -45,20 +56,55 @@ class MemoryGameEngine {
         var newCards: [MemoryCard] = []
         
         for card in selectedCards {
-            // Target Card (Word in Target Language)
-            newCards.append(MemoryCard(
-                content: card.wordTarget,
-                associatedCardId: card.id,
-                type: .target,
-                audioFile: card.audioWordFile
-            ))
-            
-            // Native Card (Translation)
-            newCards.append(MemoryCard(
-                content: card.wordNative,
-                associatedCardId: card.id,
-                type: .native
-            ))
+            switch matchMode {
+            case .wordToWord:
+                // Target: Text, Native: Text
+                newCards.append(MemoryCard(
+                    content: card.wordTarget,
+                    associatedCardId: card.id,
+                    type: .target,
+                    audioFile: card.audioWordFile,
+                    mediaFile: nil
+                ))
+                newCards.append(MemoryCard(
+                    content: card.wordNative,
+                    associatedCardId: card.id,
+                    type: .native,
+                    mediaFile: nil
+                ))
+                
+            case .wordToPicture:
+                // Target: Picture, Native: Text
+                newCards.append(MemoryCard(
+                    content: card.wordTarget,
+                    associatedCardId: card.id,
+                    type: .target,
+                    audioFile: card.audioWordFile,
+                    mediaFile: card.mediaFile
+                ))
+                newCards.append(MemoryCard(
+                    content: card.wordNative,
+                    associatedCardId: card.id,
+                    type: .native,
+                    mediaFile: nil
+                ))
+                
+            case .pictureToWord:
+                // Target: Text, Native: Picture
+                newCards.append(MemoryCard(
+                    content: card.wordTarget,
+                    associatedCardId: card.id,
+                    type: .target,
+                    audioFile: card.audioWordFile,
+                    mediaFile: nil
+                ))
+                newCards.append(MemoryCard(
+                    content: card.wordNative,
+                    associatedCardId: card.id,
+                    type: .native,
+                    mediaFile: card.mediaFile
+                ))
+            }
         }
         
         cards = newCards.shuffled()

@@ -106,6 +106,7 @@ struct GameConfiguration: Codable, Equatable {
         case memoryMatch = "Memory Match"
         case sentenceBuilder = "Sentence Scramble"
         case story = "Story" // Renamed for clarity
+        case multipleChoice = "Multiple Choice"
         
         var id: String { rawValue }
         
@@ -115,6 +116,7 @@ struct GameConfiguration: Codable, Equatable {
             case .memoryMatch: return "square.grid.2x2.fill"
             case .sentenceBuilder: return "text.bubble.fill"
             case .story: return "book.fill"
+            case .multipleChoice: return "list.bullet.rectangle.portrait.fill"
             }
         }
         
@@ -144,6 +146,7 @@ struct GameConfiguration: Codable, Equatable {
             case "flashcards": self = .flashcards
             case "memorymatch", "memory match": self = .memoryMatch
             case "story": self = .story
+            case "multiplechoice": self = .multipleChoice
             default:
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid GameType: \(rawString)")
             }

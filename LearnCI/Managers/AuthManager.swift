@@ -222,20 +222,9 @@ class AuthManager {
     
     @MainActor
     func resendVerificationEmail(email: String) async throws {
-        // Construct redirect URL
-        let redirectURL = AppConfig.webPortalBaseURL
-            .appendingPathComponent("auth")
-            .appendingPathComponent("callback")
-        
-        var components = URLComponents(url: redirectURL, resolvingAgainstBaseURL: true)!
-        components.queryItems = [URLQueryItem(name: "next", value: "/auth/verified")]
-        
-        
-        try await supabase.auth.resend(
-            email: email, 
-            type: .signup, 
-            options: .init(redirectTo: components.url?.absoluteString)
-        )
+        // Note: Supabase Swift SDK v2.39.0 resend() does not support 'redirectTo'.
+        // This will us redirect to the Site URL configured in Supabase Dashboard.
+        try await supabase.auth.resend(email: email, type: .signup)
     }
     
     @MainActor

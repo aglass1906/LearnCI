@@ -80,6 +80,18 @@ struct ActiveSessionView: View {
                         onNext: onNext,
                         onPrev: onPrev
                     )
+                case .multipleChoice:
+                    MultipleChoiceGameView(
+                        deck: deck,
+                        sessionCards: sessionCards,
+                        currentCardIndex: currentCardIndex,
+                        learnedCount: learnedCount,
+                        sessionCardGoal: sessionCardGoal,
+                        sessionConfig: sessionConfig,
+                        onLearned: onLearned,
+                        onFinish: onFinish,
+                        onNext: onNext // Added to signature
+                    )
                 }
             } else {
                 ProgressView("Loading Deck...")

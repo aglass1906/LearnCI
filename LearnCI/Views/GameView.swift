@@ -585,7 +585,7 @@ struct GameView: View {
     }
     
     func nextCard() {
-        if let deck = deck, currentCardIndex < deck.cards.count - 1 {
+        if currentCardIndex < sessionCards.count - 1 {
             withAnimation {
                 currentCardIndex += 1
                 isFlipped = false

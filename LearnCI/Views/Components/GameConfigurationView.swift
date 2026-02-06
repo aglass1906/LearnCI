@@ -8,7 +8,7 @@ struct GameConfigurationView: View {
     @Binding var selectedDeck: DeckMetadata?
     @Binding var sessionDuration: Int
     @Binding var sessionCardGoal: Int
-    @Binding var isRandomOrder: Bool
+    @Binding var order: GameConfiguration.OrderStrategy
     @Binding var selectedPreset: GameConfiguration.Preset
     @Binding var customConfig: GameConfiguration
     @Binding var selectedGameType: GameConfiguration.GameType
@@ -122,7 +122,7 @@ struct GameConfigurationView: View {
                                     .fontWeight(.medium)
                                     .foregroundColor(.primary)
                                 
-                                Text(isRandomOrder ? "Random Order" : "Sequential")
+                                Text(order.rawValue)
                                 
                                 HStack(spacing: 4) {
                                     Text(navigationStyle.displayName)
@@ -194,7 +194,7 @@ struct GameConfigurationView: View {
             SessionOptionsSheet(
                 sessionDuration: $sessionDuration,
                 sessionCardGoal: $sessionCardGoal,
-                isRandomOrder: $isRandomOrder,
+                order: $order,
                 useTTSFallback: $useTTSFallback,
                 ttsRate: $ttsRate,
                 navigationStyle: $navigationStyle,
@@ -265,7 +265,7 @@ struct GameConfigurationView: View {
             
             if let defaults = defaults {
                 if let random = defaults.randomize {
-                    isRandomOrder = random
+                    order = random ? .random : .sequential
                 }
                 // Add other defaults here as needed (e.g. autoplay)
             }

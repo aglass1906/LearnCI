@@ -3,7 +3,7 @@ import SwiftUI
 struct SessionOptionsSheet: View {
     @Binding var sessionDuration: Int
     @Binding var sessionCardGoal: Int
-    @Binding var isRandomOrder: Bool
+    @Binding var order: GameConfiguration.OrderStrategy
     @Binding var useTTSFallback: Bool
     @Binding var ttsRate: Float
     
@@ -123,13 +123,23 @@ struct SessionOptionsSheet: View {
                     .padding(.vertical, 4)
                 }
                 
-                Section {
-                    Toggle(isOn: $isRandomOrder) {
-                        Label("Randomize Order", systemImage: "shuffle")
-                            .foregroundColor(.orange)
+                Section(header: Text("Card Order")) {
+                    Picker("Order", selection: $order) {
+                        ForEach(GameConfiguration.OrderStrategy.allCases) { strategy in
+                            Text(strategy.rawValue).tag(strategy)
+                        }
                     }
-                } footer: {
-                    Text("Randomizing changes the order of cards for this session.")
+                    .pickerStyle(.segmented)
+                    
+                    if order == .smart {
+                        Text("Smart Queue prioritizes unlearned cards and intelligently reschedules incorrect answers during the session.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else if order == .random {
+                        Text("Randomizing changes the order of cards for this session.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 Section {

@@ -153,6 +153,14 @@ struct GameConfiguration: Codable, Equatable {
         }
     }
     
+    enum OrderStrategy: String, Codable, CaseIterable, Identifiable {
+        case sequential = "Ordered"
+        case random = "Random"
+        case smart = "Smart Queue"
+        
+        var id: String { rawValue }
+    }
+    
     var gameType: GameType = .flashcards
     var word: SectionConfiguration
     var sentence: SectionConfiguration
@@ -164,13 +172,13 @@ struct GameConfiguration: Codable, Equatable {
     var autoNextDelay: TimeInterval = 2.0
     var confirmation: ConfirmationStyle = .quiz
     
-    var isRandomOrder: Bool = false
+    var order: OrderStrategy = .smart
     var useTTSFallback: Bool = true
     var ttsRate: Float = 0.5
     var ttsVoiceGender: String = "female"
     
     enum CodingKeys: String, CodingKey {
-        case gameType, word, sentence, image, back, isRandomOrder, useTTSFallback, ttsRate, ttsVoiceGender
+        case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
         case navigation, autoNextDelay, confirmation
     }
     
@@ -182,7 +190,7 @@ struct GameConfiguration: Codable, Equatable {
          navigation: NavigationStyle = .swipe,
          autoNextDelay: TimeInterval = 2.0,
          confirmation: ConfirmationStyle = .quiz,
-         isRandomOrder: Bool = false, 
+         order: OrderStrategy = .smart, 
          useTTSFallback: Bool = true, 
          ttsRate: Float = 0.5, 
          ttsVoiceGender: String = "female") {
@@ -194,7 +202,7 @@ struct GameConfiguration: Codable, Equatable {
         self.navigation = navigation
         self.autoNextDelay = autoNextDelay
         self.confirmation = confirmation
-        self.isRandomOrder = isRandomOrder
+        self.order = order
         self.useTTSFallback = useTTSFallback
         self.ttsRate = ttsRate
         self.ttsVoiceGender = ttsVoiceGender
@@ -208,7 +216,16 @@ struct GameConfiguration: Codable, Equatable {
         sentence = try container.decode(SectionConfiguration.self, forKey: .sentence)
         image = try container.decode(ElementVisibility.self, forKey: .image)
         back = try container.decode(BackConfiguration.self, forKey: .back)
-        isRandomOrder = try container.decodeIfPresent(Bool.self, forKey: .isRandomOrder) ?? false
+        
+        // Backward Compatibility: Check 'order' enum first, then fallback to 'isRandomOrder' bool
+        if let strategy = try container.decodeIfPresent(OrderStrategy.self, forKey: .order) {
+            order = strategy
+        } else if let isRandom = try container.decodeIfPresent(Bool.self, forKey: .isRandomOrder) {
+            order = isRandom ? .random : .sequential
+        } else {
+            order = .sequential
+        }
+        
         useTTSFallback = try container.decodeIfPresent(Bool.self, forKey: .useTTSFallback) ?? true
         ttsRate = try container.decodeIfPresent(Float.self, forKey: .ttsRate) ?? 0.5
         ttsVoiceGender = try container.decodeIfPresent(String.self, forKey: .ttsVoiceGender) ?? "female"
@@ -217,6 +234,26 @@ struct GameConfiguration: Codable, Equatable {
         navigation = try container.decodeIfPresent(NavigationStyle.self, forKey: .navigation) ?? .swipe
         autoNextDelay = try container.decodeIfPresent(TimeInterval.self, forKey: .autoNextDelay) ?? 2.0
         confirmation = try container.decodeIfPresent(ConfirmationStyle.self, forKey: .confirmation) ?? .quiz
+    }
+    
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(gameType, forKey: .gameType)
+        try container.encode(word, forKey: .word)
+        try container.encode(sentence, forKey: .sentence)
+        try container.encode(image, forKey: .image)
+        try container.encode(back, forKey: .back)
+        try container.encode(order, forKey: .order)
+        try container.encode(navigation, forKey: .navigation)
+        try container.encode(autoNextDelay, forKey: .autoNextDelay)
+        try container.encode(confirmation, forKey: .confirmation)
+        try container.encode(useTTSFallback, forKey: .useTTSFallback)
+        try container.encode(ttsRate, forKey: .ttsRate)
+        try container.encode(ttsVoiceGender, forKey: .ttsVoiceGender)
+        
+        // Backward Compatibility
+        try container.encode(order == .random, forKey: .isRandomOrder)
     }
     
     static func from(preset: Preset) -> GameConfiguration {

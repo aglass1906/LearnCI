@@ -42,7 +42,7 @@ struct GameView: View {
     @State private var selectedPreset: GameConfiguration.Preset = .inputFocus
     @State private var selectedGameType: GameConfiguration.GameType = .flashcards
     @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
-    @State private var isRandomOrder: Bool = false
+    @State private var order: GameConfiguration.OrderStrategy = .smart
     @State private var hasInitialized: Bool = false
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
@@ -193,7 +193,8 @@ struct GameView: View {
                 onLearned: learnedCard,
                 onFinish: finishSession,
                 onNext: nextCard,
-                onPrev: prevCard
+                onPrev: prevCard,
+                onGrade: handleGrade
             )
         case .finished:
             SessionFinishView(
@@ -207,7 +208,7 @@ struct GameView: View {
                 gameType: sessionConfig.gameType,
                 duration: sessionDuration,
                 cardGoal: sessionCardGoal,
-                isRandom: isRandomOrder
+                order: sessionConfig.order
             )
         }
     }
@@ -281,7 +282,7 @@ struct GameView: View {
             selectedDeck: $selectedDeck,
             sessionDuration: $sessionDuration,
             sessionCardGoal: $sessionCardGoal,
-            isRandomOrder: $isRandomOrder,
+            order: $order,
             selectedPreset: $selectedPreset,
             customConfig: $customConfig,
             selectedGameType: $selectedGameType,
@@ -458,7 +459,7 @@ struct GameView: View {
             sessionConfig = GameConfiguration.from(preset: selectedPreset)
         }
         
-        sessionConfig.isRandomOrder = isRandomOrder
+        sessionConfig.order = order
         sessionConfig.gameType = selectedGameType
         
         // Apply Global Audio Settings
@@ -483,13 +484,8 @@ struct GameView: View {
              // Apply Deck Overrides (e.g. Randomization from JSON)
              applyDeckOverrides(to: &sessionConfig, from: currentDeck, type: selectedGameType)
              
-             let filtered = filterCards(currentDeck.cards, for: selectedGameType)
-             
-             if sessionConfig.isRandomOrder {
-                 sessionCards = filtered.shuffled()
-             } else {
-                 sessionCards = filtered
-             }
+             // Filter and Select Cards (Limit to Session Goal)
+             sessionCards = prepareSessionCards(currentDeck.cards)
         }
         
         withAnimation {
@@ -562,9 +558,7 @@ struct GameView: View {
             let totalCards = deck?.cards.count ?? 0
             comment = "\(deckTitle) · \(learnedCount)/\(totalCards) cards"
             comment? += " · \(selectedPreset.rawValue)"
-            if isRandomOrder {
-                comment? += " (Random)"
-            }
+            comment? += " (\(sessionConfig.order.rawValue))"
         }
         
         let activity = UserActivity(
@@ -615,6 +609,41 @@ struct GameView: View {
         nextCard()
     }
     
+    func handleGrade(_ grade: SmartSessionManager.Grade) {
+        // Apply grade to queue
+        SmartSessionManager.shared.handleGrade(grade)
+        
+        // Update stats if card is mastered
+        if grade == .easy {
+            learnedCount += 1
+        }
+        
+        // Sync active queue
+        sessionCards = SmartSessionManager.shared.activeQueue
+        
+        // Check for completion
+        if sessionCards.isEmpty {
+            finishSession()
+            return
+        }
+        
+        // Animate to "next" card (which is effectively just updating the view since index 0 changed)
+        // Since we removed item at index 0, the next item slides into place.
+        // We might want to force a "reset" of animation state.
+        
+        // If we want a slide animation:
+        // We can pretend we moved to next, but the list changed.
+        
+        // Simple update for now:
+        withAnimation {
+            isFlipped = false
+            // currentCardIndex should stay 0 as we pop from front
+            // If currentCardIndex was > 0, we should reset it?
+            // Smart Sesion Manager assumes we work on head of queue.
+            currentCardIndex = 0 
+        }
+    }
+    
     func handleDeckLoaded(_ newDeck: CardDeck?) {
         // Race condition fix: If we started session but deck wasn't ready,
         // populate cards now that it is loaded.
@@ -623,13 +652,8 @@ struct GameView: View {
             // Note: We need to update the binding/state of sessionConfig too if we want it to reflect
             applyDeckOverrides(to: &sessionConfig, from: deck, type: sessionConfig.gameType)
             
-            let filtered = filterCards(deck.cards, for: sessionConfig.gameType)
-            
-            if sessionConfig.isRandomOrder {
-                sessionCards = filtered.shuffled()
-            } else {
-                sessionCards = filtered
-            }
+            // Filter and Select Cards (Limit to Session Goal)
+            sessionCards = prepareSessionCards(deck.cards)
             
             // Trigger audio now that we have cards
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -639,6 +663,36 @@ struct GameView: View {
     }
     
     // MARK: - Deck Logic Helpers
+    
+    func prepareSessionCards(_ allCards: [LearningCard]) -> [LearningCard] {
+        let filtered = filterCards(allCards, for: sessionConfig.gameType)
+        
+        let limit = sessionCardGoal
+        var workingSet: [LearningCard] = []
+        
+        if filtered.count > limit {
+             if sessionConfig.order == .sequential {
+                 workingSet = Array(filtered.prefix(limit))
+             } else {
+                 // For Random/Smart, pick a random subset
+                 workingSet = Array(filtered.shuffled().prefix(limit))
+             }
+        } else {
+             workingSet = filtered
+             // If random/smart, shuffle even if full set (Smart Queue might re-order, but random start is good)
+             if sessionConfig.order != .sequential {
+                 workingSet.shuffle()
+             }
+        }
+        
+        // Setup Smart Queue if needed
+        if sessionConfig.order == .smart {
+            SmartSessionManager.shared.startSession(cards: workingSet)
+            return SmartSessionManager.shared.activeQueue
+        }
+        
+        return workingSet
+    }
     
     func filterCards(_ cards: [LearningCard], for type: GameConfiguration.GameType) -> [LearningCard] {
         return cards.filter { card in
@@ -749,7 +803,7 @@ struct SessionSummaryView: View {
     let gameType: GameConfiguration.GameType
     let duration: Int
     let cardGoal: Int
-    let isRandom: Bool
+    let order: GameConfiguration.OrderStrategy
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -829,10 +883,16 @@ struct SessionSummaryView: View {
                         .foregroundColor(.secondary)
                     Text("\(cardGoal) cards")
                     
-                    if isRandom {
+                    if order == .random {
                         Text("·")
                             .foregroundColor(.secondary)
                         Image(systemName: "shuffle")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    } else if order == .smart {
+                         Text("·")
+                            .foregroundColor(.secondary)
+                        Image(systemName: "brain.head.profile")
                             .foregroundColor(.secondary)
                             .font(.caption)
                     }

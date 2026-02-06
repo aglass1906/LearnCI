@@ -14,7 +14,7 @@ struct SessionFinishView: View {
     let gameType: GameConfiguration.GameType
     let duration: Int
     let cardGoal: Int
-    let isRandom: Bool
+    let order: GameConfiguration.OrderStrategy
     
     var body: some View {
         ScrollView {
@@ -52,7 +52,7 @@ struct SessionFinishView: View {
                     gameType: gameType,
                     duration: duration,
                     cardGoal: cardGoal,
-                    isRandom: isRandom
+                    order: order
                 )
                 .padding(.horizontal)
                 

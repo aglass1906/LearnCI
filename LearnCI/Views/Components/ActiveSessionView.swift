@@ -15,6 +15,7 @@ struct ActiveSessionView: View {
     let onFinish: () -> Void
     let onNext: () -> Void
     let onPrev: () -> Void
+    let onGrade: ((SmartSessionManager.Grade) -> Void)?
     
     var body: some View {
         VStack {
@@ -49,7 +50,8 @@ struct ActiveSessionView: View {
                         onRelearn: onRelearn,
                         onLearned: onLearned,
                         onNext: onNext,
-                        onPrev: onPrev
+                        onPrev: onPrev,
+                        onGrade: onGrade
                     )
                 case .memoryMatch:
                     MemoryGameView(
@@ -78,7 +80,8 @@ struct ActiveSessionView: View {
                         onRelearn: onRelearn,
                         onLearned: onLearned,
                         onNext: onNext,
-                        onPrev: onPrev
+                        onPrev: onPrev,
+                        onGrade: onGrade
                     )
                 case .multipleChoice:
                     MultipleChoiceGameView(

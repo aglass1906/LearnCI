@@ -13,6 +13,7 @@ struct FlashcardGameView: View {
     let onLearned: () -> Void
     let onNext: () -> Void
     let onPrev: () -> Void
+    let onGrade: ((SmartSessionManager.Grade) -> Void)?
     
     @Environment(AudioManager.self) private var audioManager
     
@@ -208,42 +209,67 @@ struct FlashcardGameView: View {
     }
     
     var srsControls: some View {
-        HStack(spacing: 12) {
-            Button(action: onRelearn) {
-                VStack {
-                    Text("Hard")
+        HStack(spacing: 8) {
+            // Again (Fail)
+            Button(action: { onGrade?(.again) }) {
+                VStack(spacing: 2) {
+                    Text("Again")
                         .font(.headline)
+                    Text("< 1m")
+                        .font(.caption2)
+                        .opacity(0.8)
                 }
                 .foregroundColor(.red)
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.vertical, 12)
                 .background(Color.red.opacity(0.1))
                 .cornerRadius(12)
             }
             
-            // "Good" usually maps to Learned (or intermediate logic if we had it)
-            // For now, mapping Good -> Learned
-            Button(action: onLearned) {
-                VStack {
+            // Hard
+            Button(action: { onGrade?(.hard) }) {
+                VStack(spacing: 2) {
+                    Text("Hard")
+                        .font(.headline)
+                    Text("Later")
+                        .font(.caption2)
+                        .opacity(0.8)
+                }
+                .foregroundColor(.orange)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(12)
+            }
+            
+            // Good
+            Button(action: { onGrade?(.good) }) {
+                VStack(spacing: 2) {
                     Text("Good")
                         .font(.headline)
+                    Text("End")
+                        .font(.caption2)
+                        .opacity(0.8)
                 }
                 .foregroundColor(.blue)
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.vertical, 12)
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(12)
             }
             
-            // "Easy" also maps to Learned 
-            Button(action: onLearned) {
-                VStack {
+            // Easy
+            Button(action: { onGrade?(.easy) }) {
+                VStack(spacing: 2) {
                     Text("Easy")
                         .font(.headline)
+                    Text("Done")
+                        .font(.caption2)
+                        .opacity(0.8)
                 }
                 .foregroundColor(.green)
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.vertical, 12)
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(12)
             }

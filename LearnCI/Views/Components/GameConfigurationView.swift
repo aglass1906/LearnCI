@@ -28,7 +28,6 @@ struct GameConfigurationView: View {
     // Sheet State
     @State private var showDeckPicker = false
     @State private var showTagSelection = false
-    @State private var showDisplayConfig = false
     @State private var showSessionOptions = false
     @State private var currentDeckCount: Int?
     
@@ -94,22 +93,7 @@ struct GameConfigurationView: View {
                     Divider()
                         .padding(.leading, 50)
 
-                    // Row 4: Display Mode
-                    if selectedGameType == .flashcards {
-                        Button(action: { showDisplayConfig = true }) {
-                            SettingsRow(
-                                icon: "slider.horizontal.3",
-                                iconColor: .purple,
-                                text: "Card Layout",
-                                subText: selectedPreset.rawValue == "Customize" ? "Custom Display" : selectedPreset.rawValue
-                            )
-                        }
-                        
-                        Divider()
-                            .padding(.leading, 50)
-                    }
-                    
-                    // Row 5: Session Options
+                    // Row 4: Session Options
                     Button(action: { showSessionOptions = true }) {
                         SettingsRow(
                             icon: "gearshape.fill",
@@ -180,15 +164,6 @@ struct GameConfigurationView: View {
                 language: sessionLanguage,
                 defaultLevel: mapLevel(sessionLevel),
                 selectedDeck: $selectedDeck
-            )
-        }
-        .sheet(isPresented: $showDisplayConfig) {
-            DisplayConfigurationSheet(
-                selectedPreset: $selectedPreset,
-                customConfig: $customConfig,
-                onSave: {
-                    onSavePreset(selectedPreset)
-                }
             )
         }
         .sheet(isPresented: $showSessionOptions) {

@@ -39,7 +39,7 @@ struct ActiveSessionView: View {
                 // Game Router
                 switch sessionConfig.gameType {
                 case .flashcards:
-                    FlashcardGameView(
+                    FlashcardConfigView(
                         deck: deck,
                         sessionCards: sessionCards,
                         currentCardIndex: currentCardIndex,

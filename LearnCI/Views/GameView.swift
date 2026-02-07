@@ -494,13 +494,7 @@ struct GameView: View {
             dataManager.isFullScreen = true
         }
         
-        // Audio will be triggered by handleDeckLoaded if we waited, 
-        // or we trigger it here if we hit cache.
-        if !sessionCards.isEmpty {
-             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                 self.playCurrentCardAudio()
-             }
-        }
+        // Note: Audio playback removed here - FlashcardConfigView and game views manage their own audio
     }
     
     func playCurrentCardAudio() {

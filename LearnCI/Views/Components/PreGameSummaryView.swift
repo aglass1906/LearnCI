@@ -79,10 +79,11 @@ struct PreGameSummaryView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Start Game") {
-                    onStartGame()
+                Button(action: onStartGame) {
+                    Text("Start Game")
+                        .fontWeight(.bold)
                 }
-                .fontWeight(.bold)
+                .buttonStyle(.borderedProminent)
             }
         }
     }

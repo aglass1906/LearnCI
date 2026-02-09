@@ -448,10 +448,13 @@ struct GameView: View {
                         .font(.subheadline)
                         .disabled(selectedDeck == nil)
                         
-                        Button("Next") {
+                        Button(action: {
                             setupStage = .sessionConfiguration
+                        }) {
+                            Text("Next")
+                                .fontWeight(.bold)
                         }
-                        .fontWeight(.semibold)
+                        .buttonStyle(.borderedProminent)
                         .disabled(selectedDeck == nil)
                     }
                 } else if setupStage == .sessionConfiguration {
@@ -462,10 +465,13 @@ struct GameView: View {
                         }
                         .font(.subheadline)
                         
-                        Button("Next") {
+                        Button(action: {
                             setupStage = .gameSpecificConfig
+                        }) {
+                            Text("Next")
+                                .fontWeight(.bold)
                         }
-                        .fontWeight(.semibold)
+                        .buttonStyle(.borderedProminent)
                     }
                 } else if setupStage == .gameSpecificConfig {
                     // Stage 3: Skip to Summary and Next
@@ -475,10 +481,13 @@ struct GameView: View {
                         }
                         .font(.subheadline)
                         
-                        Button("Next") {
+                        Button(action: {
                             setupStage = .sessionSummary
+                        }) {
+                            Text("Next")
+                                .fontWeight(.bold)
                         }
-                        .fontWeight(.semibold)
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }

@@ -10,6 +10,9 @@ struct ActiveSessionView: View {
     let sessionConfig: GameConfiguration
     @Binding var isFlipped: Bool
     
+    // Config for specific games
+    var matchMode: MemoryMatchMode = .pictureToWord
+    
     let onRelearn: () -> Void
     let onLearned: () -> Void
     let onFinish: () -> Void
@@ -39,7 +42,7 @@ struct ActiveSessionView: View {
                 // Game Router
                 switch sessionConfig.gameType {
                 case .flashcards:
-                    FlashcardConfigView(
+                    FlashcardGameView(
                         deck: deck,
                         sessionCards: sessionCards,
                         currentCardIndex: currentCardIndex,
@@ -54,10 +57,11 @@ struct ActiveSessionView: View {
                         onGrade: onGrade
                     )
                 case .memoryMatch:
-                    MemoryMatchConfigView(
+                    MemoryGameView(
                         sessionCards: sessionCards,
                         deck: deck,
                         sessionConfig: sessionConfig,
+                        matchMode: matchMode,
                         onGameComplete: onFinish,
                         onMatchFound: onLearned
                     )
@@ -93,7 +97,7 @@ struct ActiveSessionView: View {
                         sessionConfig: sessionConfig,
                         onLearned: onLearned,
                         onFinish: onFinish,
-                        onNext: onNext // Added to signature
+                        onNext: onNext
                     )
                 case .audioCloze:
                     AudioClozeGameView(

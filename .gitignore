@@ -6,6 +6,7 @@
 xcuserdata/
 
 *.log
+Build/*
 
 ## Obj-C/Swift specific
 *.hmap

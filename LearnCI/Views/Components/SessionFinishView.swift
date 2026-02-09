@@ -3,7 +3,7 @@ import SwiftUI
 struct SessionFinishView: View {
     let learnedCount: Int
     let elapsedSeconds: Int
-    @Binding var gameState: GameView.GameState
+    @Binding var setupStage: GameView.GameSetupStage
     // Removed selectedDeck binding to persist selection
     
     // Config Stats
@@ -59,7 +59,7 @@ struct SessionFinishView: View {
                 VStack(spacing: 15) {
                     Button(action: {
                         withAnimation {
-                            gameState = .configuration
+                            setupStage = .deckSelection
                             // Do NOT clear selectedDeck
                         }
                     }) {
@@ -77,7 +77,7 @@ struct SessionFinishView: View {
                     
                     Button(action: {
                         // Navigate back or close (Context dependent)
-                        gameState = .configuration
+                        setupStage = .deckSelection
                         // Do NOT clear selectedDeck
                     }) {
                         Text("Return to Menu")

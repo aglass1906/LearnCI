@@ -11,13 +11,17 @@ struct GameView: View {
     @Environment(AudioManager.self) private var audioManager
     
     // State Management
-    enum GameState {
-        case configuration
-        case active
-        case finished
+    enum GameSetupStage {
+        case deckSelection           // Stage 1
+        case sessionConfiguration     // Stage 2
+        case gameSpecificConfig       // Stage 3
+        case sessionSummary           // Stage 4
+        case starting                 // Stage 5 (transition)
+        case playing                  // Stage 6
+        case finished                 // Stage 7
     }
     
-    @State private var gameState: GameState = .configuration
+    @State private var setupStage: GameSetupStage = .deckSelection
     @State private var currentCardIndex: Int = 0
     @State private var isFlipped: Bool = false
     
@@ -46,6 +50,7 @@ struct GameView: View {
     @State private var hasInitialized: Bool = false
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
+    @State private var memoryMatchMode: MemoryMatchMode = .pictureToWord
     
     // UI Customization State
     @State private var navigationStyle: NavigationStyle = .swipe
@@ -69,8 +74,9 @@ struct GameView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             mainContent
+                .id(setupStage) // Force view refresh
                 .navigationTitle(navigationTitle)
                 .toolbar {
                     gameToolbar
@@ -86,10 +92,13 @@ struct GameView: View {
                 .onChange(of: dataManager.loadedDeck) { _, newDeck in
                     handleDeckLoaded(newDeck)
                 }
+                .onChange(of: setupStage) { oldStage, newStage in
+                    print("DEBUG: setupStage changed from \(oldStage) to \(newStage)")
+                }
                 .background(persistenceLogic)
         }
-        .toolbar(gameState == .active ? .hidden : .visible, for: .tabBar)
-        .toolbar(gameState == .active ? .hidden : .visible, for: .navigationBar)
+            .toolbar(setupStage == .playing ? .hidden : .visible, for: .navigationBar)
+        .toolbar(setupStage == .playing ? .hidden : .visible, for: .tabBar)
     }
 
     var persistenceLogic: some View {
@@ -176,10 +185,69 @@ struct GameView: View {
     }
     @ViewBuilder
     var mainContent: some View {
-        switch gameState {
-        case .configuration:
+        let _ = print("DEBUG: mainContent rendering for stage: \(setupStage)")
+        switch setupStage {
+        case .deckSelection:
+            let _ = print("DEBUG: Showing deckSelection view")
             configurationView
-        case .active:
+        case .sessionConfiguration:
+            SessionOptionsView(
+                sessionDuration: $sessionDuration,
+                sessionCardGoal: $sessionCardGoal,
+                navigationStyle: $navigationStyle,
+                autoNextDelay: $autoNextDelay,
+                confirmationStyle: $confirmationStyle,
+                useTTSFallback: $useTTSFallback,
+                ttsRate: $ttsRate,
+                order: $order,
+                gameType: selectedGameType,
+                maxCards: deck?.cards.count,
+                onNext: { setupStage = .gameSpecificConfig },
+                onBack: { setupStage = .deckSelection },
+                onSkipToSummary: { setupStage = .sessionSummary }
+            )
+        case .gameSpecificConfig:
+            let _ = print("DEBUG: Showing gameSpecificConfig view")
+            if let deckMeta = selectedDeck {
+                GameSpecificConfigRouter(
+                    gameType: selectedGameType,
+                    deck: deckMeta,
+                    selectedPreset: $selectedPreset,
+                    customConfig: $customConfig,
+                    memoryMatchMode: $memoryMatchMode,
+                    onNext: { setupStage = .sessionSummary },
+                    onBack: { setupStage = .sessionConfiguration },
+                    onSkipToSummary: { setupStage = .sessionSummary }
+                )
+            } else {
+                Text("No deck selected")
+            }
+        case .sessionSummary:
+            PreGameSummaryView(
+                deckTitle: selectedDeck?.title ?? "Unknown Deck",
+                language: sessionLanguage,
+                level: sessionLevel,
+                preset: selectedPreset,
+                gameType: selectedGameType,
+                duration: sessionDuration,
+                cardGoal: sessionCardGoal,
+                order: order,
+                onStartGame: startActiveSession,
+                onBack: { setupStage = .gameSpecificConfig }
+            )
+        case .starting:
+            let _ = print("DEBUG: Showing starting transition")
+            ProgressView("Preparing game...")
+                .onAppear {
+                    print("DEBUG: Starting transition onAppear - will move to .playing in 0.5s")
+                    // Brief transition, then move to playing
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        print("DEBUG: Transitioning from .starting to .playing")
+                        setupStage = .playing
+                    }
+                }
+        case .playing:
+            let _ = print("DEBUG: Showing ActiveSessionView for playing stage")
             ActiveSessionView(
                 errorMessage: dataManager.errorMessage,
                 deck: deck,
@@ -189,6 +257,7 @@ struct GameView: View {
                 sessionCardGoal: sessionCardGoal,
                 sessionConfig: sessionConfig,
                 isFlipped: $isFlipped,
+                matchMode: memoryMatchMode,
                 onRelearn: relearnCard,
                 onLearned: learnedCard,
                 onFinish: finishSession,
@@ -200,7 +269,7 @@ struct GameView: View {
             SessionFinishView(
                 learnedCount: learnedCount,
                 elapsedSeconds: elapsedSeconds,
-                gameState: $gameState,
+                setupStage: $setupStage,
                 deckTitle: selectedDeck?.title ?? "Unknown Deck",
                 language: sessionLanguage,
                 level: sessionLevel,
@@ -216,7 +285,7 @@ struct GameView: View {
     // MARK: - Event Handlers
     
     func handleAppear() {
-        if gameState == .configuration {
+        if setupStage == .deckSelection {
             setupConfiguration()
             dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
@@ -225,7 +294,7 @@ struct GameView: View {
     @State private var wasPlayingBeforeBackground: Bool = false
     
     func handleScenePhase(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
-        if gameState == .active {
+        if setupStage == .playing {
             if newPhase == .background || newPhase == .inactive {
                 // If we are leaving, check if we were playing.
                 // If !isPaused, we were playing.
@@ -267,9 +336,13 @@ struct GameView: View {
     }
     
     var navigationTitle: String {
-        switch gameState {
-        case .configuration: return "Configure Session"
-        case .active: return "" // Handled by toolbar principal
+        switch setupStage {
+        case .deckSelection: return "Select Deck"
+        case .sessionConfiguration: return "Session Options"
+        case .gameSpecificConfig: return "Game Settings"
+        case .sessionSummary: return "Review"
+        case .starting: return ""
+        case .playing: return ""
         case .finished: return "Session Complete"
         }
     }
@@ -280,24 +353,10 @@ struct GameView: View {
             sessionLevel: $sessionLevel,
             preferredScale: userProfile?.preferredScale ?? .simple,
             selectedDeck: $selectedDeck,
-            sessionDuration: $sessionDuration,
-            sessionCardGoal: $sessionCardGoal,
-            order: $order,
-            selectedPreset: $selectedPreset,
-            customConfig: $customConfig,
             selectedGameType: $selectedGameType,
-            useTTSFallback: $useTTSFallback,
-            ttsRate: $ttsRate,
-            navigationStyle: $navigationStyle,
-            autoNextDelay: $autoNextDelay,
-            confirmationStyle: $confirmationStyle,
             availableDecks: dataManager.availableDecks,
-            startAction: startActiveSession,
-            onSavePreset: { newPreset in
-                if let profile = userProfile {
-                    profile.defaultGamePreset = newPreset
-                }
-            }
+            onNext: { setupStage = .sessionConfiguration },
+            onSkipToSummary: { setupStage = .sessionSummary }
         )
     }
 
@@ -308,56 +367,120 @@ struct GameView: View {
     
     @ToolbarContentBuilder
     private var gameToolbar: some ToolbarContent {
-        if gameState == .active {
+        Group {
+            // Leading buttons based on stage
             ToolbarItem(placement: .topBarLeading) {
-                HStack {
-                    Button(action: { isPaused.toggle() }) {
-                        Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                            .foregroundColor(isPaused ? .green : .orange)
+                if setupStage == .playing {
+                    HStack {
+                        Button(action: { isPaused.toggle() }) {
+                            Image(systemName: isPaused ? "play.fill" : "pause.fill")
+                                .foregroundColor(isPaused ? .green : .orange)
+                        }
+                        
+                        Button(action: { finishSession() }) {
+                            Image(systemName: "stop.fill")
+                            .foregroundColor(.red)
+                        }
                     }
-                    
-                    Button(action: { finishSession() }) {
-                        Image(systemName: "stop.fill")
-                        .foregroundColor(.red)
+                } else if setupStage != .deckSelection && setupStage != .starting && setupStage != .finished {
+                    // Show Back button for stages 2-4
+                    Button("Back") {
+                        switch setupStage {
+                        case .sessionConfiguration:
+                            setupStage = .deckSelection
+                        case .gameSpecificConfig:
+                            setupStage = .sessionConfiguration
+                        case .sessionSummary:
+                            setupStage = .gameSpecificConfig
+                        default:
+                            break
+                        }
                     }
                 }
             }
             
-            ToolbarItem(placement: .principal) {
-                VStack(spacing: 2) {
-                    Text(deck?.title ?? "Learning")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.5)
-                        .frame(maxWidth: 200) // Constrain width to avoid hitting buttons
+            // Principal (center) content
+            if setupStage == .playing {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 2) {
+                        Text(deck?.title ?? "Learning")
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.5)
+                            .frame(maxWidth: 200)
+                    }
                 }
             }
             
+            // Trailing buttons based on stage
             ToolbarItem(placement: .topBarTrailing) {
-                 HStack {
-                     // Timer View
-                     Text(formatTime(remainingSeconds))
-                         .font(.system(.body, design: .monospaced))
-                         .foregroundColor(remainingSeconds < 30 ? .red : .primary)
-                         .fixedSize()
-                         .padding(6)
-                         .frame(minWidth: 60)
-                         .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
-                         .cornerRadius(8)
-                         .overlay(
-                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
-                         )
-                     
-                     Text(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: userProfile?.preferredScale ?? .simple))
-                        .font(.caption)
-                        .padding(6)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(8)
-                 }
+                if setupStage == .playing {
+                    HStack {
+                        // Timer View
+                        Text(formatTime(remainingSeconds))
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(remainingSeconds < 30 ? .red : .primary)
+                            .fixedSize()
+                            .padding(6)
+                            .frame(minWidth: 60)
+                            .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                   .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
+                            )
+                        
+                        Text(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: userProfile?.preferredScale ?? .simple))
+                           .font(.caption)
+                           .padding(6)
+                           .background(Color.gray.opacity(0.2))
+                           .cornerRadius(8)
+                    }
+                } else if setupStage == .deckSelection {
+                    // Stage 1: Next and Skip to Summary
+                    HStack {
+                        Button("Skip to Summary") {
+                            setupStage = .sessionSummary
+                        }
+                        .font(.subheadline)
+                        .disabled(selectedDeck == nil)
+                        
+                        Button("Next") {
+                            setupStage = .sessionConfiguration
+                        }
+                        .fontWeight(.semibold)
+                        .disabled(selectedDeck == nil)
+                    }
+                } else if setupStage == .sessionConfiguration {
+                    // Stage 2: Skip to Summary and Next
+                    HStack {
+                        Button("Skip to Summary") {
+                            setupStage = .sessionSummary
+                        }
+                        .font(.subheadline)
+                        
+                        Button("Next") {
+                            setupStage = .gameSpecificConfig
+                        }
+                        .fontWeight(.semibold)
+                    }
+                } else if setupStage == .gameSpecificConfig {
+                    // Stage 3: Skip to Summary and Next
+                    HStack {
+                        Button("Skip to Summary") {
+                            setupStage = .sessionSummary
+                        }
+                        .font(.subheadline)
+                        
+                        Button("Next") {
+                            setupStage = .sessionSummary
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
             }
-    }
+        }
     }
     
     // MARK: - Logic
@@ -438,7 +561,12 @@ struct GameView: View {
     }
     
     func startActiveSession() {
-        guard let metDeck = selectedDeck else { return }
+        print("DEBUG: ====== startActiveSession() called ======")
+        guard let metDeck = selectedDeck else {
+            print("DEBUG: ERROR - No selected deck!")
+            return
+        }
+        print("DEBUG: Selected deck: \(metDeck.title)")
         dataManager.loadDeck(metadata: metDeck)
         
         currentCardIndex = 0
@@ -488,11 +616,13 @@ struct GameView: View {
              sessionCards = prepareSessionCards(currentDeck.cards)
         }
         
+        print("DEBUG: About to set setupStage to .starting")
         withAnimation {
-            gameState = .active
+            setupStage = .starting
             // Enable full screen for all game modes
             dataManager.isFullScreen = true
         }
+        print("DEBUG: setupStage is now: \(setupStage)")
         
         // Note: Audio playback removed here - FlashcardConfigView and game views manage their own audio
     }
@@ -502,7 +632,7 @@ struct GameView: View {
         // Memory Match manages its own audio on tap.
         guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { return }
         
-        guard gameState == .active, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
+        guard setupStage == .playing, !isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
         let card = sessionCards[currentCardIndex]
         
         var sequence: [AudioManager.AudioItem] = []
@@ -524,7 +654,7 @@ struct GameView: View {
     }
     
     func handleTimerTick() {
-        guard gameState == .active, !isPaused else { return }
+        guard setupStage == .playing, !isPaused else { return }
         
         elapsedSeconds += 1
         if remainingSeconds > 0 {
@@ -537,7 +667,7 @@ struct GameView: View {
     func finishSession() {
         saveActivity()
         withAnimation {
-            gameState = .finished
+            setupStage = .finished
             dataManager.isFullScreen = false // Ensure we exit full screen
         }
     }
@@ -641,7 +771,7 @@ struct GameView: View {
     func handleDeckLoaded(_ newDeck: CardDeck?) {
         // Race condition fix: If we started session but deck wasn't ready,
         // populate cards now that it is loaded.
-        if gameState == .active && sessionCards.isEmpty, let deck = newDeck, !deck.cards.isEmpty {
+        if setupStage == .playing && sessionCards.isEmpty, let deck = newDeck, !deck.cards.isEmpty {
             // Apply Deck Overrides (late load)
             // Note: We need to update the binding/state of sessionConfig too if we want it to reflect
             applyDeckOverrides(to: &sessionConfig, from: deck, type: sessionConfig.gameType)
@@ -789,121 +919,7 @@ struct StatRow: View {
 
 
 
-struct SessionSummaryView: View {
-    let deckTitle: String
-    let language: Language
-    let level: Int
-    let preset: GameConfiguration.Preset
-    let gameType: GameConfiguration.GameType
-    let duration: Int
-    let cardGoal: Int
-    let order: GameConfiguration.OrderStrategy
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Session Summary")
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundColor(.secondary)
-                .textCase(.uppercase)
-            
-            VStack(spacing: 0) {
-                // Focus Row (Language & Level)
-                HStack {
-                    Text(language.flag)
-                        .font(.title3)
-                    Text(language.rawValue)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                    
-                    Text("•")
-                        .foregroundColor(.secondary)
-                    
-                    // We need preferred scale here, but simple fallback is fine for summary logic for now
-                    // Or we can grab it from UserProfile if available, or just display generic normalized string
-                    Text(LevelManager.shared.displayString(level: level, language: language.code, preferredScale: .simple)) 
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                }
-                .padding()
-                
-                Divider()
-                
-                // Deck Row
-                HStack {
-                    Image(systemName: "menucard.fill")
-                        .foregroundColor(.blue)
-                        .frame(width: 24)
-                    Text(deckTitle)
-                        .fontWeight(.medium)
-                    Spacer()
-                }
-                .padding()
-                
-                Divider()
-                
-                // Mode Row
-                HStack {
-                    Image(systemName: "slider.horizontal.3")
-                        .foregroundColor(.purple)
-                        .frame(width: 24)
-                    if gameType == .flashcards {
-                        Text(preset.rawValue)
-                            .fontWeight(.medium)
-                        if preset == .customize {
-                            Text("(Custom)")
-                                .foregroundColor(.secondary)
-                                .font(.caption)
-                        }
-                    } else {
-                        // For non-flashcard games, show the Game Type Name
-                        Text(gameType.rawValue)
-                            .fontWeight(.medium)
-                    }
-                    Spacer()
-                }
-                .padding()
-                
-                Divider()
-                
-                // Options Row
-                HStack {
-                    Image(systemName: "gearshape.fill")
-                        .foregroundColor(.orange)
-                        .frame(width: 24)
-                    Text("\(duration) min")
-                    Text("·")
-                        .foregroundColor(.secondary)
-                    Text("\(cardGoal) cards")
-                    
-                    if order == .random {
-                        Text("·")
-                            .foregroundColor(.secondary)
-                        Image(systemName: "shuffle")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    } else if order == .smart {
-                         Text("·")
-                            .foregroundColor(.secondary)
-                        Image(systemName: "brain.head.profile")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-            .background(Color.gray.opacity(0.1)) // Slightly darker for contrast
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-            )
-        }
-    }
-}
+
 
 
 #Preview {

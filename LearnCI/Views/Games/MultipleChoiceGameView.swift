@@ -235,7 +235,8 @@ struct OptionCard: View {
             Text(card.wordNative)
                 .font(.headline)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.5)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundColor(.primary)
         }
     }

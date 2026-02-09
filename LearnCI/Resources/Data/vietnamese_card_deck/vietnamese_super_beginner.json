@@ -23,7 +23,7 @@
             "sentenceNative": "Hello, how are you?",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_xin_chao.jpg",
             "tags": [
                 "Greetings"
             ]
@@ -36,7 +36,7 @@
             "sentenceNative": "Thank you very much.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_cam_on.jpg",
             "tags": [
                 "Essentials"
             ]
@@ -49,7 +49,7 @@
             "sentenceNative": "Goodbye, see you again.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_tam_biet.jpg",
             "tags": [
                 "Greetings"
             ]
@@ -62,7 +62,7 @@
             "sentenceNative": "Yes, I understand.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_co.jpg",
             "tags": [
                 "Essentials"
             ]
@@ -75,7 +75,7 @@
             "sentenceNative": "No, thank you.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_khong.jpg",
             "tags": [
                 "Essentials"
             ]
@@ -88,7 +88,7 @@
             "sentenceNative": "I like to eat rice.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_com.jpg",
             "tags": [
                 "Food"
             ]
@@ -101,7 +101,7 @@
             "sentenceNative": "Pho is a delicious dish.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_pho.jpg",
             "tags": [
                 "Food"
             ]
@@ -114,7 +114,7 @@
             "sentenceNative": "Give me a glass of water.",
             "audioWordFile": null,
             "audioSentenceFile": null,
-            "mediaFile": null,
+            "mediaFile": "vi_nuoc.jpg",
             "tags": [
                 "Drinks",
                 "Essentials"

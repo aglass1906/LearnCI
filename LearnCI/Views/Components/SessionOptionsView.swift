@@ -27,15 +27,16 @@ struct SessionOptionsView: View {
                 }
             }
             
-            // Card Goal
-            Section("Card Goal") {
+            // Card Options (Goal & Order merged)
+            Section("Card Options") {
+                // Goal
                 if let maxCards = maxCards {
                     HStack {
                         Text("\(sessionCardGoal) cards")
                         Spacer()
                         Stepper("", value: $sessionCardGoal, in: 5...maxCards)
                     }
-                    Text("Max \(maxCards) cards available in this deck")
+                    Text("Max \(maxCards) cards available")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
@@ -45,6 +46,14 @@ struct SessionOptionsView: View {
                         Stepper("", value: $sessionCardGoal, in: 5...100)
                     }
                 }
+                
+                // Order
+                Picker("Card Order", selection: $order) {
+                    ForEach(GameConfiguration.OrderStrategy.allCases) { orderType in
+                        Text(orderType.rawValue).tag(orderType)
+                    }
+                }
+                .pickerStyle(.menu) // Using menu to be compact in the same section
             }
             
             // Input & Flow
@@ -74,16 +83,6 @@ struct SessionOptionsView: View {
                         Slider(value: $ttsRate, in: 0.1...1.0, step: 0.1)
                     }
                 }
-            }
-            
-            // Card Order
-            Section("Card Order") {
-                Picker("Order", selection: $order) {
-                    ForEach(GameConfiguration.OrderStrategy.allCases) { orderType in
-                        Text(orderType.rawValue).tag(orderType)
-                    }
-                }
-                .pickerStyle(.segmented)
             }
         }
     }

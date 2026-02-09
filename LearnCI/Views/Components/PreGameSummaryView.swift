@@ -10,6 +10,7 @@ struct PreGameSummaryView: View {
     let duration: Int
     let cardGoal: Int
     let order: GameConfiguration.OrderStrategy
+    var filterText: String? = nil
     
     let onStartGame: () -> Void
     let onBack: () -> Void
@@ -42,7 +43,8 @@ struct PreGameSummaryView: View {
                     gameType: gameType,
                     duration: duration,
                     cardGoal: cardGoal,
-                    order: order
+                    order: order,
+                    filterText: filterText
                 )
                 .padding(.horizontal)
                 
@@ -63,6 +65,9 @@ struct PreGameSummaryView: View {
                         .cornerRadius(15)
                     }
                     
+                    // Main layout back button (optional since toolbar handles it)
+                    // We remove it or keep it as alternative? 
+                    // Keeping as alternative since toolbar back is system.
                     Button(action: onBack) {
                         Text("Go Back")
                             .foregroundColor(.secondary)

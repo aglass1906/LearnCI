@@ -10,6 +10,7 @@ struct SessionSummaryView: View {
     let duration: Int
     let cardGoal: Int
     let order: GameConfiguration.OrderStrategy
+    var filterText: String? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -52,6 +53,26 @@ struct SessionSummaryView: View {
                     Spacer()
                 }
                 .padding()
+                
+                // Filter Row (Optional)
+                if let filter = filterText {
+                    Divider()
+                    
+                    HStack {
+                        Image(systemName: "tag.fill")
+                            .foregroundColor(.mint)
+                            .frame(width: 24)
+                        VStack(alignment: .leading) {
+                            Text("Filter")
+                                .fontWeight(.medium)
+                            Text(filter)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                }
                 
                 Divider()
                 

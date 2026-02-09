@@ -185,7 +185,6 @@ struct GameView: View {
     }
     @ViewBuilder
     var mainContent: some View {
-        let _ = print("DEBUG: mainContent rendering for stage: \(setupStage)")
         switch setupStage {
         case .deckSelection:
             let _ = print("DEBUG: Showing deckSelection view")
@@ -224,7 +223,7 @@ struct GameView: View {
             }
         case .sessionSummary:
             PreGameSummaryView(
-                deckTitle: selectedDeck?.title ?? "Unknown Deck",
+                deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
                 language: sessionLanguage,
                 level: sessionLevel,
                 preset: selectedPreset,
@@ -232,6 +231,7 @@ struct GameView: View {
                 duration: sessionDuration,
                 cardGoal: sessionCardGoal,
                 order: order,
+                filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
                 onStartGame: startActiveSession,
                 onBack: { setupStage = .gameSpecificConfig }
             )
@@ -270,14 +270,16 @@ struct GameView: View {
                 learnedCount: learnedCount,
                 elapsedSeconds: elapsedSeconds,
                 setupStage: $setupStage,
-                deckTitle: selectedDeck?.title ?? "Unknown Deck",
+                deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
                 language: sessionLanguage,
                 level: sessionLevel,
                 preset: selectedPreset,
                 gameType: sessionConfig.gameType,
                 duration: sessionDuration,
                 cardGoal: sessionCardGoal,
-                order: sessionConfig.order
+                order: sessionConfig.order,
+                filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
+                onPlayAgain: startActiveSession
             )
         }
     }

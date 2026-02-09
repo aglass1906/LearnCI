@@ -27,7 +27,7 @@ struct GameConfigurationView: View {
         ScrollView {
             VStack(spacing: 25) {
                 // Stage 1: Deck Selection Only
-                VStack(spacing: 0) {
+                VStack(spacing: 16) {
                     // Row 1: Game Mode
                     Menu {
                         Picker("Game Mode", selection: $selectedGameType) {
@@ -43,11 +43,10 @@ struct GameConfigurationView: View {
                             text: selectedGameType.rawValue,
                             subText: "Tap to change game mode"
                         )
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
                     }
                     
-                    Divider()
-                        .padding(.leading, 50)
-
                     // Row 2: Deck Selection
                     Button(action: { showDeckPicker = true }) {
                         SettingsRow(
@@ -57,10 +56,9 @@ struct GameConfigurationView: View {
                             subText: deckSubtitleText,
                             customImage: deckImage
                         )
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
                     }
-                    
-                    Divider()
-                        .padding(.leading, 50)
                     
                     // Row 3: Tag Selection
                     Button(action: { showTagSelection = true }) {
@@ -70,10 +68,10 @@ struct GameConfigurationView: View {
                             text: tagRowTitle,
                             subText: tagRowSubtitle
                         )
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(12)
                     }
                 }
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .cornerRadius(12)
                 .padding(.horizontal)
                 
                 // Deck selection reminder
@@ -212,11 +210,11 @@ struct SettingsRow<Content: View>: View {
                 
                 if let sub = subText {
                     Text(sub)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.9)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
                 } else {
                     subContent
                 }

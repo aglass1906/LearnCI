@@ -58,20 +58,6 @@ struct PlaceholderConfigView: View {
         }
         .navigationTitle("Game Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Skip to Summary") {
-                    onSkipToSummary()
-                }
-                .font(.subheadline)
-            }
-        }
     }
     
     var gameDescription: String {

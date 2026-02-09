@@ -4,7 +4,6 @@ struct SessionFinishView: View {
     let learnedCount: Int
     let elapsedSeconds: Int
     @Binding var setupStage: GameView.GameSetupStage
-    // Removed selectedDeck binding to persist selection
     
     // Config Stats
     let deckTitle: String
@@ -15,6 +14,9 @@ struct SessionFinishView: View {
     let duration: Int
     let cardGoal: Int
     let order: GameConfiguration.OrderStrategy
+    var filterText: String? = nil
+    
+    let onPlayAgain: () -> Void
     
     var body: some View {
         ScrollView {
@@ -52,20 +54,18 @@ struct SessionFinishView: View {
                     gameType: gameType,
                     duration: duration,
                     cardGoal: cardGoal,
-                    order: order
+                    order: order,
+                    filterText: filterText
                 )
                 .padding(.horizontal)
                 
                 VStack(spacing: 15) {
                     Button(action: {
-                        withAnimation {
-                            setupStage = .deckSelection
-                            // Do NOT clear selectedDeck
-                        }
+                        onPlayAgain()
                     }) {
                         HStack {
                             Image(systemName: "arrow.counterclockwise")
-                            Text("Start New Session")
+                            Text("Play Again")
                         }
                         .font(.headline)
                         .foregroundColor(.white)
@@ -76,9 +76,7 @@ struct SessionFinishView: View {
                     }
                     
                     Button(action: {
-                        // Navigate back or close (Context dependent)
                         setupStage = .deckSelection
-                        // Do NOT clear selectedDeck
                     }) {
                         Text("Return to Menu")
                             .foregroundColor(.secondary)
@@ -87,7 +85,7 @@ struct SessionFinishView: View {
                 .padding(.horizontal, 40)
             }
             .padding()
-            .padding(.bottom, 100) // Ensure clearing TabBar
+            .padding(.bottom, 100)
         }
         .transition(.scale.combined(with: .opacity))
     }

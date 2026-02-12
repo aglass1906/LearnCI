@@ -416,81 +416,118 @@ struct GameView: View {
             }
             
             // Trailing buttons based on stage
-            ToolbarItem(placement: .topBarTrailing) {
-                if setupStage == .playing {
-                    HStack {
-                        // Timer View
-                        Text(formatTime(remainingSeconds))
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(remainingSeconds < 30 ? .red : .primary)
-                            .fixedSize()
-                            .padding(6)
-                            .frame(minWidth: 60)
-                            .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                   .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
-                            )
-                        
-                        Text(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: userProfile?.preferredScale ?? .simple))
-                           .font(.caption)
-                           .padding(6)
-                           .background(Color.gray.opacity(0.2))
-                           .cornerRadius(8)
-                    }
-                } else if setupStage == .deckSelection {
-                    // Stage 1: Next and Skip to Summary
-                    HStack {
-                        Button("Skip to Summary") {
-                            setupStage = .sessionSummary
-                        }
-                        .font(.subheadline)
-                        .disabled(selectedDeck == nil)
-                        
-                        Button(action: {
-                            setupStage = .sessionConfiguration
-                        }) {
-                            Text("Next")
-                                .fontWeight(.bold)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(selectedDeck == nil)
-                    }
-                } else if setupStage == .sessionConfiguration {
-                    // Stage 2: Skip to Summary and Next
-                    HStack {
-                        Button("Skip to Summary") {
-                            setupStage = .sessionSummary
-                        }
-                        .font(.subheadline)
-                        
-                        Button(action: {
-                            setupStage = .gameSpecificConfig
-                        }) {
-                            Text("Next")
-                                .fontWeight(.bold)
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                } else if setupStage == .gameSpecificConfig {
-                    // Stage 3: Skip to Summary and Next
-                    HStack {
-                        Button("Skip to Summary") {
-                            setupStage = .sessionSummary
-                        }
-                        .font(.subheadline)
-                        
-                        Button(action: {
-                            setupStage = .sessionSummary
-                        }) {
-                            Text("Next")
-                                .fontWeight(.bold)
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                }
+            trailingToolbarItems
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var trailingToolbarItems: some ToolbarContent {
+        switch setupStage {
+        case .playing:
+            playingToolbarItems
+        case .deckSelection:
+            deckSelectionToolbarItems
+        case .sessionConfiguration:
+            sessionConfigToolbarItems
+        case .gameSpecificConfig:
+            gameSpecificConfigToolbarItems
+        default:
+            ToolbarItem(placement: .automatic) { EmptyView() }
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var playingToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            HStack {
+                timerView
+                levelBadgeView
             }
+        }
+    }
+
+    private var timerView: some View {
+        Text(formatTime(remainingSeconds))
+            .font(.system(.body, design: .monospaced))
+            .foregroundColor(remainingSeconds < 30 ? .red : .primary)
+            .fixedSize()
+            .padding(6)
+            .frame(minWidth: 60)
+            .background(isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                   .stroke(isPaused ? Color.orange : Color.clear, lineWidth: 1)
+            )
+    }
+
+    private var levelBadgeView: some View {
+        Text(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: userProfile?.preferredScale ?? .simple))
+           .font(.caption)
+           .padding(6)
+           .background(Color.gray.opacity(0.2))
+           .cornerRadius(8)
+    }
+    
+    @ToolbarContentBuilder
+    private var deckSelectionToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Skip to Summary") {
+                setupStage = .sessionSummary
+            }
+            .font(.subheadline)
+            .disabled(selectedDeck == nil)
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(action: {
+                setupStage = .sessionConfiguration
+            }) {
+                Text("Next")
+                    .fontWeight(.bold)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(selectedDeck == nil)
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var sessionConfigToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Skip to Summary") {
+                setupStage = .sessionSummary
+            }
+            .font(.subheadline)
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(action: {
+                setupStage = .gameSpecificConfig
+            }) {
+                Text("Next")
+                    .fontWeight(.bold)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var gameSpecificConfigToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Skip to Summary") {
+                setupStage = .sessionSummary
+            }
+            .font(.subheadline)
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(action: {
+                setupStage = .sessionSummary
+            }) {
+                Text("Next")
+                    .fontWeight(.bold)
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
     

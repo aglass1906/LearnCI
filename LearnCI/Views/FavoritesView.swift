@@ -56,100 +56,98 @@ struct FavoritesView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // MARK: - Filters
-                VStack(spacing: 12) {
-                    // Type Filter Pills
+        VStack(spacing: 0) {
+            // MARK: - Filters
+            VStack(spacing: 12) {
+                // Type Filter Pills
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        FilterPill(title: "All", isSelected: typeFilter == nil) { typeFilter = nil }
+                        
+                        FilterPill(title: "Channels", isSelected: typeFilter == .channel) { typeFilter = .channel }
+                        FilterPill(title: "YouTube", isSelected: typeFilter == .youtube) { typeFilter = .youtube }
+                        FilterPill(title: "Websites", isSelected: typeFilter == .website) { typeFilter = .website }
+                        FilterPill(title: "Podcasts", isSelected: typeFilter == .podcast) { typeFilter = .podcast }
+                        FilterPill(title: "Web Scan", isSelected: typeFilter == .webScan) { typeFilter = .webScan }
+                    }
+                    .padding(.horizontal)
+                }
+                
+                // Author Filter Chips
+                if !availableAuthors.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            FilterPill(title: "All", isSelected: typeFilter == nil) { typeFilter = nil }
+                        HStack(spacing: 8) {
+                            FilterPill(title: "All Creators", isSelected: authorFilter == nil, color: .gray) { authorFilter = nil }
                             
-                            FilterPill(title: "Channels", isSelected: typeFilter == .channel) { typeFilter = .channel }
-                            FilterPill(title: "YouTube", isSelected: typeFilter == .youtube) { typeFilter = .youtube }
-                            FilterPill(title: "Websites", isSelected: typeFilter == .website) { typeFilter = .website }
-                            FilterPill(title: "Podcasts", isSelected: typeFilter == .podcast) { typeFilter = .podcast }
-                            FilterPill(title: "Web Scan", isSelected: typeFilter == .webScan) { typeFilter = .webScan }
+                            ForEach(availableAuthors, id: \.self) { author in
+                                FilterPill(title: author, isSelected: authorFilter == author, color: .gray) { authorFilter = author }
+                            }
                         }
                         .padding(.horizontal)
                     }
-                    
-                    // Author Filter Chips
-                    if !availableAuthors.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                FilterPill(title: "All Creators", isSelected: authorFilter == nil, color: .gray) { authorFilter = nil }
-                                
-                                ForEach(availableAuthors, id: \.self) { author in
-                                    FilterPill(title: author, isSelected: authorFilter == author, color: .gray) { authorFilter = author }
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-                .padding(.vertical)
-                .background(Color(UIColor.systemBackground))
-                
-                // MARK: - Content
-                if filteredFavorites.isEmpty {
-                    ContentUnavailableView(
-                        "No Favorites Found",
-                        systemImage: "heart.slash",
-                        description: Text("Try changing your filters or add some favorites from the Library or Videos tab.")
-                    )
-                } else {
-                    List {
-                        ForEach(filteredFavorites) { fav in
-                             FavoriteRow(favorite: fav, action: {
-                                 handleTap(fav)
-                             }, onScan: {
-                                 webScanTarget = fav
-                             })
-                        }
-                    }
-                    .listStyle(.plain)
                 }
             }
-            .navigationTitle("My Favorites")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task {
-                            await syncManager.syncNow(modelContext: modelContext)
-                        }
-                    } label: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .symbolEffect(.bounce, value: syncManager.isSyncing)
-                    }
-                    .disabled(syncManager.isSyncing)
-                }
-            }
-            .navigationDestination(item: $selectedChannel) { channel in
-                ChannelDetailView(
-                    channel: channel,
-                    isVideoWatched: isVideoWatched
-                    // isPlaylist is now part of channel model
+            .padding(.vertical)
+            .background(Color(UIColor.systemBackground))
+            
+            // MARK: - Content
+            if filteredFavorites.isEmpty {
+                ContentUnavailableView(
+                    "No Favorites Found",
+                    systemImage: "heart.slash",
+                    description: Text("Try changing your filters or add some favorites from the Library or Videos tab.")
                 )
-            }
-            .sheet(item: $browserUrl) { url in
-                InAppBrowserView(url: url) {
-                    browserUrl = nil
+            } else {
+                List {
+                    ForEach(filteredFavorites) { fav in
+                         FavoriteRow(favorite: fav, action: {
+                             handleTap(fav)
+                         }, onScan: {
+                             webScanTarget = fav
+                         })
+                    }
                 }
-                .ignoresSafeArea()
+                .listStyle(.plain)
             }
-            .navigationDestination(item: $webScanTarget) { scanFav in
-                if let url = URL(string: scanFav.consumptionUrl) {
-                    WebScanView(url: url, title: scanFav.title)
-                } else {
-                    ContentUnavailableView("Invalid URL", systemImage: "link.badge.plus")
+        }
+        .navigationTitle(selectedChannel?.title ?? "My Favorites")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task {
+                        await syncManager.syncNow(modelContext: modelContext)
+                    }
+                } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .symbolEffect(.bounce, value: syncManager.isSyncing)
                 }
+                .disabled(syncManager.isSyncing)
             }
-            .alert("Debug Info", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
+        }
+        .navigationDestination(item: $selectedChannel) { channel in
+            ChannelDetailView(
+                channel: channel,
+                isVideoWatched: isVideoWatched
+                // isPlaylist is now part of channel model
+            )
+        }
+        .sheet(item: $browserUrl) { url in
+            InAppBrowserView(url: url) {
+                browserUrl = nil
             }
+            .ignoresSafeArea()
+        }
+        .navigationDestination(item: $webScanTarget) { scanFav in
+            if let url = URL(string: scanFav.consumptionUrl) {
+                WebScanView(url: url, title: scanFav.title)
+            } else {
+                ContentUnavailableView("Invalid URL", systemImage: "link.badge.plus")
+            }
+        }
+        .alert("Debug Info", isPresented: $showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
     }
     

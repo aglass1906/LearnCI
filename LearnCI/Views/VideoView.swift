@@ -40,166 +40,164 @@ struct VideoView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Mode Toggle
-                Picker("Tab", selection: $mode) {
-                    ForEach(VideoTabMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
+        VStack(spacing: 0) {
+            // Mode Toggle
+            Picker("Tab", selection: $mode) {
+                ForEach(VideoTabMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
                 }
-                .pickerStyle(.segmented)
-                .padding()
-                
-                // Count Header
-                if selectedChannel == nil {
-                    HStack {
-                        Text("\(countForMode(mode)) \(mode == .channels ? "Channels" : "Videos") Found")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Spacer()
+            }
+            .pickerStyle(.segmented)
+            .padding()
+            
+            // Count Header
+            if selectedChannel == nil {
+                HStack {
+                    Text("\(countForMode(mode)) \(mode == .channels ? "Channels" : "Videos") Found")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 4)
+            }
+            
+            // Category Scroll
+            if mode == .discovery {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(categories, id: \.self) { category in
+                            Button(action: { selectedCategory = category }) {
+                                Text(category)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 12)
+                                    .frame(minHeight: 44)
+                                    .background(selectedCategory == category ? Color.red : Color.gray.opacity(0.1))
+                                    .foregroundColor(selectedCategory == category ? .white : .primary)
+                                    .cornerRadius(22)
+                            }
+                        }
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 4)
                 }
-                
-                // Category Scroll
-                if mode == .discovery {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(categories, id: \.self) { category in
-                                Button(action: { selectedCategory = category }) {
-                                    Text(category)
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 12)
-                                        .frame(minHeight: 44)
-                                        .background(selectedCategory == category ? Color.red : Color.gray.opacity(0.1))
-                                        .foregroundColor(selectedCategory == category ? .white : .primary)
-                                        .cornerRadius(22)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.bottom, 8)
-                }
-                
-                Group {
-                    if let channel = selectedChannel {
-                        ChannelDetailView(
-                            channel: channel,
-                            isVideoWatched: isVideoWatched
-                        )
-                    } else {
-                        switch mode {
-                        case .recommended:
-                            recommendedContentView
-                        case .subscriptions:
-                            subscriptionContentView
-                        case .channels:
-                            channelListView
-                        case .discovery:
-                            discoveryContentView
-                        }
+                .padding(.bottom, 8)
+            }
+            
+            Group {
+                if let channel = selectedChannel {
+                    ChannelDetailView(
+                        channel: channel,
+                        isVideoWatched: isVideoWatched
+                    )
+                } else {
+                    switch mode {
+                    case .recommended:
+                        recommendedContentView
+                    case .subscriptions:
+                        subscriptionContentView
+                    case .channels:
+                        channelListView
+                    case .discovery:
+                        discoveryContentView
                     }
                 }
             }
-            .onChange(of: mode) { _, _ in
-                selectedChannel = nil // Reset drill-down when switching modes
-                if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
-                    youtubeManager.fetchRecommendedVideos()
-                }
-                if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
-                    refreshDiscovery()
-                }
+        }
+        .onChange(of: mode) { _, _ in
+            selectedChannel = nil // Reset drill-down when switching modes
+            if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
+                youtubeManager.fetchRecommendedVideos()
             }
-            .onChange(of: selectedCategory) { _, _ in
+            if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
             }
-            .task {
-                // Initial load
-                if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
-                    youtubeManager.fetchRecommendedVideos()
-                }
-                if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
-                    refreshDiscovery()
-                }
+        }
+        .onChange(of: selectedCategory) { _, _ in
+            refreshDiscovery()
+        }
+        .task {
+            // Initial load
+            if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
+                youtubeManager.fetchRecommendedVideos()
             }
-            .onChange(of: userProfile?.currentLanguage) { _, _ in
-                youtubeManager.discoveryVideos = [] // Invalidate old data
-                if mode == .discovery {
-                    refreshDiscovery()
-                }
+            if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
+                refreshDiscovery()
             }
-            .onChange(of: userProfile?.currentLevel) { _, _ in
-                youtubeManager.discoveryVideos = [] // Invalidate old data
-                if mode == .discovery {
-                    refreshDiscovery()
-                }
+        }
+        .onChange(of: userProfile?.currentLanguage) { _, _ in
+            youtubeManager.discoveryVideos = [] // Invalidate old data
+            if mode == .discovery {
+                refreshDiscovery()
             }
-            .navigationTitle(selectedChannel?.title ?? "Videos")
-            .toolbar {
-                if selectedChannel != nil {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: { selectedChannel = nil }) {
-                            HStack {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
-                            }
-                        }
-                    }
-                }
-                
-                if youtubeManager.isAuthenticated {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button(action: {
-                            if mode == .discovery {
-                                refreshDiscovery()
-                            } else {
-                                youtubeManager.refreshVideos()
-                            }
-                        }) {
-                            Image(systemName: "arrow.clockwise")
+        }
+        .onChange(of: userProfile?.currentLevel) { _, _ in
+            youtubeManager.discoveryVideos = [] // Invalidate old data
+            if mode == .discovery {
+                refreshDiscovery()
+            }
+        }
+        .navigationTitle(selectedChannel?.title ?? "Videos")
+        .toolbar {
+            if selectedChannel != nil {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { selectedChannel = nil }) {
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
                         }
                     }
                 }
             }
-            .sheet(item: $selectedVideo) { video in
-                VideoDetailSheet(
-                    video: video,
-                    onWatch: {
-                        openInYouTube(video)
-                        selectedVideo = nil
-                        // Pre-fill comment with video context
-                        watchComment = "\(video.channelTitle) - \(video.title)"
-                        showWatchTimePrompt = true
-                    },
-                    onLogTime: { minutes in
-                        selectedVideo = video
-                        // Auto-log the activity
-                        watchComment = "\(video.channelTitle) - \(video.title) (Auto-Tracked)"
-                        logWatchTime(minutes)
-                        
-                        // We do NOT show the prompt, effectively auto-saving.
-                        // Reset simple state
-                        selectedVideo = nil
+            
+            if youtubeManager.isAuthenticated {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        if mode == .discovery {
+                            refreshDiscovery()
+                        } else {
+                            youtubeManager.refreshVideos()
+                        }
+                    }) {
+                        Image(systemName: "arrow.clockwise")
                     }
-                )
+                }
             }
-            .sheet(isPresented: $showWatchTimePrompt) {
-                LogActivitySheet(
-                    minutes: $watchMinutes,
-                    comment: $watchComment,
-                    onSave: {
-                        logWatchTime(Int(watchMinutes))
-                        showWatchTimePrompt = false
-                        watchMinutes = 10
-                        watchComment = ""
-                    }
-                )
-            }
+        }
+        .sheet(item: $selectedVideo) { video in
+            VideoDetailSheet(
+                video: video,
+                onWatch: {
+                    openInYouTube(video)
+                    selectedVideo = nil
+                    // Pre-fill comment with video context
+                    watchComment = "\(video.channelTitle) - \(video.title)"
+                    showWatchTimePrompt = true
+                },
+                onLogTime: { minutes in
+                    selectedVideo = video
+                    // Auto-log the activity
+                    watchComment = "\(video.channelTitle) - \(video.title) (Auto-Tracked)"
+                    logWatchTime(minutes)
+                    
+                    // We do NOT show the prompt, effectively auto-saving.
+                    // Reset simple state
+                    selectedVideo = nil
+                }
+            )
+        }
+        .sheet(isPresented: $showWatchTimePrompt) {
+            LogActivitySheet(
+                minutes: $watchMinutes,
+                comment: $watchComment,
+                onSave: {
+                    logWatchTime(Int(watchMinutes))
+                    showWatchTimePrompt = false
+                    watchMinutes = 10
+                    watchComment = ""
+                }
+            )
         }
     }
     

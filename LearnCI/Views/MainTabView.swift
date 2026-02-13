@@ -3,8 +3,7 @@ import SwiftUI
 enum AppTab: String, CaseIterable {
     case dashboard
     case learn
-    case videos
-    case library
+    case discovery
     case history
     case profile
     case coach
@@ -35,17 +34,11 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.learn)
                 
-                VideoView()
+                InputDiscoveryView()
                     .tabItem {
-                        Label("Videos", systemImage: "play.rectangle.fill")
+                        Label("Input", systemImage: "sparkles")
                     }
-                    .tag(AppTab.videos)
-
-                ResourceLibraryView()
-                    .tabItem {
-                        Label("Library", systemImage: "books.vertical.fill")
-                    }
-                    .tag(AppTab.library)
+                    .tag(AppTab.discovery)
                 
                 HistoryView()
                     .tabItem {
@@ -59,8 +52,6 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.coach)
                 
-                // Profile is now accessed via the Header Sheet
-                // but we keep the tab for alternative navigation if desired.
                 ProfileView()
                     .tabItem {
                         Label("Profile", systemImage: "person.circle.fill")

@@ -226,6 +226,16 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         playSequence(items: items, folderName: folderName, useFallback: false, ttsRate: 0.5)
     }
 
+    func playAudio(url: URL) throws {
+        stopAudio()
+        configureAudioSession()
+        player = try AVAudioPlayer(contentsOf: url)
+        player?.delegate = self
+        player?.prepareToPlay()
+        // Do not auto-play, let UI control it
+        isPlaying = false
+    }
+
     private func play(url: URL) throws {
         configureAudioSession()
         player = try AVAudioPlayer(contentsOf: url)

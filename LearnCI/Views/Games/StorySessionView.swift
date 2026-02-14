@@ -1,0 +1,258 @@
+import SwiftUI
+import AVFoundation
+import Combine
+
+struct StorySessionView: View {
+    let story: Story
+    @Environment(AudioManager.self) private var audioManager
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var isPlaying: Bool = false
+    @State private var sliderValue: Double = 0
+    @State private var duration: Double = 0
+    @State private var showPromptDetails = false
+    @State private var playbackRate: Float = 1.0
+    
+    // Timer to update scrubber
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(story.title)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.top)
+                    
+                    Text(story.targetLanguageText)
+                        .font(.body)
+                        .lineSpacing(8)
+                    
+                    if let native = story.nativeLanguageText {
+                        Divider()
+                        Text("Translation")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text(native)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+            }
+            
+            // Audio Controls
+            if let _ = story.audioFilename {
+                VStack(spacing: 10) {
+                    Slider(value: $sliderValue, in: 0...duration) { editing in
+                        if editing {
+                            audioManager.player?.pause()
+                        } else {
+                            if isPlaying {
+                                audioManager.player?.currentTime = sliderValue
+                                audioManager.player?.play()
+                            } else {
+                                audioManager.player?.currentTime = sliderValue
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    HStack {
+                        Text(formatTime(sliderValue))
+                        Spacer()
+                        Text(formatTime(duration))
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                    
+                    Button(action: togglePlay) {
+                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 64))
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding()
+                .background(.regularMaterial)
+            } else if story.remoteAudioPath != nil {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Downloading Audio...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(.regularMaterial)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            setupAudio()
+        }
+        .onDisappear {
+            audioManager.stopAudio()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("0.5x") { setRate(0.5) }
+                    Button("0.75x") { setRate(0.75) }
+                    Button("Default (1.0x)") { setRate(1.0) }
+                    Button("1.25x") { setRate(1.25) }
+                    Button("1.5x") { setRate(1.5) }
+                } label: {
+                    Label("Speed", systemImage: "gauge.with.dots.needle.bottom.50percent")
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    UIPasteboard.general.string = story.targetLanguageText
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                }) {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: { showPromptDetails = true }) {
+                    Label("Info", systemImage: "info.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showPromptDetails) {
+            PromptDetailsSheet(story: story)
+                .presentationDetents([.medium, .large])
+        }
+        .onReceive(timer) { _ in
+            if let player = audioManager.player, player.isPlaying {
+                sliderValue = player.currentTime
+                isPlaying = true // Sync state
+            } else {
+                isPlaying = false 
+            }
+        }
+    }
+    
+    private func setupAudio() {
+        guard let filename = story.audioFilename else { return }
+        
+        // We need to resolve the full path since FileManager stores it in Documents
+        // AudioManager logic usually looks in Bundle, let's see if we can trick it 
+        // or just extend it. For now, let's manually get the URL.
+        
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let fileURL = paths[0].appendingPathComponent(filename)
+        
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                // Use AudioManager logic if possible, or direct AVAudioPlayer
+                // Since AudioManager is designed for Bundle resources mostly,
+                // let's manually play it here or add a method to AudioManager later.
+                // Actually, let's try to just spin up a player here for simplicity, 
+                // but better to use AudioManager for session handling.
+                // Let's modify AudioManager later to accept direct URLs?
+                // For now, let's just init a player here or use AudioManager's session config.
+                
+                try audioManager.playAudio(url: fileURL) // Assuming we add this extension or helper
+                
+                // Enable rate adjustment
+                audioManager.player?.enableRate = true
+                audioManager.player?.rate = playbackRate
+                
+                duration = audioManager.player?.duration ?? 0
+            } catch {
+                print("Audio setup failed: \(error)")
+            }
+        }
+    }
+    
+    private func togglePlay() {
+        guard let player = audioManager.player else { return }
+        if player.isPlaying {
+            player.pause()
+            isPlaying = false
+        } else {
+            player.play()
+            isPlaying = true
+        }
+    }
+    
+    private func formatTime(_ time: Double) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    private func setRate(_ rate: Float) {
+        playbackRate = rate
+        if let player = audioManager.player {
+            player.enableRate = true
+            player.rate = rate
+            // If playing, it updates immediately. If paused, it will apply when played.
+        }
+    }
+}
+
+struct PromptDetailsSheet: View {
+    let story: Story
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Story Prompt")
+                        .font(.headline)
+                    
+                    Text(story.prompt ?? "No prompt stored for this story.")
+                        .foregroundStyle(.secondary)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.secondary.opacity(0.05))
+                        .cornerRadius(8)
+                    
+                    if let native = story.nativeLanguageText {
+                        Text("Translation")
+                            .font(.headline)
+                        
+                        Text(native)
+                            .foregroundStyle(.secondary)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.secondary.opacity(0.05))
+                            .cornerRadius(8)
+                    }
+                    
+                    Divider()
+                    
+                    Text("Metadata")
+                        .font(.headline)
+                    
+                    Text("Language: \(story.language.displayName)\nLevel: \(story.level)")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.secondary.opacity(0.05))
+                        .cornerRadius(8)
+                }
+                .padding()
+            }
+            .navigationTitle("Story Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+

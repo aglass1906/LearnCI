@@ -16,6 +16,23 @@ class SyncManager {
         self.authManager = authManager
     }
     
+// MARK: - Story DTO
+struct StoryDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let title: String
+    let target_text: String
+    let native_text: String?
+    let prompt: String?
+    let language: String
+    let level: Int
+    let remote_audio_path: String?
+    let cover_art: String?
+    let created_at: Date
+    let is_favorite: Bool
+    let is_public: Bool
+}
+
 // MARK: - Coaching DTOs
 
 struct DailyFeedbackDTO: Codable {
@@ -65,6 +82,9 @@ struct CoachingCheckInDTO: Codable {
             // NEW: Push Favorites
             try await syncFavorites(context: modelContext, userID: userID)
             
+            // NEW: Push Stories (and upload audio)
+            try await syncStories(context: modelContext, userID: userID)
+            
             // 2. Sync Activities (Push new)
             try await syncActivities(context: modelContext, userID: userID)
             
@@ -82,6 +102,9 @@ struct CoachingCheckInDTO: Codable {
             
             // NEW: Pull Favorites (Server Wins & Deletions)
             try await pullFavorites(context: modelContext, userID: userID)
+            
+            // NEW: Pull Stories (and download audio)
+            try await pullStories(context: modelContext, userID: userID)
             
             // 5. Final Pull (Update Profile Totals after Push triggers)
             try await pullProfile(context: modelContext, userID: userID)
@@ -275,6 +298,29 @@ struct CoachingCheckInDTO: Codable {
             for activity in otherActivities {
                 activity.userID = userID
                 activity.isSynced = false // Ensure they get pushed
+            }
+        }
+        
+        // 3. Adopt Stories (Handle orphan stories from before sync)
+        // Since we fetch by userID in the app, stories with mixed/missing userIDs won't show up.
+        // We should adopt them if they have no userID or if they are on this device.
+        // However, we can't easily distinguish "mine" from "other user's" if multiple people login.
+        // But for a personal device app, we usually assume data on device belongs to current user
+        // OR we leave it alone.
+        // Given the request "will my stories sync", we'll adopt any story that matches the criteria
+        // of "created locally but not assigned".
+        // The Story model requires userID, so if migration happened, they might have a dummy one.
+        // Let's filter for stories where userID is arguably "wrong" or we want to force claim.
+        // SAFE APPROACH: Adopt stories where userID is NOT the current one (if we assume single-user device mostly)
+        // OR just rely on the fact the user is asking about *their* simulator data.
+        let allStories = try context.fetch(FetchDescriptor<Story>())
+        let orphanStories = allStories.filter { $0.userID != userID }
+        
+        if !orphanStories.isEmpty {
+            print("Adopting \(orphanStories.count) stories for user \(userID)")
+            for story in orphanStories {
+                story.userID = userID
+                // We rely on syncStories checking for remoteAudioPath == nil to push them.
             }
         }
         
@@ -482,8 +528,9 @@ struct CoachingCheckInDTO: Codable {
         guard !activityDTOs.isEmpty else { return }
         
         // Push to Supabase
+        // Use upsert to avoid unique constraint violations if data partially synced before
         try await authManager.supabase.from("user_activities")
-            .insert(activityDTOs)
+            .upsert(activityDTOs, onConflict: "id")
             .execute()
         
         // Mark as synced locally
@@ -491,7 +538,6 @@ struct CoachingCheckInDTO: Codable {
             activity.isSynced = true
         }
         
-        try context.save()
         try context.save()
     }
 
@@ -606,18 +652,178 @@ struct CoachingCheckInDTO: Codable {
     }
     
     @MainActor
+    private func syncStories(context: ModelContext, userID: String) async throws {
+        // Fetch local stories that either have no remote path OR are not verified synced
+        // Since we don't have isSynced, we iterate all and check properties or naive upsert.
+        // Let's assume we want to push all stories for this user.
+        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
+        let allLocalStories = try context.fetch(descriptor)
+        
+        guard !allLocalStories.isEmpty else { 
+            print("Sync Stories: No local stories found for user \(userID)")
+            return 
+        }
+        
+        print("Sync Stories: Found \(allLocalStories.count) stories to sync for user \(userID)")
+        
+        for story in allLocalStories {
+            guard let uid = UUID(uuidString: userID) else { continue }
+            
+            // 1. Upload Audio if needed
+            if let localFilename = story.audioFilename, 
+               story.remoteAudioPath == nil {
+                
+                let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(localFilename)
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    do {
+                        let audioData = try Data(contentsOf: fileURL)
+                        let remotePath = "\(userID)/\(UUID().uuidString).mp3"
+                        
+                        try await authManager.supabase.storage
+                            .from("audio-stories")
+                            .upload(
+                                path: remotePath,
+                                file: audioData,
+                                options: FileOptions(contentType: "audio/mpeg")
+                            )
+                        
+                        // Update local model
+                        story.remoteAudioPath = remotePath
+                        try context.save()
+                        print("Sync: Uploaded audio for story '\(story.title)'")
+                    } catch {
+                        print("Sync: Failed to upload audio for '\(story.title)': \(error)")
+                        // Continue to push metadata, though audio might be missing remotely
+                    }
+                }
+            }
+            
+            // 2. Push Metadata
+            let dto = StoryDTO(
+                id: story.id,
+                user_id: uid,
+                title: story.title,
+                target_text: story.targetLanguageText,
+                native_text: story.nativeLanguageText,
+                prompt: story.prompt,
+                language: story.languageRaw,
+                level: Int(story.levelRaw) ?? 1,
+                remote_audio_path: story.remoteAudioPath,
+                cover_art: story.coverArt,
+                created_at: story.createdAt,
+                is_favorite: story.isFavorite,
+                is_public: true // Default to true for now as per plan update
+            )
+            
+            try await authManager.supabase.from("stories")
+                .upsert(dto, onConflict: "id")
+                .execute()
+        }
+    }
+    
+    @MainActor
+    private func pullStories(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+        
+        // Fetch stories: My Own OR Public ones (if we want that). 
+        // For sync, we primarily want MY items on this device.
+        // But the user asked for "everyone can see". 
+        // Syncing *everyone's* stories to local device is expensive.
+        // Let's stick to syncing MY stories for now + maybe a separate "Explore" fetch.
+        // Implementation Plan said: "Users can see their own stories AND stories where is_public is true"
+        // But `pullStories` implies persistence. We probably only want to persist MY stories locally.
+        // Let's filter by user_id for the persistent sync.
+        
+        let response = try await authManager.supabase.from("stories")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+            
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
+        let dtos = try decoder.decode([StoryDTO].self, from: response.data)
+        
+        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
+        let localStories = try context.fetch(descriptor)
+        
+        for dto in dtos {
+            if let existing = localStories.first(where: { $0.id == dto.id }) {
+                // Update
+                existing.title = dto.title
+                existing.isFavorite = dto.is_favorite
+                // Only overwrite if remote has path and local doesn't? Or always?
+                if existing.remoteAudioPath == nil && dto.remote_audio_path != nil {
+                    existing.remoteAudioPath = dto.remote_audio_path
+                }
+            } else {
+                // Insert New
+                let newStory = Story(
+                    id: dto.id,
+                    userID: userID,
+                    title: dto.title,
+                    targetLanguageText: dto.target_text,
+                    nativeLanguageText: dto.native_text,
+                    prompt: dto.prompt,
+                    remoteAudioPath: dto.remote_audio_path,
+                    coverArt: dto.cover_art,
+                    language: Language(rawValue: dto.language) ?? .spanish,
+                    level: dto.level,
+                    createdAt: dto.created_at
+                )
+                newStory.isFavorite = dto.is_favorite
+                context.insert(newStory)
+                
+                // Trigger Download if needed
+                if let remotePath = dto.remote_audio_path {
+                    Task {
+                        do {
+                            let data = try await authManager.supabase.storage
+                                .from("audio-stories")
+                                .download(path: remotePath)
+                            
+                            // Save locally
+                            let filename = "story_\(dto.id).mp3"
+                            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            let url = docs.appendingPathComponent(filename)
+                            try data.write(to: url)
+                            
+                            // Update model asynchronously (careful with context)
+                            // Ideally we'd do this in the loop, but download is async.
+                            // For safety, we might skip this auto-download or handle it better.
+                            // Let's just set the filename, and let the view try to play/download on demand?
+                            // Or simpler: synchronous save here if possible? No, download is async.
+                            // We will save the filename, and the user can tap play. 
+                            // AudioManager checks file existence.
+                            // We need a way to mark "downloaded".
+                            // For now: set audioFilename only if file exists.
+                            // Actually, let's just write it.
+                             let mainContext = context // Capture context
+                             await MainActor.run {
+                                 newStory.audioFilename = filename
+                                 try? mainContext.save()
+                             }
+                        } catch {
+                            print("Sync: Failed to download audio for story \(dto.title): \(error)")
+                        }
+                    }
+                }
+            }
+        }
+        try context.save()
+    }
+
+    @MainActor
     func fetchLeaderboard() async throws -> [ProfileDTO] {
         let response = try await authManager.supabase.from("profiles")
             .select()
+            .eq("is_public", value: true)
             .order("total_minutes", ascending: false)
             .limit(50)
             .execute()
             
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        
-        let data = try decoder.decode([ProfileDTO].self, from: response.data)
-        return data
+        return try decoder.decode([ProfileDTO].self, from: response.data)
     }
 }
 

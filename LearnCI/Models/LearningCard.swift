@@ -1,7 +1,7 @@
 import Foundation
 
 
-enum Language: String, Codable, CaseIterable, Identifiable {
+enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
     case spanish = "es"
     case japanese = "ja"
     case korean = "ko"
@@ -21,6 +21,16 @@ enum Language: String, Codable, CaseIterable, Identifiable {
     }
     
     var code: String { self.rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .spanish: return "Spanish"
+        case .japanese: return "Japanese"
+        case .korean: return "Korean"
+        case .french: return "French"
+        case .vietnamese: return "Vietnamese"
+        }
+    }
 }
 
 enum LearningLevel: String, Codable, CaseIterable, Identifiable {

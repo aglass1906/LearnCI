@@ -79,7 +79,10 @@ struct DashboardView: View {
                         // 5. Leaderboard
                         leaderboardSection
                         
-                        // 6. Word of the Day
+                        // 6. AI Stories
+                        storiesSection
+                        
+                        // 7. Word of the Day
                         wordOfDaySection
                     }
                 }
@@ -562,6 +565,20 @@ extension DashboardView {
             destination: FavoritesView()
         ) {
              Text("Jump back into your favorite channels and resources.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    private var storiesSection: some View {
+        LayoutCardView(
+            title: "AI Audio Stories",
+            subTitle: "Generate & Listen",
+            accentColor: .purple,
+            icon: "sparkles.rectangle.stack.fill",
+            destination: StoryListView()
+        ) {
+             Text("Create custom stories with AI-generated audio.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

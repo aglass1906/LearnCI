@@ -35,6 +35,10 @@ struct ProfileView: View {
                             Label("Audio Settings", systemImage: "speaker.wave.3")
                         }
                         
+                        NavigationLink(destination: ProfileAISettingsView(profile: profile)) {
+                            Label("AI Settings", systemImage: "sparkles")
+                        }
+                        
                         NavigationLink(destination: ProfileConnectionsView()) {
                             Label("App Connections", systemImage: "link")
                         }

@@ -120,6 +120,115 @@ actor OpenAIService {
         return data
     }
     
+    func generateTranslation(text: String, sourceLanguage: String) async throws -> String {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+        
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let prompt = """
+        Translate the following \(sourceLanguage) text to English. 
+        Preserve the tone and style. Return only the English translation, no explanations.
+        
+        Text: \(text)
+        """
+        
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a professional translator."],
+                ["role": "user", "content": prompt]
+            ]
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+        
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+        
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let translation = result.choices.first?.message.content else {
+            throw OpenAIServiceError.decodingError
+        }
+        
+        return translation.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    func generateCoverArt(title: String, topic: String) async throws -> Data {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+        
+        let url = URL(string: "\(baseURL)/images/generations")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let prompt = "Create a colorful, kid-friendly illustration for a story titled '\(title)' about \(topic). Style: digital art, vibrant colors, whimsical, no text in the image"
+        
+        let body: [String: Any] = [
+            "model": "dall-e-3",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "response_format": "b64_json"
+        ]
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+        
+        struct ImageResponse: Decodable {
+            struct ImageData: Decodable {
+                let b64_json: String
+            }
+            let data: [ImageData]
+        }
+        
+        let result = try JSONDecoder().decode(ImageResponse.self, from: data)
+        guard let base64String = result.data.first?.b64_json,
+              let imageData = Data(base64Encoded: base64String) else {
+            throw OpenAIServiceError.decodingError
+        }
+        
+        return imageData
+    }
+    
     // Check if key exists
     func hasKey() -> Bool {
         return apiKey != nil && !apiKey!.isEmpty

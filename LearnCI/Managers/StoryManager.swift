@@ -30,24 +30,45 @@ class StoryManager {
                 level: levelString
             )
             
-            // 2. Generate Audio
+            // 2. Generate English Translation
+            print("Generating English translation...")
+            let englishTranslation = try await openAIService.generateTranslation(
+                text: content,
+                sourceLanguage: language.rawValue
+            )
+            
+            // 3. Generate Cover Art
+            print("Generating cover art for: \(title)")
+            let coverImageData = try await openAIService.generateCoverArt(
+                title: title,
+                topic: topic
+            )
+            
+            // 4. Save Cover Image
+            let coverFilename = "cover_\(UUID().uuidString).png"
+            let coverURL = getDocumentsDirectory().appendingPathComponent(coverFilename)
+            try coverImageData.write(to: coverURL)
+            print("Cover art saved to: \(coverURL.path)")
+            
+            // 5. Generate Audio
             print("Generating audio for content length: \(content.count)")
             let audioData = try await openAIService.generateAudio(text: content)
             
-            // 3. Save Audio File
+            // 6. Save Audio File
             let filename = "story_\(UUID().uuidString).mp3"
             let audioURL = getDocumentsDirectory().appendingPathComponent(filename)
             try audioData.write(to: audioURL)
             print("Audio saved to: \(audioURL.path)")
             
-            // 4. Create & Save Story Object
+            // 7. Create & Save Story Object
             let story = Story(
                 userID: userID,
                 title: title,
                 targetLanguageText: content,
-                nativeLanguageText: nil, // We could parse this separately if the API returned it
+                nativeLanguageText: englishTranslation,
                 prompt: topic,
                 audioFilename: filename,
+                coverArt: coverFilename,
                 language: language,
                 level: level
             )
@@ -68,6 +89,12 @@ class StoryManager {
         // Delete audio file
         if let filename = story.audioFilename {
             let url = getDocumentsDirectory().appendingPathComponent(filename)
+            try? fileManager.removeItem(at: url)
+        }
+        
+        // Delete cover image file
+        if let coverFilename = story.coverArt {
+            let url = getDocumentsDirectory().appendingPathComponent(coverFilename)
             try? fileManager.removeItem(at: url)
         }
         

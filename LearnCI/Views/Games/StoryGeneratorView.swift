@@ -5,6 +5,7 @@ struct StoryGeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
+    @Environment(SyncManager.self) private var syncManager // Added SyncManager to environment
     
     @Binding var navigationPath: NavigationPath
     
@@ -81,6 +82,7 @@ struct StoryGeneratorView: View {
                 
                 // Assuming we want to read it immediately:
                 // We'll rely on the parent updating the list, or push manually if we have the path.
+                await syncManager.syncNow(modelContext: modelContext) // Call syncNow after story created
                 dismiss() 
             }
         }

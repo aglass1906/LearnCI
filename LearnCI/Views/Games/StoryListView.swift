@@ -5,13 +5,12 @@ struct StoryListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Story.createdAt, order: .reverse) var stories: [Story]
     
-    @State private var navigationPath = NavigationPath()
     @State private var showGenerator = false
     @State private var storyManager = StoryManager()
     @State private var hasKey = false
     
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        NavigationStack {
             List {
                 if stories.isEmpty {
                     ContentUnavailableView(
@@ -22,7 +21,7 @@ struct StoryListView: View {
                 }
                 
                 ForEach(stories) { story in
-                    NavigationLink(value: story) {
+                    NavigationLink(destination: StorySessionView(story: story)) {
                         VStack(alignment: .leading) {
                             Text(story.title)
                                 .font(.headline)
@@ -55,12 +54,9 @@ struct StoryListView: View {
                     }
                 }
             }
-            .navigationDestination(for: Story.self) { story in
-                StorySessionView(story: story)
-            }
             .sheet(isPresented: $showGenerator) {
                 NavigationStack {
-                    StoryGeneratorView(navigationPath: $navigationPath)
+                    StoryGeneratorView(navigationPath: .constant(NavigationPath()))
                 }
             }
             .task {

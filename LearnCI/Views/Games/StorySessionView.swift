@@ -12,6 +12,12 @@ struct StorySessionView: View {
     @State private var duration: Double = 0
     @State private var showPromptDetails = false
     @State private var playbackRate: Float = 1.0
+    @State private var selectedLanguage: DisplayLanguage = .target
+    
+    enum DisplayLanguage: String, CaseIterable {
+        case target = "Target Language"
+        case native = "English"
+    }
     
     // Timer to update scrubber
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -20,22 +26,45 @@ struct StorySessionView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    // Cover Art
+                    if let coverFilename = story.coverArt {
+                        let coverURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            .appendingPathComponent(coverFilename)
+                        if FileManager.default.fileExists(atPath: coverURL.path),
+                           let uiImage = UIImage(contentsOfFile: coverURL.path) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 300)
+                                .cornerRadius(12)
+                                .shadow(radius: 8)
+                        }
+                    }
+                    
                     Text(story.title)
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                        .padding(.top)
                     
-                    Text(story.targetLanguageText)
-                        .font(.body)
-                        .lineSpacing(8)
+                    // Language Toggle
+                    if story.nativeLanguageText != nil {
+                        Picker("Language", selection: $selectedLanguage) {
+                            ForEach(DisplayLanguage.allCases, id: \.self) { lang in
+                                Text(lang.rawValue).tag(lang)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.vertical, 8)
+                    }
                     
-                    if let native = story.nativeLanguageText {
-                        Divider()
-                        Text("Translation")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                    // Story Text based on selection
+                    if selectedLanguage == .target {
+                        Text(story.targetLanguageText)
+                            .font(.body)
+                            .lineSpacing(8)
+                    } else if let native = story.nativeLanguageText {
                         Text(native)
                             .font(.body)
+                            .lineSpacing(8)
                             .foregroundColor(.secondary)
                     }
                 }

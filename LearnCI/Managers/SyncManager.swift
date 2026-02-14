@@ -27,6 +27,7 @@ struct StoryDTO: Codable {
     let language: String
     let level: Int
     let remote_audio_path: String?
+    let remote_cover_path: String?
     let cover_art: String?
     let created_at: Date
     let is_favorite: Bool
@@ -698,7 +699,35 @@ struct CoachingCheckInDTO: Codable {
                 }
             }
             
-            // 2. Push Metadata
+            // 2. Upload Cover Image if needed
+            if let coverFilename = story.coverArt,
+               story.remoteCoverPath == nil {
+                
+                let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(coverFilename)
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    do {
+                        let imageData = try Data(contentsOf: fileURL)
+                        let remotePath = "\(userID)/covers/\(UUID().uuidString).png"
+                        
+                        try await authManager.supabase.storage
+                            .from("audio-stories")
+                            .upload(
+                                path: remotePath,
+                                file: imageData,
+                                options: FileOptions(contentType: "image/png")
+                            )
+                        
+                        // Update local model
+                        story.remoteCoverPath = remotePath
+                        try context.save()
+                        print("Sync: Uploaded cover for story '\(story.title)'")
+                    } catch {
+                        print("Sync: Failed to upload cover for '\(story.title)': \(error)")
+                    }
+                }
+            }
+            
+            // 3. Push Metadata
             let dto = StoryDTO(
                 id: story.id,
                 user_id: uid,
@@ -709,6 +738,7 @@ struct CoachingCheckInDTO: Codable {
                 language: story.languageRaw,
                 level: Int(story.levelRaw) ?? 1,
                 remote_audio_path: story.remoteAudioPath,
+                remote_cover_path: story.remoteCoverPath,
                 cover_art: story.coverArt,
                 created_at: story.createdAt,
                 is_favorite: story.isFavorite,
@@ -755,6 +785,9 @@ struct CoachingCheckInDTO: Codable {
                 if existing.remoteAudioPath == nil && dto.remote_audio_path != nil {
                     existing.remoteAudioPath = dto.remote_audio_path
                 }
+                if existing.remoteCoverPath == nil && dto.remote_cover_path != nil {
+                    existing.remoteCoverPath = dto.remote_cover_path
+                }
             } else {
                 // Insert New
                 let newStory = Story(
@@ -765,6 +798,7 @@ struct CoachingCheckInDTO: Codable {
                     nativeLanguageText: dto.native_text,
                     prompt: dto.prompt,
                     remoteAudioPath: dto.remote_audio_path,
+                    remoteCoverPath: dto.remote_cover_path,
                     coverArt: dto.cover_art,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
@@ -804,6 +838,30 @@ struct CoachingCheckInDTO: Codable {
                              }
                         } catch {
                             print("Sync: Failed to download audio for story \(dto.title): \(error)")
+                        }
+                    }
+                }
+                
+                // Download cover image if needed
+                if let remoteCoverPath = dto.remote_cover_path {
+                    Task {
+                        do {
+                            let data = try await authManager.supabase.storage
+                                .from("audio-stories")
+                                .download(path: remoteCoverPath)
+                            
+                            let filename = "cover_\(dto.id).png"
+                            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            let url = docs.appendingPathComponent(filename)
+                            try data.write(to: url)
+                            
+                            let mainContext = context
+                            await MainActor.run {
+                                newStory.coverArt = filename
+                                try? mainContext.save()
+                            }
+                        } catch {
+                            print("Sync: Failed to download cover for story \(dto.title): \(error)")
                         }
                     }
                 }

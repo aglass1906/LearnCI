@@ -41,21 +41,41 @@ struct LearnCIApp: App {
         }
     }()
 
+    @State private var showSplash = true
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(dataManager)
-                .environment(youtubeManager)
-                .environment(authManager)
-                .environment(syncManager)
-                .environment(locationManager)
-                .environment(audioManager)
-                .onOpenURL { url in
-                    print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
-                    Task {
-                        try? await authManager.handleIncomingURL(url)
+            ZStack {
+                if showSplash {
+                    SplashView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                } else {
+                    ContentView()
+                        .environment(dataManager)
+                        .environment(youtubeManager)
+                        .environment(authManager)
+                        .environment(syncManager)
+                        .environment(locationManager)
+                        .environment(audioManager)
+                        .onOpenURL { url in
+                            print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
+                            Task {
+                                try? await authManager.handleIncomingURL(url)
+                            }
+                        }
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.5), value: showSplash)
+            .onAppear {
+                // Simulate initialization delay or wait for essential services
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation {
+                        showSplash = false
                     }
                 }
+            }
         }
         .modelContainer(sharedModelContainer)
     }

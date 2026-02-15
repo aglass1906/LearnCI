@@ -26,8 +26,47 @@ struct StorySessionView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Cover Art
-                    if let coverFilename = story.coverArt {
+                    // Cover Art - Try remote first, then local
+                    if let remotePath = story.remoteCoverPath {
+                        // Load from Supabase Storage
+                        let coverURL = URL(string: "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories/\(remotePath)")
+                        AsyncImage(url: coverURL) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 300)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 8)
+                            case .failure(_):
+                                // If remote fails, try local fallback
+                                if let coverFilename = story.coverArt {
+                                    let coverURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                                        .appendingPathComponent(coverFilename)
+                                    if FileManager.default.fileExists(atPath: coverURL.path),
+                                       let uiImage = UIImage(contentsOfFile: coverURL.path) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(maxHeight: 300)
+                                            .cornerRadius(12)
+                                            .shadow(radius: 8)
+                                    }
+                                }
+                            case .empty:
+                                ZStack {
+                                    Color.gray.opacity(0.2)
+                                    ProgressView()
+                                }
+                                .frame(height: 300)
+                                .cornerRadius(12)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else if let coverFilename = story.coverArt {
+                        // Fallback to local file only
                         let coverURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                             .appendingPathComponent(coverFilename)
                         if FileManager.default.fileExists(atPath: coverURL.path),
@@ -73,7 +112,18 @@ struct StorySessionView: View {
             
             // Audio Controls
             if let _ = story.audioFilename {
-                VStack(spacing: 10) {
+                HStack(spacing: 12) {
+                    Button(action: togglePlay) {
+                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 32)) // Smaller, more compact
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Text(formatTime(sliderValue))
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundColor(.secondary)
+                    
                     Slider(value: $sliderValue, in: 0...duration) { editing in
                         if editing {
                             audioManager.player?.pause()
@@ -86,25 +136,17 @@ struct StorySessionView: View {
                             }
                         }
                     }
-                    .padding(.horizontal)
                     
-                    HStack {
-                        Text(formatTime(sliderValue))
-                        Spacer()
-                        Text(formatTime(duration))
-                    }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                    
-                    Button(action: togglePlay) {
-                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 64))
-                            .foregroundColor(.blue)
-                    }
+                    Text(formatTime(duration))
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundColor(.secondary)
                 }
                 .padding()
                 .background(.regularMaterial)
+                .cornerRadius(16)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
             } else if story.remoteAudioPath != nil {
                 VStack(spacing: 12) {
                     ProgressView()

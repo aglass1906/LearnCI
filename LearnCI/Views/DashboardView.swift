@@ -70,17 +70,17 @@ struct DashboardView: View {
                         // 2. Favorites
                         favoritesSection
                         
-                        // 3. Input Roadmap
+                        // 3. AI Stories
+                        storiesSection
+                        
+                        // 4. Input Roadmap
                         roadmapSection
                         
-                        // 4. Breakdown
+                        // 5. Breakdown
                         breakdownSection
                         
-                        // 5. Leaderboard
+                        // 6. Leaderboard
                         leaderboardSection
-                        
-                        // 6. AI Stories
-                        storiesSection
                         
                         // 7. Word of the Day
                         wordOfDaySection

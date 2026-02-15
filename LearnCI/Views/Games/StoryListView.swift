@@ -22,16 +22,45 @@ struct StoryListView: View {
                 
                 ForEach(stories) { story in
                     NavigationLink(destination: StorySessionView(story: story)) {
-                        VStack(alignment: .leading) {
-                            Text(story.title)
-                                .font(.headline)
-                            HStack {
-                                Text(story.language.displayName)
-                                Text("•")
-                                Text("Level \(story.level)")
+                        HStack(spacing: 12) {
+                            // Cover Image Thumbnail
+                            if let remotePath = story.remoteCoverPath {
+                                let coverURL = URL(string: "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories/\(remotePath)")
+                                AsyncImage(url: coverURL) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                } placeholder: {
+                                    ZStack {
+                                        Color.gray.opacity(0.2)
+                                        ProgressView()
+                                    }
+                                }
+                                .frame(width: 60, height: 60)
+                                .cornerRadius(8)
+                            } else {
+                                // Fallback if no remote cover
+                                ZStack {
+                                    Color.gray.opacity(0.2)
+                                    Text("📚")
+                                        .font(.title)
+                                }
+                                .frame(width: 60, height: 60)
+                                .cornerRadius(8)
                             }
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            
+                            // Story Info
+                            VStack(alignment: .leading) {
+                                Text(story.title)
+                                    .font(.headline)
+                                HStack {
+                                    Text(story.language.displayName)
+                                    Text("•")
+                                    Text("Level \(story.level)")
+                                }
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            }
                         }
                     }
                 }

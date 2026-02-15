@@ -14,6 +14,7 @@ struct StoryGeneratorView: View {
     @State private var selectedLevel: Int = 2
     @State private var selectedLanguage: Language = .spanish
     @State private var preferences = StoryPreferences()
+    @State private var showAdvancedOptions: Bool = false
     
     var body: some View {
         Form {
@@ -34,9 +35,15 @@ struct StoryGeneratorView: View {
             }
             
             Section("Story Style") {
-                Picker("Voice", selection: $preferences.voice) {
-                    ForEach(StoryPreferences.Voice.allCases) { voice in
-                        Text(voice.displayName).tag(voice)
+                Picker("Cover Art Style", selection: $preferences.coverArtStyle) {
+                    ForEach(StoryPreferences.CoverArtStyle.allCases) { style in
+                        Text(style.rawValue).tag(style)
+                    }
+                }
+                
+                Picker("Genre", selection: $preferences.genre) {
+                    ForEach(StoryPreferences.Genre.allCases) { genre in
+                        Text(genre.rawValue).tag(genre)
                     }
                 }
                 
@@ -61,16 +68,71 @@ struct StoryGeneratorView: View {
                         Text("Sci-Fi")
                     }
                 }
-                
-                Picker("Genre", selection: $preferences.genre) {
-                    ForEach(StoryPreferences.Genre.allCases) { genre in
-                        Text(genre.rawValue).tag(genre)
+            }
+            
+            Section("Advanced Options") {
+                DisclosureGroup("Show Advanced Options", isExpanded: $showAdvancedOptions) {
+                    // Protagonist
+                    Group {
+                        Text("Protagonist").font(.caption).foregroundStyle(.secondary)
+                        TextField("Protagonist Name (Optional)", text: $preferences.protagonistName)
+                        Picker("Gender", selection: $preferences.protagonistGender) {
+                            ForEach(StoryPreferences.Gender.allCases) { gender in
+                                Text(gender.rawValue).tag(gender)
+                            }
+                        }
                     }
-                }
-                
-                Picker("Dialogue", selection: $preferences.dialogueAmount) {
-                    ForEach(StoryPreferences.DialogueAmount.allCases) { amount in
-                        Text(amount.rawValue).tag(amount)
+                    
+                    Divider()
+                    
+                    // Story Structure
+                    Group {
+                        Text("Story Structure").font(.caption).foregroundStyle(.secondary)
+                        Picker("Length", selection: $preferences.storyLength) {
+                            ForEach(StoryPreferences.StoryLength.allCases) { length in
+                                Text(length.rawValue).tag(length)
+                            }
+                        }
+                        
+                        Picker("Ending Style", selection: $preferences.endingType) {
+                            ForEach(StoryPreferences.EndingType.allCases) { ending in
+                                Text(ending.rawValue).tag(ending)
+                            }
+                        }
+                        
+                        Picker("Dialogue Amount", selection: $preferences.dialogueAmount) {
+                            ForEach(StoryPreferences.DialogueAmount.allCases) { amount in
+                                Text(amount.rawValue).tag(amount)
+                            }
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    // Pedagogical Controls
+                    Group {
+                        Text("Learning Goals").font(.caption).foregroundStyle(.secondary)
+                        TextField("Target Vocabulary (comma separated)", text: $preferences.targetVocabulary)
+                        TextField("Grammar Focus (e.g. Past Tense)", text: $preferences.grammarFocus)
+                    }
+                    
+                    Divider()
+                    
+                    // Audio
+                    Group {
+                        Text("Audio Settings").font(.caption).foregroundStyle(.secondary)
+                        Picker("Voice", selection: $preferences.voice) {
+                            ForEach(StoryPreferences.Voice.allCases) { voice in
+                                Text(voice.displayName).tag(voice)
+                            }
+                        }
+                        
+                        VStack(alignment: .leading) {
+                            Text("Audio Speed: \(String(format: "%.1fx", preferences.audioSpeed))")
+                            Slider(value: $preferences.audioSpeed, in: 0.5...1.5, step: 0.1)
+                        }
+                        
+                        Toggle("Interactive Audio (Shadowing)", isOn: $preferences.interactiveAudio)
                     }
                 }
             }

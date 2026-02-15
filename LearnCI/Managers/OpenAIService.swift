@@ -34,27 +34,40 @@ actor OpenAIService {
         // Determine Setting
         let settingDesc = preferences.realismLevel < 0.3 ? "Real world/Daily life" : (preferences.realismLevel > 0.7 ? "Sci-Fi/Futuristic" : "Contemporary with slight twist")
         
-        // Determine Length based on level string (e.g. "Beginner (A2)")
-        var lengthInstruction = "Keep it under 200 words."
-        if level.contains("A1") { lengthInstruction = "Keep it very short and simple, under 150 words." }
-        else if level.contains("A2") { lengthInstruction = "Keep it under 200 words." }
-        else if level.contains("B1") { lengthInstruction = "Keep it around 300 words." }
-        else if level.contains("B2") { lengthInstruction = "Keep it around 400 words." }
-        else if level.contains("C1") { lengthInstruction = "Keep it around 500 words." }
-        else if level.contains("C2") { lengthInstruction = "Keep it around 600 words." }
+        // Determine Length based on preference
+        let lengthInstruction = preferences.storyLength.promptInstruction
         
-        // Prompt Engineering
-        let prompt = """
-        Write a short, engaging story in \(language) suitable for a \(level) level learner. 
-        The topic is: "\(topic)".
-        Preferences:
-        - Tone: \(toneDesc)
-        - Setting: \(settingDesc)
-        - Genre: \(preferences.genre.rawValue)
-        - Dialogue: Include \(preferences.dialogueAmount.rawValue.lowercased()) amount of dialogue.
-        \(lengthInstruction)
-        Return the result as JSON with keys "title" and "content".
-        """
+        // Construct detailed prompt components
+        var promptComponents = [
+            "Write a short, engaging story in \(language) suitable for a \(level) level learner.",
+            "The topic is: \"\(topic)\".",
+            "Preferences:",
+            "- Tone: \(toneDesc)",
+            "- Setting: \(settingDesc)",
+            "- Genre: \(preferences.genre.rawValue)",
+            "- Dialogue: Include \(preferences.dialogueAmount.rawValue.lowercased()) amount of dialogue.",
+            "- Ending: \(preferences.endingType.rawValue)",
+            lengthInstruction
+        ]
+        
+        // Add Protagonist if specified
+        if !preferences.protagonistName.isEmpty {
+            let genderDesc = preferences.protagonistGender == .neutral ? "non-binary/gender-neutral" : preferences.protagonistGender.rawValue
+            promptComponents.append("- Protagonist: The main character is named \(preferences.protagonistName) (\(genderDesc)).")
+        }
+        
+        // Add Pedagogical Controls
+        if !preferences.targetVocabulary.isEmpty {
+            promptComponents.append("- REQUIRED VOCABULARY: You MUST naturally include the following words: \(preferences.targetVocabulary).")
+        }
+        
+        if !preferences.grammarFocus.isEmpty {
+            promptComponents.append("- GRAMMAR FOCUS: Prioritize using \(preferences.grammarFocus) where appropriate.")
+        }
+        
+        promptComponents.append("Return the result as JSON with keys \"title\" and \"content\".")
+        
+        let prompt = promptComponents.joined(separator: "\n")
         
         print("--- GENERATED PROMPT ---")
         print(prompt)
@@ -213,7 +226,7 @@ actor OpenAIService {
         return translation.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    func generateCoverArt(title: String, topic: String) async throws -> Data {
+    func generateCoverArt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) async throws -> Data {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -224,7 +237,8 @@ actor OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let prompt = "Create a colorful, kid-friendly illustration for a story titled '\(title)' about \(topic). Style: digital art, vibrant colors, whimsical, no text in the image"
+        let styleDesc = style.promptDescription
+        let prompt = "Create a illustration for a story titled '\(title)' about \(topic). Style: \(styleDesc). No text in the image."
         
         print("--- COVER ART PROMPT ---")
         print(prompt)

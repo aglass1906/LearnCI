@@ -42,7 +42,8 @@ class StoryManager {
             print("Generating cover art for: \(title)")
             let coverImageData = try await openAIService.generateCoverArt(
                 title: title,
-                topic: topic
+                topic: topic,
+                style: preferences.coverArtStyle
             )
             
             // 4. Save Cover Image

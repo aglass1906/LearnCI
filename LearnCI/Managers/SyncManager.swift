@@ -24,6 +24,8 @@ struct StoryDTO: Codable {
     let target_text: String
     let native_text: String?
     let prompt: String?
+    let text_gen_prompt: String?
+    let image_gen_prompt: String?
     let preferences_json: String?
     let language: String
     let level: Int
@@ -34,6 +36,8 @@ struct StoryDTO: Codable {
     let is_favorite: Bool
     let is_public: Bool
 }
+
+
 
 // MARK: - Coaching DTOs
 
@@ -738,6 +742,8 @@ struct CoachingCheckInDTO: Codable {
                 target_text: story.targetLanguageText,
                 native_text: story.nativeLanguageText,
                 prompt: story.prompt,
+                text_gen_prompt: story.textGenPrompt,
+                image_gen_prompt: story.imageGenPrompt,
                 preferences_json: story.preferencesJSON,
                 language: story.languageRaw,
                 level: Int(story.levelRaw) ?? 1,
@@ -746,7 +752,7 @@ struct CoachingCheckInDTO: Codable {
                 cover_art: story.coverArt,
                 created_at: story.createdAt,
                 is_favorite: story.isFavorite,
-                is_public: true // Default to true for now as per plan update
+                is_public: true
             )
             
             try await authManager.supabase.from("stories")
@@ -787,6 +793,9 @@ struct CoachingCheckInDTO: Codable {
                 // Update
                 existing.title = dto.title
                 existing.isFavorite = dto.is_favorite
+                existing.textGenPrompt = dto.text_gen_prompt
+                existing.imageGenPrompt = dto.image_gen_prompt
+                
                 // Only overwrite if remote has path and local doesn't? Or always?
                 if existing.remoteAudioPath == nil && dto.remote_audio_path != nil {
                     existing.remoteAudioPath = dto.remote_audio_path
@@ -806,6 +815,8 @@ struct CoachingCheckInDTO: Codable {
                     targetLanguageText: dto.target_text,
                     nativeLanguageText: dto.native_text,
                     prompt: dto.prompt,
+                    textGenPrompt: dto.text_gen_prompt,
+                    imageGenPrompt: dto.image_gen_prompt,
                     preferencesJSON: dto.preferences_json,
                     remoteAudioPath: dto.remote_audio_path,
                     remoteCoverPath: dto.remote_cover_path,

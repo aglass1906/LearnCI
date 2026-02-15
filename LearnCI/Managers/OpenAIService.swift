@@ -233,7 +233,7 @@ actor OpenAIService {
         return translation.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    func generateCoverArt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) async throws -> Data {
+    func generateCoverArt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) async throws -> (imageData: Data, prompt: String) {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -286,7 +286,7 @@ actor OpenAIService {
             throw OpenAIServiceError.decodingError
         }
         
-        return imageData
+        return (imageData, prompt)
     }
     
     // Check if key exists

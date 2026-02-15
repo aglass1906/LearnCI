@@ -18,6 +18,8 @@ final class Story: Identifiable {
     var remoteAudioPath: String? // Path in Supabase Storage
     var remoteCoverPath: String? // Path to cover image in Supabase Storage
     var coverArt: String? // URL or path to cover image
+    var textGenPrompt: String? // The exact prompt used for text generation
+    var imageGenPrompt: String? // The exact prompt used for image generation
     
     // Computed properties for type safety, matching existing app patterns
     var language: Language {
@@ -37,6 +39,8 @@ final class Story: Identifiable {
          targetLanguageText: String, 
          nativeLanguageText: String? = nil,
          prompt: String? = nil,
+         textGenPrompt: String? = nil,
+         imageGenPrompt: String? = nil,
          preferencesJSON: String? = nil,
          audioFilename: String? = nil, 
          remoteAudioPath: String? = nil,
@@ -51,6 +55,8 @@ final class Story: Identifiable {
         self.targetLanguageText = targetLanguageText
         self.nativeLanguageText = nativeLanguageText
         self.prompt = prompt
+        self.textGenPrompt = textGenPrompt
+        self.imageGenPrompt = imageGenPrompt
         self.preferencesJSON = preferencesJSON
         self.audioFilename = audioFilename
         self.remoteAudioPath = remoteAudioPath

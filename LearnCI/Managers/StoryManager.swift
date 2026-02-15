@@ -24,6 +24,14 @@ class StoryManager {
             let levelString = describeLevel(level)
             print("Generating story for topic: \(topic), Language: \(language.rawValue), Level: \(levelString)")
             
+            // Capture the prompt
+            let textGenPrompt = await openAIService.constructStoryPrompt(
+                topic: topic, 
+                language: language.displayName, 
+                level: levelString, 
+                preferences: preferences
+            )
+            
             let (title, content) = try await openAIService.generateStory(
                 topic: topic,
                 language: language.displayName,
@@ -40,7 +48,7 @@ class StoryManager {
             
             // 3. Generate Cover Art
             print("Generating cover art for: \(title)")
-            let coverImageData = try await openAIService.generateCoverArt(
+            let (coverImageData, imageGenPrompt) = try await openAIService.generateCoverArt(
                 title: title,
                 topic: topic,
                 style: preferences.coverArtStyle
@@ -72,6 +80,8 @@ class StoryManager {
                 targetLanguageText: content,
                 nativeLanguageText: englishTranslation,
                 prompt: topic,
+                textGenPrompt: textGenPrompt,
+                imageGenPrompt: imageGenPrompt,
                 preferencesJSON: prefInfo,
                 audioFilename: filename,
                 coverArt: coverFilename,

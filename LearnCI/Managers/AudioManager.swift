@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import MediaPlayer
 
 @Observable
 class AudioManager: NSObject, AVAudioPlayerDelegate {
@@ -26,15 +27,103 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     func configureAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            // Standard playback config.
-            // Reverting to .default mode as .moviePlayback can sometimes conflict with TTS on certain devices/simulators.
-            // Using standard options (interrupting others) to ensure clean playback pipeline.
-            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            // .playback category is required for background audio.
+            // .default mode is standard.
+            // Removing .mixWithOthers to ensure we capture remote command events (Lock Screen controls).
+            try session.setCategory(.playback, mode: .default)
             try session.setActive(true)
-            print("DEBUG: AVAudioSession active. Category: Playback, Mode: Default, Options: MixWithOthers")
+            print("DEBUG: AVAudioSession active. Category: Playback")
         } catch {
             print("Failed to setup audio session: \(error)")
         }
+        
+        setupRemoteTransportControls()
+    }
+    
+    // MARK: - Remote Command Center (Lock Screen)
+    
+    private func setupRemoteTransportControls() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        // Play
+        commandCenter.playCommand.isEnabled = true
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            guard let self = self, let player = self.player else { return .commandFailed }
+            if !player.isPlaying {
+                player.play()
+                self.isPlaying = true
+                self.updateNowPlayingInfo()
+                return .success
+            }
+            return .commandFailed
+        }
+        
+        // Pause
+        commandCenter.pauseCommand.isEnabled = true
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            guard let self = self, let player = self.player else { return .commandFailed }
+            if player.isPlaying {
+                player.pause()
+                self.isPlaying = false
+                self.updateNowPlayingInfo()
+                return .success
+            }
+            return .commandFailed
+        }
+        
+        // Skip Forward (10s)
+        commandCenter.skipForwardCommand.isEnabled = true
+        commandCenter.skipForwardCommand.preferredIntervals = [10]
+        commandCenter.skipForwardCommand.addTarget { [weak self] _ in
+            guard let self = self, let player = self.player else { return .commandFailed }
+            let newTime = player.currentTime + 10
+            player.currentTime = min(player.duration, newTime)
+            self.updateNowPlayingInfo()
+            return .success
+        }
+        
+        // Skip Backward (10s)
+        commandCenter.skipBackwardCommand.isEnabled = true
+        commandCenter.skipBackwardCommand.preferredIntervals = [10]
+        commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
+            guard let self = self, let player = self.player else { return .commandFailed }
+            let newTime = player.currentTime - 10
+            player.currentTime = max(0, newTime)
+            self.updateNowPlayingInfo()
+            return .success
+        }
+        
+        // Scrubbing (Seek)
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let self = self, let player = self.player, let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            player.currentTime = event.positionTime
+            self.updateNowPlayingInfo()
+            return .success
+        }
+    }
+    
+    func updateNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil) {
+        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
+        
+        if let title = title { info[MPMediaItemPropertyTitle] = title }
+        if let artist = artist { info[MPMediaItemPropertyArtist] = artist }
+        if let image = artworkImage {
+            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        }
+        
+        if let player = player {
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
+            info[MPMediaItemPropertyPlaybackDuration] = player.duration
+            info[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? player.rate : 0.0
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+    
+    // Clear info when stopped
+    private func clearNowPlayingInfo() {
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 
 
@@ -322,6 +411,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         onCompletion = nil
         currentSequence = []
         isPlaying = false
+        clearNowPlayingInfo()
     }
     
     // MARK: - AVAudioPlayerDelegate & AVSpeechSynthesizerDelegate

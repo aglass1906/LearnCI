@@ -2,6 +2,7 @@ import SwiftUI
 import AVFoundation
 import Combine
 import SwiftData
+import MediaPlayer
 
 struct StorySessionView: View {
     let story: Story
@@ -9,14 +10,20 @@ struct StorySessionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    // Playback State
     @State private var isPlaying: Bool = false
-    @State private var startTime: Date?
-    @State private var didPlayAudio: Bool = false
     @State private var sliderValue: Double = 0
     @State private var duration: Double = 0
-    @State private var showPromptDetails = false
     @State private var playbackRate: Float = 1.0
+    
+    // UI State
+    @State private var showPromptDetails = false
     @State private var selectedLanguage: DisplayLanguage = .target
+    @State private var heroImage: UIImage? = nil
+    
+    // Analytics
+    @State private var startTime: Date?
+    @State private var didPlayAudio: Bool = false
     
     enum DisplayLanguage: String, CaseIterable {
         case target = "Target Language"
@@ -27,197 +34,102 @@ struct StorySessionView: View {
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Cover Art - Try remote first, then local
-                    if let remotePath = story.remoteCoverPath {
-                        // Load from Supabase Storage
-                        let coverURL = URL(string: "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories/\(remotePath)")
-                        AsyncImage(url: coverURL) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxHeight: 300)
-                                    .cornerRadius(12)
-                                    .shadow(radius: 8)
-                            case .failure(_):
-                                // If remote fails, try local fallback
-                                if let coverFilename = story.coverArt {
-                                    let coverURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                                        .appendingPathComponent(coverFilename)
-                                    if FileManager.default.fileExists(atPath: coverURL.path),
-                                       let uiImage = UIImage(contentsOfFile: coverURL.path) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(maxHeight: 300)
-                                            .cornerRadius(12)
-                                            .shadow(radius: 8)
-                                    }
+                VStack(alignment: .leading, spacing: 0) {
+                    // Hero Cover Art
+                    HeroCoverView(story: story, image: $heroImage)
+                        .frame(height: 300)
+                        .clipped()
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text(story.title)
+                            .font(.system(size: 32, weight: .bold, design: .serif))
+                            .padding(.top, 20)
+                        
+                        // Metadata Row
+                        HStack {
+                            Label(story.language.displayName, systemImage: "globe")
+                            Text("•")
+                            Text(LevelManager.shared.description(for: story.level))
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        
+                        Divider()
+                        
+                        // Language Toggle
+                        if story.nativeLanguageText != nil {
+                            Picker("Language", selection: $selectedLanguage) {
+                                ForEach(DisplayLanguage.allCases, id: \.self) { lang in
+                                    Text(lang.rawValue).tag(lang)
                                 }
-                            case .empty:
-                                ZStack {
-                                    Color.gray.opacity(0.2)
-                                    ProgressView()
-                                }
-                                .frame(height: 300)
-                                .cornerRadius(12)
-                            @unknown default:
-                                EmptyView()
                             }
+                            .pickerStyle(.segmented)
                         }
-                    } else if let coverFilename = story.coverArt {
-                        // Fallback to local file only
-                        let coverURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                            .appendingPathComponent(coverFilename)
-                        if FileManager.default.fileExists(atPath: coverURL.path),
-                           let uiImage = UIImage(contentsOfFile: coverURL.path) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxHeight: 300)
-                                .cornerRadius(12)
-                                .shadow(radius: 8)
+                        
+                        // Story Text
+                        if selectedLanguage == .target {
+                            Text(story.targetLanguageText)
+                                .font(.system(size: 18, weight: .regular, design: .serif)) // Better reading font
+                                .lineSpacing(10)
+                                .textSelection(.enabled)
+                        } else if let native = story.nativeLanguageText {
+                            Text(native)
+                                .font(.system(size: 18, weight: .regular, design: .serif))
+                                .lineSpacing(10)
+                                .foregroundColor(.secondary)
+                                .textSelection(.enabled)
                         }
+                        
+                        // Spacer for sticky bar
+                        Color.clear.frame(height: 180)
                     }
-                    
-                    Text(story.title)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    // Language Toggle
-                    if story.nativeLanguageText != nil {
-                        Picker("Language", selection: $selectedLanguage) {
-                            ForEach(DisplayLanguage.allCases, id: \.self) { lang in
-                                Text(lang.rawValue).tag(lang)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.vertical, 8)
-                    }
-                    
-                    // Story Text based on selection
-                    if selectedLanguage == .target {
-                        Text(story.targetLanguageText)
-                            .font(.body)
-                            .lineSpacing(8)
-                    } else if let native = story.nativeLanguageText {
-                        Text(native)
-                            .font(.body)
-                            .lineSpacing(8)
-                            .foregroundColor(.secondary)
-                    }
+                    .padding()
                 }
-                .padding()
             }
+            .ignoresSafeArea(edges: .top)
             
-            // Audio Controls
-            if let _ = story.audioFilename {
-                HStack(spacing: 12) {
-                    Button(action: togglePlay) {
-                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 32)) // Smaller, more compact
-                            .foregroundColor(.blue)
-                    }
-                    
-                    Text(formatTime(sliderValue))
-                        .font(.caption)
-                        .monospacedDigit()
-                        .foregroundColor(.secondary)
-                    
-                    Slider(value: $sliderValue, in: 0...duration) { editing in
-                        if editing {
-                            audioManager.player?.pause()
-                        } else {
-                            if isPlaying {
-                                audioManager.player?.currentTime = sliderValue
-                                audioManager.player?.play()
-                            } else {
-                                audioManager.player?.currentTime = sliderValue
-                            }
-                        }
-                    }
-                    
-                    Text(formatTime(duration))
-                        .font(.caption)
-                        .monospacedDigit()
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(.regularMaterial)
-                .cornerRadius(16)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-            } else if story.remoteAudioPath != nil {
-                VStack(spacing: 12) {
-                    ProgressView()
-                    Text("Downloading Audio...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(.regularMaterial)
+            // Sticky Audio Player
+            if story.audioFilename != nil || story.remoteAudioPath != nil {
+                AudioPlayerBar(
+                    isPlaying: $isPlaying,
+                    sliderValue: $sliderValue,
+                    duration: duration,
+                    playbackRate: $playbackRate,
+                    onPlayPause: togglePlay,
+                    onSkipForward: skipForward,
+                    onSkipBackward: skipBackward,
+                    onSeek: seekTo,
+                    onChangeRate: setRate
+                )
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             startTime = Date()
             setupAudio()
         }
         .onDisappear {
-            audioManager.stopAudio()
-            
-            // Track Activity
-            if let start = startTime {
-                let end = Date()
-                let interval = end.timeIntervalSince(start)
-                let minutes = Int(interval / 60)
-                
-                if minutes > 0 {
-                    let type: ActivityType = didPlayAudio ? .listening : .reading
-                    let activity = UserActivity(
-                        date: start,
-                        minutes: minutes,
-                        activityType: type,
-                        language: story.language,
-                        userID: story.userID.isEmpty ? nil : story.userID
-                    )
-                    modelContext.insert(activity)
-                    try? modelContext.save()
-                    print("Logged \(minutes) min of \(type.rawValue)")
-                }
-            }
+            cleanupSession()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button("0.5x") { setRate(0.5) }
-                    Button("0.75x") { setRate(0.75) }
-                    Button("Default (1.0x)") { setRate(1.0) }
-                    Button("1.25x") { setRate(1.25) }
-                    Button("1.5x") { setRate(1.5) }
+                    Button(action: {
+                        UIPasteboard.general.string = story.targetLanguageText
+                    }) {
+                        Label("Copy Text", systemImage: "doc.on.doc")
+                    }
+                    
+                    Button(action: { showPromptDetails = true }) {
+                        Label("Story Info", systemImage: "info.circle")
+                    }
                 } label: {
-                    Label("Speed", systemImage: "gauge.with.dots.needle.bottom.50percent")
-                }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    UIPasteboard.general.string = story.targetLanguageText
-                    let generator = UINotificationFeedbackGenerator()
-                    generator.notificationOccurred(.success)
-                }) {
-                    Label("Copy", systemImage: "doc.on.doc")
-                }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: { showPromptDetails = true }) {
-                    Label("Info", systemImage: "info.circle")
+                    Image(systemName: "ellipsis.circle")
+                        .font(.headline)
+                        .foregroundColor(.primary)
                 }
             }
         }
@@ -226,44 +138,73 @@ struct StorySessionView: View {
                 .presentationDetents([.medium, .large])
         }
         .onReceive(timer) { _ in
-            if let player = audioManager.player, player.isPlaying {
+            guard let player = audioManager.player else { return }
+            if player.isPlaying {
                 sliderValue = player.currentTime
-                isPlaying = true // Sync state
+                isPlaying = true
+                // Sync rate if changed externally (e.g. lock screen?)
+                if abs(player.rate - playbackRate) > 0.1 {
+                    playbackRate = player.rate
+                }
             } else {
-                isPlaying = false 
+                isPlaying = false
+            }
+        }
+        .onChange(of: heroImage) { _, newImage in
+            if let img = newImage {
+                audioManager.updateNowPlayingInfo(title: story.title, artist: "LearnCI Story", artworkImage: img)
             }
         }
     }
     
+    // MARK: - Audio Logic
+    
     private func setupAudio() {
         guard let filename = story.audioFilename else { return }
-        
-        // We need to resolve the full path since FileManager stores it in Documents
-        // AudioManager logic usually looks in Bundle, let's see if we can trick it 
-        // or just extend it. For now, let's manually get the URL.
         
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let fileURL = paths[0].appendingPathComponent(filename)
         
         if FileManager.default.fileExists(atPath: fileURL.path) {
             do {
-                // Use AudioManager logic if possible, or direct AVAudioPlayer
-                // Since AudioManager is designed for Bundle resources mostly,
-                // let's manually play it here or add a method to AudioManager later.
-                // Actually, let's try to just spin up a player here for simplicity, 
-                // but better to use AudioManager for session handling.
-                // Let's modify AudioManager later to accept direct URLs?
-                // For now, let's just init a player here or use AudioManager's session config.
-                
-                try audioManager.playAudio(url: fileURL) // Assuming we add this extension or helper
-                
-                // Enable rate adjustment
+                try audioManager.playAudio(url: fileURL)
                 audioManager.player?.enableRate = true
                 audioManager.player?.rate = playbackRate
-                
                 duration = audioManager.player?.duration ?? 0
+                
+                // Set Initial Lock Screen Info
+                audioManager.updateNowPlayingInfo(
+                    title: story.title,
+                    artist: "LearnCI Story",
+                    artworkImage: heroImage
+                )
+                
             } catch {
                 print("Audio setup failed: \(error)")
+            }
+        }
+    }
+    
+    private func cleanupSession() {
+        audioManager.stopAudio()
+        
+        // Analytics
+        if let start = startTime {
+            let end = Date()
+            let interval = end.timeIntervalSince(start)
+            let minutes = Int(interval / 60)
+            
+            if minutes > 0 {
+                let type: ActivityType = didPlayAudio ? .listening : .reading
+                let activity = UserActivity(
+                    date: start,
+                    minutes: minutes,
+                    activityType: type,
+                    language: story.language,
+                    userID: story.userID.isEmpty ? nil : story.userID
+                )
+                modelContext.insert(activity)
+                try? modelContext.save()
             }
         }
     }
@@ -271,6 +212,7 @@ struct StorySessionView: View {
     private func togglePlay() {
         didPlayAudio = true
         guard let player = audioManager.player else { return }
+        
         if player.isPlaying {
             player.pause()
             isPlaying = false
@@ -278,6 +220,190 @@ struct StorySessionView: View {
             player.play()
             isPlaying = true
         }
+        audioManager.updateNowPlayingInfo()
+    }
+    
+    private func skipForward() {
+        guard let player = audioManager.player else { return }
+        let newTime = player.currentTime + 10
+        player.currentTime = min(player.duration, newTime)
+        sliderValue = player.currentTime
+        audioManager.updateNowPlayingInfo()
+    }
+    
+    private func skipBackward() {
+        guard let player = audioManager.player else { return }
+        let newTime = player.currentTime - 10
+        player.currentTime = max(0, newTime)
+        sliderValue = player.currentTime
+        audioManager.updateNowPlayingInfo()
+    }
+    
+    private func seekTo(_ value: Double) {
+        guard let player = audioManager.player else { return }
+        player.currentTime = value
+        audioManager.updateNowPlayingInfo()
+    }
+    
+    private func setRate(_ rate: Float) {
+        playbackRate = rate
+        if let player = audioManager.player {
+            player.enableRate = true
+            player.rate = rate
+            if isPlaying {
+                audioManager.updateNowPlayingInfo()
+            }
+        }
+    }
+}
+
+// MARK: - Subviews
+
+struct HeroCoverView: View {
+    let story: Story
+    @Binding var image: UIImage?
+    
+    var body: some View {
+        GeometryReader { geo in
+            let minY = geo.frame(in: .global).minY
+            
+            ZStack {
+                if let validImage = image {
+                    Image(uiImage: validImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height + (minY > 0 ? minY : 0))
+                        .clipped()
+                        .offset(y: minY > 0 ? -minY : 0)
+                        
+                    // Gradient Overlay for text readability
+                    LinearGradient(
+                        colors: [.black.opacity(0.6), .clear, .black.opacity(0.2)],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                } else {
+                    // Placeholder / Loading
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .overlay(ProgressView())
+                }
+            }
+            .onAppear { loadCover() }
+        }
+    }
+    
+    private func loadCover() {
+        // 1. Try Remote
+        if let remotePath = story.remoteCoverPath,
+           let url = URL(string: "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories/\(remotePath)") {
+            
+            // Simple async load (in real app, use Kingfisher or nicer cache)
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data, let uiImage = UIImage(data: data) {
+                    DispatchQueue.main.async { self.image = uiImage }
+                } else {
+                    loadLocalFallback()
+                }
+            }.resume()
+        } else {
+            loadLocalFallback()
+        }
+    }
+    
+    private func loadLocalFallback() {
+        if let filename = story.coverArt {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
+            if let data = try? Data(contentsOf: url), let uiImage = UIImage(data: data) {
+                self.image = uiImage
+            }
+        }
+    }
+}
+
+struct AudioPlayerBar: View {
+    @Binding var isPlaying: Bool
+    @Binding var sliderValue: Double
+    let duration: Double
+    @Binding var playbackRate: Float
+    
+    var onPlayPause: () -> Void
+    var onSkipForward: () -> Void
+    var onSkipBackward: () -> Void
+    var onSeek: (Double) -> Void
+    var onChangeRate: (Float) -> Void
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Scrubber
+            HStack(spacing: 8) {
+                Text(formatTime(sliderValue))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundColor(.secondary)
+                
+                Slider(value: Binding(
+                    get: { sliderValue },
+                    set: { newValue in
+                        sliderValue = newValue
+                        onSeek(newValue)
+                    }
+                ), in: 0...duration)
+                
+                Text(formatTime(duration))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            
+            // Controls
+            HStack(spacing: 30) {
+                // Speed Button
+                Menu {
+                    Button("0.75x") { onChangeRate(0.75) }
+                    Button("1.0x") { onChangeRate(1.0) }
+                    Button("1.25x") { onChangeRate(1.25) }
+                    Button("1.5x") { onChangeRate(1.5) }
+                } label: {
+                    Text("\(String(format: "%.1f", playbackRate))x")
+                        .font(.caption.bold())
+                        .frame(width: 40)
+                        .padding(6)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(8)
+                }
+                .foregroundColor(.primary)
+                
+                // Skip Back
+                Button(action: onSkipBackward) {
+                    Image(systemName: "gobackward.10")
+                        .font(.title2)
+                }
+                .foregroundColor(.primary)
+                
+                // Play/Pause
+                Button(action: onPlayPause) {
+                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 56))
+                        .shadow(radius: 4)
+                }
+                .foregroundColor(.blue)
+                
+                // Skip Fwd
+                Button(action: onSkipForward) {
+                    Image(systemName: "goforward.10")
+                        .font(.title2)
+                }
+                .foregroundColor(.primary)
+                
+                // Spacer to balance layout with Speed button
+                Color.clear.frame(width: 40)
+            }
+        }
+        .padding(.vertical, 20)
+        .background(.thinMaterial)
+        .cornerRadius(24, corners: [.topLeft, .topRight])
+        .shadow(radius: 10, y: -5)
+        .fixedSize(horizontal: false, vertical: true) // Prevent vertical expansion
     }
     
     private func formatTime(_ time: Double) -> String {
@@ -285,13 +411,22 @@ struct StorySessionView: View {
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    private func setRate(_ rate: Float) {
-        playbackRate = rate
-        if let player = audioManager.player {
-            player.enableRate = true
-            player.rate = rate
-            // If playing, it updates immediately. If paused, it will apply when played.
-        }
+}
+
+// Helper for rounded corners
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
     }
 }
 
@@ -352,5 +487,6 @@ struct PromptDetailsSheet: View {
         }
     }
 }
+
 
 

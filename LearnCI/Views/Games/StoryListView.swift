@@ -3,12 +3,17 @@ import SwiftData
 
 struct StoryListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
     @Query(sort: \Story.createdAt, order: .reverse) var stories: [Story]
     
     @State private var showGenerator = false
     @State private var storyManager = StoryManager()
     @State private var hasKey = false
     @State private var showKeyAlert = false
+    
+    init(userID: String? = nil) {
+        // No filtering - show all stories
+    }
     
     var body: some View {
         NavigationStack {
@@ -101,7 +106,10 @@ struct StoryListView: View {
         withAnimation {
             for index in offsets {
                 let story = stories[index]
-                storyManager.deleteStory(story, context: modelContext)
+                // Only allow deleting own stories
+                if let currentUserID = authManager.currentUser, story.userID == currentUserID {
+                    storyManager.deleteStory(story, context: modelContext)
+                }
             }
         }
     }

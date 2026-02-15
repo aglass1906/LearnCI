@@ -316,13 +316,14 @@ struct CoachingCheckInDTO: Codable {
         // SAFE APPROACH: Adopt stories where userID is NOT the current one (if we assume single-user device mostly)
         // OR just rely on the fact the user is asking about *their* simulator data.
         let allStories = try context.fetch(FetchDescriptor<Story>())
-        let orphanStories = allStories.filter { $0.userID != userID }
+        // Fix: Only adopt stories that have NO user ID (or empty string).
+        // Do NOT adopt stories that belong to other users (which happens if multiple users login on same device).
+        let orphanStories = allStories.filter { $0.userID.isEmpty }
         
         if !orphanStories.isEmpty {
-            print("Adopting \(orphanStories.count) stories for user \(userID)")
+            print("Adopting \(orphanStories.count) orphan stories for user \(userID)")
             for story in orphanStories {
                 story.userID = userID
-                // We rely on syncStories checking for remoteAudioPath == nil to push them.
             }
         }
         
@@ -708,7 +709,8 @@ struct CoachingCheckInDTO: Codable {
                 if FileManager.default.fileExists(atPath: fileURL.path) {
                     do {
                         let imageData = try Data(contentsOf: fileURL)
-                        let remotePath = "\(userID)/covers/\(UUID().uuidString).png"
+                        let ownerID = userID.isEmpty ? "unknown" : userID
+                        let remotePath = "\(ownerID)/covers/\(UUID().uuidString).png"
                         
                         try await authManager.supabase.storage
                             .from("audio-stories")
@@ -766,16 +768,18 @@ struct CoachingCheckInDTO: Codable {
         // But `pullStories` implies persistence. We probably only want to persist MY stories locally.
         // Let's filter by user_id for the persistent sync.
         
+        // Fetch ALL stories to allow global visibility
         let response = try await authManager.supabase.from("stories")
             .select()
-            .eq("user_id", value: uid)
+            .order("created_at", ascending: false)
+            .limit(100) // Safety limit
             .execute()
             
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
         let dtos = try decoder.decode([StoryDTO].self, from: response.data)
         
-        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
+        let descriptor = FetchDescriptor<Story>()
         let localStories = try context.fetch(descriptor)
         
         for dto in dtos {

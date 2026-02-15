@@ -26,7 +26,7 @@ class StoryManager {
             
             let (title, content) = try await openAIService.generateStory(
                 topic: topic,
-                language: language.rawValue,
+                language: language.displayName,
                 level: levelString,
                 preferences: preferences
             )
@@ -35,7 +35,7 @@ class StoryManager {
             print("Generating English translation...")
             let englishTranslation = try await openAIService.generateTranslation(
                 text: content,
-                sourceLanguage: language.rawValue
+                sourceLanguage: language.displayName
             )
             
             // 3. Generate Cover Art
@@ -115,16 +115,9 @@ class StoryManager {
     }
     
     // Helper to describe level for Prompt
+    // Helper to describe level for Prompt
     func describeLevel(_ level: Int) -> String {
-        switch level {
-        case 1: return "Super Beginner (A1)"
-        case 2: return "Beginner (A2)"
-        case 3: return "Intermediate (B1)"
-        case 4: return "Upper Intermediate (B2)"
-        case 5: return "Advanced (C1)"
-        case 6: return "Mastery (C2)"
-        default: return "Beginner (A2)"
-        }
+        return LevelManager.shared.description(for: level)
     }
     
     // Expose for UI checks

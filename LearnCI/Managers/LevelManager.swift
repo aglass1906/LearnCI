@@ -134,7 +134,17 @@ class LevelManager {
     }
     
     // Direct access to CEFR code from taxonomy
+    // Direct access to CEFR code from taxonomy
     func cefrCode(for level: Int) -> String {
         return taxonomy?.levels[String(level)]?.CEFR ?? "A1"
+    }
+    
+    // Formatted Description for Prompts (e.g. "Super Beginner (A1)")
+    func description(for level: Int) -> String {
+        guard let taxonomy = taxonomy,
+              let levelDef = taxonomy.levels[String(level)] else {
+            return "Beginner (A2)"
+        }
+        return "\(levelDef.default) (\(levelDef.CEFR))"
     }
 }

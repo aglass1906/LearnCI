@@ -1,13 +1,17 @@
 import SwiftUI
 import AVFoundation
 import Combine
+import SwiftData
 
 struct StorySessionView: View {
     let story: Story
     @Environment(AudioManager.self) private var audioManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     @State private var isPlaying: Bool = false
+    @State private var startTime: Date?
+    @State private var didPlayAudio: Bool = false
     @State private var sliderValue: Double = 0
     @State private var duration: Double = 0
     @State private var showPromptDetails = false
@@ -161,10 +165,32 @@ struct StorySessionView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            startTime = Date()
             setupAudio()
         }
         .onDisappear {
             audioManager.stopAudio()
+            
+            // Track Activity
+            if let start = startTime {
+                let end = Date()
+                let interval = end.timeIntervalSince(start)
+                let minutes = Int(interval / 60)
+                
+                if minutes > 0 {
+                    let type: ActivityType = didPlayAudio ? .listening : .reading
+                    let activity = UserActivity(
+                        date: start,
+                        minutes: minutes,
+                        activityType: type,
+                        language: story.language,
+                        userID: story.userID.isEmpty ? nil : story.userID
+                    )
+                    modelContext.insert(activity)
+                    try? modelContext.save()
+                    print("Logged \(minutes) min of \(type.rawValue)")
+                }
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -243,6 +269,7 @@ struct StorySessionView: View {
     }
     
     private func togglePlay() {
+        didPlayAudio = true
         guard let player = audioManager.player else { return }
         if player.isPlaying {
             player.pause()

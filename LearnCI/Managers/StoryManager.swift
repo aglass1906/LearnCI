@@ -53,7 +53,7 @@ class StoryManager {
             
             // 5. Generate Audio
             print("Generating audio for content length: \(content.count)")
-            let audioData = try await openAIService.generateAudio(text: content)
+            let audioData = try await openAIService.generateAudio(text: content, voice: preferences.voice.rawValue)
             
             // 6. Save Audio File
             let filename = "story_\(UUID().uuidString).mp3"

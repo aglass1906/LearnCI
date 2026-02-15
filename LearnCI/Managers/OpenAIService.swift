@@ -169,6 +169,10 @@ actor OpenAIService {
         Text: \(text)
         """
         
+        print("--- TRANSLATION PROMPT ---")
+        print(prompt)
+        print("--------------------------")
+        
         let body: [String: Any] = [
             "model": "gpt-4o-mini",
             "messages": [
@@ -221,6 +225,10 @@ actor OpenAIService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let prompt = "Create a colorful, kid-friendly illustration for a story titled '\(title)' about \(topic). Style: digital art, vibrant colors, whimsical, no text in the image"
+        
+        print("--- COVER ART PROMPT ---")
+        print(prompt)
+        print("------------------------")
         
         let body: [String: Any] = [
             "model": "dall-e-3",

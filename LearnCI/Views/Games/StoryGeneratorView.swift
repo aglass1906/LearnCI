@@ -34,6 +34,12 @@ struct StoryGeneratorView: View {
             }
             
             Section("Story Style") {
+                Picker("Voice", selection: $preferences.voice) {
+                    ForEach(StoryPreferences.Voice.allCases) { voice in
+                        Text(voice.displayName).tag(voice)
+                    }
+                }
+                
                 VStack(alignment: .leading) {
                     Text("Tone: \(preferences.humorLevel < 0.3 ? "Humorous" : (preferences.humorLevel > 0.7 ? "Serious" : "Balanced"))")
                     Slider(value: $preferences.humorLevel, in: 0...1) {

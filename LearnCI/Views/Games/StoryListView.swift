@@ -8,6 +8,7 @@ struct StoryListView: View {
     @State private var showGenerator = false
     @State private var storyManager = StoryManager()
     @State private var hasKey = false
+    @State private var showKeyAlert = false
     
     var body: some View {
         NavigationStack {
@@ -69,19 +70,21 @@ struct StoryListView: View {
             .navigationTitle("AI Stories")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: { showGenerator = true }) {
+                    Button(action: { 
+                        if hasKey {
+                            showGenerator = true 
+                        } else {
+                            showKeyAlert = true
+                        }
+                    }) {
                         Label("New Story", systemImage: "plus")
                     }
-                    .disabled(!hasKey)
                 }
-                
-                if !hasKey {
-                    ToolbarItem(placement: .status) {
-                        Text("Add OpenAI Key in Profile to Generate")
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                    }
-                }
+            }
+            .alert("OpenAI Key Required", isPresented: $showKeyAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Please add your OpenAI API Key in your Profile settings to generate stories.")
             }
             .sheet(isPresented: $showGenerator) {
                 NavigationStack {

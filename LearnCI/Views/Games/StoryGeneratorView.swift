@@ -15,6 +15,8 @@ struct StoryGeneratorView: View {
     @State private var selectedLanguage: Language = .spanish
     @State private var preferences = StoryPreferences()
     @State private var showAdvancedOptions: Bool = false
+    @State private var showPreview: Bool = false
+    @State private var previewPrompt: String = "Loading..."
     
     var body: some View {
         Form {
@@ -149,6 +151,16 @@ struct StoryGeneratorView: View {
                     }
                 }
                 .disabled(topic.isEmpty || storyManager.isGenerating)
+                
+                Button(action: {
+                    showPreview = true
+                }) {
+                    Text("Preview Prompt")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .disabled(topic.isEmpty)
+                .frame(maxWidth: .infinity)
             }
             
             if let error = storyManager.errorMessage {
@@ -159,6 +171,39 @@ struct StoryGeneratorView: View {
             }
         }
         .navigationTitle("New AI Story")
+        .sheet(isPresented: $showPreview) {
+            NavigationStack {
+                ScrollView {
+                    Text(previewPrompt)
+                        .font(.system(.body, design: .monospaced))
+                        .padding()
+                        .textSelection(.enabled) // Allow default selection
+                }
+                .navigationTitle("Prompt Preview")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { showPreview = false }
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: {
+                            UIPasteboard.general.string = previewPrompt
+                        }) {
+                            Label("Copy", systemImage: "doc.on.doc")
+                        }
+                    }
+                }
+                .task {
+                    previewPrompt = await storyManager.getPreviewPrompt(
+                        topic: topic,
+                        language: selectedLanguage,
+                        level: selectedLevel,
+                        preferences: preferences
+                    )
+                }
+            }
+            .presentationDetents([.medium, .large])
+        }
         .task {
             // Pre-select based on last usage or profile?
             // For now, defaults are fine.

@@ -125,4 +125,15 @@ class StoryManager {
     func hasAPIKey() async -> Bool {
         return await openAIService.hasKey()
     }
+    
+    // Preview Prompt
+    func getPreviewPrompt(topic: String, language: Language, level: Int, preferences: StoryPreferences) async -> String {
+        let levelString = describeLevel(level)
+        return await openAIService.constructStoryPrompt(
+            topic: topic,
+            language: language.displayName,
+            level: levelString,
+            preferences: preferences
+        )
+    }
 }

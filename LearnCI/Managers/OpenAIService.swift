@@ -28,46 +28,9 @@ actor OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // Determine Tone
-        let toneDesc = preferences.humorLevel < 0.3 ? "Humorous" : (preferences.humorLevel > 0.7 ? "Serious" : "Balanced")
+        let prompt = constructStoryPrompt(topic: topic, language: language, level: level, preferences: preferences)
         
-        // Determine Setting
-        let settingDesc = preferences.realismLevel < 0.3 ? "Real world/Daily life" : (preferences.realismLevel > 0.7 ? "Sci-Fi/Futuristic" : "Contemporary with slight twist")
-        
-        // Determine Length based on preference
-        let lengthInstruction = preferences.storyLength.promptInstruction
-        
-        // Construct detailed prompt components
-        var promptComponents = [
-            "Write a short, engaging story in \(language) suitable for a \(level) level learner.",
-            "The topic is: \"\(topic)\".",
-            "Preferences:",
-            "- Tone: \(toneDesc)",
-            "- Setting: \(settingDesc)",
-            "- Genre: \(preferences.genre.rawValue)",
-            "- Dialogue: Include \(preferences.dialogueAmount.rawValue.lowercased()) amount of dialogue.",
-            "- Ending: \(preferences.endingType.rawValue)",
-            lengthInstruction
-        ]
-        
-        // Add Protagonist if specified
-        if !preferences.protagonistName.isEmpty {
-            let genderDesc = preferences.protagonistGender == .neutral ? "non-binary/gender-neutral" : preferences.protagonistGender.rawValue
-            promptComponents.append("- Protagonist: The main character is named \(preferences.protagonistName) (\(genderDesc)).")
-        }
-        
-        // Add Pedagogical Controls
-        if !preferences.targetVocabulary.isEmpty {
-            promptComponents.append("- REQUIRED VOCABULARY: You MUST naturally include the following words: \(preferences.targetVocabulary).")
-        }
-        
-        if !preferences.grammarFocus.isEmpty {
-            promptComponents.append("- GRAMMAR FOCUS: Prioritize using \(preferences.grammarFocus) where appropriate.")
-        }
-        
-        promptComponents.append("Return the result as JSON with keys \"title\" and \"content\".")
-        
-        let prompt = promptComponents.joined(separator: "\n")
+
         
         print("--- GENERATED PROMPT ---")
         print(prompt)
@@ -128,6 +91,50 @@ actor OpenAIService {
         }
         
         return (title, content)
+    }
+    
+    // Extracted for previewing
+    func constructStoryPrompt(topic: String, language: String, level: String, preferences: StoryPreferences) -> String {
+        // Determine Tone
+        let toneDesc = preferences.humorLevel < 0.3 ? "Humorous" : (preferences.humorLevel > 0.7 ? "Serious" : "Balanced")
+        
+        // Determine Setting
+        let settingDesc = preferences.realismLevel < 0.3 ? "Real world/Daily life" : (preferences.realismLevel > 0.7 ? "Sci-Fi/Futuristic" : "Contemporary with slight twist")
+        
+        // Determine Length based on preference
+        let lengthInstruction = preferences.storyLength.promptInstruction
+        
+        // Construct detailed prompt components
+        var promptComponents = [
+            "Write a short, engaging story in \(language) suitable for a \(level) level learner.",
+            "The topic is: \"\(topic)\".",
+            "Preferences:",
+            "- Tone: \(toneDesc)",
+            "- Setting: \(settingDesc)",
+            "- Genre: \(preferences.genre.rawValue)",
+            "- Dialogue: Include \(preferences.dialogueAmount.rawValue.lowercased()) amount of dialogue.",
+            "- Ending: \(preferences.endingType.rawValue)",
+            lengthInstruction
+        ]
+        
+        // Add Protagonist if specified
+        if !preferences.protagonistName.isEmpty {
+            let genderDesc = preferences.protagonistGender == .neutral ? "non-binary/gender-neutral" : preferences.protagonistGender.rawValue
+            promptComponents.append("- Protagonist: The main character is named \(preferences.protagonistName) (\(genderDesc)).")
+        }
+        
+        // Add Pedagogical Controls
+        if !preferences.targetVocabulary.isEmpty {
+            promptComponents.append("- REQUIRED VOCABULARY: You MUST naturally include the following words: \(preferences.targetVocabulary).")
+        }
+        
+        if !preferences.grammarFocus.isEmpty {
+            promptComponents.append("- GRAMMAR FOCUS: Prioritize using \(preferences.grammarFocus) where appropriate.")
+        }
+        
+        promptComponents.append("Return the result as JSON with keys \"title\" and \"content\".")
+        
+        return promptComponents.joined(separator: "\n")
     }
     
     func generateAudio(text: String, voice: String = "alloy") async throws -> Data {

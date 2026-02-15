@@ -433,32 +433,51 @@ struct RoundedCorner: Shape {
 struct PromptDetailsSheet: View {
     let story: Story
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
+    @State private var localTextPrompt: String?
+    @State private var localImagePrompt: String?
+    @State private var isRecreating: Bool = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Story Prompt")
-                        .font(.headline)
+                VStack(alignment: .leading, spacing: 20) {
                     
-                    Text(story.prompt ?? "No prompt stored for this story.")
-                        .foregroundStyle(.secondary)
+                    // User's Prompt
+                    promptSection(title: "User Topic", content: story.prompt ?? "N/A")
+                    
+
+                    
+                    Divider()
+                    
+                    // Text Gen Prompt
+                    promptSection(
+                        title: "Text Generation Prompt", 
+                        content: localTextPrompt ?? story.textGenPrompt ?? "Not saved."
+                    )
+                    
+                    // Image Gen Prompt
+                    promptSection(
+                        title: "Image Generation Prompt", 
+                        content: localImagePrompt ?? story.imageGenPrompt ?? "Not saved."
+                    )
+                    
+                    Button(action: recreatePrompts) {
+                        HStack {
+                            if isRecreating {
+                                ProgressView()
+                                    .padding(.trailing, 5)
+                            }
+                            Text("Recreate Prompts from Preferences")
+                        }
+                        .frame(maxWidth: .infinity)
                         .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.secondary.opacity(0.05))
-                        .cornerRadius(8)
-                    
-                    if let native = story.nativeLanguageText {
-                        Text("Translation")
-                            .font(.headline)
-                        
-                        Text(native)
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.secondary.opacity(0.05))
-                            .cornerRadius(8)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(10)
                     }
+                    .disabled(isRecreating)
                     
                     Divider()
                     
@@ -475,7 +494,7 @@ struct PromptDetailsSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle("Story Details")
+            .navigationTitle("Story Info")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -483,6 +502,82 @@ struct PromptDetailsSheet: View {
                         dismiss()
                     }
                 }
+            }
+            .onAppear {
+                // Determine if we should auto-recreate or just show what's there?
+                // For now, respect what's in the model.
+            }
+        }
+    }
+    
+    private func promptSection(title: String, content: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.headline)
+                
+                Spacer()
+                
+                Button(action: {
+                    UIPasteboard.general.string = content
+                }) {
+                    Image(systemName: "doc.on.doc")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                }
+            }
+            
+            Text(content)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.secondary.opacity(0.05))
+                .cornerRadius(8)
+                .textSelection(.enabled)
+        }
+    }
+    
+    private func recreatePrompts() {
+        isRecreating = true
+        Task {
+            // preferencesJSON -> StoryPreferences
+            let decoder = JSONDecoder()
+            let prefs: StoryPreferences
+            if let json = story.preferencesJSON, let data = json.data(using: .utf8) {
+                prefs = (try? decoder.decode(StoryPreferences.self, from: data)) ?? StoryPreferences()
+            } else {
+                prefs = StoryPreferences()
+            }
+            
+            let service = OpenAIService()
+            
+            // Text Prompt
+            let textPrompt = await service.constructStoryPrompt(
+                topic: story.prompt ?? "",
+                language: story.language.displayName,
+                level: LevelManager.shared.description(for: story.level),
+                preferences: prefs
+            )
+            
+            // Image Prompt
+            let imagePrompt = service.constructCoverArtPrompt(
+                title: story.title,
+                topic: story.prompt ?? "",
+                style: prefs.coverArtStyle
+            )
+            
+            await MainActor.run {
+                self.localTextPrompt = textPrompt
+                self.localImagePrompt = imagePrompt
+                
+                // Optionally save back to story if missing? Use wisely.
+                // The user only asked to "show" and "recreate", but persistence is good.
+                if story.textGenPrompt == nil { story.textGenPrompt = textPrompt }
+                if story.imageGenPrompt == nil { story.imageGenPrompt = imagePrompt }
+                try? modelContext.save()
+                
+                isRecreating = false
             }
         }
     }

@@ -244,8 +244,7 @@ actor OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let styleDesc = style.promptDescription
-        let prompt = "Create a illustration for a story titled '\(title)' about \(topic). Style: \(styleDesc). No text in the image."
+        let prompt = constructCoverArtPrompt(title: title, topic: topic, style: style)
         
         print("--- COVER ART PROMPT ---")
         print(prompt)
@@ -287,6 +286,11 @@ actor OpenAIService {
         }
         
         return (imageData, prompt)
+    }
+    
+    nonisolated func constructCoverArtPrompt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) -> String {
+        let styleDesc = style.promptDescription
+        return "Create a illustration for a story titled '\(title)' about \(topic). Style: \(styleDesc). No text in the image."
     }
     
     // Check if key exists

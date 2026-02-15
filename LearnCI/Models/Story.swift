@@ -14,6 +14,7 @@ final class Story: Identifiable {
     var createdAt: Date
     var isFavorite: Bool
     var prompt: String? // New field for the user's topic/prompt
+    var preferencesJSON: String? // JSON string of StoryPreferences
     var remoteAudioPath: String? // Path in Supabase Storage
     var remoteCoverPath: String? // Path to cover image in Supabase Storage
     var coverArt: String? // URL or path to cover image
@@ -36,6 +37,7 @@ final class Story: Identifiable {
          targetLanguageText: String, 
          nativeLanguageText: String? = nil,
          prompt: String? = nil,
+         preferencesJSON: String? = nil,
          audioFilename: String? = nil, 
          remoteAudioPath: String? = nil,
          remoteCoverPath: String? = nil,
@@ -49,6 +51,7 @@ final class Story: Identifiable {
         self.targetLanguageText = targetLanguageText
         self.nativeLanguageText = nativeLanguageText
         self.prompt = prompt
+        self.preferencesJSON = preferencesJSON
         self.audioFilename = audioFilename
         self.remoteAudioPath = remoteAudioPath
         self.remoteCoverPath = remoteCoverPath

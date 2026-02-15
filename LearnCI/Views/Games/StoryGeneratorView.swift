@@ -13,6 +13,7 @@ struct StoryGeneratorView: View {
     @State private var topic: String = ""
     @State private var selectedLevel: Int = 2
     @State private var selectedLanguage: Language = .spanish
+    @State private var preferences = StoryPreferences()
     
     var body: some View {
         Form {
@@ -26,9 +27,45 @@ struct StoryGeneratorView: View {
                 }
                 
                 Picker("Level", selection: $selectedLevel) {
-                    Text("Beginner (A1/A2)").tag(1)
-                    Text("Intermediate (B1/B2)").tag(3)
-                    Text("Advanced (C1/C2)").tag(5)
+                    ForEach(1...6, id: \.self) { level in
+                        Text(storyManager.describeLevel(level)).tag(level)
+                    }
+                }
+            }
+            
+            Section("Story Style") {
+                VStack(alignment: .leading) {
+                    Text("Tone: \(preferences.humorLevel < 0.3 ? "Humorous" : (preferences.humorLevel > 0.7 ? "Serious" : "Balanced"))")
+                    Slider(value: $preferences.humorLevel, in: 0...1) {
+                        Text("Tone")
+                    } minimumValueLabel: {
+                        Text("Funny")
+                    } maximumValueLabel: {
+                        Text("Serious")
+                    }
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Setting: \(preferences.realismLevel < 0.3 ? "Daily Life" : (preferences.realismLevel > 0.7 ? "Sci-Fi" : "Modern + Twist"))")
+                    Slider(value: $preferences.realismLevel, in: 0...1) {
+                        Text("Setting")
+                    } minimumValueLabel: {
+                        Text("Real")
+                    } maximumValueLabel: {
+                        Text("Sci-Fi")
+                    }
+                }
+                
+                Picker("Genre", selection: $preferences.genre) {
+                    ForEach(StoryPreferences.Genre.allCases) { genre in
+                        Text(genre.rawValue).tag(genre)
+                    }
+                }
+                
+                Picker("Dialogue", selection: $preferences.dialogueAmount) {
+                    ForEach(StoryPreferences.DialogueAmount.allCases) { amount in
+                        Text(amount.rawValue).tag(amount)
+                    }
                 }
             }
             
@@ -71,6 +108,7 @@ struct StoryGeneratorView: View {
                 topic: topic, 
                 language: selectedLanguage, 
                 level: selectedLevel, 
+                preferences: preferences,
                 context: modelContext,
                 userID: userID
             ) {

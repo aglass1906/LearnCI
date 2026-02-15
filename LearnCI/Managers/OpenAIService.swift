@@ -17,7 +17,7 @@ actor OpenAIService {
         UserDefaults.standard.string(forKey: "OpenAI_API_Key")
     }
     
-    func generateStory(topic: String, language: String, level: String) async throws -> (title: String, content: String) {
+    func generateStory(topic: String, language: String, level: String, preferences: StoryPreferences) async throws -> (title: String, content: String) {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -28,13 +28,37 @@ actor OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        // Determine Tone
+        let toneDesc = preferences.humorLevel < 0.3 ? "Humorous" : (preferences.humorLevel > 0.7 ? "Serious" : "Balanced")
+        
+        // Determine Setting
+        let settingDesc = preferences.realismLevel < 0.3 ? "Real world/Daily life" : (preferences.realismLevel > 0.7 ? "Sci-Fi/Futuristic" : "Contemporary with slight twist")
+        
+        // Determine Length based on level string (e.g. "Beginner (A2)")
+        var lengthInstruction = "Keep it under 200 words."
+        if level.contains("A1") { lengthInstruction = "Keep it very short and simple, under 150 words." }
+        else if level.contains("A2") { lengthInstruction = "Keep it under 200 words." }
+        else if level.contains("B1") { lengthInstruction = "Keep it around 300 words." }
+        else if level.contains("B2") { lengthInstruction = "Keep it around 400 words." }
+        else if level.contains("C1") { lengthInstruction = "Keep it around 500 words." }
+        else if level.contains("C2") { lengthInstruction = "Keep it around 600 words." }
+        
         // Prompt Engineering
         let prompt = """
         Write a short, engaging story in \(language) suitable for a \(level) level learner. 
         The topic is: "\(topic)".
-        Keep it under 200 words.
+        Preferences:
+        - Tone: \(toneDesc)
+        - Setting: \(settingDesc)
+        - Genre: \(preferences.genre.rawValue)
+        - Dialogue: Include \(preferences.dialogueAmount.rawValue.lowercased()) amount of dialogue.
+        \(lengthInstruction)
         Return the result as JSON with keys "title" and "content".
         """
+        
+        print("--- GENERATED PROMPT ---")
+        print(prompt)
+        print("------------------------")
         
         let body: [String: Any] = [
             "model": "gpt-4o-mini", // Cost effective and fast
@@ -48,6 +72,13 @@ actor OpenAIService {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
+        
+        // Print Raw Response
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("--- RAW OPENAI RESPONSE ---")
+            print(responseString)
+            print("---------------------------")
+        }
         
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"

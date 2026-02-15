@@ -13,7 +13,7 @@ class StoryManager {
     // MARK: - Core Logic
     
     @MainActor
-    func generateStory(topic: String, language: Language, level: Int, context: ModelContext, userID: String) async -> Story? {
+    func generateStory(topic: String, language: Language, level: Int, preferences: StoryPreferences, context: ModelContext, userID: String) async -> Story? {
         isGenerating = true
         errorMessage = nil
         
@@ -27,7 +27,8 @@ class StoryManager {
             let (title, content) = try await openAIService.generateStory(
                 topic: topic,
                 language: language.rawValue,
-                level: levelString
+                level: levelString,
+                preferences: preferences
             )
             
             // 2. Generate English Translation
@@ -61,12 +62,16 @@ class StoryManager {
             print("Audio saved to: \(audioURL.path)")
             
             // 7. Create & Save Story Object
+            let encoder = JSONEncoder()
+            let prefInfo = try? String(data: encoder.encode(preferences), encoding: .utf8)
+            
             let story = Story(
                 userID: userID,
                 title: title,
                 targetLanguageText: content,
                 nativeLanguageText: englishTranslation,
                 prompt: topic,
+                preferencesJSON: prefInfo,
                 audioFilename: filename,
                 coverArt: coverFilename,
                 language: language,
@@ -109,15 +114,16 @@ class StoryManager {
         return paths[0]
     }
     
-    private func describeLevel(_ level: Int) -> String {
+    // Helper to describe level for Prompt
+    func describeLevel(_ level: Int) -> String {
         switch level {
-        case 1: return "Absolute Beginner (A1)"
+        case 1: return "Super Beginner (A1)"
         case 2: return "Beginner (A2)"
         case 3: return "Intermediate (B1)"
         case 4: return "Upper Intermediate (B2)"
         case 5: return "Advanced (C1)"
         case 6: return "Mastery (C2)"
-        default: return "Beginner"
+        default: return "Beginner (A2)"
         }
     }
     

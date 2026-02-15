@@ -21,6 +21,7 @@ struct LearnCIApp: App {
         let auth = AuthManager()
         _authManager = State(initialValue: auth)
         _syncManager = State(initialValue: SyncManager(authManager: auth))
+        print("Documents Directory: \(URL.documentsDirectory.path)")
     }
     
     var sharedModelContainer: ModelContainer = {

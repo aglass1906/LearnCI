@@ -24,6 +24,7 @@ struct StoryDTO: Codable {
     let target_text: String
     let native_text: String?
     let prompt: String?
+    let preferences_json: String?
     let language: String
     let level: Int
     let remote_audio_path: String?
@@ -735,6 +736,7 @@ struct CoachingCheckInDTO: Codable {
                 target_text: story.targetLanguageText,
                 native_text: story.nativeLanguageText,
                 prompt: story.prompt,
+                preferences_json: story.preferencesJSON,
                 language: story.languageRaw,
                 level: Int(story.levelRaw) ?? 1,
                 remote_audio_path: story.remoteAudioPath,
@@ -788,6 +790,9 @@ struct CoachingCheckInDTO: Codable {
                 if existing.remoteCoverPath == nil && dto.remote_cover_path != nil {
                     existing.remoteCoverPath = dto.remote_cover_path
                 }
+                if let pref = dto.preferences_json {
+                    existing.preferencesJSON = pref
+                }
             } else {
                 // Insert New
                 let newStory = Story(
@@ -797,6 +802,7 @@ struct CoachingCheckInDTO: Codable {
                     targetLanguageText: dto.target_text,
                     nativeLanguageText: dto.native_text,
                     prompt: dto.prompt,
+                    preferencesJSON: dto.preferences_json,
                     remoteAudioPath: dto.remote_audio_path,
                     remoteCoverPath: dto.remote_cover_path,
                     coverArt: dto.cover_art,

@@ -5,6 +5,8 @@ struct SplashView: View {
     @State private var size = 0.8
     @State private var opacity = 0.5
     
+    var loadingText: String = "Loading..."
+    
     var body: some View {
         if isActive {
             EmptyView()
@@ -27,6 +29,19 @@ struct SplashView: View {
                         self.opacity = 1.00
                     }
                 }
+                
+                VStack(spacing: 15) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.5)
+                    
+                    Text(loadingText)
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.9))
+                        .transition(.opacity)
+                        .id(loadingText) // Force redraw on text change for smooth transition
+                }
+                .padding(.top, 50)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(

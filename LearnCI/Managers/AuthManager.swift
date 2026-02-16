@@ -13,6 +13,11 @@ class AuthManager {
         case unauthenticated
     }
     
+    var isAuthenticated: Bool {
+        if case .authenticated = state { return true }
+        return false
+    }
+    
     var state: AuthState = .checking
     
     var currentUser: String? {

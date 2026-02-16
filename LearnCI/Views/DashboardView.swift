@@ -64,26 +64,26 @@ struct DashboardView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         
-                        // 1. Coaching Section
-                        coachingSection
-                        
-                        // 2. Favorites
+                        // 1. Favorites
                         favoritesSection
                         
-                        // 3. AI Stories
+                        // 2. AI Stories
                         storiesSection
                         
-                        // 4. Input Roadmap
+                        // 3. Word of the Day
+                        wordOfDaySection
+                        
+                        // 4. Coaching Section
+                        coachingSection
+                        
+                        // 5. Input Roadmap
                         roadmapSection
                         
-                        // 5. Breakdown
+                        // 6. Breakdown
                         breakdownSection
                         
-                        // 6. Leaderboard
+                        // 7. Leaderboard
                         leaderboardSection
-                        
-                        // 7. Word of the Day
-                        wordOfDaySection
                     }
                 }
 
@@ -526,8 +526,27 @@ extension DashboardView {
                     Divider()
                     
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(word.sentenceTarget)
-                            .font(.subheadline.italic())
+                        HStack(alignment: .top) {
+                            Text(word.sentenceTarget)
+                                .font(.subheadline.italic())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Button(action: {
+                                audioManager.playAudio(
+                                    named: word.audioSentenceFile ?? "",
+                                    folderName: wordOfDayFolder,
+                                    text: word.sentenceTarget,
+                                    language: userProfile?.currentLanguage ?? .spanish,
+                                    voiceGender: userProfile?.ttsVoiceGender,
+                                    useFallback: true
+                                )
+                            }) {
+                                Image(systemName: "speaker.wave.2.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.blue.opacity(0.8))
+                            }
+                        }
+                        
                         Text(word.sentenceNative)
                             .font(.caption)
                             .foregroundColor(.secondary)

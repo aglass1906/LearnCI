@@ -48,7 +48,7 @@ struct LearnCIApp: App {
         WindowGroup {
             ZStack {
                 if showSplash {
-                    SplashView()
+                    SplashView(loadingText: loadingStatus)
                         .transition(.opacity)
                         .zIndex(1)
                 } else {
@@ -69,15 +69,41 @@ struct LearnCIApp: App {
                 }
             }
             .animation(.easeInOut(duration: 0.5), value: showSplash)
+            .animation(.easeInOut(duration: 0.5), value: showSplash)
             .onAppear {
-                // Simulate initialization delay or wait for essential services
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    withAnimation {
-                        showSplash = false
-                    }
-                }
+                performInitialization()
             }
         }
         .modelContainer(sharedModelContainer)
+    }
+    
+    @State private var loadingStatus = "Initializing..."
+    
+    private func performInitialization() {
+        Task {
+            // 1. Authentication Check
+            loadingStatus = "Checking authentication..."
+            try? await Task.sleep(nanoseconds: 500_000_000) // Small delay for UX so text is readable
+            
+            // 2. Data Manager Prep
+            loadingStatus = "Loading content..."
+            // Ensure any critical data is loaded here if needed
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            
+            // 3. Sync Check (Optional/Background)
+            if authManager.isAuthenticated {
+                loadingStatus = "Syncing profile..."
+                // syncManager.syncUserProfile() // Example: trigger a sync if needed immediately
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+            
+            // 4. Finalizing
+            loadingStatus = "Ready!"
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            
+            withAnimation {
+                showSplash = false
+            }
+        }
     }
 }

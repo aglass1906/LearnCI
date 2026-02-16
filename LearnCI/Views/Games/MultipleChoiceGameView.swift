@@ -12,6 +12,7 @@ struct MultipleChoiceGameView: View {
     let onLearned: () -> Void
     let onFinish: () -> Void
     let onNext: () -> Void
+    var onGrade: ((SmartSessionManager.Grade) -> Void)?
     
     @Environment(AudioManager.self) private var audioManager
     
@@ -166,7 +167,11 @@ struct MultipleChoiceGameView: View {
             SoundManager.shared.play(.win)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                onLearned()
+                if let onGrade = onGrade {
+                    onGrade(.good)
+                } else {
+                    onLearned()
+                }
             }
         } else {
             // Incorrect

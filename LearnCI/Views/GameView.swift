@@ -722,7 +722,7 @@ struct GameView: View {
             
         } else {
             // Non-Smart Mode: Just increment counts and remove current card
-            if grade == .easy {
+            if grade == .easy || grade == .good {
                  sessionController.incrementLearned()
             }
             if !sessionCards.isEmpty {
@@ -731,7 +731,7 @@ struct GameView: View {
         }
         
         // Update stats if card is mastered (SRS also tracks this internally, but we track for session total)
-        if grade == .easy && sessionConfig.order == .smart {
+        if (grade == .easy || grade == .good) && sessionConfig.order == .smart {
             sessionController.incrementLearned()
         }
         

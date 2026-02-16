@@ -1,5 +1,6 @@
 
 import SwiftUI
+import Observation
 
 struct LinkerGameView: View {
     @State private var viewModel: LinkerGameViewModel
@@ -8,12 +9,14 @@ struct LinkerGameView: View {
     let sessionCardGoal: Int
     var onFinish: () -> Void
     var onGrade: ((SmartSessionManager.Grade) -> Void)?
+    var onMatchFound: (() -> Void)?
     
-    init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onFinish: @escaping () -> Void, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
+    init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onFinish: @escaping () -> Void, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil, onMatchFound: (() -> Void)? = nil) {
         _viewModel = State(initialValue: LinkerGameViewModel(deck: deck, sessionCards: sessionCards, config: config, sessionCardGoal: sessionCardGoal, onGrade: onGrade))
         self.sessionCardGoal = sessionCardGoal
         self.onFinish = onFinish
         self.onGrade = onGrade
+        self.onMatchFound = onMatchFound
     }
     
     var body: some View {
@@ -72,7 +75,7 @@ struct LinkerGameView: View {
         }
         .onAppear {
             viewModel.audioManager = audioManager
-            viewModel.startRound()
+            viewModel.onMatchFound = onMatchFound
         }
         .onChange(of: viewModel.currentRoundIndex) { _, _ in
              // Round changed, maybe play a sound?

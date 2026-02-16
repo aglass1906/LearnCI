@@ -12,6 +12,7 @@ struct AudioClozeGameView: View {
     let onLearned: () -> Void
     let onFinish: () -> Void
     let onNext: () -> Void
+    var onGrade: ((SmartSessionManager.Grade) -> Void)?
     
     @State private var challenge: ClozeChallenge?
     @State private var selectedOption: String?
@@ -220,7 +221,11 @@ struct AudioClozeGameView: View {
     }
     
     func handleContinue() {
-        onLearned() // Count as progress
+        if let onGrade = onGrade {
+            onGrade(.good)
+        } else {
+            onLearned() // Count as progress
+        }
         // Transition handled by parent (next card or finish)
     }
     

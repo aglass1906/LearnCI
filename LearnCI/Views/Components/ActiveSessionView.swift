@@ -112,7 +112,8 @@ struct ActiveSessionView: View {
                         config: sessionConfig,
                         sessionCardGoal: sessionCardGoal,
                         onFinish: onFinish,
-                        onGrade: onGrade
+                        onGrade: onGrade,
+                        onMatchFound: onLearned
                     )
                 }
             } else {

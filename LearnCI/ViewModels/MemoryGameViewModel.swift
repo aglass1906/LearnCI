@@ -34,6 +34,7 @@ class MemoryGameViewModel {
     
     // Track current learning cards to grade them at the end of the round
     private var currentBatch: [LearningCard] = []
+    private var batchErrors: [String: Bool] = [:]
     
     var onGameComplete: (() -> Void)?
     var onMatchFound: (() -> Void)?
@@ -180,6 +181,13 @@ class MemoryGameViewModel {
     
     private func handleMismatch(indices: [Int]) {
         onMistake?()
+        
+        // Track error for grading
+        for index in indices {
+            let cardId = cards[index].associatedCardId
+            batchErrors[cardId] = true
+        }
+        
         // Delay to let user see the cards
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             for index in indices {
@@ -192,9 +200,16 @@ class MemoryGameViewModel {
     }
     
     private func completeRound() {
-        // Grade the current batch as "Good" (Passed)
+        // Grade the current batch
         print("MemoryGame: Round complete. Grading batch.")
-        SmartSessionManager.shared.completeBatch(cards: currentBatch, grade: .good)
+        
+        for card in currentBatch {
+            let grade: SmartSessionManager.Grade = batchErrors[card.id] == true ? .hard : .good
+            SmartSessionManager.shared.completeBatch(cards: [card], grade: grade)
+        }
+        
+        // Clear errors for next round
+        batchErrors.removeAll()
         
         // Delay before starting next round (so user sees empty board or success state)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {

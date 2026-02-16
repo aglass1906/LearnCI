@@ -80,6 +80,7 @@ class LinkerGameViewModel {
     // Dependencies
     var audioManager: AudioManager?
     var onGrade: ((SmartSessionManager.Grade) -> Void)?
+    var onMatchFound: (() -> Void)?
     
     init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
         self.deck = deck
@@ -95,154 +96,115 @@ class LinkerGameViewModel {
         startRound()
     }
     
-    var currentRound: LinkerRoundType {
-        guard currentRoundIndex < rounds.count else { return .word }
-        return rounds[currentRoundIndex]
-    }
-    
-    // MARK: - Game Logic
-    
-    func refreshQueue() {
-        if localQueue.isEmpty {
-            localQueue = sessionCards.shuffled()
-        }
-    }
-    
     func startRound() {
-        guard currentRoundIndex < rounds.count else {
-            isGameOver = true
-            return
-        }
+        guard currentRoundIndex < rounds.count else { return }
+        let currentRound = rounds[currentRoundIndex]
         
-        // Reset Board
-        leftItems = []
-        rightItems = []
-        selectedLeftId = nil
-        batchErrors = [:]
+        // Populate roundQueue with ALL session cards for this round
+        roundQueue = sessionCards.shuffled() // Shuffle for randomness
         
-        // Load Queue for this round
-        // We use the full local queue for each round type (Word -> Image -> Audio)
-        // This means we cycle through ALL cards for Word, then ALL for Image, etc.
-        // If localQueue is empty (smart mode updates?), refresh it.
-        if localQueue.isEmpty {
-            refreshQueue()
-        }
-        roundQueue = localQueue.shuffled()
+        // Clear board
+        leftItems.removeAll()
+        rightItems.removeAll()
         
         // Initial Refill
         refillBoard()
     }
     
-    func refillBoard() {
-        // Target 5 rows
+    private func refillBoard() {
+        // Target visible count is 5
+        // Using a while loop to fill up to 5 items
         while leftItems.count < 5 && !roundQueue.isEmpty {
             let card = roundQueue.removeFirst()
-            addPair(for: card)
-        }
-        
-        // If after refill we have 0 items, round is done
-        if leftItems.isEmpty && roundQueue.isEmpty {
-            finishRound()
-        }
-    }
-    
-    private func addPair(for card: LearningCard) {
-        let roundType = self.currentRound
-        
-        // Left Item
-        let leftContent: LinkerItemType
-        switch roundType {
-        case .word:
-            leftContent = .text(card.wordTarget)
-        case .image:
-            if let media = card.mediaFile, !media.isEmpty {
-                leftContent = .image(media)
-            } else {
-                leftContent = .text(card.wordTarget)
+            let currentRound = rounds[currentRoundIndex]
+            
+            // Create Left Item
+            let leftContent: LinkerItemType
+            switch currentRound {
+            case .word:
+                leftContent = .text(card.wordNative) // Source language
+            case .image:
+                leftContent = .image(card.mediaFile ?? "placeholder") 
+            case .audio:
+                leftContent = .audio(card.audioWordFile ?? "audio_placeholder")
             }
-        case .audio:
-            if let audio = card.audioWordFile {
-                leftContent = .audio(audio)
-            } else {
-                leftContent = .text(card.wordTarget)
-            }
-        }
-        
-        // Right Item
-        let rightContent: LinkerItemType
-        switch config.linkerTargetMode {
-        case .native:
-            rightContent = .text(card.wordTarget)
-        case .english:
-            rightContent = .text(card.wordNative)
-        }
-        
-        let leftItem = LinkerItem(cardId: card.id, content: leftContent)
-        let rightItem = LinkerItem(cardId: card.id, content: rightContent)
-        
-        // Append Left (keeps stable order usually, or we could insert random?)
-        // Appending effectively slides it in at the bottom.
-        leftItems.append(leftItem)
-        
-        // Insert Right at random position to prevent alignment hints
-        if rightItems.isEmpty {
+            let leftItem = LinkerItem(cardId: card.id, content: leftContent)
+            
+            // Create Right Item (Target)
+            let rightItem = LinkerItem(cardId: card.id, content: .text(card.wordTarget))
+            
+            leftItems.append(leftItem)
             rightItems.append(rightItem)
+        }
+        
+        // Shuffle right column each refill to ensure randomness
+        if !rightItems.isEmpty {
+             rightItems.shuffle()
+        }
+        
+        // Check for round completion if empty
+        if leftItems.isEmpty && roundQueue.isEmpty {
+           completeRound()
+        }
+    }
+    
+    private func completeRound() {
+        if currentRoundIndex < rounds.count - 1 {
+            currentRoundIndex += 1
+            // Delay for transition
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.startRound()
+            }
         } else {
-            let randomIndex = Int.random(in: 0...rightItems.count)
-            rightItems.insert(rightItem, at: randomIndex)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.isGameOver = true
+            }
         }
     }
-    
-    func finishRound() {
-        // Delay before next round
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.currentRoundIndex += 1
-            self.startRound()
-        }
-    }
-    
-    // MARK: - User Interaction
-    
+
     func selectLeft(_ item: LinkerItem) {
-        // If already matched, ignore
-        guard !item.isMatched else { return }
-        
-        // Deselect previous
-        if let previousId = selectedLeftId, let index = leftItems.firstIndex(where: { $0.id == previousId }) {
-            leftItems[index].isSelected = false
+        if let selected = selectedLeftId, selected == item.id {
+             selectedLeftId = nil // Deselect
+             return
         }
+        selectedLeftId = item.id
         
-        // Select new
-        if let index = leftItems.firstIndex(where: { $0.id == item.id }) {
-            leftItems[index].isSelected = true
-            selectedLeftId = item.id
-            playAudio(for: item)
+        // Play audio if applicable
+        if item.content.isAudio {
+             playAudio(for: item)
         }
     }
     
     func selectRight(_ item: LinkerItem) {
-        // guard !item.isMatched else { return } // Should be irrelevant as we remove matched items now
-        guard let validSelectedId = selectedLeftId else { return }
+        guard let leftId = selectedLeftId, let leftItem = leftItems.first(where: { $0.id == leftId }) else { return }
         
-        // Find left item
-        guard let leftIndex = leftItems.firstIndex(where: { $0.id == validSelectedId }) else { return }
-        let leftItem = leftItems[leftIndex]
-        
-        // Check Match
         if leftItem.cardId == item.cardId {
-            // MATCH!
-            handleMatch(leftIndex: leftIndex, rightItem: item)
+            // Find index of left item
+            if let index = leftItems.firstIndex(of: leftItem) {
+                 handleMatch(leftIndex: index, rightItem: item)
+            }
         } else {
-            // MISMATCH
             handleMismatch(rightItem: item)
         }
     }
     
+    func refreshQueue() {
+         // Reset for restart
+         // We reuse the initialized sessionCards
+         roundQueue = []
+         leftItems = []
+         rightItems = []
+         batchErrors = [:]
+    }
+    
+    var currentRound: LinkerRoundType {
+        if currentRoundIndex < rounds.count {
+            return rounds[currentRoundIndex]
+        }
+        return .word
+    }
+
     private func handleMatch(leftIndex: Int, rightItem: LinkerItem) {
-        // 1. Mark matched (optional, for animation)
-        // With streaming, we want to REMOVE them.
-        // Let's animate removal if possible.
-        
         // Find indices
         guard let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) else { return }
         
@@ -251,18 +213,30 @@ class LinkerGameViewModel {
         selectedLeftId = nil
         
         // Remove items
-        // Use withAnimation in View? Or trigger it here?
-        // Observable arrays usually trigger view updates.
-        // We'll trust Swift UI transitions for now.
-        
         withAnimation(.easeOut(duration: 0.3)) {
             leftItems.remove(at: leftIndex)
             rightItems.remove(at: rightIndex)
         }
+
+        // GRADING & PROGRESS
+        // Only grade and count progress if this is the FINAL round type (Audio)
+        // or if we only have 1 round type configured.
+        // Assuming [.word, .image, .audio] order.
+        if currentRound == rounds.last {
+            // Find the card object
+            if let card = sessionCards.first(where: { $0.id == rightItem.cardId }) {
+                // Determine grade
+                let grade: SmartSessionManager.Grade = batchErrors[card.id] == true ? .hard : .good
+                
+                // Report to SmartSessionManager
+                SmartSessionManager.shared.completeBatch(cards: [card], grade: grade)
+                
+                // Notify UI (increments learned count)
+                onMatchFound?()
+            }
+        }
         
         // Refill
-        // Delay slightly to allow exit animation? Or refill immediately?
-        // Immediate refill feels more "streaming".
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation(.spring()) {
                 self.refillBoard()

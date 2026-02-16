@@ -9,6 +9,7 @@ struct SessionOptionsView: View {
     @Binding var useTTSFallback: Bool
     @Binding var ttsRate: Float
     @Binding var order: GameConfiguration.OrderStrategy
+    @Binding var linkerTargetMode: GameConfiguration.LinkerTargetMode
     
     let gameType: GameConfiguration.GameType
     let maxCards: Int?
@@ -47,6 +48,7 @@ struct SessionOptionsView: View {
                     }
                 }
                 
+
                 // Order
                 Picker("Card Order", selection: $order) {
                     ForEach(GameConfiguration.OrderStrategy.allCases) { orderType in

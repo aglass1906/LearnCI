@@ -72,6 +72,8 @@ struct PlaceholderConfigView: View {
             return "Listen to a sentence and fill in the missing word. Perfect for improving your listening skills and context understanding."
         case .sentenceBuilder:
             return "Build sentences by arranging words in the correct order. Practice grammar and sentence structure."
+        case .linker:
+            return "Connect words or phrases to form correct sentences or associations. Test your understanding of relationships between words."
         case .story:
             return "Read through stories in your target language with audio support. Immerse yourself in contextual learning."
         }

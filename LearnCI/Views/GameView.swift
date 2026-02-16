@@ -56,6 +56,7 @@ struct GameView: View {
     @State private var navigationStyle: NavigationStyle = .swipe
     @State private var autoNextDelay: TimeInterval = 2.0
     @State private var confirmationStyle: ConfirmationStyle = .quiz
+    @State private var linkerTargetMode: GameConfiguration.LinkerTargetMode = .english
     
     // Runtime config (captured at start)
     @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
@@ -199,6 +200,7 @@ struct GameView: View {
                 useTTSFallback: $useTTSFallback,
                 ttsRate: $ttsRate,
                 order: $order,
+                linkerTargetMode: $linkerTargetMode,
                 gameType: selectedGameType,
                 maxCards: deck?.cards.count,
                 onNext: { setupStage = .gameSpecificConfig },
@@ -646,6 +648,7 @@ struct GameView: View {
         sessionConfig.navigation = navigationStyle
         sessionConfig.autoNextDelay = autoNextDelay
         sessionConfig.confirmation = confirmationStyle
+        sessionConfig.linkerTargetMode = linkerTargetMode
         
         // Prepare Cards
         // CRITICAL FIX: Do NOT try to read `deck` (loadedDeck) immediately here for the new session,

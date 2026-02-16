@@ -108,6 +108,7 @@ struct GameConfiguration: Codable, Equatable {
     case story = "Story Mode"
     case multipleChoice = "Multiple Choice"
     case audioCloze = "Listening Challenge"
+    case linker = "Column Connect"
         
         var id: String { rawValue }
         
@@ -119,6 +120,7 @@ struct GameConfiguration: Codable, Equatable {
             case .story: return "book.fill"
             case .multipleChoice: return "list.bullet.clipboard"
             case .audioCloze: return "headphones"
+            case .linker: return "link"
             }
         }
         
@@ -130,6 +132,7 @@ struct GameConfiguration: Codable, Equatable {
             case .story: return "Read and listen to immersive stories."
             case .multipleChoice: return "Select the correct answer from 4 options."
             case .audioCloze: return "Listen and fill in the missing word."
+            case .linker: return "Connect matching items between two columns."
             }
         }
         
@@ -174,6 +177,13 @@ struct GameConfiguration: Codable, Equatable {
         var id: String { rawValue }
     }
     
+    enum LinkerTargetMode: String, Codable, CaseIterable, Identifiable {
+        case english = "English Word"
+        case native = "Native Word"
+        
+        var id: String { rawValue }
+    }
+    
     var gameType: GameType = .flashcards
     var word: SectionConfiguration
     var sentence: SectionConfiguration
@@ -190,9 +200,11 @@ struct GameConfiguration: Codable, Equatable {
     var ttsRate: Float = 0.5
     var ttsVoiceGender: String = "female"
     
+    var linkerTargetMode: LinkerTargetMode = .english
+    
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
-        case navigation, autoNextDelay, confirmation
+        case navigation, autoNextDelay, confirmation, linkerTargetMode
     }
     
     init(gameType: GameType = .flashcards, 
@@ -206,7 +218,8 @@ struct GameConfiguration: Codable, Equatable {
          order: OrderStrategy = .smart, 
          useTTSFallback: Bool = true, 
          ttsRate: Float = 0.5, 
-         ttsVoiceGender: String = "female") {
+         ttsVoiceGender: String = "female",
+         linkerTargetMode: LinkerTargetMode = .english) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -219,6 +232,7 @@ struct GameConfiguration: Codable, Equatable {
         self.useTTSFallback = useTTSFallback
         self.ttsRate = ttsRate
         self.ttsVoiceGender = ttsVoiceGender
+        self.linkerTargetMode = linkerTargetMode
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -247,6 +261,7 @@ struct GameConfiguration: Codable, Equatable {
         navigation = try container.decodeIfPresent(NavigationStyle.self, forKey: .navigation) ?? .swipe
         autoNextDelay = try container.decodeIfPresent(TimeInterval.self, forKey: .autoNextDelay) ?? 2.0
         confirmation = try container.decodeIfPresent(ConfirmationStyle.self, forKey: .confirmation) ?? .quiz
+        linkerTargetMode = try container.decodeIfPresent(LinkerTargetMode.self, forKey: .linkerTargetMode) ?? .english
     }
     
     
@@ -264,6 +279,7 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(useTTSFallback, forKey: .useTTSFallback)
         try container.encode(ttsRate, forKey: .ttsRate)
         try container.encode(ttsVoiceGender, forKey: .ttsVoiceGender)
+        try container.encode(linkerTargetMode, forKey: .linkerTargetMode)
         
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)

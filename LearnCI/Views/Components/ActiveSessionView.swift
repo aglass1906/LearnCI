@@ -111,6 +111,13 @@ struct ActiveSessionView: View {
                         onFinish: onFinish,
                         onNext: onNext
                     )
+                case .linker:
+                    LinkerGameView(
+                        deck: deck,
+                        config: sessionConfig,
+                        sessionCardGoal: sessionCardGoal,
+                        onFinish: onFinish
+                    )
                 }
             } else {
                 ProgressView("Loading Deck...")

@@ -34,6 +34,14 @@ struct GameSpecificConfigRouter: View {
                     onBack: onBack,
                     onSkipToSummary: onSkipToSummary
                 )
+            case .linker:
+                LinkerConfigView(
+                    deck: deck,
+                    customConfig: $customConfig,
+                    onNext: onNext,
+                    onBack: onBack,
+                    onSkipToSummary: onSkipToSummary
+                )
             case .multipleChoice, .audioCloze, .sentenceBuilder:
                 // Games without specific configuration use placeholder
                 PlaceholderConfigView(

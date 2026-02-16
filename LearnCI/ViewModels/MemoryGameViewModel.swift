@@ -1,11 +1,7 @@
 import SwiftUI
 import Combine
 
-enum MemoryMatchMode: String, CaseIterable {
-    case wordToWord = "Word to Word"
-    case wordToPicture = "Word to Picture"
-    case pictureToWord = "Picture to Word"
-}
+
 
 enum MemoryCardType {
     case target
@@ -34,14 +30,14 @@ class MemoryGameEngine {
     var matchedPairs: Int = 0
     var totalPairs: Int = 0
     var moves: Int = 0
-    var matchMode: MemoryMatchMode
+    var matchMode: GameConfiguration.MemoryMatchMode
     
     var onGameComplete: (() -> Void)?
     var onMatchFound: (() -> Void)?
     var onMistake: (() -> Void)?
     var playAudio: ((String?, String) -> Void)?
     
-    init(learningCards: [LearningCard], matchMode: MemoryMatchMode = .pictureToWord) {
+    init(learningCards: [LearningCard], matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
         self.matchMode = matchMode
         setupGame(with: learningCards)
     }

@@ -5,14 +5,9 @@
 ///
 /// Session Settings Used:
 /// - sessionCardGoal: Number of cards to use per round
-/// - order: Card ordering (Sequential/Random/Smart - currently uses random shuffling)
+/// - order: Card ordering (Sequential/Random/Smart)
 /// - useTTSFallback: Enable TTS when audio files are missing
 /// - ttsRate: Speech playback speed
-///
-/// Future Refactor Notes:
-/// - TODO: Integrate with SmartSessionManager for consistent deck management
-/// - TODO: Respect sessionDuration timer
-/// - TODO: Use 'order' setting instead of hardcoded shuffle
 import SwiftUI
 import AVFoundation
 
@@ -59,7 +54,15 @@ struct LinkerItem: Identifiable, Equatable {
 class LinkerGameViewModel {
     var deck: CardDeck
     var config: GameConfiguration
-    var sessionCardGoal: Int
+    var sessionCardGoal: Int // Total goal for the session
+    
+    // SRS / Queue State
+    var sessionCards: [LearningCard] // The full queue passed from GameView
+    private var localQueue: [LearningCard] // Mutable queue for processing
+    
+    // Current Batch State
+    var currentBatch: [LearningCard] = []
+    var batchErrors: [String: Bool] = [:] // mild tracking: did this card have ANY error in ANY round?
     
     // Game State
     var currentRoundIndex = 0
@@ -76,12 +79,19 @@ class LinkerGameViewModel {
     
     // Dependencies
     var audioManager: AudioManager?
+    var onGrade: ((SmartSessionManager.Grade) -> Void)?
     
-    init(deck: CardDeck, config: GameConfiguration, sessionCardGoal: Int) {
+    init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
         self.deck = deck
+        self.sessionCards = sessionCards
         self.config = config
         self.sessionCardGoal = sessionCardGoal
-        startRound()
+        self.onGrade = onGrade
+        
+        // Initialize local queue with the provided session cards
+        self.localQueue = sessionCards
+        
+        startNextBatch()
     }
     
     var currentRound: LinkerRoundType {
@@ -91,9 +101,40 @@ class LinkerGameViewModel {
     
     // MARK: - Game Logic
     
+    func startNextBatch() {
+        // 1. Check if we have cards left
+        if localQueue.isEmpty {
+            isGameOver = true
+            return
+        }
+        
+        // 2. Check if we reached goal (score based?)
+        // For now, play until queue empty. "sessionCardGoal" was used to limit initial queue size in GameView.
+        
+        // 3. Pull next 5 cards (or fewer)
+        let batchSize = 5
+        let count = min(localQueue.count, batchSize)
+        currentBatch = Array(localQueue.prefix(count))
+        
+        batchErrors = [:]
+        currentRoundIndex = 0
+        
+        // Start Round 1
+        prepareItems(for: rounds[0])
+    }
+    
+    func refreshQueue() {
+        if config.order == .smart {
+            localQueue = SmartSessionManager.shared.activeQueue
+        } else {
+            // For linear/random, we manually remove the played cards from localQueue
+            // This is done in finishBatch()
+        }
+    }
+    
     func startRound() {
         guard currentRoundIndex < rounds.count else {
-            isGameOver = true
+            finishBatch()
             return
         }
         
@@ -101,24 +142,45 @@ class LinkerGameViewModel {
         prepareItems(for: roundType)
     }
     
-    func prepareItems(for roundType: LinkerRoundType) {
-        // Select cards for this round based on sessionCardGoal
-        let cardCount = min(sessionCardGoal, deck.cards.count)
-        let roundCards = Array(deck.cards.shuffled().prefix(cardCount))
+    func finishBatch() {
+        // 1. Grade the batch
+        for card in currentBatch {
+            let hasError = batchErrors[card.id] ?? false
+            
+            if config.order == .smart {
+                // Smart Grading
+                
+                let grade: SmartSessionManager.Grade = hasError ? .hard : .easy
+                
+                // Use callback to notify GameView (which calls SmartSessionManager)
+                onGrade?(grade)
+                
+            } else {
+                // Linear/Random Grading
+                // Just remove from localQueue keys
+                localQueue.removeAll { $0.id == card.id }
+            }
+        }
         
+        // 2. Refresh Queue
+        refreshQueue()
+        
+        // 3. Start Next
+        startNextBatch()
+    }
+    
+    func prepareItems(for roundType: LinkerRoundType) {
+        // Use currentBatch
         leftItems = []
         rightItems = []
         
-        for card in roundCards {
+        for card in currentBatch {
             // Left Column
             let leftContent: LinkerItemType
             switch roundType {
             case .word:
                 leftContent = .text(card.wordNative) // Spanish
             case .image:
-                // Use image if available, otherwise fallback to text with a placeholder indication or skip?
-                // For now, if no image, specific logic might be needed. 
-                // Assuming cards have images for Image round or fallback to word.
                 if let media = card.mediaFile, !media.isEmpty {
                     leftContent = .image(media)
                 } else {
@@ -144,16 +206,13 @@ class LinkerGameViewModel {
                 rightContent = .text(card.wordNative)
             } 
             
-            // LEFT SIDE: Target (Spanish)
-            // Wait, in my previous thought I said "Left: Target (Spanish)". 
-            // `card.wordTarget` is Spanish.
-            // `card.wordNative` is English.
-            // So for .word round: Left = wordTarget, Right = wordNative.
+            // Actual Left Content Logic (Fixing previous logic)
+            // .word round: Left = Target(Spanish), Right = Native(English) or Target depending on config
             
             let actualLeftContent: LinkerItemType
             switch roundType {
             case .word:
-                actualLeftContent = .text(card.wordTarget)
+                actualLeftContent = .text(card.wordTarget) // Target Language
             case .image:
                  if let media = card.mediaFile, !media.isEmpty {
                     actualLeftContent = .image(media)
@@ -172,7 +231,7 @@ class LinkerGameViewModel {
             rightItems.append(LinkerItem(cardId: card.id, content: rightContent))
         }
         
-        // Shuffle right items
+        // Shuffle right items to make it a game
         rightItems.shuffle()
     }
     
@@ -191,9 +250,6 @@ class LinkerGameViewModel {
         if let index = leftItems.firstIndex(where: { $0.id == item.id }) {
             leftItems[index].isSelected = true
             selectedLeftId = item.id
-            
-            // Play audio if it's an audio item or if we want to play audio on tap for words too
-            // Request says: "Tap a word on the left (plays the audio)"
             playAudio(for: item)
         }
     }
@@ -234,10 +290,10 @@ class LinkerGameViewModel {
     }
     
     private func handleMismatch(rightItem: LinkerItem) {
-        // Visual feedback for error could be handled here or in view
-        // For simplicity, just deselect left
+        // Mark error for this card
+        batchErrors[rightItem.cardId] = true
         
-        // Ideally show error state on right item for a moment
+        // Visual feedback
         if let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) {
             rightItems[rightIndex].isError = true
             
@@ -248,8 +304,6 @@ class LinkerGameViewModel {
                 }
             }
         }
-        
-        // Provide haptic feedback?
     }
     
     private func playAudio(for item: LinkerItem) {
@@ -281,7 +335,7 @@ class LinkerGameViewModel {
         let allMatched = leftItems.allSatisfy { $0.isMatched }
         if allMatched {
             // Delay before next round
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.currentRoundIndex += 1
                 self.startRound()
             }
@@ -289,9 +343,10 @@ class LinkerGameViewModel {
     }
     
     func restartGame() {
-        currentRoundIndex = 0
+        // Reload queue
+        refreshQueue()
         score = 0
         isGameOver = false
-        startRound()
+        startNextBatch()
     }
 }

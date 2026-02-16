@@ -181,6 +181,14 @@ struct GameConfiguration: Codable, Equatable {
         var id: String { rawValue }
     }
     
+    enum MemoryMatchMode: String, Codable, CaseIterable, Identifiable {
+        case wordToWord = "Word to Word"
+        case wordToPicture = "Word to Picture"
+        case pictureToWord = "Picture to Word"
+        
+        var id: String { rawValue }
+    }
+    
     var gameType: GameType = .flashcards
     var word: SectionConfiguration
     var sentence: SectionConfiguration

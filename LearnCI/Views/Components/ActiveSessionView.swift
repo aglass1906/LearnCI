@@ -11,7 +11,7 @@ struct ActiveSessionView: View {
     @Binding var isFlipped: Bool
     
     // Config for specific games
-    var matchMode: MemoryMatchMode = .pictureToWord
+    var matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord
     
     let onRelearn: () -> Void
     let onLearned: () -> Void
@@ -109,9 +109,11 @@ struct ActiveSessionView: View {
                 case .linker:
                     LinkerGameView(
                         deck: deck,
+                        sessionCards: sessionCards,
                         config: sessionConfig,
                         sessionCardGoal: sessionCardGoal,
-                        onFinish: onFinish
+                        onFinish: onFinish,
+                        onGrade: onGrade
                     )
                 }
             } else {

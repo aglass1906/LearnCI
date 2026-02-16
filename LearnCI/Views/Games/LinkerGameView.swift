@@ -7,11 +7,13 @@ struct LinkerGameView: View {
     @Environment(AudioManager.self) private var audioManager
     let sessionCardGoal: Int
     var onFinish: () -> Void
+    var onGrade: ((SmartSessionManager.Grade) -> Void)?
     
-    init(deck: CardDeck, config: GameConfiguration, sessionCardGoal: Int, onFinish: @escaping () -> Void) {
-        _viewModel = State(initialValue: LinkerGameViewModel(deck: deck, config: config, sessionCardGoal: sessionCardGoal))
+    init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onFinish: @escaping () -> Void, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
+        _viewModel = State(initialValue: LinkerGameViewModel(deck: deck, sessionCards: sessionCards, config: config, sessionCardGoal: sessionCardGoal, onGrade: onGrade))
         self.sessionCardGoal = sessionCardGoal
         self.onFinish = onFinish
+        self.onGrade = onGrade
     }
     
     var body: some View {

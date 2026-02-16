@@ -50,7 +50,7 @@ struct GameView: View {
     @State private var hasInitialized: Bool = false
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
-    @State private var memoryMatchMode: MemoryMatchMode = .pictureToWord
+    @State private var memoryMatchMode: GameConfiguration.MemoryMatchMode = .pictureToWord
     
     // UI Customization State
     @State private var navigationStyle: NavigationStyle = .swipe

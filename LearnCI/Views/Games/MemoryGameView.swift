@@ -22,14 +22,14 @@ struct MemoryGameView: View {
     let sessionCards: [LearningCard]
     let deck: CardDeck
     let sessionConfig: GameConfiguration // Added for ttsRate
-    let matchMode: MemoryMatchMode
+    let matchMode: GameConfiguration.MemoryMatchMode
     let onGameComplete: () -> Void
     let onMatchFound: () -> Void
     
     @Environment(AudioManager.self) private var audioManager
     @State private var engine: MemoryGameEngine
     
-    init(sessionCards: [LearningCard], deck: CardDeck, sessionConfig: GameConfiguration, matchMode: MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
+    init(sessionCards: [LearningCard], deck: CardDeck, sessionConfig: GameConfiguration, matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
         self.sessionCards = sessionCards
         self.deck = deck
         self.sessionConfig = sessionConfig

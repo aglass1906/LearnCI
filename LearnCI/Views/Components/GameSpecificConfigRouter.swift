@@ -6,7 +6,7 @@ struct GameSpecificConfigRouter: View {
     let deck: DeckMetadata
     @Binding var selectedPreset: GameConfiguration.Preset
     @Binding var customConfig: GameConfiguration
-    @Binding var memoryMatchMode: MemoryMatchMode
+    @Binding var memoryMatchMode: GameConfiguration.MemoryMatchMode
     
     let onNext: () -> Void
     let onBack: () -> Void
@@ -17,7 +17,8 @@ struct GameSpecificConfigRouter: View {
             switch gameType {
             case .flashcards, .story:
                 // Flashcard Layout Preset Selection
-                FlashcardLayoutSelector(
+                FlashcardConfigView(
+                    gameType: gameType,
                     deck: deck,
                     selectedPreset: $selectedPreset,
                     customConfig: $customConfig,
@@ -27,7 +28,7 @@ struct GameSpecificConfigRouter: View {
                 )
             case .memoryMatch:
                 // Memory Match Mode Selection
-                MemoryMatchModeSelector(
+                MemoryConfigView(
                     deck: deck,
                     selectedMode: $memoryMatchMode,
                     onNext: onNext,

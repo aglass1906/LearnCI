@@ -103,32 +103,56 @@ class LinkerGameViewModel {
     
     func startNextBatch() {
         // 1. Check if we have cards left
-        if localQueue.isEmpty {
+        if localQueue.isEmpty && config.order != .smart {
             isGameOver = true
             return
         }
         
-        // 2. Check if we reached goal (score based?)
-        // For now, play until queue empty. "sessionCardGoal" was used to limit initial queue size in GameView.
+        if config.order == .smart {
+            // New Batch API: Request 5 cards (or fewer if queue is small)
+            // Note: nextBatch returns cards without removing them from queue
+            let batch = SmartSessionManager.shared.nextBatch(count: 5)
+            
+            // If we got nothing, refresh (shouldn't happen if queue has cards)
+            if batch.isEmpty {
+                refreshQueue()
+                if localQueue.isEmpty {
+                    currentBatch = []
+                    isGameOver = true
+                    return
+                }
+                // Fallback to local queue if SmartSession failure
+                currentBatch = Array(localQueue.prefix(5))
+            } else {
+                currentBatch = batch
+            }
+        } else {
+            // Standard/Random modes: maintain local queue behavior
+            currentBatch = Array(localQueue.prefix(5))
+            if currentBatch.isEmpty {
+                isGameOver = true
+                return
+            }
+        }
         
-        // 3. Pull next 5 cards (or fewer)
-        let batchSize = 5
-        let count = min(localQueue.count, batchSize)
-        currentBatch = Array(localQueue.prefix(count))
+        selectedLeftId = nil
+        batchErrors = [:] // Reset error tracking for new batch
         
-        batchErrors = [:]
+        // Remove these from the queue so we don't pick them again immediately within this session loop
+        // (For Smart Mode, GameView refetches into localQueue after grading, so this removal is temporary local state)
+        if config.order != .smart {
+            localQueue.removeFirst(min(5, localQueue.count))
+        }
+        
+        // Start the rounds for this batch
         currentRoundIndex = 0
-        
-        // Start Round 1
-        prepareItems(for: rounds[0])
+        startRound()
     }
     
     func refreshQueue() {
-        if config.order == .smart {
-            localQueue = SmartSessionManager.shared.activeQueue
-        } else {
-            // For linear/random, we manually remove the played cards from localQueue
-            // This is done in finishBatch()
+        // Only needed for non-smart modes or if smart queue exhausted
+        if localQueue.isEmpty && config.order != .smart {
+            localQueue = sessionCards.shuffled()
         }
     }
     
@@ -143,26 +167,6 @@ class LinkerGameViewModel {
     }
     
     func finishBatch() {
-        // 1. Grade the batch
-        for card in currentBatch {
-            let hasError = batchErrors[card.id] ?? false
-            
-            if config.order == .smart {
-                // Smart Grading
-                
-                let grade: SmartSessionManager.Grade = hasError ? .hard : .easy
-                
-                // Use callback to notify GameView (which calls SmartSessionManager)
-                onGrade?(grade)
-                
-            } else {
-                // Linear/Random Grading
-                // Just remove from localQueue keys
-                localQueue.removeAll { $0.id == card.id }
-            }
-        }
-        
-        // 2. Refresh Queue
         refreshQueue()
         
         // 3. Start Next

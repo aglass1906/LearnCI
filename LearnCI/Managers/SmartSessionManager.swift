@@ -44,31 +44,50 @@ class SmartSessionManager {
     }
     
     func handleGrade(_ grade: Grade) {
-        guard let card = activeQueue.first else { return }
+        guard !activeQueue.isEmpty else { return }
+        let card = activeQueue.removeFirst()
+        processGrade(card, grade: grade)
+    }
+    
+    // MARK: - Batch Support (Bonding/Memory)
+    
+    /// Returns the next `count` cards from the queue without removing them.
+    /// Use this to populate a round.
+    func nextBatch(count: Int) -> [LearningCard] {
+        return Array(activeQueue.prefix(count))
+    }
+    
+    /// Grades a batch of cards.
+    /// - Parameters:
+    ///   - cards: The cards to grade (must be at the head of the queue ideally)
+    ///   - grade: The grade to apply to all cards (or specific logic)
+    func completeBatch(cards: [LearningCard], grade: Grade) {
+        // We need to match these cards in the active queue and grade them.
+        // For simplicity, we assume they are at the top if the game flow is correct.
+        // However, to be safe, we find and remove them, then re-insert based on grade.
         
-        // Remove current card from front
-        activeQueue.removeFirst()
-        
+        for card in cards {
+            if let index = activeQueue.firstIndex(where: { $0.id == card.id }) {
+                let removed = activeQueue.remove(at: index)
+                processGrade(removed, grade: grade)
+            }
+        }
+    }
+    
+    private func processGrade(_ card: LearningCard, grade: Grade) {
         switch grade {
         case .again:
-            // Insert at index 3 (or end if < 3)
             let index = min(3, activeQueue.count)
             activeQueue.insert(card, at: index)
             print("SmartSession: \(card.wordTarget) -> Again (Insert at \(index))")
-            
         case .hard:
-            // Insert at index 10 (or end)
             let index = min(10, activeQueue.count)
             activeQueue.insert(card, at: index)
             print("SmartSession: \(card.wordTarget) -> Hard (Insert at \(index))")
-            
         case .good:
-            // Insert at very end
             activeQueue.append(card)
             print("SmartSession: \(card.wordTarget) -> Good (Move to End)")
-            
         case .easy:
-            // Mastered!
             masteredCards.append(card)
             print("SmartSession: \(card.wordTarget) -> Easy (Mastered!)")
         }

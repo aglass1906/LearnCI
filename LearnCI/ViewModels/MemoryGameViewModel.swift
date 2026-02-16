@@ -24,7 +24,7 @@ struct MemoryCard: Identifiable, Equatable {
 }
 
 @Observable
-class MemoryGameEngine {
+class MemoryGameViewModel {
     var cards: [MemoryCard] = []
     var isProcessing: Bool = false
     var matchedPairs: Int = 0
@@ -32,26 +32,47 @@ class MemoryGameEngine {
     var moves: Int = 0
     var matchMode: GameConfiguration.MemoryMatchMode
     
+    // Track current learning cards to grade them at the end of the round
+    private var currentBatch: [LearningCard] = []
+    
     var onGameComplete: (() -> Void)?
     var onMatchFound: (() -> Void)?
     var onMistake: (() -> Void)?
     var playAudio: ((String?, String) -> Void)?
     
-    init(learningCards: [LearningCard], matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
+    init(matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
         self.matchMode = matchMode
-        setupGame(with: learningCards)
     }
     
-    func setupGame(with learningCards: [LearningCard]) {
-        // Take up to 8 cards for a 4x4 grid
-        let selectedCards = Array(learningCards.prefix(8))
-        totalPairs = selectedCards.count
+    func startSession() {
+        startNextRound()
+    }
+    
+    private func startNextRound() {
+        // Pull next batch of 8 cards (for 4x4 grid)
+        let nextBatch = SmartSessionManager.shared.nextBatch(count: 8)
+        
+        if nextBatch.isEmpty {
+            onGameComplete?()
+            return
+        }
+        
+        setupRound(with: nextBatch)
+    }
+    
+    private func setupRound(with learningCards: [LearningCard]) {
+        self.currentBatch = learningCards
+        totalPairs = learningCards.count
         matchedPairs = 0
+        // Don't reset moves if we want total session moves? 
+        // Or reset per round? Let's keep it cumulative for the session or reset?
+        // Usually moves per board is more relevant for "score", but "Session Moves" might be fun.
+        // Let's reset for now to be clean per board.
         moves = 0
         
         var newCards: [MemoryCard] = []
         
-        for card in selectedCards {
+        for card in learningCards {
             switch matchMode {
             case .wordToWord:
                 // Target: Text, Native: Text
@@ -151,7 +172,8 @@ class MemoryGameEngine {
             self.isProcessing = false
             
             if self.matchedPairs == self.totalPairs {
-                self.onGameComplete?()
+                // Round Complete!
+                self.completeRound()
             }
         }
     }
@@ -166,6 +188,17 @@ class MemoryGameEngine {
                 }
             }
             self.isProcessing = false
+        }
+    }
+    
+    private func completeRound() {
+        // Grade the current batch as "Good" (Passed)
+        print("MemoryGame: Round complete. Grading batch.")
+        SmartSessionManager.shared.completeBatch(cards: currentBatch, grade: .good)
+        
+        // Delay before starting next round (so user sees empty board or success state)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.startNextRound()
         }
     }
 }

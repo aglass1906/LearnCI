@@ -19,7 +19,7 @@ import SwiftUI
 /// - TODO: Standardize init signature to match other games
 
 struct MemoryGameView: View {
-    let sessionCards: [LearningCard]
+    // let sessionCards: [LearningCard]  <-- Removed
     let deck: CardDeck
     let sessionConfig: GameConfiguration // Added for ttsRate
     let matchMode: GameConfiguration.MemoryMatchMode
@@ -27,16 +27,15 @@ struct MemoryGameView: View {
     let onMatchFound: () -> Void
     
     @Environment(AudioManager.self) private var audioManager
-    @State private var engine: MemoryGameEngine
+    @State private var viewModel: MemoryGameViewModel
     
-    init(sessionCards: [LearningCard], deck: CardDeck, sessionConfig: GameConfiguration, matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
-        self.sessionCards = sessionCards
+    init(deck: CardDeck, sessionConfig: GameConfiguration, matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
         self.deck = deck
         self.sessionConfig = sessionConfig
         self.matchMode = matchMode
         self.onGameComplete = onGameComplete
         self.onMatchFound = onMatchFound
-        _engine = State(initialValue: MemoryGameEngine(learningCards: sessionCards, matchMode: matchMode))
+        _viewModel = State(initialValue: MemoryGameViewModel(matchMode: matchMode))
     }
     
     let columns = [
@@ -54,7 +53,7 @@ struct MemoryGameView: View {
                     .font(.headline)
                     .foregroundColor(.purple)
                 Spacer()
-                Text("Moves: \(engine.moves)")
+                Text("Moves: \(viewModel.moves)")
                     .font(.subheadline)
                     .monospacedDigit()
             }
@@ -62,12 +61,12 @@ struct MemoryGameView: View {
             
             // Grid
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(Array(engine.cards.enumerated()), id: \.element.id) { index, card in
+                ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
                     CardTile(card: card)
                         .onTapGesture {
                             SoundManager.shared.play(.flip)
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                engine.flipCard(at: index)
+                                viewModel.flipCard(at: index)
                             }
                         }
                 }
@@ -78,17 +77,14 @@ struct MemoryGameView: View {
         }
         .onAppear {
             setupEngineCallbacks()
+            // Start the session when view appears
+            viewModel.startSession()
         }
-        .onChange(of: sessionCards) { _, newCards in
-            if !newCards.isEmpty && engine.cards.isEmpty {
-                 print("DEBUG: MemoryGameView received \(newCards.count) cards. Initializing Engine.")
-                 engine.setupGame(with: newCards)
-            }
-        }
+        // Removed onChange(of: sessionCards) as it's no longer needed
     }
     
     func setupEngineCallbacks() {
-        engine.playAudio = { filename, text in
+        viewModel.playAudio = { filename, text in
             // Handle optional filename, but we always have text
             let safeFilename = filename ?? ""
             let item = AudioManager.AudioItem(filename: safeFilename, text: text, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender)
@@ -98,17 +94,17 @@ struct MemoryGameView: View {
             audioManager.playSequence(items: [item], folderName: deck.baseFolderName, useFallback: true, ttsRate: rate)
         }
         
-        engine.onGameComplete = {
+        viewModel.onGameComplete = {
             SoundManager.shared.play(.win)
             onGameComplete()
         }
         
-        engine.onMatchFound = {
+        viewModel.onMatchFound = {
             SoundManager.shared.play(.match)
             onMatchFound()
         }
         
-        engine.onMistake = {
+        viewModel.onMistake = {
             SoundManager.shared.play(.mismatch)
         }
     }

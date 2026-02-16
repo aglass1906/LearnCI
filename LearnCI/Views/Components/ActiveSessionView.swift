@@ -58,7 +58,6 @@ struct ActiveSessionView: View {
                     )
                 case .memoryMatch:
                     MemoryGameView(
-                        sessionCards: sessionCards,
                         deck: deck,
                         sessionConfig: sessionConfig,
                         matchMode: matchMode,

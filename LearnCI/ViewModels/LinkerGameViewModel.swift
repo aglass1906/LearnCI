@@ -60,9 +60,9 @@ class LinkerGameViewModel {
     var sessionCards: [LearningCard] // The full queue passed from GameView
     private var localQueue: [LearningCard] // Mutable queue for processing
     
-    // Current Batch State
-    var currentBatch: [LearningCard] = []
-    var batchErrors: [String: Bool] = [:] // mild tracking: did this card have ANY error in ANY round?
+    // Round Queue State (Streaming)
+    var roundQueue: [LearningCard] = []
+    var batchErrors: [String: Bool] = [:] // mild tracking
     
     // Game State
     var currentRoundIndex = 0
@@ -91,7 +91,8 @@ class LinkerGameViewModel {
         // Initialize local queue with the provided session cards
         self.localQueue = sessionCards
         
-        startNextBatch()
+        // Start the game
+        startRound()
     }
     
     var currentRound: LinkerRoundType {
@@ -101,142 +102,103 @@ class LinkerGameViewModel {
     
     // MARK: - Game Logic
     
-    func startNextBatch() {
-        // 1. Check if we have cards left
-        if localQueue.isEmpty && config.order != .smart {
-            isGameOver = true
-            return
-        }
-        
-        if config.order == .smart {
-            // New Batch API: Request 5 cards (or fewer if queue is small)
-            // Note: nextBatch returns cards without removing them from queue
-            let batch = SmartSessionManager.shared.nextBatch(count: 5)
-            
-            // If we got nothing, refresh (shouldn't happen if queue has cards)
-            if batch.isEmpty {
-                refreshQueue()
-                if localQueue.isEmpty {
-                    currentBatch = []
-                    isGameOver = true
-                    return
-                }
-                // Fallback to local queue if SmartSession failure
-                currentBatch = Array(localQueue.prefix(5))
-            } else {
-                currentBatch = batch
-            }
-        } else {
-            // Standard/Random modes: maintain local queue behavior
-            currentBatch = Array(localQueue.prefix(5))
-            if currentBatch.isEmpty {
-                isGameOver = true
-                return
-            }
-        }
-        
-        selectedLeftId = nil
-        batchErrors = [:] // Reset error tracking for new batch
-        
-        // Remove these from the queue so we don't pick them again immediately within this session loop
-        // (For Smart Mode, GameView refetches into localQueue after grading, so this removal is temporary local state)
-        if config.order != .smart {
-            localQueue.removeFirst(min(5, localQueue.count))
-        }
-        
-        // Start the rounds for this batch
-        currentRoundIndex = 0
-        startRound()
-    }
-    
     func refreshQueue() {
-        // Only needed for non-smart modes or if smart queue exhausted
-        if localQueue.isEmpty && config.order != .smart {
+        if localQueue.isEmpty {
             localQueue = sessionCards.shuffled()
         }
     }
     
     func startRound() {
         guard currentRoundIndex < rounds.count else {
-            finishBatch()
+            isGameOver = true
             return
         }
         
-        let roundType = rounds[currentRoundIndex]
-        prepareItems(for: roundType)
-    }
-    
-    func finishBatch() {
-        refreshQueue()
-        
-        // 3. Start Next
-        startNextBatch()
-    }
-    
-    func prepareItems(for roundType: LinkerRoundType) {
-        // Use currentBatch
+        // Reset Board
         leftItems = []
         rightItems = []
+        selectedLeftId = nil
+        batchErrors = [:]
         
-        for card in currentBatch {
-            // Left Column
-            let leftContent: LinkerItemType
-            switch roundType {
-            case .word:
-                leftContent = .text(card.wordNative) // Spanish
-            case .image:
-                if let media = card.mediaFile, !media.isEmpty {
-                    leftContent = .image(media)
-                } else {
-                    leftContent = .text(card.wordNative) // Fallback
-                }
-            case .audio:
-                if let audio = card.audioWordFile {
-                    leftContent = .audio(audio)
-                } else {
-                    leftContent = .text(card.wordNative) // Fallback
-                }
-            }
-            
-            // Right Column
-            let rightContent: LinkerItemType
-            
-            // "Native Word" in UI corresponds to matching Target(Left) to Target(Right) (e.g. Spanish-Spanish)
-            // "English Word" corresponds to Target(Left) to Native(Right) (e.g. Spanish-English)
-            switch config.linkerTargetMode {
-            case .native:
-                rightContent = .text(card.wordTarget)
-            case .english:
-                rightContent = .text(card.wordNative)
-            } 
-            
-            // Actual Left Content Logic (Fixing previous logic)
-            // .word round: Left = Target(Spanish), Right = Native(English) or Target depending on config
-            
-            let actualLeftContent: LinkerItemType
-            switch roundType {
-            case .word:
-                actualLeftContent = .text(card.wordTarget) // Target Language
-            case .image:
-                 if let media = card.mediaFile, !media.isEmpty {
-                    actualLeftContent = .image(media)
-                } else {
-                    actualLeftContent = .text(card.wordTarget)
-                }
-            case .audio:
-                if let audio = card.audioWordFile {
-                    actualLeftContent = .audio(audio)
-                } else {
-                    actualLeftContent = .text(card.wordTarget) 
-                }
-            }
-            
-            leftItems.append(LinkerItem(cardId: card.id, content: actualLeftContent))
-            rightItems.append(LinkerItem(cardId: card.id, content: rightContent))
+        // Load Queue for this round
+        // We use the full local queue for each round type (Word -> Image -> Audio)
+        // This means we cycle through ALL cards for Word, then ALL for Image, etc.
+        // If localQueue is empty (smart mode updates?), refresh it.
+        if localQueue.isEmpty {
+            refreshQueue()
+        }
+        roundQueue = localQueue.shuffled()
+        
+        // Initial Refill
+        refillBoard()
+    }
+    
+    func refillBoard() {
+        // Target 5 rows
+        while leftItems.count < 5 && !roundQueue.isEmpty {
+            let card = roundQueue.removeFirst()
+            addPair(for: card)
         }
         
-        // Shuffle right items to make it a game
-        rightItems.shuffle()
+        // If after refill we have 0 items, round is done
+        if leftItems.isEmpty && roundQueue.isEmpty {
+            finishRound()
+        }
+    }
+    
+    private func addPair(for card: LearningCard) {
+        let roundType = self.currentRound
+        
+        // Left Item
+        let leftContent: LinkerItemType
+        switch roundType {
+        case .word:
+            leftContent = .text(card.wordTarget)
+        case .image:
+            if let media = card.mediaFile, !media.isEmpty {
+                leftContent = .image(media)
+            } else {
+                leftContent = .text(card.wordTarget)
+            }
+        case .audio:
+            if let audio = card.audioWordFile {
+                leftContent = .audio(audio)
+            } else {
+                leftContent = .text(card.wordTarget)
+            }
+        }
+        
+        // Right Item
+        let rightContent: LinkerItemType
+        switch config.linkerTargetMode {
+        case .native:
+            rightContent = .text(card.wordTarget)
+        case .english:
+            rightContent = .text(card.wordNative)
+        }
+        
+        let leftItem = LinkerItem(cardId: card.id, content: leftContent)
+        let rightItem = LinkerItem(cardId: card.id, content: rightContent)
+        
+        // Append Left (keeps stable order usually, or we could insert random?)
+        // Appending effectively slides it in at the bottom.
+        leftItems.append(leftItem)
+        
+        // Insert Right at random position to prevent alignment hints
+        if rightItems.isEmpty {
+            rightItems.append(rightItem)
+        } else {
+            let randomIndex = Int.random(in: 0...rightItems.count)
+            rightItems.insert(rightItem, at: randomIndex)
+        }
+    }
+    
+    func finishRound() {
+        // Delay before next round
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.currentRoundIndex += 1
+            self.startRound()
+        }
     }
     
     // MARK: - User Interaction
@@ -259,7 +221,7 @@ class LinkerGameViewModel {
     }
     
     func selectRight(_ item: LinkerItem) {
-        guard !item.isMatched else { return }
+        // guard !item.isMatched else { return } // Should be irrelevant as we remove matched items now
         guard let validSelectedId = selectedLeftId else { return }
         
         // Find left item
@@ -277,20 +239,35 @@ class LinkerGameViewModel {
     }
     
     private func handleMatch(leftIndex: Int, rightItem: LinkerItem) {
-        // 1. Mark Left as matched
-        leftItems[leftIndex].isMatched = true
-        leftItems[leftIndex].isSelected = false
+        // 1. Mark matched (optional, for animation)
+        // With streaming, we want to REMOVE them.
+        // Let's animate removal if possible.
         
-        // 2. Mark Right as matched
-        if let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) {
-            rightItems[rightIndex].isMatched = true
+        // Find indices
+        guard let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) else { return }
+        
+        // Increment Score
+        score += 1
+        selectedLeftId = nil
+        
+        // Remove items
+        // Use withAnimation in View? Or trigger it here?
+        // Observable arrays usually trigger view updates.
+        // We'll trust Swift UI transitions for now.
+        
+        withAnimation(.easeOut(duration: 0.3)) {
+            leftItems.remove(at: leftIndex)
+            rightItems.remove(at: rightIndex)
         }
         
-        selectedLeftId = nil
-        score += 1
-        
-        // Check round completion
-        checkForRoundCompletion()
+        // Refill
+        // Delay slightly to allow exit animation? Or refill immediately?
+        // Immediate refill feels more "streaming".
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.spring()) {
+                self.refillBoard()
+            }
+        }
     }
     
     private func handleMismatch(rightItem: LinkerItem) {
@@ -299,22 +276,24 @@ class LinkerGameViewModel {
         
         // Visual feedback
         if let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) {
-            rightItems[rightIndex].isError = true
+            withAnimation {
+                rightItems[rightIndex].isError = true
+            }
             
             // Reset error after delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if rightIndex < self.rightItems.count {
-                    self.rightItems[rightIndex].isError = false
+                    withAnimation {
+                         self.rightItems[rightIndex].isError = false
+                    }
                 }
             }
         }
     }
     
     private func playAudio(for item: LinkerItem) {
-        // Find the card
         guard let card = deck.cards.first(where: { $0.id == item.cardId }) else { return }
         
-        // Play audio with TTS fallback
         if let audioFile = card.audioWordFile {
             audioManager?.playAudio(
                 named: audioFile,
@@ -325,7 +304,6 @@ class LinkerGameViewModel {
                 ttsRate: config.ttsRate
             )
         } else {
-            // No audio file, use TTS directly
             audioManager?.speak(
                 text: card.wordTarget,
                 language: deck.language,
@@ -335,22 +313,11 @@ class LinkerGameViewModel {
         }
     }
     
-    private func checkForRoundCompletion() {
-        let allMatched = leftItems.allSatisfy { $0.isMatched }
-        if allMatched {
-            // Delay before next round
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.currentRoundIndex += 1
-                self.startRound()
-            }
-        }
-    }
-    
     func restartGame() {
-        // Reload queue
         refreshQueue()
         score = 0
         isGameOver = false
-        startNextBatch()
+        currentRoundIndex = 0
+        startRound()
     }
 }

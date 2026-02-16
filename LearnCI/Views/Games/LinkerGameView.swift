@@ -46,10 +46,10 @@ struct LinkerGameView: View {
                                 .onTapGesture {
                                     viewModel.selectLeft(item)
                                 }
-                                .disabled(item.isMatched)
-                                .opacity(item.isMatched ? 0.0 : 1.0) // Fade out matched
+                                .transition(.scale.combined(with: .opacity))
                         }
                     }
+                    .frame(minWidth: 0, maxWidth: .infinity)
                     
                     // Right Column
                     VStack(spacing: 15) {
@@ -58,12 +58,14 @@ struct LinkerGameView: View {
                                 .onTapGesture {
                                     viewModel.selectRight(item)
                                 }
-                                .disabled(item.isMatched)
-                                .opacity(item.isMatched ? 0.0 : 1.0)
+                                .transition(.scale.combined(with: .opacity))
                         }
                     }
+                    .frame(minWidth: 0, maxWidth: .infinity)
                 }
                 .padding()
+                .animation(.spring(), value: viewModel.leftItems)
+                .animation(.spring(), value: viewModel.rightItems)
             }
             
             Spacer()

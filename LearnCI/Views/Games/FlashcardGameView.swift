@@ -1,5 +1,26 @@
 import SwiftUI
 
+// MARK: - Flashcards Game View
+/// Classic card-by-card vocabulary review with spaced repetition.
+/// This game uses SmartSessionManager for intelligent card queueing based on user performance.
+///
+/// Session Settings Used:
+/// - sessionCardGoal: Number of cards to review
+/// - sessionDuration: Time limit (enforcement needed)
+/// - order: Card ordering (Sequential/Random/Smart Queue) via SmartSessionManager
+/// - navigation: How to navigate cards (Swipe/Buttons/Auto-Next) - FLASHCARDS ONLY
+/// - confirmation: Grading style (Quiz/SRS/Show/Auto) - FLASHCARDS ONLY
+/// - useTTSFallback: Enable TTS for audio playback
+/// - ttsRate: Speech playback speed
+///
+/// Current Implementation:
+/// - Uses SmartSessionManager for deck management ✅
+/// - Stateless view (no ViewModel) - parent manages state
+/// - Supports all navigation and confirmation styles
+///
+/// Note: Navigation and Confirmation settings are ONLY shown for Flashcards game type.
+/// Other games do not use these settings.
+
 struct FlashcardGameView: View {
     let deck: CardDeck
     let sessionCards: [LearningCard]

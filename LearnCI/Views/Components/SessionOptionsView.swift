@@ -58,21 +58,24 @@ struct SessionOptionsView: View {
                 .pickerStyle(.menu) // Using menu to be compact in the same section
             }
             
-            // Input & Flow
-            Section("Input & Flow") {
-                Picker("Navigation", selection: $navigationStyle) {
-                    ForEach(NavigationStyle.allCases) { style in
-                        Text(style.displayName).tag(style)
+            
+            // Input & Flow (Flashcards Only)
+            if gameType == .flashcards {
+                Section("Flashcard Controls") {
+                    Picker("Navigation", selection: $navigationStyle) {
+                        ForEach(NavigationStyle.allCases) { style in
+                            Text(style.displayName).tag(style)
+                        }
                     }
-                }
-                .pickerStyle(.menu)
-                
-                Picker("Grading", selection: $confirmationStyle) {
-                    ForEach(ConfirmationStyle.allCases) { style in
-                        Text(style.displayName).tag(style)
+                    .pickerStyle(.menu)
+                    
+                    Picker("Grading", selection: $confirmationStyle) {
+                        ForEach(ConfirmationStyle.allCases) { style in
+                            Text(style.displayName).tag(style)
+                        }
                     }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.menu)
             }
             
             // Audio Options

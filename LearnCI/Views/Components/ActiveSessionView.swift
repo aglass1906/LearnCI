@@ -65,12 +65,7 @@ struct ActiveSessionView: View {
                         onGameComplete: onFinish,
                         onMatchFound: onLearned
                     )
-                case .sentenceBuilder:
-                     ContentUnavailableView(
-                        "Sentence Scramble Coming Soon",
-                        systemImage: "text.bubble.fill",
-                        description: Text("This game mode is under construction.")
-                     )
+
                 case .story:
                     // Reuse Flashcard View for Story Reading (Linear Mode)
                     FlashcardGameView(

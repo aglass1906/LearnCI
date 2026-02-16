@@ -1,4 +1,18 @@
 
+// MARK: - Linker Game ViewModel
+/// Manages state and logic for the Column Connect (Linker) game.
+/// This game has 3 rounds: Word-Word, Image-Word, and Audio-Word matching.
+///
+/// Session Settings Used:
+/// - sessionCardGoal: Number of cards to use per round
+/// - order: Card ordering (Sequential/Random/Smart - currently uses random shuffling)
+/// - useTTSFallback: Enable TTS when audio files are missing
+/// - ttsRate: Speech playback speed
+///
+/// Future Refactor Notes:
+/// - TODO: Integrate with SmartSessionManager for consistent deck management
+/// - TODO: Respect sessionDuration timer
+/// - TODO: Use 'order' setting instead of hardcoded shuffle
 import SwiftUI
 import AVFoundation
 

@@ -1,5 +1,23 @@
 import SwiftUI
 
+// MARK: - Memory Match Game View
+/// Grid-based card matching game (4x4 grid, requires multiples of 8 cards).
+///
+/// Session Settings Used:
+/// - sessionCardGoal: Number of cards (must be multiples of 8)
+/// - useTTSFallback: Enable TTS for audio playback
+/// - ttsRate: Speech playback speed
+///
+/// Current State:
+/// - Has internal state management via MemoryGameEngine
+/// - Does NOT use SmartSessionManager
+///
+/// Future Refactor Notes (Phase 4):
+/// - TODO: Extract MemoryGameEngine logic into MemoryGameViewModel
+/// - TODO: Integrate with SmartSessionManager for deck management
+/// - TODO: Respect sessionDuration timer
+/// - TODO: Standardize init signature to match other games
+
 struct MemoryGameView: View {
     let sessionCards: [LearningCard]
     let deck: CardDeck

@@ -70,8 +70,6 @@ struct PlaceholderConfigView: View {
             return "Choose the correct answer from multiple options. Great for testing your comprehension and vocabulary recognition."
         case .audioCloze:
             return "Listen to a sentence and fill in the missing word. Perfect for improving your listening skills and context understanding."
-        case .sentenceBuilder:
-            return "Build sentences by arranging words in the correct order. Practice grammar and sentence structure."
         case .linker:
             return "Connect words or phrases to form correct sentences or associations. Test your understanding of relationships between words."
         case .story:

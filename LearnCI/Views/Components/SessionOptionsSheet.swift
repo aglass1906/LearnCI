@@ -70,35 +70,39 @@ struct SessionOptionsSheet: View {
                     }
                 }
                 
-                Section(header: Text("Input & Flow")) {
-                    VStack(alignment: .leading) {
-                        Text("Navigation Style")
-                        Picker("Navigation", selection: $navigationStyle) {
-                            Text("Swipe").tag(NavigationStyle.swipe)
-                            Text("Buttons").tag(NavigationStyle.buttons)
-                            Text("Auto-Next").tag(NavigationStyle.autoNext)
-                        }
-                        .pickerStyle(.segmented)
-                    }
-                    .padding(.vertical, 4)
-                    
-                    if navigationStyle == .autoNext {
+                
+                // Input & Flow (Flashcards Only)
+                if gameType == .flashcards {
+                    Section(header: Text("Flashcard Controls")) {
                         VStack(alignment: .leading) {
-                            HStack {
-                                Text("Auto-Advance Delay")
-                                Spacer()
-                                Text(String(format: "%.1fs", autoNextDelay))
-                                    .foregroundColor(.secondary)
+                            Text("Navigation Style")
+                            Picker("Navigation", selection: $navigationStyle) {
+                                Text("Swipe").tag(NavigationStyle.swipe)
+                                Text("Buttons").tag(NavigationStyle.buttons)
+                                Text("Auto-Next").tag(NavigationStyle.autoNext)
                             }
-                            Slider(value: $autoNextDelay, in: 0.5...5.0, step: 0.5)
+                            .pickerStyle(.segmented)
                         }
-                    }
-                    
-                    Picker("Confirmation Style", selection: $confirmationStyle) {
-                        Text("Quiz (Relearn/Learned)").tag(ConfirmationStyle.quiz)
-                        Text("SRS (Hard/Good/Easy)").tag(ConfirmationStyle.srs)
-                        Text("Show (Next Only)").tag(ConfirmationStyle.show)
-                        Text("Auto (No Confirmation)").tag(ConfirmationStyle.auto)
+                        .padding(.vertical, 4)
+                        
+                        if navigationStyle == .autoNext {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text("Auto-Advance Delay")
+                                    Spacer()
+                                    Text(String(format: "%.1fs", autoNextDelay))
+                                        .foregroundColor(.secondary)
+                                }
+                                Slider(value: $autoNextDelay, in: 0.5...5.0, step: 0.5)
+                            }
+                        }
+                        
+                        Picker("Confirmation Style", selection: $confirmationStyle) {
+                            Text("Quiz (Relearn/Learned)").tag(ConfirmationStyle.quiz)
+                            Text("SRS (Hard/Good/Easy)").tag(ConfirmationStyle.srs)
+                            Text("Show (Next Only)").tag(ConfirmationStyle.show)
+                            Text("Auto (No Confirmation)").tag(ConfirmationStyle.auto)
+                        }
                     }
                 }
                 

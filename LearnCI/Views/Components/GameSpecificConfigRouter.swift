@@ -42,7 +42,7 @@ struct GameSpecificConfigRouter: View {
                     onBack: onBack,
                     onSkipToSummary: onSkipToSummary
                 )
-            case .multipleChoice, .audioCloze, .sentenceBuilder:
+            case .multipleChoice, .audioCloze:
                 // Games without specific configuration use placeholder
                 PlaceholderConfigView(
                     gameType: gameType,

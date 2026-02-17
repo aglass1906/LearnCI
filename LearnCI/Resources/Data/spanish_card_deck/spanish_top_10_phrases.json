@@ -1,0 +1,188 @@
+{
+    "id": "es_top10_phrases_001",
+    "language": "es",
+    "proficiencyLevel": 1,
+    "title": "Spanish Top 10 Phrases",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": false
+        }
+    },
+    "cards": [
+        {
+            "id": "es_t10p_1",
+            "wordTarget": "Hola",
+            "wordNative": "Hello",
+            "sentenceTarget": "Hola, amigo.",
+            "sentenceNative": "Hello, friend.",
+            "audioWordFile": "es_hola_word.mp3",
+            "audioSentenceFile": "es_hola_sentence.mp3",
+            "mediaFile": "es_a1_hola.jpg",
+            "tags": [
+                "Phrases",
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_t10p_2",
+            "wordTarget": "Adiós",
+            "wordNative": "Goodbye",
+            "sentenceTarget": "Adiós, hasta luego.",
+            "sentenceNative": "Goodbye, see you later.",
+            "audioWordFile": "es_adios_word.mp3",
+            "audioSentenceFile": "es_adios_sentence.mp3",
+            "mediaFile": "es_a1_adios.jpg",
+            "tags": [
+                "Phrases",
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_t10p_3",
+            "wordTarget": "Por favor",
+            "wordNative": "Please",
+            "sentenceTarget": "Ayúdame, por favor.",
+            "sentenceNative": "Help me, please.",
+            "audioWordFile": "es_porfavor_word.mp3",
+            "audioSentenceFile": "es_porfavor_sentence.mp3",
+            "mediaFile": "es_a1_porfavor.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_4",
+            "wordTarget": "Gracias",
+            "wordNative": "Thank you",
+            "sentenceTarget": "Gracias por todo.",
+            "sentenceNative": "Thank you for everything.",
+            "audioWordFile": "es_gracias_word.mp3",
+            "audioSentenceFile": "es_gracias_sentence.mp3",
+            "mediaFile": "es_a1_gracias.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_5",
+            "wordTarget": "Lo siento",
+            "wordNative": "I am sorry",
+            "sentenceTarget": "Lo siento mucho.",
+            "sentenceNative": "I am very sorry.",
+            "audioWordFile": "es_losiento_word.mp3",
+            "audioSentenceFile": "es_losiento_sentence.mp3",
+            "mediaFile": "es_losiento.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_6",
+            "wordTarget": "¿Cómo estás?",
+            "wordNative": "How are you?",
+            "sentenceTarget": "Hola, ¿cómo estás?",
+            "sentenceNative": "Hello, how are you?",
+            "audioWordFile": "es_comoestas_word.mp3",
+            "audioSentenceFile": "es_comoestas_sentence.mp3",
+            "mediaFile": "es_comoestas.jpg",
+            "tags": [
+                "Phrases",
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_t10p_7",
+            "wordTarget": "Buenos días",
+            "wordNative": "Good morning",
+            "sentenceTarget": "Buenos días a todos.",
+            "sentenceNative": "Good morning everyone.",
+            "audioWordFile": "es_buenosdias_word.mp3",
+            "audioSentenceFile": "es_buenosdias_sentence.mp3",
+            "mediaFile": "es_sol.jpg",
+            "tags": [
+                "Phrases",
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_t10p_8",
+            "wordTarget": "Buenas noches",
+            "wordNative": "Good night",
+            "sentenceTarget": "Buenas noches, que descanses.",
+            "sentenceNative": "Good night, rest well.",
+            "audioWordFile": "es_buenasnoches_word.mp3",
+            "audioSentenceFile": "es_buenasnoches_sentence.mp3",
+            "mediaFile": "es_luna.jpg",
+            "tags": [
+                "Phrases",
+                "Greetings"
+            ]
+        },
+        {
+            "id": "es_t10p_9",
+            "wordTarget": "Si",
+            "wordNative": "Yes",
+            "sentenceTarget": "Si, quiero ir.",
+            "sentenceNative": "Yes, I want to go.",
+            "audioWordFile": "es_si_word.mp3",
+            "audioSentenceFile": "es_si_sentence.mp3",
+            "mediaFile": "es_a1_si.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_10",
+            "wordTarget": "No",
+            "wordNative": "No",
+            "sentenceTarget": "No, gracias.",
+            "sentenceNative": "No, thank you.",
+            "audioWordFile": "es_no_word.mp3",
+            "audioSentenceFile": "es_no_sentence.mp3",
+            "mediaFile": "es_a1_no.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_11",
+            "wordTarget": "De nada",
+            "wordNative": "You're welcome",
+            "sentenceTarget": "De nada, es un placer.",
+            "sentenceNative": "You're welcome, it's a pleasure.",
+            "audioWordFile": "es_denada_word.mp3",
+            "audioSentenceFile": "es_denada_sentence.mp3",
+            "mediaFile": "es_denada.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        },
+        {
+            "id": "es_t10p_12",
+            "wordTarget": "Perdón",
+            "wordNative": "Sorry / Excuse me",
+            "sentenceTarget": "Perdón, no entiendo.",
+            "sentenceNative": "Sorry, I don't understand.",
+            "audioWordFile": "es_perdon_word.mp3",
+            "audioSentenceFile": "es_perdon_sentence.mp3",
+            "mediaFile": "es_perdon.jpg",
+            "tags": [
+                "Phrases",
+                "Essentials"
+            ]
+        }
+    ]
+}

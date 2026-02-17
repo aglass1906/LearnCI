@@ -7,7 +7,12 @@
     "cefr": "A2",
     "title": "Spanish Stories - My First Morning (A2)",
     "supportedModes": [
-        "story"
+        "story",
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "story": {

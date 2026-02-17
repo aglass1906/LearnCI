@@ -5,7 +5,10 @@
     "title": "Refold Spanish 1K",
     "supportedModes": [
         "flashcards",
-        "memoryMatch"
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "flashcards": {

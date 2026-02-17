@@ -6,7 +6,12 @@
     "level": "Beginner",
     "title": "Spanish Video Stories - Pizza Gratis",
     "supportedModes": [
-        "story"
+        "story",
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "story": {

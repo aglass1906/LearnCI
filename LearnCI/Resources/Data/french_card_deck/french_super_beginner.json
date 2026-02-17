@@ -5,7 +5,10 @@
     "title": "French Starter Words",
     "supportedModes": [
         "flashcards",
-        "memoryMatch"
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "flashcards": {

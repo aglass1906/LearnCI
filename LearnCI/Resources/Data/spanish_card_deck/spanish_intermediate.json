@@ -7,7 +7,8 @@
         "flashcards",
         "memoryMatch",
         "multipleChoice",
-        "audioCloze"
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "flashcards": {

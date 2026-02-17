@@ -6,7 +6,9 @@
     "supportedModes": [
         "flashcards",
         "multipleChoice",
-        "audioCloze"
+        "audioCloze",
+        "memoryMatch",
+        "linker"
     ],
     "gameConfiguration": {
         "flashcards": {

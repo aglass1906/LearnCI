@@ -6,7 +6,12 @@
     "cefr": "B1",
     "title": "Spanish Stories - My First Morning (B1)",
     "supportedModes": [
-        "story"
+        "story",
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
     ],
     "gameConfiguration": {
         "story": {

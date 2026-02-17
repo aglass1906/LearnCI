@@ -8,6 +8,9 @@ xcuserdata/
 *.log
 Build/*
 
+.env
+.venv
+
 ## Obj-C/Swift specific
 *.hmap
 

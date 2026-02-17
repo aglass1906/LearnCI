@@ -440,7 +440,8 @@
             "mediaFile": "",
             "tags": [
                 "Adverbs",
-                "Time"
+                "Time",
+                "Time Connectors"
             ]
         },
         {
@@ -548,7 +549,8 @@
             "mediaFile": "",
             "tags": [
                 "Conjunctions",
-                "Grammar"
+                "Grammar",
+                "Time Connectors"
             ]
         },
         {
@@ -782,7 +784,8 @@
             "mediaFile": "",
             "tags": [
                 "Conjunctions",
-                "Grammar"
+                "Grammar",
+                "Contrast Connectors"
             ]
         },
         {
@@ -797,7 +800,8 @@
             "tags": [
                 "Adjectives",
                 "Time",
-                "Time of Day"
+                "Time of Day",
+                "Time Connectors"
             ]
         },
         {
@@ -977,7 +981,8 @@
             "mediaFile": "",
             "tags": [
                 "Conjunctions",
-                "Grammar"
+                "Grammar",
+                "Cause & Effect"
             ]
         },
         {
@@ -1457,7 +1462,8 @@
             "audioSentenceFile": "ES1K_106_después_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Time"
+                "Time",
+                "Time Connectors"
             ]
         },
         {
@@ -1553,7 +1559,8 @@
             "audioSentenceFile": "ES1K_113_antes_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Time"
+                "Time",
+                "Time Connectors"
             ]
         },
         {
@@ -2591,7 +2598,8 @@
             "mediaFile": "",
             "tags": [
                 "Conjunctions",
-                "Time"
+                "Time",
+                "Time Connectors"
             ]
         },
         {
@@ -3272,7 +3280,9 @@
             "tags": [
                 "Adverbs",
                 "Conjunctions",
-                "Time"
+                "Time",
+                "Time Connectors",
+                "Cause & Effect"
             ]
         },
         {
@@ -4993,7 +5003,8 @@
             "audioSentenceFile": "ES1K_376_aunque_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Conjunctions"
+                "Conjunctions",
+                "Contrast Connectors"
             ]
         },
         {
@@ -5033,7 +5044,8 @@
             "audioSentenceFile": "ES1K_379_luego_sentence.mp3",
             "mediaFile": "",
             "tags": [
-                "Time"
+                "Time",
+                "Time Connectors"
             ]
         },
         {

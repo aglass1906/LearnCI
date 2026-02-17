@@ -840,5 +840,72 @@
                 ]
             }
         }
+    },
+    "Functional Language": {
+        "description": "Abstract language patterns, connectors, and strategic vocabulary for building complex sentences.",
+        "tags": {
+            "Contrast Connectors": {
+                "description": "Words that introduce a contrast or opposing idea.",
+                "words": [
+                    "but",
+                    "however",
+                    "although",
+                    "though",
+                    "yet",
+                    "on the other hand",
+                    "instead",
+                    "while"
+                ]
+            },
+            "Cause & Effect": {
+                "description": "Words that link an action or event to its result or reason.",
+                "words": [
+                    "because",
+                    "so",
+                    "therefore",
+                    "since",
+                    "as a result",
+                    "due to",
+                    "reason",
+                    "cause",
+                    "effect"
+                ]
+            },
+            "Time Connectors": {
+                "description": "Words that sequence events or describe temporal relationships.",
+                "words": [
+                    "before",
+                    "after",
+                    "during",
+                    "while",
+                    "when",
+                    "until",
+                    "since",
+                    "soon",
+                    "later",
+                    "then",
+                    "next",
+                    "first",
+                    "finally"
+                ]
+            },
+            "Strategic Verbs": {
+                "description": "Verbs used to manage communication, express intent, or navigate difficult situations.",
+                "words": [
+                    "try",
+                    "attempt",
+                    "manage",
+                    "fail",
+                    "succeed",
+                    "decide",
+                    "plan",
+                    "hope",
+                    "wish",
+                    "need",
+                    "must",
+                    "should"
+                ]
+            }
+        }
     }
 }

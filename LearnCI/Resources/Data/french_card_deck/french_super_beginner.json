@@ -24,7 +24,8 @@
             "sentenceNative": "Hello, how are you?",
             "tags": [
                 "Greetings & Basics"
-            ]
+            ],
+            "mediaFile": "fr_sb_bonjour_hello.png"
         },
         {
             "id": "fr_sb_c2",
@@ -35,7 +36,8 @@
             "tags": [
                 "Greetings & Basics",
                 "Pronouns"
-            ]
+            ],
+            "mediaFile": "fr_sb_merci_thank_you.png"
         },
         {
             "id": "fr_sb_c3",
@@ -45,7 +47,8 @@
             "sentenceNative": "A coffee, please.",
             "tags": [
                 "Greetings & Basics"
-            ]
+            ],
+            "mediaFile": "fr_sb_s_il_vous_plait_please.png"
         },
         {
             "id": "fr_sb_c4",
@@ -55,7 +58,8 @@
             "sentenceNative": "Goodbye, see you tomorrow.",
             "tags": [
                 "Greetings & Basics"
-            ]
+            ],
+            "mediaFile": "fr_sb_au_revoir_goodbye.png"
         },
         {
             "id": "fr_sb_c5",
@@ -65,7 +69,8 @@
             "sentenceNative": "Yes, I like that a lot.",
             "tags": [
                 "Greetings & Basics"
-            ]
+            ],
+            "mediaFile": "fr_sb_oui_yes.png"
         },
         {
             "id": "fr_sb_c6",
@@ -75,7 +80,8 @@
             "sentenceNative": "No, I am not hungry.",
             "tags": [
                 "Greetings & Basics"
-            ]
+            ],
+            "mediaFile": "fr_sb_non_no.png"
         },
         {
             "id": "fr_sb_c7",
@@ -86,7 +92,8 @@
             "tags": [
                 "Basics",
                 "Food"
-            ]
+            ],
+            "mediaFile": "fr_sb_eau_water.png"
         },
         {
             "id": "fr_sb_c8",
@@ -97,7 +104,8 @@
             "tags": [
                 "Basics",
                 "Food"
-            ]
+            ],
+            "mediaFile": "fr_sb_nourriture_food.png"
         },
         {
             "id": "fr_sb_c9",
@@ -108,7 +116,8 @@
             "tags": [
                 "Daily Life",
                 "People"
-            ]
+            ],
+            "mediaFile": "fr_sb_ami_friend.png"
         },
         {
             "id": "fr_sb_c10",
@@ -119,7 +128,8 @@
             "tags": [
                 "Daily Life",
                 "Places"
-            ]
+            ],
+            "mediaFile": "fr_sb_maison_house.png"
         },
         {
             "id": "fr_sb_c11",
@@ -131,7 +141,8 @@
                 "Animals",
                 "Daily Life",
                 "Nature"
-            ]
+            ],
+            "mediaFile": "fr_sb_chat_cat.png"
         },
         {
             "id": "fr_sb_c12",
@@ -143,7 +154,8 @@
                 "Animals",
                 "Daily Life",
                 "Nature"
-            ]
+            ],
+            "mediaFile": "fr_sb_chien_dog.png"
         },
         {
             "id": "fr_sb_c13",
@@ -153,7 +165,8 @@
             "sentenceNative": "I have only one.",
             "tags": [
                 "Numbers"
-            ]
+            ],
+            "mediaFile": "fr_sb_un_one.png"
         },
         {
             "id": "fr_sb_c14",
@@ -163,7 +176,8 @@
             "sentenceNative": "Two coffees, please.",
             "tags": [
                 "Numbers"
-            ]
+            ],
+            "mediaFile": "fr_sb_deux_two.png"
         },
         {
             "id": "fr_sb_c15",
@@ -173,7 +187,8 @@
             "sentenceNative": "There are three birds in the tree.",
             "tags": [
                 "Numbers"
-            ]
+            ],
+            "mediaFile": "fr_sb_trois_three.png"
         }
     ]
 }

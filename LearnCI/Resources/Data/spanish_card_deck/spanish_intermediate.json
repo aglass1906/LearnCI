@@ -24,7 +24,7 @@
             "sentenceNative": "We must develop new strategies.",
             "audioWordFile": "es_desarrollar_word.mp3",
             "audioSentenceFile": "es_desarrollar_sentence.mp3",
-            "mediaFile": "es_desarrollar.jpg",
+            "mediaFile": "es_desarrollar.png",
             "tags": [
                 "Prepositions",
                 "Verbs",
@@ -39,7 +39,7 @@
             "sentenceNative": "We have to make the most of the good weather.",
             "audioWordFile": "es_aprovechar_word.mp3",
             "audioSentenceFile": "es_aprovechar_sentence.mp3",
-            "mediaFile": "es_aprovechar.jpg",
+            "mediaFile": "es_aprovechar.png",
             "tags": [
                 "Prepositions",
                 "Verbs",
@@ -54,7 +54,7 @@
             "sentenceNative": "He was tired; however, he kept working.",
             "audioWordFile": "es_sinembargo_word.mp3",
             "audioSentenceFile": "es_sinembargo_sentence.mp3",
-            "mediaFile": "es_sinembargo.jpg",
+            "mediaFile": "es_sinembargo.png",
             "tags": [
                 "Verbs & Concepts"
             ]
@@ -67,7 +67,7 @@
             "sentenceNative": "They are going to carry out a scientific experiment.",
             "audioWordFile": "es_realizar_word.mp3",
             "audioSentenceFile": "es_realizar_sentence.mp3",
-            "mediaFile": "es_realizar.jpg",
+            "mediaFile": "es_realizar.png",
             "tags": [
                 "Prepositions",
                 "Verbs",
@@ -82,7 +82,7 @@
             "sentenceNative": "I will go to the party even if it is raining.",
             "audioWordFile": "es_aunque_word.mp3",
             "audioSentenceFile": "es_aunque_sentence.mp3",
-            "mediaFile": "es_aunque.jpg",
+            "mediaFile": "es_aunque.png",
             "tags": [
                 "Conjunctions",
                 "Verbs & Concepts"
@@ -96,7 +96,7 @@
             "sentenceNative": "It is not red, but rather orange.",
             "audioWordFile": "es_sino_word.mp3",
             "audioSentenceFile": "es_sino_sentence.mp3",
-            "mediaFile": "es_sino.jpg",
+            "mediaFile": "es_sino.png",
             "tags": [
                 "Conjunctions",
                 "Verbs & Concepts"
@@ -110,7 +110,7 @@
             "sentenceNative": "We all have a right to education.",
             "audioWordFile": "es_derecho_word.mp3",
             "audioSentenceFile": "es_derecho_sentence.mp3",
-            "mediaFile": "es_derecho.jpg",
+            "mediaFile": "es_derecho.png",
             "tags": [
                 "Concepts",
                 "Directions",

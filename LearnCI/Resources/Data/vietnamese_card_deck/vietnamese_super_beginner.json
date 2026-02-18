@@ -22,8 +22,8 @@
             "wordNative": "Hello",
             "sentenceTarget": "Xin chào, bạn khỏe không?",
             "sentenceNative": "Hello, how are you?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_xin_chao_word.mp3",
+            "audioSentenceFile": "vi_xin_chao_sentence.mp3",
             "mediaFile": "vi_xin_chao.jpg",
             "tags": [
                 "Greetings"
@@ -35,8 +35,8 @@
             "wordNative": "Thank you",
             "sentenceTarget": "Cảm ơn bạn rất nhiều.",
             "sentenceNative": "Thank you very much.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_cam_on_word.mp3",
+            "audioSentenceFile": "vi_cam_on_sentence.mp3",
             "mediaFile": "vi_cam_on.jpg",
             "tags": [
                 "Essentials"
@@ -48,8 +48,8 @@
             "wordNative": "Goodbye",
             "sentenceTarget": "Tạm biệt, hẹn gặp lại.",
             "sentenceNative": "Goodbye, see you again.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_tam_biet_word.mp3",
+            "audioSentenceFile": "vi_tam_biet_sentence.mp3",
             "mediaFile": "vi_tam_biet.jpg",
             "tags": [
                 "Greetings"
@@ -61,8 +61,8 @@
             "wordNative": "Yes",
             "sentenceTarget": "Có, tôi hiểu.",
             "sentenceNative": "Yes, I understand.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_co_word.mp3",
+            "audioSentenceFile": "vi_co_sentence.mp3",
             "mediaFile": "vi_co.jpg",
             "tags": [
                 "Essentials"
@@ -74,8 +74,8 @@
             "wordNative": "No",
             "sentenceTarget": "Không, cảm ơn.",
             "sentenceNative": "No, thank you.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_khong_word.mp3",
+            "audioSentenceFile": "vi_khong_sentence.mp3",
             "mediaFile": "vi_khong.jpg",
             "tags": [
                 "Essentials"
@@ -87,8 +87,8 @@
             "wordNative": "Rice (Cooked)",
             "sentenceTarget": "Tôi thích ăn cơm.",
             "sentenceNative": "I like to eat rice.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_com_word.mp3",
+            "audioSentenceFile": "vi_com_sentence.mp3",
             "mediaFile": "vi_com.jpg",
             "tags": [
                 "Food"
@@ -100,8 +100,8 @@
             "wordNative": "Pho",
             "sentenceTarget": "Phở là món ăn ngon.",
             "sentenceNative": "Pho is a delicious dish.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_pho_word.mp3",
+            "audioSentenceFile": "vi_pho_sentence.mp3",
             "mediaFile": "vi_pho.jpg",
             "tags": [
                 "Food"
@@ -113,8 +113,8 @@
             "wordNative": "Water",
             "sentenceTarget": "Cho tôi một ly nước.",
             "sentenceNative": "Give me a glass of water.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "vi_nuoc_word.mp3",
+            "audioSentenceFile": "vi_nuoc_sentence.mp3",
             "mediaFile": "vi_nuoc.jpg",
             "tags": [
                 "Drinks",

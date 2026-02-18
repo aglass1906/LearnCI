@@ -1,0 +1,79 @@
+{
+    "version": "1.0.0",
+    "type": "tag_semantics",
+    "description": "Learner-friendly semantic topics (what a word is about). Used for filtering and themed study.",
+    "tags": {
+        "Animals": {
+            "description": "Animals, pets, insects, and animal-related nouns.",
+            "meta": {
+                "uiLabel": "Animals",
+                "icon": "🐶",
+                "imageStrategy": "single_animal_clear_view",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Food": {
+            "description": "Food, meals, ingredients, drinks, dining contexts.",
+            "meta": {
+                "uiLabel": "Food",
+                "icon": "🍎",
+                "imageStrategy": "food_or_meal_scene",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Family": {
+            "description": "Family members, relationships, kinship terms.",
+            "meta": {
+                "uiLabel": "Family",
+                "icon": "👨‍👩‍👧‍👦",
+                "imageStrategy": "people_relationship_scene",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Colors": {
+            "description": "Colors and common color adjectives.",
+            "meta": {
+                "uiLabel": "Colors",
+                "icon": "🎨",
+                "imageStrategy": "color_dominant_object",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Numbers": {
+            "description": "Cardinal and ordinal numbers; quantity expressions.",
+            "meta": {
+                "uiLabel": "Numbers",
+                "icon": "🔢",
+                "imageStrategy": "countable_objects_scene",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Body": {
+            "description": "Body parts, senses, and basic health-related nouns.",
+            "meta": {
+                "uiLabel": "Body",
+                "icon": "🧠",
+                "imageStrategy": "person_body_part_context",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Places": {
+            "description": "Locations, buildings, rooms, city places.",
+            "meta": {
+                "uiLabel": "Places",
+                "icon": "📍",
+                "imageStrategy": "location_scene",
+                "difficultyDefault": "A1"
+            }
+        },
+        "Clothing": {
+            "description": "Clothes, accessories, and wearable items.",
+            "meta": {
+                "uiLabel": "Clothing",
+                "icon": "👕",
+                "imageStrategy": "item_on_person",
+                "difficultyDefault": "A1"
+            }
+        }
+    }
+}

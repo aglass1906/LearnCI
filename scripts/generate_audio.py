@@ -27,7 +27,7 @@ OPENAI_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 
 # --- ElevenLabs Functions ---
 
-def get_elevenlabs_voices():
+def get_elevenlabs_voices(filter_premade=False):
     if not ELEVENLABS_API_KEY:
         print("Error: ELEVENLABS_API_KEY not found needed for ElevenLabs provider.")
         return []
@@ -35,7 +35,13 @@ def get_elevenlabs_voices():
     headers = {"xi-api-key": ELEVENLABS_API_KEY}
     response = requests.get(EL_VOICES_URL, headers=headers)
     if response.status_code == 200:
-        return response.json()['voices']
+        voices = response.json()['voices']
+        if filter_premade:
+            # Filter for premade voices only (category: premade)
+            # Free tier users are restricted from using 'cloned' or 'professional' or 'library' voices via API
+            voices = [v for v in voices if v.get('category') == 'premade']
+            print(f"Filtered to {len(voices)} premade voices for Free Tier.")
+        return voices
     else:
         print(f"Error fetching ElevenLabs voices: {response.status_code} - {response.text}")
         return []
@@ -102,6 +108,9 @@ def main():
     parser.add_argument("--deck", "-d", help="Specific deck filename to process (e.g., 'spanish_beginner.json')", default=None)
     parser.add_argument("--provider", "-p", choices=['elevenlabs', 'openai'], default='elevenlabs', help="TTS Provider (default: elevenlabs)")
     parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing audio files")
+    parser.add_argument("--free", action="store_true", help="Filter for ElevenLabs premade voices only (required for Free tier)")
+    parser.add_argument("--voice", "-v", help="Specific voice name or ID to use", default=None)
+    parser.add_argument("--limit", "-l", type=int, help="Limit the number of audio files to generate", default=None)
     args = parser.parse_args()
     
     # If no arguments are provided, show help to prevent accidental mass generation
@@ -115,7 +124,7 @@ def main():
     
     if args.provider == 'elevenlabs':
         print("Fetching voices from ElevenLabs...")
-        voices = get_elevenlabs_voices()
+        voices = get_elevenlabs_voices(filter_premade=args.free)
         if not voices:
             exit(1)
         print(f"Found {len(voices)} ElevenLabs voices.")
@@ -123,6 +132,25 @@ def main():
         print("Using OpenAI voices...")
         voices = [{'voice_id': v, 'name': v} for v in OPENAI_VOICES]
         print(f"Available OpenAI voices: {', '.join(OPENAI_VOICES)}")
+
+    # Handle specific voice selection
+    selected_voice = None
+    if args.voice:
+        # Search by name or ID
+        for v in voices:
+            if v['name'].lower() == args.voice.lower() or v['voice_id'].lower() == args.voice.lower():
+                selected_voice = v
+                break
+        
+        if not selected_voice:
+            print(f"Error: Voice '{args.voice}' not found for provider '{args.provider}'.")
+            if args.provider == 'elevenlabs':
+                print("Available premade voices:" if args.free else "Available voices:")
+                for v in voices[:10]:
+                    print(f"  - {v['name']} ({v['voice_id']})")
+                if len(voices) > 10: print("  ...")
+            exit(1)
+        print(f"Using selected voice: {selected_voice['name']} ({selected_voice['voice_id']})")
 
     # Get existing audio files
     if not os.path.exists(AUDIO_DIR):
@@ -152,7 +180,7 @@ def main():
                         
                         for card in data['cards']:
                             # Select a voice for this card so word/sentence match
-                            card_voice = random.choice(voices)
+                            card_voice = selected_voice if selected_voice else random.choice(voices)
                             
                             if 'audioWordFile' in card and ('audioWordFile' not in existing_audio or args.force):
                                 missing_files.append({
@@ -177,7 +205,13 @@ def main():
                     print(f"Error reading {file}: {e}")
 
     total_missing = len(missing_files)
-    print(f"Found {total_missing} missing audio files.")
+    
+    if args.limit and args.limit < total_missing:
+        print(f"Limiting generation to {args.limit} files (out of {total_missing} missing).")
+        missing_files = missing_files[:args.limit]
+        total_missing = len(missing_files)
+    else:
+        print(f"Found {total_missing} missing audio files.")
     
     if total_missing == 0:
         print("All audio files match! Nothing to do.")

@@ -22,8 +22,8 @@
             "wordNative": "I / Me",
             "sentenceTarget": "私は学生です。",
             "sentenceNative": "I am a student.",
-            "audioWordFile": "ja_watashi_word.mp3",
-            "audioSentenceFile": "ja_watashi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c1_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c1_sentence.mp3",
             "mediaFile": "ja_watashi.jpg",
             "tags": [
                 "People & Pronouns",
@@ -36,8 +36,8 @@
             "wordNative": "You",
             "sentenceTarget": "あなたのお名前は何ですか？",
             "sentenceNative": "What is your name?",
-            "audioWordFile": "ja_anata_word.mp3",
-            "audioSentenceFile": "ja_anata_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c2_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c2_sentence.mp3",
             "mediaFile": "ja_anata.jpg",
             "tags": [
                 "People & Pronouns",
@@ -50,8 +50,8 @@
             "wordNative": "He",
             "sentenceTarget": "彼は私の友達です。",
             "sentenceNative": "He is my friend.",
-            "audioWordFile": "ja_kare_word.mp3",
-            "audioSentenceFile": "ja_kare_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c3_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c3_sentence.mp3",
             "mediaFile": "ja_kare.jpg",
             "tags": [
                 "People & Pronouns",
@@ -64,8 +64,8 @@
             "wordNative": "She",
             "sentenceTarget": "彼女はとても親切です。",
             "sentenceNative": "She is very kind.",
-            "audioWordFile": "ja_kanojo_word.mp3",
-            "audioSentenceFile": "ja_kanojo_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c4_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c4_sentence.mp3",
             "mediaFile": "ja_kanojo.jpg",
             "tags": [
                 "People & Pronouns",
@@ -78,8 +78,8 @@
             "wordNative": "This",
             "sentenceTarget": "これは何ですか？",
             "sentenceNative": "What is this?",
-            "audioWordFile": "ja_kore_word.mp3",
-            "audioSentenceFile": "ja_kore_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c5_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c5_sentence.mp3",
             "mediaFile": "ja_kore.jpg",
             "tags": [
                 "Demonstratives"
@@ -91,8 +91,8 @@
             "wordNative": "That",
             "sentenceTarget": "それをください。",
             "sentenceNative": "Please give me that.",
-            "audioWordFile": "ja_sore_word.mp3",
-            "audioSentenceFile": "ja_sore_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c6_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c6_sentence.mp3",
             "mediaFile": "ja_sore.jpg",
             "tags": [
                 "Demonstratives"
@@ -104,8 +104,8 @@
             "wordNative": "That over there",
             "sentenceTarget": "あれは山です。",
             "sentenceNative": "That over there is a mountain.",
-            "audioWordFile": "ja_are_word.mp3",
-            "audioSentenceFile": "ja_are_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c7_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c7_sentence.mp3",
             "mediaFile": "ja_are.jpg",
             "tags": [
                 "Adverbs",
@@ -119,8 +119,8 @@
             "wordNative": "Where",
             "sentenceTarget": "駅はどこですか？",
             "sentenceNative": "Where is the station?",
-            "audioWordFile": "ja_doko_word.mp3",
-            "audioSentenceFile": "ja_doko_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c8_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c8_sentence.mp3",
             "mediaFile": "ja_doko.jpg",
             "tags": [
                 "Questions"
@@ -132,8 +132,8 @@
             "wordNative": "When",
             "sentenceTarget": "いつ日本に来ましたか？",
             "sentenceNative": "When did you come to Japan?",
-            "audioWordFile": "ja_itsu_word.mp3",
-            "audioSentenceFile": "ja_itsu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c9_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c9_sentence.mp3",
             "mediaFile": "ja_itsu.jpg",
             "tags": [
                 "Conjunctions",
@@ -146,8 +146,8 @@
             "wordNative": "Who",
             "sentenceTarget": "だれが来ましたか？",
             "sentenceNative": "Who came?",
-            "audioWordFile": "ja_dare_word.mp3",
-            "audioSentenceFile": "ja_dare_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c10_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c10_sentence.mp3",
             "mediaFile": "ja_dare.jpg",
             "tags": [
                 "Questions"
@@ -159,8 +159,8 @@
             "wordNative": "Big",
             "sentenceTarget": "この家は大きいです。",
             "sentenceNative": "This house is big.",
-            "audioWordFile": "ja_okii_word.mp3",
-            "audioSentenceFile": "ja_okii_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c11_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c11_sentence.mp3",
             "mediaFile": "ja_okii.jpg",
             "tags": [
                 "Adjectives"
@@ -172,8 +172,8 @@
             "wordNative": "Small",
             "sentenceTarget": "小さい猫がいます。",
             "sentenceNative": "There is a small cat.",
-            "audioWordFile": "ja_chiisai_word.mp3",
-            "audioSentenceFile": "ja_chiisai_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c12_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c12_sentence.mp3",
             "mediaFile": "ja_chiisai.jpg",
             "tags": [
                 "Adjectives"
@@ -185,8 +185,8 @@
             "wordNative": "New",
             "sentenceTarget": "新しい車を買いました。",
             "sentenceNative": "I bought a new car.",
-            "audioWordFile": "ja_atarashii_word.mp3",
-            "audioSentenceFile": "ja_atarashii_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c13_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c13_sentence.mp3",
             "mediaFile": "ja_atarashii.jpg",
             "tags": [
                 "Adjectives"
@@ -198,8 +198,8 @@
             "wordNative": "Old",
             "sentenceTarget": "これは古い本です。",
             "sentenceNative": "This is an old book.",
-            "audioWordFile": "ja_furui_word.mp3",
-            "audioSentenceFile": "ja_furui_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c14_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c14_sentence.mp3",
             "mediaFile": "ja_furui.jpg",
             "tags": [
                 "Adjectives"
@@ -211,8 +211,8 @@
             "wordNative": "Hot (Weather)",
             "sentenceTarget": "今日はとても暑いです。",
             "sentenceNative": "Today is very hot.",
-            "audioWordFile": "ja_atsui_word.mp3",
-            "audioSentenceFile": "ja_atsui_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c15_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c15_sentence.mp3",
             "mediaFile": "ja_atsui.jpg",
             "tags": [
                 "Adjectives"
@@ -224,8 +224,8 @@
             "wordNative": "Cold (Weather)",
             "sentenceTarget": "昨日は寒かったです。",
             "sentenceNative": "Yesterday was cold.",
-            "audioWordFile": "ja_samui_word.mp3",
-            "audioSentenceFile": "ja_samui_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c16_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c16_sentence.mp3",
             "mediaFile": "ja_samui.jpg",
             "tags": [
                 "Adjectives"
@@ -237,8 +237,8 @@
             "wordNative": "High / Expensive",
             "sentenceTarget": "この時計は高いです。",
             "sentenceNative": "This watch is expensive.",
-            "audioWordFile": "ja_takai_word.mp3",
-            "audioSentenceFile": "ja_takai_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c17_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c17_sentence.mp3",
             "mediaFile": "ja_takai.jpg",
             "tags": [
                 "Adjectives"
@@ -250,8 +250,8 @@
             "wordNative": "Cheap",
             "sentenceTarget": "安くて美味しい店です。",
             "sentenceNative": "It's a cheap and delicious restaurant.",
-            "audioWordFile": "ja_yasui_word.mp3",
-            "audioSentenceFile": "ja_yasui_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c18_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c18_sentence.mp3",
             "mediaFile": "ja_yasui.jpg",
             "tags": [
                 "Adjectives"
@@ -263,8 +263,8 @@
             "wordNative": "To eat",
             "sentenceTarget": "朝ごはんを食べます。",
             "sentenceNative": "I eat breakfast.",
-            "audioWordFile": "ja_taberu_word.mp3",
-            "audioSentenceFile": "ja_taberu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c19_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c19_sentence.mp3",
             "mediaFile": "ja_taberu.jpg",
             "tags": [
                 "Food",
@@ -278,8 +278,8 @@
             "wordNative": "To drink",
             "sentenceTarget": "お茶を飲みますか？",
             "sentenceNative": "Do you drink tea?",
-            "audioWordFile": "ja_nomu_word.mp3",
-            "audioSentenceFile": "ja_nomu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c20_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c20_sentence.mp3",
             "mediaFile": "ja_nomu.jpg",
             "tags": [
                 "Food",
@@ -293,8 +293,8 @@
             "wordNative": "To go",
             "sentenceTarget": "あした学校へ行きます。",
             "sentenceNative": "I am going to school tomorrow.",
-            "audioWordFile": "ja_iku_word.mp3",
-            "audioSentenceFile": "ja_iku_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c21_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c21_sentence.mp3",
             "mediaFile": "ja_iku.jpg",
             "tags": [
                 "Prepositions",
@@ -307,8 +307,8 @@
             "wordNative": "To come",
             "sentenceTarget": "友達が家に来ました。",
             "sentenceNative": "My friend came to my house.",
-            "audioWordFile": "ja_kuru_word.mp3",
-            "audioSentenceFile": "ja_kuru_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c22_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c22_sentence.mp3",
             "mediaFile": "ja_kuru.jpg",
             "tags": [
                 "Prepositions",
@@ -321,8 +321,8 @@
             "wordNative": "To see / watch",
             "sentenceTarget": "テレビを見ます。",
             "sentenceNative": "I watch TV.",
-            "audioWordFile": "ja_miru_word.mp3",
-            "audioSentenceFile": "ja_miru_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c23_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c23_sentence.mp3",
             "mediaFile": "ja_miru.jpg",
             "tags": [
                 "Prepositions",
@@ -336,8 +336,8 @@
             "wordNative": "To listen / ask",
             "sentenceTarget": "音楽を聞いています。",
             "sentenceNative": "I am listening to music.",
-            "audioWordFile": "ja_kiku_word.mp3",
-            "audioSentenceFile": "ja_kiku_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c24_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c24_sentence.mp3",
             "mediaFile": "ja_kiku.jpg",
             "tags": [
                 "Prepositions",
@@ -350,8 +350,8 @@
             "wordNative": "To write",
             "sentenceTarget": "手紙を書きました。",
             "sentenceNative": "I wrote a letter.",
-            "audioWordFile": "ja_kaku_word.mp3",
-            "audioSentenceFile": "ja_kaku_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c25_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c25_sentence.mp3",
             "mediaFile": "ja_kaku.jpg",
             "tags": [
                 "Prepositions",
@@ -364,8 +364,8 @@
             "wordNative": "To read",
             "sentenceTarget": "本を読みましょう。",
             "sentenceNative": "Let's read a book.",
-            "audioWordFile": "ja_yomu_word.mp3",
-            "audioSentenceFile": "ja_yomu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c26_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c26_sentence.mp3",
             "mediaFile": "ja_yomu.jpg",
             "tags": [
                 "Prepositions",
@@ -378,8 +378,8 @@
             "wordNative": "To speak",
             "sentenceTarget": "日本語で話します。",
             "sentenceNative": "I speak in Japanese.",
-            "audioWordFile": "ja_hanasu_word.mp3",
-            "audioSentenceFile": "ja_hanasu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c27_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c27_sentence.mp3",
             "mediaFile": "ja_hanasu.jpg",
             "tags": [
                 "Prepositions",
@@ -392,8 +392,8 @@
             "wordNative": "To understand",
             "sentenceTarget": "意味が分かりません。",
             "sentenceNative": "I don't understand the meaning.",
-            "audioWordFile": "ja_wakaru_word.mp3",
-            "audioSentenceFile": "ja_wakaru_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c28_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c28_sentence.mp3",
             "mediaFile": "ja_wakaru.jpg",
             "tags": [
                 "Prepositions",
@@ -406,8 +406,8 @@
             "wordNative": "To buy",
             "sentenceTarget": "新しい服を買いたいです。",
             "sentenceNative": "I want to buy new clothes.",
-            "audioWordFile": "ja_kau_word.mp3",
-            "audioSentenceFile": "ja_kau_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c29_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c29_sentence.mp3",
             "mediaFile": "ja_kau.jpg",
             "tags": [
                 "Prepositions",
@@ -420,8 +420,8 @@
             "wordNative": "To wait",
             "sentenceTarget": "ここで待ってください。",
             "sentenceNative": "Please wait here.",
-            "audioWordFile": "ja_matsu_word.mp3",
-            "audioSentenceFile": "ja_matsu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c30_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c30_sentence.mp3",
             "mediaFile": "ja_matsu.jpg",
             "tags": [
                 "Prepositions",
@@ -434,8 +434,8 @@
             "wordNative": "Time",
             "sentenceTarget": "時間がありません。",
             "sentenceNative": "I have no time.",
-            "audioWordFile": "ja_jikan_word.mp3",
-            "audioSentenceFile": "ja_jikan_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c31_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c31_sentence.mp3",
             "mediaFile": "ja_jikan.jpg",
             "tags": [
                 "Time"
@@ -447,8 +447,8 @@
             "wordNative": "Work / Job",
             "sentenceTarget": "昨日は仕事でした。",
             "sentenceNative": "Yesterday was a work day.",
-            "audioWordFile": "ja_shigoto_word.mp3",
-            "audioSentenceFile": "ja_shigoto_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c32_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c32_sentence.mp3",
             "mediaFile": "ja_shigoto.jpg",
             "tags": [
                 "Daily Routine",
@@ -461,8 +461,8 @@
             "wordNative": "Money",
             "sentenceTarget": "お金を払いました。",
             "sentenceNative": "I paid the money.",
-            "audioWordFile": "ja_okane_word.mp3",
-            "audioSentenceFile": "ja_okane_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c33_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c33_sentence.mp3",
             "mediaFile": "ja_okane.jpg",
             "tags": [
                 "Concepts",
@@ -475,8 +475,8 @@
             "wordNative": "Phone",
             "sentenceTarget": "電話をかけてください。",
             "sentenceNative": "Please make a phone call.",
-            "audioWordFile": "ja_denwa_word.mp3",
-            "audioSentenceFile": "ja_denwa_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c34_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c34_sentence.mp3",
             "mediaFile": "ja_denwa.jpg",
             "tags": [
                 "Objects",
@@ -489,8 +489,8 @@
             "wordNative": "Meal / Rice",
             "sentenceTarget": "お昼ご飯は何ですか？",
             "sentenceNative": "What is for lunch?",
-            "audioWordFile": "ja_gohan_word.mp3",
-            "audioSentenceFile": "ja_gohan_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c35_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c35_sentence.mp3",
             "mediaFile": "ja_gohan.jpg",
             "tags": [
                 "Food",
@@ -503,8 +503,8 @@
             "wordNative": "Tea",
             "sentenceTarget": "お茶を飲みましょう。",
             "sentenceNative": "Let's drink tea.",
-            "audioWordFile": "ja_ocha_word.mp3",
-            "audioSentenceFile": "ja_ocha_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c36_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c36_sentence.mp3",
             "mediaFile": "ja_ocha.jpg",
             "tags": [
                 "Food",
@@ -517,8 +517,8 @@
             "wordNative": "Meat",
             "sentenceTarget": "肉を食べません。",
             "sentenceNative": "I don't eat meat.",
-            "audioWordFile": "ja_niku_word.mp3",
-            "audioSentenceFile": "ja_niku_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c37_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c37_sentence.mp3",
             "mediaFile": "ja_niku.jpg",
             "tags": [
                 "Food",
@@ -531,8 +531,8 @@
             "wordNative": "Fish",
             "sentenceTarget": "魚が泳いでいます。",
             "sentenceNative": "The fish is swimming.",
-            "audioWordFile": "ja_sakana_word.mp3",
-            "audioSentenceFile": "ja_sakana_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c38_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c38_sentence.mp3",
             "mediaFile": "ja_sakana.jpg",
             "tags": [
                 "Animals",
@@ -546,8 +546,8 @@
             "wordNative": "Vegetables",
             "sentenceTarget": "野菜を食べなければなりません。",
             "sentenceNative": "I must eat vegetables.",
-            "audioWordFile": "ja_yasai_word.mp3",
-            "audioSentenceFile": "ja_yasai_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c39_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c39_sentence.mp3",
             "mediaFile": "ja_yasai.jpg",
             "tags": [
                 "Food & Drink"
@@ -559,8 +559,8 @@
             "wordNative": "Fruit",
             "sentenceTarget": "果物が好きです。",
             "sentenceNative": "I like fruit.",
-            "audioWordFile": "ja_kudamono_word.mp3",
-            "audioSentenceFile": "ja_kudamono_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c40_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c40_sentence.mp3",
             "mediaFile": "ja_kudamono.jpg",
             "tags": [
                 "Food",
@@ -573,8 +573,8 @@
             "wordNative": "Egg",
             "sentenceTarget": "卵を二つ買いました。",
             "sentenceNative": "I bought two eggs.",
-            "audioWordFile": "ja_tamago_word.mp3",
-            "audioSentenceFile": "ja_tamago_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c41_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c41_sentence.mp3",
             "mediaFile": "ja_tamago.jpg",
             "tags": [
                 "Food",
@@ -587,8 +587,8 @@
             "wordNative": "Bread",
             "sentenceTarget": "パンを焼きました。",
             "sentenceNative": "I baked bread.",
-            "audioWordFile": "ja_pan_word.mp3",
-            "audioSentenceFile": "ja_pan_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c42_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c42_sentence.mp3",
             "mediaFile": "ja_pan.jpg",
             "tags": [
                 "Food",
@@ -601,8 +601,8 @@
             "wordNative": "Car",
             "sentenceTarget": "車で行きましょう。",
             "sentenceNative": "Let's go by car.",
-            "audioWordFile": "ja_kuruma_word.mp3",
-            "audioSentenceFile": "ja_kuruma_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c43_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c43_sentence.mp3",
             "mediaFile": "ja_kuruma.jpg",
             "tags": [
                 "Objects",
@@ -615,8 +615,8 @@
             "wordNative": "Train",
             "sentenceTarget": "電車が来ました。",
             "sentenceNative": "The train came.",
-            "audioWordFile": "ja_densha_word.mp3",
-            "audioSentenceFile": "ja_densha_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c44_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c44_sentence.mp3",
             "mediaFile": "ja_densha.jpg",
             "tags": [
                 "Objects",
@@ -630,8 +630,8 @@
             "wordNative": "Bicycle",
             "sentenceTarget": "自転車で学校へ行きます。",
             "sentenceNative": "I go to school by bicycle.",
-            "audioWordFile": "ja_jitensha_word.mp3",
-            "audioSentenceFile": "ja_jitensha_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c45_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c45_sentence.mp3",
             "mediaFile": "ja_jitensha.jpg",
             "tags": [
                 "Objects",
@@ -644,8 +644,8 @@
             "wordNative": "Airplane",
             "sentenceTarget": "飛行機に乗りました。",
             "sentenceNative": "I rode an airplane.",
-            "audioWordFile": "ja_hikoki_word.mp3",
-            "audioSentenceFile": "ja_hikoki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c46_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c46_sentence.mp3",
             "mediaFile": "ja_hikoki.jpg",
             "tags": [
                 "Transport"
@@ -657,8 +657,8 @@
             "wordNative": "Road / Path",
             "sentenceTarget": "道に迷いました。",
             "sentenceNative": "I got lost on the road.",
-            "audioWordFile": "ja_michi_word.mp3",
-            "audioSentenceFile": "ja_michi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c47_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c47_sentence.mp3",
             "mediaFile": "ja_michi.jpg",
             "tags": [
                 "Places"
@@ -670,8 +670,8 @@
             "wordNative": "Station",
             "sentenceTarget": "駅はここから近いです。",
             "sentenceNative": "The station is near from here.",
-            "audioWordFile": "ja_eki_word.mp3",
-            "audioSentenceFile": "ja_eki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c48_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c48_sentence.mp3",
             "mediaFile": "ja_eki.jpg",
             "tags": [
                 "Places"
@@ -683,8 +683,8 @@
             "wordNative": "Shop / Store",
             "sentenceTarget": "この店は有名です。",
             "sentenceNative": "This shop is famous.",
-            "audioWordFile": "ja_mise_word.mp3",
-            "audioSentenceFile": "ja_mise_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c49_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c49_sentence.mp3",
             "mediaFile": "ja_mise.jpg",
             "tags": [
                 "Places"
@@ -696,8 +696,8 @@
             "wordNative": "House",
             "sentenceTarget": "家を買いたいです。",
             "sentenceNative": "I want to buy a house.",
-            "audioWordFile": "ja_ie_word.mp3",
-            "audioSentenceFile": "ja_ie_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c50_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c50_sentence.mp3",
             "mediaFile": "ja_ie.jpg",
             "tags": [
                 "Home",
@@ -710,8 +710,8 @@
             "wordNative": "Room",
             "sentenceTarget": "部屋を掃除しました。",
             "sentenceNative": "I cleaned the room.",
-            "audioWordFile": "ja_heya_word.mp3",
-            "audioSentenceFile": "ja_heya_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c51_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c51_sentence.mp3",
             "mediaFile": "ja_heya.jpg",
             "tags": [
                 "Home",
@@ -724,8 +724,8 @@
             "wordNative": "Window",
             "sentenceTarget": "窓を開けてください。",
             "sentenceNative": "Please open the window.",
-            "audioWordFile": "ja_mado_word.mp3",
-            "audioSentenceFile": "ja_mado_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c52_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c52_sentence.mp3",
             "mediaFile": "ja_mado.jpg",
             "tags": [
                 "Home",
@@ -738,8 +738,8 @@
             "wordNative": "Clothes",
             "sentenceTarget": "服を洗います。",
             "sentenceNative": "I wash the clothes.",
-            "audioWordFile": "ja_fuku_word.mp3",
-            "audioSentenceFile": "ja_fuku_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c53_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c53_sentence.mp3",
             "mediaFile": "ja_fuku.jpg",
             "tags": [
                 "Clothing"
@@ -751,8 +751,8 @@
             "wordNative": "Shoes",
             "sentenceTarget": "新しい靴が欲しいです。",
             "sentenceNative": "I want new shoes.",
-            "audioWordFile": "ja_kutsu_word.mp3",
-            "audioSentenceFile": "ja_kutsu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c54_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c54_sentence.mp3",
             "mediaFile": "ja_kutsu.jpg",
             "tags": [
                 "Clothing"
@@ -764,8 +764,8 @@
             "wordNative": "Rain",
             "sentenceTarget": "今日は雨が降っています。",
             "sentenceNative": "It is raining today.",
-            "audioWordFile": "ja_ame_word.mp3",
-            "audioSentenceFile": "ja_ame_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c55_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c55_sentence.mp3",
             "mediaFile": "ja_ame.jpg",
             "tags": [
                 "Nature",
@@ -778,8 +778,8 @@
             "wordNative": "Snow",
             "sentenceTarget": "雪が積もりました。",
             "sentenceNative": "The snow has piled up.",
-            "audioWordFile": "ja_yuki_word.mp3",
-            "audioSentenceFile": "ja_yuki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c56_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c56_sentence.mp3",
             "mediaFile": "ja_yuki.jpg",
             "tags": [
                 "Nature",
@@ -792,8 +792,8 @@
             "wordNative": "Wind",
             "sentenceTarget": "風が強いですね。",
             "sentenceNative": "The wind is strong, isn't it?",
-            "audioWordFile": "ja_kaze_word.mp3",
-            "audioSentenceFile": "ja_kaze_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c57_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c57_sentence.mp3",
             "mediaFile": "ja_kaze.jpg",
             "tags": [
                 "Nature",
@@ -806,8 +806,8 @@
             "wordNative": "Sky",
             "sentenceTarget": "青い空が見えます。",
             "sentenceNative": "I can see the blue sky.",
-            "audioWordFile": "ja_sora_word.mp3",
-            "audioSentenceFile": "ja_sora_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c58_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c58_sentence.mp3",
             "mediaFile": "ja_sora.jpg",
             "tags": [
                 "Nature",
@@ -820,8 +820,8 @@
             "wordNative": "Mountain",
             "sentenceTarget": "山に登りました。",
             "sentenceNative": "I climbed a mountain.",
-            "audioWordFile": "ja_yama_word.mp3",
-            "audioSentenceFile": "ja_yama_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c59_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c59_sentence.mp3",
             "mediaFile": "ja_yama.jpg",
             "tags": [
                 "Nature",
@@ -834,8 +834,8 @@
             "wordNative": "River",
             "sentenceTarget": "川で泳ぎました。",
             "sentenceNative": "I swam in the river.",
-            "audioWordFile": "ja_kawa_word.mp3",
-            "audioSentenceFile": "ja_kawa_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c60_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c60_sentence.mp3",
             "mediaFile": "ja_kawa.jpg",
             "tags": [
                 "Nature",
@@ -848,8 +848,8 @@
             "wordNative": "Sea / Ocean",
             "sentenceTarget": "海に行きたいです。",
             "sentenceNative": "I want to go to the sea.",
-            "audioWordFile": "ja_umi_word.mp3",
-            "audioSentenceFile": "ja_umi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c61_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c61_sentence.mp3",
             "mediaFile": "ja_umi.jpg",
             "tags": [
                 "Nature",
@@ -862,8 +862,8 @@
             "wordNative": "Light",
             "sentenceTarget": "光が差しています。",
             "sentenceNative": "The light is shining through.",
-            "audioWordFile": "ja_hikari_word.mp3",
-            "audioSentenceFile": "ja_hikari_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c62_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c62_sentence.mp3",
             "mediaFile": "ja_hikari.jpg",
             "tags": [
                 "Nature & Weather"
@@ -875,8 +875,8 @@
             "wordNative": "Shadow",
             "sentenceTarget": "影が長くなりました。",
             "sentenceNative": "The shadow became long.",
-            "audioWordFile": "ja_kage_word.mp3",
-            "audioSentenceFile": "ja_kage_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c63_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c63_sentence.mp3",
             "mediaFile": "ja_kage.jpg",
             "tags": [
                 "Nature & Weather"
@@ -888,8 +888,8 @@
             "wordNative": "Flower",
             "sentenceTarget": "花が咲きました。",
             "sentenceNative": "The flower bloomed.",
-            "audioWordFile": "ja_hana_word.mp3",
-            "audioSentenceFile": "ja_hana_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c64_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c64_sentence.mp3",
             "mediaFile": "ja_hana.jpg",
             "tags": [
                 "Nature",
@@ -902,8 +902,8 @@
             "wordNative": "Tree",
             "sentenceTarget": "大きな木があります。",
             "sentenceNative": "There is a big tree.",
-            "audioWordFile": "ja_ki_word.mp3",
-            "audioSentenceFile": "ja_ki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c65_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c65_sentence.mp3",
             "mediaFile": "ja_ki.jpg",
             "tags": [
                 "Nature",
@@ -916,8 +916,8 @@
             "wordNative": "Color",
             "sentenceTarget": "どの色が好きですか？",
             "sentenceNative": "Which color do you like?",
-            "audioWordFile": "ja_iro_word.mp3",
-            "audioSentenceFile": "ja_iro_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c66_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c66_sentence.mp3",
             "mediaFile": "ja_iro.jpg",
             "tags": [
                 "Adjectives",
@@ -930,8 +930,8 @@
             "wordNative": "Red",
             "sentenceTarget": "赤いリンゴを食べます。",
             "sentenceNative": "I eat a red apple.",
-            "audioWordFile": "ja_aka_word.mp3",
-            "audioSentenceFile": "ja_aka_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c67_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c67_sentence.mp3",
             "mediaFile": "ja_aka.jpg",
             "tags": [
                 "Adjectives",
@@ -944,8 +944,8 @@
             "wordNative": "Blue",
             "sentenceTarget": "青いシャツを着ています。",
             "sentenceNative": "I am wearing a blue shirt.",
-            "audioWordFile": "ja_ao_word.mp3",
-            "audioSentenceFile": "ja_ao_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c68_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c68_sentence.mp3",
             "mediaFile": "ja_ao.jpg",
             "tags": [
                 "Adjectives",
@@ -958,8 +958,8 @@
             "wordNative": "White",
             "sentenceTarget": "白い鳥が飛んでいます。",
             "sentenceNative": "A white bird is flying.",
-            "audioWordFile": "ja_shiro_word.mp3",
-            "audioSentenceFile": "ja_shiro_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c69_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c69_sentence.mp3",
             "mediaFile": "ja_shiro.jpg",
             "tags": [
                 "Adjectives",
@@ -972,8 +972,8 @@
             "wordNative": "Black",
             "sentenceTarget": "黒いカバンです。",
             "sentenceNative": "It's a black bag.",
-            "audioWordFile": "ja_kuro_word.mp3",
-            "audioSentenceFile": "ja_kuro_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c70_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c70_sentence.mp3",
             "mediaFile": "ja_kuro.jpg",
             "tags": [
                 "Adjectives",
@@ -986,8 +986,8 @@
             "wordNative": "Moon / Month",
             "sentenceTarget": "月が綺麗ですね。",
             "sentenceNative": "The moon is beautiful, isn't it?",
-            "audioWordFile": "ja_tsuki_word.mp3",
-            "audioSentenceFile": "ja_tsuki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c71_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c71_sentence.mp3",
             "mediaFile": "ja_tsuki.jpg",
             "tags": [
                 "Nature",
@@ -1000,8 +1000,8 @@
             "wordNative": "Fire",
             "sentenceTarget": "火を使っています。",
             "sentenceNative": "I am using fire.",
-            "audioWordFile": "ja_hi_word.mp3",
-            "audioSentenceFile": "ja_hi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c72_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c72_sentence.mp3",
             "mediaFile": "ja_hi.jpg",
             "tags": [
                 "Nature"
@@ -1013,8 +1013,8 @@
             "wordNative": "Wednesday",
             "sentenceTarget": "水曜日は休みです。",
             "sentenceNative": "Wednesday is a holiday.",
-            "audioWordFile": "ja_suiyobi_word.mp3",
-            "audioSentenceFile": "ja_suiyobi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c73_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c73_sentence.mp3",
             "mediaFile": "ja_suiyobi.jpg",
             "tags": [
                 "Days",
@@ -1027,8 +1027,8 @@
             "wordNative": "Thursday",
             "sentenceTarget": "木曜日に会いましょう。",
             "sentenceNative": "Let's meet on Thursday.",
-            "audioWordFile": "ja_mokuyobi_word.mp3",
-            "audioSentenceFile": "ja_mokuyobi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c74_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c74_sentence.mp3",
             "mediaFile": "ja_mokuyobi.jpg",
             "tags": [
                 "Days",
@@ -1041,8 +1041,8 @@
             "wordNative": "Friday",
             "sentenceTarget": "金曜日の夜は楽しいです。",
             "sentenceNative": "Friday night is fun.",
-            "audioWordFile": "ja_kinyobi_word.mp3",
-            "audioSentenceFile": "ja_kinyobi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c75_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c75_sentence.mp3",
             "mediaFile": "ja_kinyobi.jpg",
             "tags": [
                 "Days",
@@ -1055,8 +1055,8 @@
             "wordNative": "Saturday",
             "sentenceTarget": "土曜日に買い物へ行きます。",
             "sentenceNative": "I'm going shopping on Saturday.",
-            "audioWordFile": "ja_doyobi_word.mp3",
-            "audioSentenceFile": "ja_doyobi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c76_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c76_sentence.mp3",
             "mediaFile": "ja_doyobi.jpg",
             "tags": [
                 "Days",
@@ -1069,8 +1069,8 @@
             "wordNative": "Sunday",
             "sentenceTarget": "日曜日はゆっくりします。",
             "sentenceNative": "I will take it easy on Sunday.",
-            "audioWordFile": "ja_nichiyobi_word.mp3",
-            "audioSentenceFile": "ja_nichiyobi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c77_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c77_sentence.mp3",
             "mediaFile": "ja_nichiyobi.jpg",
             "tags": [
                 "Days",
@@ -1083,8 +1083,8 @@
             "wordNative": "Body",
             "sentenceTarget": "体を動かしてください。",
             "sentenceNative": "Please move your body.",
-            "audioWordFile": "ja_karada_word.mp3",
-            "audioSentenceFile": "ja_karada_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c78_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c78_sentence.mp3",
             "mediaFile": "ja_karada.jpg",
             "tags": [
                 "Body",
@@ -1097,8 +1097,8 @@
             "wordNative": "Head",
             "sentenceTarget": "頭が良いですね。",
             "sentenceNative": "You are smart (have a good head).",
-            "audioWordFile": "ja_atama_word.mp3",
-            "audioSentenceFile": "ja_atama_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c79_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c79_sentence.mp3",
             "mediaFile": "ja_atama.jpg",
             "tags": [
                 "Body",
@@ -1111,8 +1111,8 @@
             "wordNative": "Eye",
             "sentenceTarget": "目が疲れています。",
             "sentenceNative": "My eyes are tired.",
-            "audioWordFile": "ja_me_word.mp3",
-            "audioSentenceFile": "ja_me_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c80_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c80_sentence.mp3",
             "mediaFile": "ja_me.jpg",
             "tags": [
                 "Body",
@@ -1125,8 +1125,8 @@
             "wordNative": "Ear",
             "sentenceTarget": "耳が痛いです。",
             "sentenceNative": "My ear hurts.",
-            "audioWordFile": "ja_mimi_word.mp3",
-            "audioSentenceFile": "ja_mimi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c81_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c81_sentence.mp3",
             "mediaFile": "ja_mimi.jpg",
             "tags": [
                 "Body",
@@ -1139,8 +1139,8 @@
             "wordNative": "Mouth",
             "sentenceTarget": "口を開けてください。",
             "sentenceNative": "Please open your mouth.",
-            "audioWordFile": "ja_kuchi_word.mp3",
-            "audioSentenceFile": "ja_kuchi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c82_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c82_sentence.mp3",
             "mediaFile": "ja_kuchi.jpg",
             "tags": [
                 "Body",
@@ -1153,8 +1153,8 @@
             "wordNative": "Hand",
             "sentenceTarget": "手を洗いました。",
             "sentenceNative": "I washed my hands.",
-            "audioWordFile": "ja_te_word.mp3",
-            "audioSentenceFile": "ja_te_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c83_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c83_sentence.mp3",
             "mediaFile": "ja_te.jpg",
             "tags": [
                 "Body",
@@ -1167,8 +1167,8 @@
             "wordNative": "Foot / Leg",
             "sentenceTarget": "足が長いです。",
             "sentenceNative": "His legs are long.",
-            "audioWordFile": "ja_ashi_word.mp3",
-            "audioSentenceFile": "ja_ashi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c84_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c84_sentence.mp3",
             "mediaFile": "ja_ashi.jpg",
             "tags": [
                 "Body",
@@ -1181,8 +1181,8 @@
             "wordNative": "Heart / Spirit",
             "sentenceTarget": "心が温まりました。",
             "sentenceNative": "My heart was warmed.",
-            "audioWordFile": "ja_kokoro_word.mp3",
-            "audioSentenceFile": "ja_kokoro_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c85_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c85_sentence.mp3",
             "mediaFile": "ja_kokoro.jpg",
             "tags": [
                 "Body",
@@ -1195,8 +1195,8 @@
             "wordNative": "Voice",
             "sentenceTarget": "声が小さいです。",
             "sentenceNative": "The voice is small (quiet).",
-            "audioWordFile": "ja_koe_word.mp3",
-            "audioSentenceFile": "ja_koe_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c86_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c86_sentence.mp3",
             "mediaFile": "ja_koe.jpg",
             "tags": [
                 "Body & Health"
@@ -1208,8 +1208,8 @@
             "wordNative": "Sound",
             "sentenceTarget": "何の音ですか？",
             "sentenceNative": "What sound is that?",
-            "audioWordFile": "ja_oto_word.mp3",
-            "audioSentenceFile": "ja_oto_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c87_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c87_sentence.mp3",
             "mediaFile": "ja_oto.jpg",
             "tags": [
                 "Body & Health"
@@ -1221,8 +1221,8 @@
             "wordNative": "Yesterday",
             "sentenceTarget": "昨日は暇でした。",
             "sentenceNative": "I was free yesterday.",
-            "audioWordFile": "ja_kinou_word.mp3",
-            "audioSentenceFile": "ja_kinou_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c88_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c88_sentence.mp3",
             "mediaFile": "ja_kinou.jpg",
             "tags": [
                 "Adverbs",
@@ -1236,8 +1236,8 @@
             "wordNative": "Today",
             "sentenceTarget": "今日は忙しいです。",
             "sentenceNative": "I am busy today.",
-            "audioWordFile": "ja_kyo_word.mp3",
-            "audioSentenceFile": "ja_kyo_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c89_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c89_sentence.mp3",
             "mediaFile": "ja_kyo.jpg",
             "tags": [
                 "Adverbs",
@@ -1251,8 +1251,8 @@
             "wordNative": "Tomorrow",
             "sentenceTarget": "明日は雨でしょう。",
             "sentenceNative": "It will probably rain tomorrow.",
-            "audioWordFile": "ja_ashita_word.mp3",
-            "audioSentenceFile": "ja_ashita_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c90_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c90_sentence.mp3",
             "mediaFile": "ja_ashita.jpg",
             "tags": [
                 "Adverbs",
@@ -1266,8 +1266,8 @@
             "wordNative": "Every week",
             "sentenceTarget": "毎週テニスをします。",
             "sentenceNative": "I play tennis every week.",
-            "audioWordFile": "ja_maishu_word.mp3",
-            "audioSentenceFile": "ja_maishu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c91_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c91_sentence.mp3",
             "mediaFile": "ja_maishu.jpg",
             "tags": [
                 "Body & Health",
@@ -1280,8 +1280,8 @@
             "wordNative": "Last month",
             "sentenceTarget": "先月日本に来ました。",
             "sentenceNative": "I came to Japan last month.",
-            "audioWordFile": "ja_sengetsu_word.mp3",
-            "audioSentenceFile": "ja_sengetsu_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c92_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c92_sentence.mp3",
             "mediaFile": "ja_sengetsu.jpg",
             "tags": [
                 "Body & Health",
@@ -1294,8 +1294,8 @@
             "wordNative": "Next year",
             "sentenceTarget": "来年卒業します。",
             "sentenceNative": "I will graduate next year.",
-            "audioWordFile": "ja_rainen_word.mp3",
-            "audioSentenceFile": "ja_rainen_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c93_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c93_sentence.mp3",
             "mediaFile": "ja_rainen.jpg",
             "tags": [
                 "Body & Health",
@@ -1308,8 +1308,8 @@
             "wordNative": "Every day",
             "sentenceTarget": "毎日勉強します。",
             "sentenceNative": "I study every day.",
-            "audioWordFile": "ja_mainichi_word.mp3",
-            "audioSentenceFile": "ja_mainichi_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c94_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c94_sentence.mp3",
             "mediaFile": "ja_mainichi.jpg",
             "tags": [
                 "Body & Health",
@@ -1322,8 +1322,8 @@
             "wordNative": "Sometimes",
             "sentenceTarget": "時々散歩します。",
             "sentenceNative": "I sometimes take a walk.",
-            "audioWordFile": "ja_tokidoki_word.mp3",
-            "audioSentenceFile": "ja_tokidoki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c95_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c95_sentence.mp3",
             "mediaFile": "ja_tokidoki.jpg",
             "tags": [
                 "Adverbs",
@@ -1336,8 +1336,8 @@
             "wordNative": "Not at all",
             "sentenceTarget": "全然ダメです。",
             "sentenceNative": "It's no good at all.",
-            "audioWordFile": "ja_zenzen_word.mp3",
-            "audioSentenceFile": "ja_zenzen_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c96_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c96_sentence.mp3",
             "mediaFile": "ja_zenzen.jpg",
             "tags": [
                 "Body & Health",
@@ -1350,8 +1350,8 @@
             "wordNative": "Fun / Enjoyable",
             "sentenceTarget": "旅行は楽しかったです。",
             "sentenceNative": "The trip was fun.",
-            "audioWordFile": "ja_tanoshii_word.mp3",
-            "audioSentenceFile": "ja_tanoshii_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c97_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c97_sentence.mp3",
             "mediaFile": "ja_tanoshii.jpg",
             "tags": [
                 "Body & Health"
@@ -1363,8 +1363,8 @@
             "wordNative": "Difficult",
             "sentenceTarget": "テストは難しかったです。",
             "sentenceNative": "The test was difficult.",
-            "audioWordFile": "ja_muzukashii_word.mp3",
-            "audioSentenceFile": "ja_muzukashii_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c98_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c98_sentence.mp3",
             "mediaFile": "ja_muzukashii.jpg",
             "tags": [
                 "Adjectives",
@@ -1377,8 +1377,8 @@
             "wordNative": "Easy / Kind",
             "sentenceTarget": "この問題は易しいです。",
             "sentenceNative": "This problem is easy.",
-            "audioWordFile": "ja_yasashii_word.mp3",
-            "audioSentenceFile": "ja_yasashii_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c99_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c99_sentence.mp3",
             "mediaFile": "ja_yasashii.jpg",
             "tags": [
                 "Adjectives",
@@ -1391,8 +1391,8 @@
             "wordNative": "Healthy / Well",
             "sentenceTarget": "元気ですか？",
             "sentenceNative": "Are you well?",
-            "audioWordFile": "ja_genki_word.mp3",
-            "audioSentenceFile": "ja_genki_sentence.mp3",
+            "audioWordFile": "ja__ja_b_c100_word.mp3",
+            "audioSentenceFile": "ja__ja_b_c100_sentence.mp3",
             "mediaFile": "ja_genki.jpg",
             "tags": [
                 "Body & Health"

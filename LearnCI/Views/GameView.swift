@@ -93,6 +93,13 @@ struct GameView: View {
                 }
                 .onChange(of: setupStage) { oldStage, newStage in
                     print("DEBUG: setupStage changed from \(oldStage) to \(newStage)")
+                    if newStage == .playing {
+                        // Trigger first card audio when game starts
+                        // Brief delay to ensure view is settled
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            playCurrentCardAudio()
+                        }
+                    }
                 }
                 .background(persistenceLogic)
         }
@@ -322,15 +329,20 @@ struct GameView: View {
     
     func handleCardIndexChange(_: Int, _: Int) {
         if !isFlipped {
-            playCurrentCardAudio()
+            // Add slight delay to ensure state stabilization (e.g. from flip reset)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.playCurrentCardAudio()
+            }
         }
     }
     
     func handleFlipState(_: Bool, newValue: Bool) {
-        if !newValue {
+        // Stop any current audio before starting new flip audio
+        audioManager.stopAudio()
+        
+        // Brief delay to allow flip animation to settle before audio starts
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             playCurrentCardAudio()
-        } else {
-            audioManager.stopAudio()
         }
     }
     
@@ -559,7 +571,7 @@ struct GameView: View {
             return
         }
         print("DEBUG: Selected deck: \(metDeck.title)")
-        dataManager.loadDeck(metadata: metDeck)
+        _ = dataManager.loadDeck(from: metDeck)
         
         currentCardIndex = 0
         isFlipped = false
@@ -620,24 +632,56 @@ struct GameView: View {
     
     func playCurrentCardAudio() {
         // Only auto-play audio for Flashcards/Story mode.
-        guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { return }
+        guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { 
+            print("DEBUG: playCurrentCardAudio SKIPPED (Wrong GameType: \(sessionConfig.gameType))")
+            return 
+        }
         
-        guard setupStage == .playing, !sessionController.isPaused, !isFlipped, let deck = deck, currentCardIndex < sessionCards.count else { return }
+        guard setupStage == .playing else { 
+            print("DEBUG: playCurrentCardAudio SKIPPED (Not Playing: \(setupStage))")
+            return 
+        }
+        
+        guard !sessionController.isPaused else { 
+            print("DEBUG: playCurrentCardAudio SKIPPED (Paused)")
+            return 
+        }
+        
+        guard let deck = deck, currentCardIndex < sessionCards.count else { 
+            print("DEBUG: playCurrentCardAudio SKIPPED (No deck or invalid index: \(currentCardIndex))")
+            return 
+        }
+        
+        print("DEBUG: playCurrentCardAudio STARTING for index \(currentCardIndex)")
         let card = sessionCards[currentCardIndex]
         
         var sequence: [AudioManager.AudioItem] = []
         let useFallback = sessionConfig.useTTSFallback
-        let language = deck.language
-
-        if sessionConfig.word.audio == .visible, let wordFile = card.audioWordFile {
-             sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: language))
-        }
-        if sessionConfig.sentence.audio == .visible, let sentenceFile = card.audioSentenceFile {
-             sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: language))
+        
+        if isFlipped {
+            // BACK of card: Use English TTS for meanings
+            if sessionConfig.back.translation != .hidden {
+                // We use an empty filename to trigger fallback TTS in AudioManager
+                sequence.append(AudioManager.AudioItem(filename: "native_word", text: card.wordNative, language: .english))
+            }
+            if sessionConfig.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
+                 sequence.append(AudioManager.AudioItem(filename: "native_sentence", text: card.sentenceNative, language: .english))
+            }
+        } else {
+            // FRONT of card: Use target language audio
+            let showWordAudio = sessionConfig.word.audio == .visible || (sessionConfig.word.audio == .hint && sessionConfig.word.autoplay)
+            if showWordAudio, let wordFile = card.audioWordFile {
+                 sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language))
+            }
+            
+            let showSentenceAudio = sessionConfig.sentence.audio == .visible || (sessionConfig.sentence.audio == .hint && sessionConfig.sentence.autoplay)
+            if showSentenceAudio, let sentenceFile = card.audioSentenceFile {
+                 sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language))
+            }
         }
         
         if !sequence.isEmpty {
-            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: useFallback)
+            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: useFallback, ttsRate: sessionConfig.ttsRate)
         }
     }
     

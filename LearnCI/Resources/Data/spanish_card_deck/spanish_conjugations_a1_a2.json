@@ -22,8 +22,8 @@
             "wordNative": "I speak",
             "sentenceTarget": "Yo hablo un poco de español.",
             "sentenceNative": "I speak a little Spanish.",
-            "audioWordFile": "es_hablo_word.mp3",
-            "audioSentenceFile": "es_hablo_sentence.mp3",
+            "audioWordFile": "es_hablo_es_c_1_word.mp3",
+            "audioSentenceFile": "es_hablo_es_c_1_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -35,8 +35,8 @@
             "wordNative": "You speak",
             "sentenceTarget": "¿Hablas inglés?",
             "sentenceNative": "Do you speak English?",
-            "audioWordFile": "es_hablas_word.mp3",
-            "audioSentenceFile": "es_hablas_sentence.mp3",
+            "audioWordFile": "es_hablas_es_c_2_word.mp3",
+            "audioSentenceFile": "es_hablas_es_c_2_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -48,8 +48,8 @@
             "wordNative": "He/She speaks",
             "sentenceTarget": "Él habla muy rápido.",
             "sentenceNative": "He speaks very fast.",
-            "audioWordFile": "es_habla_word.mp3",
-            "audioSentenceFile": "es_habla_sentence.mp3",
+            "audioWordFile": "es_habla_es_c_3_word.mp3",
+            "audioSentenceFile": "es_habla_es_c_3_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -61,8 +61,8 @@
             "wordNative": "We speak",
             "sentenceTarget": "Nosotros hablamos todos los días.",
             "sentenceNative": "We speak every day.",
-            "audioWordFile": "es_hablamos_word.mp3",
-            "audioSentenceFile": "es_hablamos_sentence.mp3",
+            "audioWordFile": "es_hablamos_es_c_4_word.mp3",
+            "audioSentenceFile": "es_hablamos_es_c_4_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -74,8 +74,8 @@
             "wordNative": "They speak",
             "sentenceTarget": "Ellos hablan francés.",
             "sentenceNative": "They speak French.",
-            "audioWordFile": "es_hablan_word.mp3",
-            "audioSentenceFile": "es_hablan_sentence.mp3",
+            "audioWordFile": "es_hablan_es_c_5_word.mp3",
+            "audioSentenceFile": "es_hablan_es_c_5_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -87,8 +87,8 @@
             "wordNative": "I eat",
             "sentenceTarget": "Yo como una manzana.",
             "sentenceNative": "I eat an apple.",
-            "audioWordFile": "es_como_word.mp3",
-            "audioSentenceFile": "es_como_sentence.mp3",
+            "audioWordFile": "es_como_es_c_6_word.mp3",
+            "audioSentenceFile": "es_como_es_c_6_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -101,8 +101,8 @@
             "wordNative": "You eat",
             "sentenceTarget": "¿Qué comes hoy?",
             "sentenceNative": "What are you eating today?",
-            "audioWordFile": "es_comes_word.mp3",
-            "audioSentenceFile": "es_comes_sentence.mp3",
+            "audioWordFile": "es_comes_es_c_7_word.mp3",
+            "audioSentenceFile": "es_comes_es_c_7_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -115,8 +115,8 @@
             "wordNative": "He/She eats",
             "sentenceTarget": "Ella come mucha fruta.",
             "sentenceNative": "She eats a lot of fruit.",
-            "audioWordFile": "es_come_word.mp3",
-            "audioSentenceFile": "es_come_sentence.mp3",
+            "audioWordFile": "es_come_es_c_8_word.mp3",
+            "audioSentenceFile": "es_come_es_c_8_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -128,8 +128,8 @@
             "wordNative": "We eat",
             "sentenceTarget": "Comemos juntos los domingos.",
             "sentenceNative": "We eat together on Sundays.",
-            "audioWordFile": "es_comemos_word.mp3",
-            "audioSentenceFile": "es_comemos_sentence.mp3",
+            "audioWordFile": "es_comemos_es_c_9_word.mp3",
+            "audioSentenceFile": "es_comemos_es_c_9_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -142,8 +142,8 @@
             "wordNative": "They eat",
             "sentenceTarget": "Ellos comen carne.",
             "sentenceNative": "They eat meat.",
-            "audioWordFile": "es_comen_word.mp3",
-            "audioSentenceFile": "es_comen_sentence.mp3",
+            "audioWordFile": "es_comen_es_c_10_word.mp3",
+            "audioSentenceFile": "es_comen_es_c_10_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -156,8 +156,8 @@
             "wordNative": "I live",
             "sentenceTarget": "Vivo en Madrid.",
             "sentenceNative": "I live in Madrid.",
-            "audioWordFile": "es_vivo_word.mp3",
-            "audioSentenceFile": "es_vivo_sentence.mp3",
+            "audioWordFile": "es_vivo_es_c_11_word.mp3",
+            "audioSentenceFile": "es_vivo_es_c_11_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -169,8 +169,8 @@
             "wordNative": "You live",
             "sentenceTarget": "¿Dónde vives?",
             "sentenceNative": "Where do you live?",
-            "audioWordFile": "es_vives_word.mp3",
-            "audioSentenceFile": "es_vives_sentence.mp3",
+            "audioWordFile": "es_vives_es_c_12_word.mp3",
+            "audioSentenceFile": "es_vives_es_c_12_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -182,8 +182,8 @@
             "wordNative": "He/She lives",
             "sentenceTarget": "Mi amigo vive lejos.",
             "sentenceNative": "My friend lives far away.",
-            "audioWordFile": "es_vive_word.mp3",
-            "audioSentenceFile": "es_vive_sentence.mp3",
+            "audioWordFile": "es_vive_es_c_13_word.mp3",
+            "audioSentenceFile": "es_vive_es_c_13_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -195,8 +195,8 @@
             "wordNative": "We live",
             "sentenceTarget": "Vivimos en una casa pequeña.",
             "sentenceNative": "We live in a small house.",
-            "audioWordFile": "es_vivimos_word.mp3",
-            "audioSentenceFile": "es_vivimos_sentence.mp3",
+            "audioWordFile": "es_vivimos_es_c_14_word.mp3",
+            "audioSentenceFile": "es_vivimos_es_c_14_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -208,8 +208,8 @@
             "wordNative": "They live",
             "sentenceTarget": "Ellos viven en el campo.",
             "sentenceNative": "They live in the country.",
-            "audioWordFile": "es_viven_word.mp3",
-            "audioSentenceFile": "es_viven_sentence.mp3",
+            "audioWordFile": "es_viven_es_c_15_word.mp3",
+            "audioSentenceFile": "es_viven_es_c_15_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -221,8 +221,8 @@
             "wordNative": "I am (permanent)",
             "sentenceTarget": "Yo soy estudiante.",
             "sentenceNative": "I am a student.",
-            "audioWordFile": "es_soy_word.mp3",
-            "audioSentenceFile": "es_soy_sentence.mp3",
+            "audioWordFile": "es_soy_es_c_16_word.mp3",
+            "audioSentenceFile": "es_soy_es_c_16_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -234,8 +234,8 @@
             "wordNative": "You are (permanent)",
             "sentenceTarget": "Tú eres muy simpático.",
             "sentenceNative": "You are very nice.",
-            "audioWordFile": "es_eres_word.mp3",
-            "audioSentenceFile": "es_eres_sentence.mp3",
+            "audioWordFile": "es_eres_es_c_17_word.mp3",
+            "audioSentenceFile": "es_eres_es_c_17_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -247,8 +247,8 @@
             "wordNative": "He/She/It is (permanent)",
             "sentenceTarget": "Él es de España.",
             "sentenceNative": "He is from Spain.",
-            "audioWordFile": "es_es_word.mp3",
-            "audioSentenceFile": "es_es_sentence.mp3",
+            "audioWordFile": "es_es_es_c_18_word.mp3",
+            "audioSentenceFile": "es_es_es_c_18_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -260,8 +260,8 @@
             "wordNative": "We are (permanent)",
             "sentenceTarget": "Nosotros somos amigos.",
             "sentenceNative": "We are friends.",
-            "audioWordFile": "es_somos_word.mp3",
-            "audioSentenceFile": "es_somos_sentence.mp3",
+            "audioWordFile": "es_somos_es_c_19_word.mp3",
+            "audioSentenceFile": "es_somos_es_c_19_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -273,8 +273,8 @@
             "wordNative": "They are (permanent)",
             "sentenceTarget": "Ellos son profesores.",
             "sentenceNative": "They are teachers.",
-            "audioWordFile": "es_son_word.mp3",
-            "audioSentenceFile": "es_son_sentence.mp3",
+            "audioWordFile": "es_son_es_c_20_word.mp3",
+            "audioSentenceFile": "es_son_es_c_20_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -286,8 +286,8 @@
             "wordNative": "I am (temporary)",
             "sentenceTarget": "Estoy muy feliz.",
             "sentenceNative": "I am very happy.",
-            "audioWordFile": "es_estoy_word.mp3",
-            "audioSentenceFile": "es_estoy_sentence.mp3",
+            "audioWordFile": "es_estoy_es_c_21_word.mp3",
+            "audioSentenceFile": "es_estoy_es_c_21_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -299,8 +299,8 @@
             "wordNative": "You are (temporary)",
             "sentenceTarget": "¿Cómo estás?",
             "sentenceNative": "How are you?",
-            "audioWordFile": "es_estas_word.mp3",
-            "audioSentenceFile": "es_estas_sentence.mp3",
+            "audioWordFile": "es_est_s_es_c_22_word.mp3",
+            "audioSentenceFile": "es_est_s_es_c_22_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -312,8 +312,8 @@
             "wordNative": "He/She/It is (temporary)",
             "sentenceTarget": "El gato está en la mesa.",
             "sentenceNative": "The cat is on the table.",
-            "audioWordFile": "es_esta_word.mp3",
-            "audioSentenceFile": "es_esta_sentence.mp3",
+            "audioWordFile": "es_est_es_c_23_word.mp3",
+            "audioSentenceFile": "es_est_es_c_23_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -325,8 +325,8 @@
             "wordNative": "We are (temporary)",
             "sentenceTarget": "Estamos en clase.",
             "sentenceNative": "We are in class.",
-            "audioWordFile": "es_estamos_word.mp3",
-            "audioSentenceFile": "es_estamos_sentence.mp3",
+            "audioWordFile": "es_estamos_es_c_24_word.mp3",
+            "audioSentenceFile": "es_estamos_es_c_24_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -338,8 +338,8 @@
             "wordNative": "They are (temporary)",
             "sentenceTarget": "Ellos están cansados.",
             "sentenceNative": "They are tired.",
-            "audioWordFile": "es_estan_word.mp3",
-            "audioSentenceFile": "es_estan_sentence.mp3",
+            "audioWordFile": "es_est_n_es_c_25_word.mp3",
+            "audioSentenceFile": "es_est_n_es_c_25_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -351,8 +351,8 @@
             "wordNative": "I have",
             "sentenceTarget": "Tengo dos hermanos.",
             "sentenceNative": "I have two brothers.",
-            "audioWordFile": "es_tengo_word.mp3",
-            "audioSentenceFile": "es_tengo_sentence.mp3",
+            "audioWordFile": "es_tengo_es_c_26_word.mp3",
+            "audioSentenceFile": "es_tengo_es_c_26_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -364,8 +364,8 @@
             "wordNative": "You have",
             "sentenceTarget": "¿Tienes un lápiz?",
             "sentenceNative": "Do you have a pencil?",
-            "audioWordFile": "es_tienes_word.mp3",
-            "audioSentenceFile": "es_tienes_sentence.mp3",
+            "audioWordFile": "es_tienes_es_c_27_word.mp3",
+            "audioSentenceFile": "es_tienes_es_c_27_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -377,8 +377,8 @@
             "wordNative": "He/She has",
             "sentenceTarget": "Ella tiene un coche azul.",
             "sentenceNative": "She has a blue car.",
-            "audioWordFile": "es_tiene_word.mp3",
-            "audioSentenceFile": "es_tiene_sentence.mp3",
+            "audioWordFile": "es_tiene_es_c_28_word.mp3",
+            "audioSentenceFile": "es_tiene_es_c_28_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -390,8 +390,8 @@
             "wordNative": "We have",
             "sentenceTarget": "Tenemos mucho tiempo.",
             "sentenceNative": "We have a lot of time.",
-            "audioWordFile": "es_tenemos_word.mp3",
-            "audioSentenceFile": "es_tenemos_sentence.mp3",
+            "audioWordFile": "es_tenemos_es_c_29_word.mp3",
+            "audioSentenceFile": "es_tenemos_es_c_29_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -403,8 +403,8 @@
             "wordNative": "They have",
             "sentenceTarget": "Ellos tienen hambre.",
             "sentenceNative": "They are hungry (They have hunger).",
-            "audioWordFile": "es_tienen_word.mp3",
-            "audioSentenceFile": "es_tienen_sentence.mp3",
+            "audioWordFile": "es_tienen_es_c_30_word.mp3",
+            "audioSentenceFile": "es_tienen_es_c_30_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -416,8 +416,8 @@
             "wordNative": "I go",
             "sentenceTarget": "Voy al mercado.",
             "sentenceNative": "I am going to the market.",
-            "audioWordFile": "es_voy_word.mp3",
-            "audioSentenceFile": "es_voy_sentence.mp3",
+            "audioWordFile": "es_voy_es_c_31_word.mp3",
+            "audioSentenceFile": "es_voy_es_c_31_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -429,8 +429,8 @@
             "wordNative": "You go",
             "sentenceTarget": "¿Adónde vas?",
             "sentenceNative": "Where are you going?",
-            "audioWordFile": "es_vas_word.mp3",
-            "audioSentenceFile": "es_vas_sentence.mp3",
+            "audioWordFile": "es_vas_es_c_32_word.mp3",
+            "audioSentenceFile": "es_vas_es_c_32_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -442,8 +442,8 @@
             "wordNative": "He/She goes",
             "sentenceTarget": "Él va a la escuela en bus.",
             "sentenceNative": "He goes to school by bus.",
-            "audioWordFile": "es_va_word.mp3",
-            "audioSentenceFile": "es_va_sentence.mp3",
+            "audioWordFile": "es_va_es_c_33_word.mp3",
+            "audioSentenceFile": "es_va_es_c_33_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -455,8 +455,8 @@
             "wordNative": "We go",
             "sentenceTarget": "Vamos a la playa hoy.",
             "sentenceNative": "We are going to the beach today.",
-            "audioWordFile": "es_vamos_word.mp3",
-            "audioSentenceFile": "es_vamos_sentence.mp3",
+            "audioWordFile": "es_vamos_es_c_34_word.mp3",
+            "audioSentenceFile": "es_vamos_es_c_34_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -468,8 +468,8 @@
             "wordNative": "They go",
             "sentenceTarget": "Ellos van al parque.",
             "sentenceNative": "They are going to the park.",
-            "audioWordFile": "es_van_word.mp3",
-            "audioSentenceFile": "es_van_sentence.mp3",
+            "audioWordFile": "es_van_es_c_35_word.mp3",
+            "audioSentenceFile": "es_van_es_c_35_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -481,8 +481,8 @@
             "wordNative": "I do / I make",
             "sentenceTarget": "Hago mi tarea por la tarde.",
             "sentenceNative": "I do my homework in the afternoon.",
-            "audioWordFile": "es_hago_word.mp3",
-            "audioSentenceFile": "es_hago_sentence.mp3",
+            "audioWordFile": "es_hago_es_c_36_word.mp3",
+            "audioSentenceFile": "es_hago_es_c_36_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -494,8 +494,8 @@
             "wordNative": "You do / You make",
             "sentenceTarget": "¿Qué haces ahora?",
             "sentenceNative": "What are you doing now?",
-            "audioWordFile": "es_haces_word.mp3",
-            "audioSentenceFile": "es_haces_sentence.mp3",
+            "audioWordFile": "es_haces_es_c_37_word.mp3",
+            "audioSentenceFile": "es_haces_es_c_37_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -507,8 +507,8 @@
             "wordNative": "He/She does",
             "sentenceTarget": "Ella hace mucho ejercicio.",
             "sentenceNative": "She exercises a lot.",
-            "audioWordFile": "es_hace_word.mp3",
-            "audioSentenceFile": "es_hace_sentence.mp3",
+            "audioWordFile": "es_hace_es_c_38_word.mp3",
+            "audioSentenceFile": "es_hace_es_c_38_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -520,8 +520,8 @@
             "wordNative": "We do",
             "sentenceTarget": "Hacemos la cena juntos.",
             "sentenceNative": "We make dinner together.",
-            "audioWordFile": "es_hacemos_word.mp3",
-            "audioSentenceFile": "es_hacemos_sentence.mp3",
+            "audioWordFile": "es_hacemos_es_c_39_word.mp3",
+            "audioSentenceFile": "es_hacemos_es_c_39_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -533,8 +533,8 @@
             "wordNative": "They do",
             "sentenceTarget": "Ellos hacen mucho ruido.",
             "sentenceNative": "They make a lot of noise.",
-            "audioWordFile": "es_hacen_word.mp3",
-            "audioSentenceFile": "es_hacen_sentence.mp3",
+            "audioWordFile": "es_hacen_es_c_40_word.mp3",
+            "audioSentenceFile": "es_hacen_es_c_40_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -546,8 +546,8 @@
             "wordNative": "I spoke",
             "sentenceTarget": "Ayer hablé con mi madre.",
             "sentenceNative": "Yesterday I spoke with my mother.",
-            "audioWordFile": "es_hable_word.mp3",
-            "audioSentenceFile": "es_hable_sentence.mp3",
+            "audioWordFile": "es_habl_es_c_41_word.mp3",
+            "audioSentenceFile": "es_habl_es_c_41_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -559,8 +559,8 @@
             "wordNative": "You spoke",
             "sentenceTarget": "¿Hablaste con él ayer?",
             "sentenceNative": "Did you speak with him yesterday?",
-            "audioWordFile": "es_hablaste_word.mp3",
-            "audioSentenceFile": "es_hablaste_sentence.mp3",
+            "audioWordFile": "es_hablaste_es_c_42_word.mp3",
+            "audioSentenceFile": "es_hablaste_es_c_42_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -572,8 +572,8 @@
             "wordNative": "He/She spoke",
             "sentenceTarget": "Ella habló en la reunión.",
             "sentenceNative": "She spoke at the meeting.",
-            "audioWordFile": "es_hablo_past_word.mp3",
-            "audioSentenceFile": "es_hablo_past_sentence.mp3",
+            "audioWordFile": "es_habl_es_c_43_word.mp3",
+            "audioSentenceFile": "es_habl_es_c_43_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -585,8 +585,8 @@
             "wordNative": "We spoke (Past)",
             "sentenceTarget": "Hablamos por teléfono anoche.",
             "sentenceNative": "We spoke on the phone last night.",
-            "audioWordFile": "es_hablamos_past_word.mp3",
-            "audioSentenceFile": "es_hablamos_past_sentence.mp3",
+            "audioWordFile": "es_hablamos_es_c_44_word.mp3",
+            "audioSentenceFile": "es_hablamos_es_c_44_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Time",
@@ -599,8 +599,8 @@
             "wordNative": "They spoke",
             "sentenceTarget": "Ellos hablaron sobre el plan.",
             "sentenceNative": "They spoke about the plan.",
-            "audioWordFile": "es_hablaron_word.mp3",
-            "audioSentenceFile": "es_hablaron_sentence.mp3",
+            "audioWordFile": "es_hablaron_es_c_45_word.mp3",
+            "audioSentenceFile": "es_hablaron_es_c_45_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -612,8 +612,8 @@
             "wordNative": "I ate",
             "sentenceTarget": "Comí una pizza deliciosa.",
             "sentenceNative": "I ate a delicious pizza.",
-            "audioWordFile": "es_comi_word.mp3",
-            "audioSentenceFile": "es_comi_sentence.mp3",
+            "audioWordFile": "es_com_es_c_46_word.mp3",
+            "audioSentenceFile": "es_com_es_c_46_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -625,8 +625,8 @@
             "wordNative": "You ate",
             "sentenceTarget": "¿Qué comiste al mediodía?",
             "sentenceNative": "What did you eat at noon?",
-            "audioWordFile": "es_comiste_word.mp3",
-            "audioSentenceFile": "es_comiste_sentence.mp3",
+            "audioWordFile": "es_comiste_es_c_47_word.mp3",
+            "audioSentenceFile": "es_comiste_es_c_47_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -638,8 +638,8 @@
             "wordNative": "He/She ate",
             "sentenceTarget": "Él comió muy poco.",
             "sentenceNative": "He ate very little.",
-            "audioWordFile": "es_comio_word.mp3",
-            "audioSentenceFile": "es_comio_sentence.mp3",
+            "audioWordFile": "es_comi_es_c_48_word.mp3",
+            "audioSentenceFile": "es_comi_es_c_48_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -651,8 +651,8 @@
             "wordNative": "We ate",
             "sentenceTarget": "Comimos en un restaurante nuevo.",
             "sentenceNative": "We ate at a new restaurant.",
-            "audioWordFile": "es_comimos_past_word.mp3",
-            "audioSentenceFile": "es_comimos_past_sentence.mp3",
+            "audioWordFile": "es_comimos_es_c_49_word.mp3",
+            "audioSentenceFile": "es_comimos_es_c_49_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -664,8 +664,8 @@
             "wordNative": "They ate",
             "sentenceTarget": "Ellos comieron todo el pastel.",
             "sentenceNative": "They ate all the cake.",
-            "audioWordFile": "es_comieron_word.mp3",
-            "audioSentenceFile": "es_comieron_sentence.mp3",
+            "audioWordFile": "es_comieron_es_c_50_word.mp3",
+            "audioSentenceFile": "es_comieron_es_c_50_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -677,8 +677,8 @@
             "wordNative": "I lived",
             "sentenceTarget": "Viví en Barcelona por un año.",
             "sentenceNative": "I lived in Barcelona for a year.",
-            "audioWordFile": "es_vivi_word.mp3",
-            "audioSentenceFile": "es_vivi_sentence.mp3",
+            "audioWordFile": "es_viv_es_c_51_word.mp3",
+            "audioSentenceFile": "es_viv_es_c_51_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -690,8 +690,8 @@
             "wordNative": "You lived",
             "sentenceTarget": "¿Viviste alguna vez en el extranjero?",
             "sentenceNative": "Did you ever live abroad?",
-            "audioWordFile": "es_viviste_word.mp3",
-            "audioSentenceFile": "es_viviste_sentence.mp3",
+            "audioWordFile": "es_viviste_es_c_52_word.mp3",
+            "audioSentenceFile": "es_viviste_es_c_52_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -703,8 +703,8 @@
             "wordNative": "He/She lived",
             "sentenceTarget": "Ella vivió una vida larga.",
             "sentenceNative": "She lived a long life.",
-            "audioWordFile": "es_vivio_word.mp3",
-            "audioSentenceFile": "es_vivio_sentence.mp3",
+            "audioWordFile": "es_vivi_es_c_53_word.mp3",
+            "audioSentenceFile": "es_vivi_es_c_53_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -716,8 +716,8 @@
             "wordNative": "We lived (Past)",
             "sentenceTarget": "Vivimos felices allí.",
             "sentenceNative": "We lived happily there.",
-            "audioWordFile": "es_vivimos_past_word.mp3",
-            "audioSentenceFile": "es_vivimos_past_sentence.mp3",
+            "audioWordFile": "es_vivimos_es_c_54_word.mp3",
+            "audioSentenceFile": "es_vivimos_es_c_54_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Time",
@@ -730,8 +730,8 @@
             "wordNative": "They lived",
             "sentenceTarget": "Ellos vivieron en esa casa.",
             "sentenceNative": "They lived in that house.",
-            "audioWordFile": "es_vivieron_word.mp3",
-            "audioSentenceFile": "es_vivieron_sentence.mp3",
+            "audioWordFile": "es_vivieron_es_c_55_word.mp3",
+            "audioSentenceFile": "es_vivieron_es_c_55_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -743,8 +743,8 @@
             "wordNative": "I went / I was",
             "sentenceTarget": "Fui al cine el sábado.",
             "sentenceNative": "I went to the cinema on Saturday.",
-            "audioWordFile": "es_fui_word.mp3",
-            "audioSentenceFile": "es_fui_sentence.mp3",
+            "audioWordFile": "es_fui_es_c_56_word.mp3",
+            "audioSentenceFile": "es_fui_es_c_56_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -756,8 +756,8 @@
             "wordNative": "You went / You were",
             "sentenceTarget": "¿Fuiste a la fiesta?",
             "sentenceNative": "Did you go to the party?",
-            "audioWordFile": "es_fuiste_word.mp3",
-            "audioSentenceFile": "es_fuiste_sentence.mp3",
+            "audioWordFile": "es_fuiste_es_c_57_word.mp3",
+            "audioSentenceFile": "es_fuiste_es_c_57_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -769,8 +769,8 @@
             "wordNative": "He/She/It went / was",
             "sentenceTarget": "Fue un día increíble.",
             "sentenceNative": "It was an incredible day.",
-            "audioWordFile": "es_fue_word.mp3",
-            "audioSentenceFile": "es_fue_sentence.mp3",
+            "audioWordFile": "es_fue_es_c_58_word.mp3",
+            "audioSentenceFile": "es_fue_es_c_58_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -782,8 +782,8 @@
             "wordNative": "We went / We were",
             "sentenceTarget": "Fuimos mejores amigos.",
             "sentenceNative": "We were best friends.",
-            "audioWordFile": "es_fuimos_word.mp3",
-            "audioSentenceFile": "es_fuimos_sentence.mp3",
+            "audioWordFile": "es_fuimos_es_c_59_word.mp3",
+            "audioSentenceFile": "es_fuimos_es_c_59_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -795,8 +795,8 @@
             "wordNative": "They went / They were",
             "sentenceTarget": "Ellos fueron de vacaciones.",
             "sentenceNative": "They went on vacation.",
-            "audioWordFile": "es_fueron_word.mp3",
-            "audioSentenceFile": "es_fueron_sentence.mp3",
+            "audioWordFile": "es_fueron_es_c_60_word.mp3",
+            "audioSentenceFile": "es_fueron_es_c_60_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -808,8 +808,8 @@
             "wordNative": "I call",
             "sentenceTarget": "Llamo a mi abuela cada semana.",
             "sentenceNative": "I call my grandmother every week.",
-            "audioWordFile": "es_llamo_word.mp3",
-            "audioSentenceFile": "es_llamo_sentence.mp3",
+            "audioWordFile": "es_llamo_es_c_61_word.mp3",
+            "audioSentenceFile": "es_llamo_es_c_61_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -821,8 +821,8 @@
             "wordNative": "You call",
             "sentenceTarget": "¿Me llamas más tarde?",
             "sentenceNative": "Will you call me later?",
-            "audioWordFile": "es_llamas_word.mp3",
-            "audioSentenceFile": "es_llamas_sentence.mp3",
+            "audioWordFile": "es_llamas_es_c_62_word.mp3",
+            "audioSentenceFile": "es_llamas_es_c_62_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -834,8 +834,8 @@
             "wordNative": "He/She calls",
             "sentenceTarget": "Ella llama a su jefe.",
             "sentenceNative": "She calls her boss.",
-            "audioWordFile": "es_llama_word.mp3",
-            "audioSentenceFile": "es_llama_sentence.mp3",
+            "audioWordFile": "es_llama_es_c_63_word.mp3",
+            "audioSentenceFile": "es_llama_es_c_63_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -847,8 +847,8 @@
             "wordNative": "We call",
             "sentenceTarget": "Llamamos al servicio de atención.",
             "sentenceNative": "We call customer service.",
-            "audioWordFile": "es_llamamos_word.mp3",
-            "audioSentenceFile": "es_llamamos_sentence.mp3",
+            "audioWordFile": "es_llamamos_es_c_64_word.mp3",
+            "audioSentenceFile": "es_llamamos_es_c_64_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -860,8 +860,8 @@
             "wordNative": "They call",
             "sentenceTarget": "Ellos llaman a la policía.",
             "sentenceNative": "They call the police.",
-            "audioWordFile": "es_llaman_word.mp3",
-            "audioSentenceFile": "es_llaman_sentence.mp3",
+            "audioWordFile": "es_llaman_es_c_65_word.mp3",
+            "audioSentenceFile": "es_llaman_es_c_65_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -873,8 +873,8 @@
             "wordNative": "I understand",
             "sentenceTarget": "Entiendo perfectamente lo que dices.",
             "sentenceNative": "I perfectly understand what you say.",
-            "audioWordFile": "es_entiendo_word.mp3",
-            "audioSentenceFile": "es_entiendo_sentence.mp3",
+            "audioWordFile": "es_entiendo_es_c_66_word.mp3",
+            "audioSentenceFile": "es_entiendo_es_c_66_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -886,8 +886,8 @@
             "wordNative": "You understand",
             "sentenceTarget": "¿Entiendes el problema?",
             "sentenceNative": "Do you understand the problem?",
-            "audioWordFile": "es_entiendes_word.mp3",
-            "audioSentenceFile": "es_entiendes_sentence.mp3",
+            "audioWordFile": "es_entiendes_es_c_67_word.mp3",
+            "audioSentenceFile": "es_entiendes_es_c_67_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -899,8 +899,8 @@
             "wordNative": "He/She understands",
             "sentenceTarget": "Ella no entiende nada.",
             "sentenceNative": "She doesn't understand anything.",
-            "audioWordFile": "es_entiende_word.mp3",
-            "audioSentenceFile": "es_entiende_sentence.mp3",
+            "audioWordFile": "es_entiende_es_c_68_word.mp3",
+            "audioSentenceFile": "es_entiende_es_c_68_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -912,8 +912,8 @@
             "wordNative": "We understand",
             "sentenceTarget": "Entendemos tu posición.",
             "sentenceNative": "We understand your position.",
-            "audioWordFile": "es_entendemos_word.mp3",
-            "audioSentenceFile": "es_entendemos_sentence.mp3",
+            "audioWordFile": "es_entendemos_es_c_69_word.mp3",
+            "audioSentenceFile": "es_entendemos_es_c_69_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -925,8 +925,8 @@
             "wordNative": "They understand",
             "sentenceTarget": "Ellos entienden las reglas.",
             "sentenceNative": "They understand the rules.",
-            "audioWordFile": "es_entienden_word.mp3",
-            "audioSentenceFile": "es_entienden_sentence.mp3",
+            "audioWordFile": "es_entienden_es_c_70_word.mp3",
+            "audioSentenceFile": "es_entienden_es_c_70_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -938,8 +938,8 @@
             "wordNative": "I want",
             "sentenceTarget": "Quiero aprender español.",
             "sentenceNative": "I want to learn Spanish.",
-            "audioWordFile": "es_quiero_word.mp3",
-            "audioSentenceFile": "es_quiero_sentence.mp3",
+            "audioWordFile": "es_quiero_es_c_71_word.mp3",
+            "audioSentenceFile": "es_quiero_es_c_71_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -951,8 +951,8 @@
             "wordNative": "You want",
             "sentenceTarget": "¿Quieres un poco de agua?",
             "sentenceNative": "Do you want some water?",
-            "audioWordFile": "es_quieres_word.mp3",
-            "audioSentenceFile": "es_quieres_sentence.mp3",
+            "audioWordFile": "es_quieres_es_c_72_word.mp3",
+            "audioSentenceFile": "es_quieres_es_c_72_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -964,8 +964,8 @@
             "wordNative": "He/She wants",
             "sentenceTarget": "Ella quiere estudiar arte.",
             "sentenceNative": "She wants to study art.",
-            "audioWordFile": "es_quiere_word.mp3",
-            "audioSentenceFile": "es_quiere_sentence.mp3",
+            "audioWordFile": "es_quiere_es_c_73_word.mp3",
+            "audioSentenceFile": "es_quiere_es_c_73_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -977,8 +977,8 @@
             "wordNative": "We want",
             "sentenceTarget": "Queremos viajar por el mundo.",
             "sentenceNative": "We want to travel the world.",
-            "audioWordFile": "es_queremos_word.mp3",
-            "audioSentenceFile": "es_queremos_sentence.mp3",
+            "audioWordFile": "es_queremos_es_c_74_word.mp3",
+            "audioSentenceFile": "es_queremos_es_c_74_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -990,8 +990,8 @@
             "wordNative": "They want",
             "sentenceTarget": "Ellos quieren comprar una casa.",
             "sentenceNative": "They want to buy a house.",
-            "audioWordFile": "es_quieren_word.mp3",
-            "audioSentenceFile": "es_quieren_sentence.mp3",
+            "audioWordFile": "es_quieren_es_c_75_word.mp3",
+            "audioSentenceFile": "es_quieren_es_c_75_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1003,8 +1003,8 @@
             "wordNative": "I did",
             "sentenceTarget": "Hice mi cama esta mañana.",
             "sentenceNative": "I made my bed this morning.",
-            "audioWordFile": "es_hice_word.mp3",
-            "audioSentenceFile": "es_hice_sentence.mp3",
+            "audioWordFile": "es_hice_es_c_76_word.mp3",
+            "audioSentenceFile": "es_hice_es_c_76_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1016,8 +1016,8 @@
             "wordNative": "You did",
             "sentenceTarget": "¿Hiciste la tarea?",
             "sentenceNative": "Did you do the homework?",
-            "audioWordFile": "es_hiciste_word.mp3",
-            "audioSentenceFile": "es_hiciste_sentence.mp3",
+            "audioWordFile": "es_hiciste_es_c_77_word.mp3",
+            "audioSentenceFile": "es_hiciste_es_c_77_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1029,8 +1029,8 @@
             "wordNative": "He/She did",
             "sentenceTarget": "Él hizo un gran esfuerzo.",
             "sentenceNative": "He made a great effort.",
-            "audioWordFile": "es_hizo_word.mp3",
-            "audioSentenceFile": "es_hizo_sentence.mp3",
+            "audioWordFile": "es_hizo_es_c_78_word.mp3",
+            "audioSentenceFile": "es_hizo_es_c_78_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1042,8 +1042,8 @@
             "wordNative": "We did",
             "sentenceTarget": "Hicimos un pastel para el postre.",
             "sentenceNative": "We made a cake for dessert.",
-            "audioWordFile": "es_hicimos_word.mp3",
-            "audioSentenceFile": "es_hicimos_sentence.mp3",
+            "audioWordFile": "es_hicimos_es_c_79_word.mp3",
+            "audioSentenceFile": "es_hicimos_es_c_79_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1055,8 +1055,8 @@
             "wordNative": "They did",
             "sentenceTarget": "Ellos hicieron una fiesta sorpresa.",
             "sentenceNative": "They threw a surprise party.",
-            "audioWordFile": "es_hicieron_word.mp3",
-            "audioSentenceFile": "es_hicieron_sentence.mp3",
+            "audioWordFile": "es_hicieron_es_c_80_word.mp3",
+            "audioSentenceFile": "es_hicieron_es_c_80_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1068,8 +1068,8 @@
             "wordNative": "I thought",
             "sentenceTarget": "Pensé que eras mi amigo.",
             "sentenceNative": "I thought you were my friend.",
-            "audioWordFile": "es_pense_word.mp3",
-            "audioSentenceFile": "es_pense_sentence.mp3",
+            "audioWordFile": "es_pens_es_c_81_word.mp3",
+            "audioSentenceFile": "es_pens_es_c_81_sentence.mp3",
             "tags": [
                 "Concepts",
                 "Pronouns",
@@ -1082,8 +1082,8 @@
             "wordNative": "You thought",
             "sentenceTarget": "¿Qué pensaste de la película?",
             "sentenceNative": "What did you think of the movie?",
-            "audioWordFile": "es_pensaste_word.mp3",
-            "audioSentenceFile": "es_pensaste_sentence.mp3",
+            "audioWordFile": "es_pensaste_es_c_82_word.mp3",
+            "audioSentenceFile": "es_pensaste_es_c_82_sentence.mp3",
             "tags": [
                 "Concepts",
                 "Pronouns",
@@ -1096,8 +1096,8 @@
             "wordNative": "He/She thought",
             "sentenceTarget": "Ella pensó mucho la respuesta.",
             "sentenceNative": "She thought about the answer a lot.",
-            "audioWordFile": "es_penso_word.mp3",
-            "audioSentenceFile": "es_penso_sentence.mp3",
+            "audioWordFile": "es_pens_es_c_83_word.mp3",
+            "audioSentenceFile": "es_pens_es_c_83_sentence.mp3",
             "tags": [
                 "Concepts",
                 "Pronouns",
@@ -1110,8 +1110,8 @@
             "wordNative": "We thought",
             "sentenceTarget": "Pensamos que era tarde.",
             "sentenceNative": "We thought it was late.",
-            "audioWordFile": "es_pensamos_past_word.mp3",
-            "audioSentenceFile": "es_pensamos_past_sentence.mp3",
+            "audioWordFile": "es_pensamos_es_c_84_word.mp3",
+            "audioSentenceFile": "es_pensamos_es_c_84_sentence.mp3",
             "tags": [
                 "Concepts",
                 "Pronouns",
@@ -1124,8 +1124,8 @@
             "wordNative": "They thought",
             "sentenceTarget": "Ellos pensaron que no vendrías.",
             "sentenceNative": "They thought you wouldn't come.",
-            "audioWordFile": "es_pensaron_word.mp3",
-            "audioSentenceFile": "es_pensaron_sentence.mp3",
+            "audioWordFile": "es_pensaron_es_c_85_word.mp3",
+            "audioSentenceFile": "es_pensaron_es_c_85_sentence.mp3",
             "tags": [
                 "Concepts",
                 "Pronouns",
@@ -1138,8 +1138,8 @@
             "wordNative": "I will speak",
             "sentenceTarget": "Hablaré con él mañana.",
             "sentenceNative": "I will speak with him tomorrow.",
-            "audioWordFile": "es_hablare_word.mp3",
-            "audioSentenceFile": "es_hablare_sentence.mp3",
+            "audioWordFile": "es_hablar_es_c_86_word.mp3",
+            "audioSentenceFile": "es_hablar_es_c_86_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1151,8 +1151,8 @@
             "wordNative": "You will speak",
             "sentenceTarget": "Hablarás muy bien pronto.",
             "sentenceNative": "You will speak very well soon.",
-            "audioWordFile": "es_hablaras_word.mp3",
-            "audioSentenceFile": "es_hablaras_sentence.mp3",
+            "audioWordFile": "es_hablar_s_es_c_87_word.mp3",
+            "audioSentenceFile": "es_hablar_s_es_c_87_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1164,8 +1164,8 @@
             "wordNative": "He/She will speak",
             "sentenceTarget": "Él hablará en la conferencia.",
             "sentenceNative": "He will speak at the conference.",
-            "audioWordFile": "es_hablara_word.mp3",
-            "audioSentenceFile": "es_hablara_sentence.mp3",
+            "audioWordFile": "es_hablar_es_c_88_word.mp3",
+            "audioSentenceFile": "es_hablar_es_c_88_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1177,8 +1177,8 @@
             "wordNative": "We will speak",
             "sentenceTarget": "Hablaremos del tema el lunes.",
             "sentenceNative": "We will speak about the topic on Monday.",
-            "audioWordFile": "es_hablaremos_future_word.mp3",
-            "audioSentenceFile": "es_hablaremos_future_sentence.mp3",
+            "audioWordFile": "es_hablaremos_es_c_89_word.mp3",
+            "audioSentenceFile": "es_hablaremos_es_c_89_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1190,8 +1190,8 @@
             "wordNative": "They will speak",
             "sentenceTarget": "Ellos hablarán con nosotros.",
             "sentenceNative": "They will speak with us.",
-            "audioWordFile": "es_hablaran_word.mp3",
-            "audioSentenceFile": "es_hablaran_sentence.mp3",
+            "audioWordFile": "es_hablar_n_es_c_90_word.mp3",
+            "audioSentenceFile": "es_hablar_n_es_c_90_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1203,8 +1203,8 @@
             "wordNative": "I will eat",
             "sentenceTarget": "Comeré algo ligero esta noche.",
             "sentenceNative": "I will eat something light tonight.",
-            "audioWordFile": "es_comere_word.mp3",
-            "audioSentenceFile": "es_comere_sentence.mp3",
+            "audioWordFile": "es_comer_es_c_91_word.mp3",
+            "audioSentenceFile": "es_comer_es_c_91_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -1217,8 +1217,8 @@
             "wordNative": "You will eat",
             "sentenceTarget": "¿Comerás en casa hoy?",
             "sentenceNative": "Will you eat at home today?",
-            "audioWordFile": "es_comeras_word.mp3",
-            "audioSentenceFile": "es_comeras_sentence.mp3",
+            "audioWordFile": "es_comer_s_es_c_92_word.mp3",
+            "audioSentenceFile": "es_comer_s_es_c_92_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -1231,8 +1231,8 @@
             "wordNative": "He/She will eat",
             "sentenceTarget": "Ella comerá con su equipo.",
             "sentenceNative": "She will eat with her team.",
-            "audioWordFile": "es_comera_word.mp3",
-            "audioSentenceFile": "es_comera_sentence.mp3",
+            "audioWordFile": "es_comer_es_c_93_word.mp3",
+            "audioSentenceFile": "es_comer_es_c_93_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -1245,8 +1245,8 @@
             "wordNative": "We will eat",
             "sentenceTarget": "Comeremos a las tres.",
             "sentenceNative": "We will eat at three.",
-            "audioWordFile": "es_comeremos_word.mp3",
-            "audioSentenceFile": "es_comeremos_sentence.mp3",
+            "audioWordFile": "es_comeremos_es_c_94_word.mp3",
+            "audioSentenceFile": "es_comeremos_es_c_94_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -1259,8 +1259,8 @@
             "wordNative": "They will eat",
             "sentenceTarget": "Ellos comerán en el restaurante.",
             "sentenceNative": "They will eat at the restaurant.",
-            "audioWordFile": "es_comeran_word.mp3",
-            "audioSentenceFile": "es_comeran_sentence.mp3",
+            "audioWordFile": "es_comer_n_es_c_95_word.mp3",
+            "audioSentenceFile": "es_comer_n_es_c_95_sentence.mp3",
             "tags": [
                 "Food",
                 "Pronouns",
@@ -1273,8 +1273,8 @@
             "wordNative": "I will see",
             "sentenceTarget": "Veré la película más tarde.",
             "sentenceNative": "I will see the movie later.",
-            "audioWordFile": "es_vere_word.mp3",
-            "audioSentenceFile": "es_vere_sentence.mp3",
+            "audioWordFile": "es_ver_es_c_96_word.mp3",
+            "audioSentenceFile": "es_ver_es_c_96_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1286,8 +1286,8 @@
             "wordNative": "You will see",
             "sentenceTarget": "Lo verás cuando llegues.",
             "sentenceNative": "You will see it when you arrive.",
-            "audioWordFile": "es_veras_word.mp3",
-            "audioSentenceFile": "es_veras_sentence.mp3",
+            "audioWordFile": "es_ver_s_es_c_97_word.mp3",
+            "audioSentenceFile": "es_ver_s_es_c_97_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1299,8 +1299,8 @@
             "wordNative": "He/She will see",
             "sentenceTarget": "Él verá a su médico pronto.",
             "sentenceNative": "He will see his doctor soon.",
-            "audioWordFile": "es_vera_word.mp3",
-            "audioSentenceFile": "es_vera_sentence.mp3",
+            "audioWordFile": "es_ver_es_c_98_word.mp3",
+            "audioSentenceFile": "es_ver_es_c_98_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1312,8 +1312,8 @@
             "wordNative": "We will see",
             "sentenceTarget": "Ya veremos qué pasa.",
             "sentenceNative": "We'll see what happens.",
-            "audioWordFile": "es_veremos_word.mp3",
-            "audioSentenceFile": "es_veremos_sentence.mp3",
+            "audioWordFile": "es_veremos_es_c_99_word.mp3",
+            "audioSentenceFile": "es_veremos_es_c_99_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"
@@ -1325,8 +1325,8 @@
             "wordNative": "They will see",
             "sentenceTarget": "Ellos verán el espectáculo mañama.",
             "sentenceNative": "They will see the show tomorrow.",
-            "audioWordFile": "es_veran_word.mp3",
-            "audioSentenceFile": "es_veran_sentence.mp3",
+            "audioWordFile": "es_ver_n_es_c_100_word.mp3",
+            "audioSentenceFile": "es_ver_n_es_c_100_sentence.mp3",
             "tags": [
                 "Pronouns",
                 "Verbs"

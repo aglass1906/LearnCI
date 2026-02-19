@@ -7,6 +7,7 @@ enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
     case korean = "ko"
     case french = "fr"
     case vietnamese = "vi"
+    case english = "en"
     
     var id: String { self.rawValue }
     
@@ -17,6 +18,7 @@ enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
         case .korean: return "🇰🇷"
         case .french: return "🇫🇷"
         case .vietnamese: return "🇻🇳"
+        case .english: return "🇺🇸"
         }
     }
     
@@ -29,6 +31,7 @@ enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
         case .korean: return "Korean"
         case .french: return "French"
         case .vietnamese: return "Vietnamese"
+        case .english: return "English"
         }
     }
 }

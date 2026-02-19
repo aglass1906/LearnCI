@@ -154,17 +154,18 @@ struct TagSelectionSheet: View {
                         Button(action: {
                             if let tag = selectedTag {
                                 confirmSelection(tag)
+                            } else {
+                                dismiss()
                             }
                         }) {
                             Text("Done")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(selectedTag != nil ? Color.accentColor : Color.gray.opacity(0.3))
+                                .background(Color.accentColor)
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
                         }
-                        .disabled(selectedTag == nil)
                         .padding(.horizontal)
                         .padding(.bottom)
                     }

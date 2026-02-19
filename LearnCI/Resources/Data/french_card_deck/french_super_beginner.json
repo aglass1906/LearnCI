@@ -22,10 +22,12 @@
             "wordNative": "Hello",
             "sentenceTarget": "Bonjour, comment ça va ?",
             "sentenceNative": "Hello, how are you?",
+            "audioWordFile": "fr_bonjour_fr_sb_c1_word.mp3",
+            "audioSentenceFile": "fr_bonjour_fr_sb_c1_sentence.mp3",
+            "mediaFile": "fr_bonjour_fr_sb_c1_image.png",
             "tags": [
                 "Greetings & Basics"
-            ],
-            "mediaFile": "fr_sb_bonjour_hello.png"
+            ]
         },
         {
             "id": "fr_sb_c2",
@@ -33,11 +35,13 @@
             "wordNative": "Thank you",
             "sentenceTarget": "Merci beaucoup pour votre aide.",
             "sentenceNative": "Thank you very much for your help.",
+            "audioWordFile": "fr_merci_fr_sb_c2_word.mp3",
+            "audioSentenceFile": "fr_merci_fr_sb_c2_sentence.mp3",
+            "mediaFile": "fr_merci_fr_sb_c2_image.png",
             "tags": [
                 "Greetings & Basics",
                 "Pronouns"
-            ],
-            "mediaFile": "fr_sb_merci_thank_you.png"
+            ]
         },
         {
             "id": "fr_sb_c3",
@@ -45,10 +49,12 @@
             "wordNative": "Please",
             "sentenceTarget": "Un café, s'il vous plaît.",
             "sentenceNative": "A coffee, please.",
+            "audioWordFile": "fr_s_il_vous_plait_fr_sb_c3_word.mp3",
+            "audioSentenceFile": "fr_s_il_vous_plait_fr_sb_c3_sentence.mp3",
+            "mediaFile": "fr_s_il_vous_plait_fr_sb_c3_image.png",
             "tags": [
                 "Greetings & Basics"
-            ],
-            "mediaFile": "fr_sb_s_il_vous_plait_please.png"
+            ]
         },
         {
             "id": "fr_sb_c4",
@@ -56,10 +62,12 @@
             "wordNative": "Goodbye",
             "sentenceTarget": "Au revoir, à demain.",
             "sentenceNative": "Goodbye, see you tomorrow.",
+            "audioWordFile": "fr_au_revoir_fr_sb_c4_word.mp3",
+            "audioSentenceFile": "fr_au_revoir_fr_sb_c4_sentence.mp3",
+            "mediaFile": "fr_au_revoir_fr_sb_c4_image.png",
             "tags": [
                 "Greetings & Basics"
-            ],
-            "mediaFile": "fr_sb_au_revoir_goodbye.png"
+            ]
         },
         {
             "id": "fr_sb_c5",
@@ -67,10 +75,12 @@
             "wordNative": "Yes",
             "sentenceTarget": "Oui, j'aime beaucoup ça.",
             "sentenceNative": "Yes, I like that a lot.",
+            "audioWordFile": "fr_oui_fr_sb_c5_word.mp3",
+            "audioSentenceFile": "fr_oui_fr_sb_c5_sentence.mp3",
+            "mediaFile": "fr_oui_fr_sb_c5_image.png",
             "tags": [
                 "Greetings & Basics"
-            ],
-            "mediaFile": "fr_sb_oui_yes.png"
+            ]
         },
         {
             "id": "fr_sb_c6",
@@ -78,10 +88,12 @@
             "wordNative": "No",
             "sentenceTarget": "Non, je n'ai pas faim.",
             "sentenceNative": "No, I am not hungry.",
+            "audioWordFile": "fr_non_fr_sb_c6_word.mp3",
+            "audioSentenceFile": "fr_non_fr_sb_c6_sentence.mp3",
+            "mediaFile": "fr_non_fr_sb_c6_image.png",
             "tags": [
                 "Greetings & Basics"
-            ],
-            "mediaFile": "fr_sb_non_no.png"
+            ]
         },
         {
             "id": "fr_sb_c7",
@@ -89,11 +101,13 @@
             "wordNative": "Water",
             "sentenceTarget": "Je voudrais un verre d'eau.",
             "sentenceNative": "I would like a glass of water.",
+            "audioWordFile": "fr_eau_fr_sb_c7_word.mp3",
+            "audioSentenceFile": "fr_eau_fr_sb_c7_sentence.mp3",
+            "mediaFile": "fr_eau_fr_sb_c7_image.png",
             "tags": [
                 "Basics",
                 "Food"
-            ],
-            "mediaFile": "fr_sb_eau_water.png"
+            ]
         },
         {
             "id": "fr_sb_c8",
@@ -101,11 +115,13 @@
             "wordNative": "Food",
             "sentenceTarget": "La nourriture est très bonne.",
             "sentenceNative": "The food is very good.",
+            "audioWordFile": "fr_nourriture_fr_sb_c8_word.mp3",
+            "audioSentenceFile": "fr_nourriture_fr_sb_c8_sentence.mp3",
+            "mediaFile": "fr_nourriture_fr_sb_c8_image.png",
             "tags": [
                 "Basics",
                 "Food"
-            ],
-            "mediaFile": "fr_sb_nourriture_food.png"
+            ]
         },
         {
             "id": "fr_sb_c9",
@@ -113,11 +129,13 @@
             "wordNative": "Friend",
             "sentenceTarget": "Il est mon meilleur ami.",
             "sentenceNative": "He is my best friend.",
+            "audioWordFile": "fr_ami_fr_sb_c9_word.mp3",
+            "audioSentenceFile": "fr_ami_fr_sb_c9_sentence.mp3",
+            "mediaFile": "fr_ami_fr_sb_c9_image.png",
             "tags": [
                 "Daily Life",
                 "People"
-            ],
-            "mediaFile": "fr_sb_ami_friend.png"
+            ]
         },
         {
             "id": "fr_sb_c10",
@@ -125,11 +143,13 @@
             "wordNative": "House",
             "sentenceTarget": "Ma maison est petite mais jolie.",
             "sentenceNative": "My house is small but pretty.",
+            "audioWordFile": "fr_maison_fr_sb_c10_word.mp3",
+            "audioSentenceFile": "fr_maison_fr_sb_c10_sentence.mp3",
+            "mediaFile": "fr_maison_fr_sb_c10_image.png",
             "tags": [
                 "Daily Life",
                 "Places"
-            ],
-            "mediaFile": "fr_sb_maison_house.png"
+            ]
         },
         {
             "id": "fr_sb_c11",
@@ -137,12 +157,14 @@
             "wordNative": "Cat",
             "sentenceTarget": "Le chat dort sur le canapé.",
             "sentenceNative": "The cat sleeps on the sofa.",
+            "audioWordFile": "fr_chat_fr_sb_c11_word.mp3",
+            "audioSentenceFile": "fr_chat_fr_sb_c11_sentence.mp3",
+            "mediaFile": "fr_chat_fr_sb_c11_image.png",
             "tags": [
                 "Animals",
                 "Daily Life",
                 "Nature"
-            ],
-            "mediaFile": "fr_sb_chat_cat.png"
+            ]
         },
         {
             "id": "fr_sb_c12",
@@ -150,12 +172,14 @@
             "wordNative": "Dog",
             "sentenceTarget": "Le chien court dans le parc.",
             "sentenceNative": "The dog runs in the park.",
+            "audioWordFile": "fr_chien_fr_sb_c12_word.mp3",
+            "audioSentenceFile": "fr_chien_fr_sb_c12_sentence.mp3",
+            "mediaFile": "fr_chien_fr_sb_c12_image.png",
             "tags": [
                 "Animals",
                 "Daily Life",
                 "Nature"
-            ],
-            "mediaFile": "fr_sb_chien_dog.png"
+            ]
         },
         {
             "id": "fr_sb_c13",
@@ -163,10 +187,12 @@
             "wordNative": "One",
             "sentenceTarget": "J'en ai un seul.",
             "sentenceNative": "I have only one.",
+            "audioWordFile": "fr_un_fr_sb_c13_word.mp3",
+            "audioSentenceFile": "fr_un_fr_sb_c13_sentence.mp3",
+            "mediaFile": "fr_un_fr_sb_c13_image.png",
             "tags": [
                 "Numbers"
-            ],
-            "mediaFile": "fr_sb_un_one.png"
+            ]
         },
         {
             "id": "fr_sb_c14",
@@ -174,10 +200,12 @@
             "wordNative": "Two",
             "sentenceTarget": "Deux cafés, s'il vous plaît.",
             "sentenceNative": "Two coffees, please.",
+            "audioWordFile": "fr_deux_fr_sb_c14_word.mp3",
+            "audioSentenceFile": "fr_deux_fr_sb_c14_sentence.mp3",
+            "mediaFile": "fr_deux_fr_sb_c14_image.png",
             "tags": [
                 "Numbers"
-            ],
-            "mediaFile": "fr_sb_deux_two.png"
+            ]
         },
         {
             "id": "fr_sb_c15",
@@ -185,10 +213,12 @@
             "wordNative": "Three",
             "sentenceTarget": "Il y a trois oiseaux dans l'arbre.",
             "sentenceNative": "There are three birds in the tree.",
+            "audioWordFile": "fr_trois_fr_sb_c15_word.mp3",
+            "audioSentenceFile": "fr_trois_fr_sb_c15_sentence.mp3",
+            "mediaFile": "fr_trois_fr_sb_c15_image.png",
             "tags": [
                 "Numbers"
-            ],
-            "mediaFile": "fr_sb_trois_three.png"
+            ]
         }
     ]
 }

@@ -22,8 +22,8 @@
             "wordNative": "Good morning",
             "sentenceTarget": "Buenos días, ¿cómo estás?",
             "sentenceNative": "Good morning, how are you?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_buenos_d_as_es_p_a1_01_word.mp3",
+            "audioSentenceFile": "es_buenos_d_as_es_p_a1_01_sentence.mp3",
             "mediaFile": "es_sol.jpg",
             "tags": [
                 "Greetings"
@@ -35,8 +35,8 @@
             "wordNative": "Good night",
             "sentenceTarget": "Buenas noches, hasta mañana.",
             "sentenceNative": "Good night, see you tomorrow.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_buenas_noches_es_p_a1_02_word.mp3",
+            "audioSentenceFile": "es_buenas_noches_es_p_a1_02_sentence.mp3",
             "mediaFile": "es_luna.jpg",
             "tags": [
                 "Greetings"
@@ -48,8 +48,8 @@
             "wordNative": "Please",
             "sentenceTarget": "Un café, por favor.",
             "sentenceNative": "A coffee, please.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_por_favor_es_p_a1_03_word.mp3",
+            "audioSentenceFile": "es_por_favor_es_p_a1_03_sentence.mp3",
             "mediaFile": "es_cafe.jpg",
             "tags": [
                 "Essentials"
@@ -61,8 +61,8 @@
             "wordNative": "Thank you",
             "sentenceTarget": "Muchas gracias por la comida.",
             "sentenceNative": "Thank you very much for the food.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_gracias_es_p_a1_04_word.mp3",
+            "audioSentenceFile": "es_gracias_es_p_a1_04_sentence.mp3",
             "mediaFile": "es_comida.png",
             "tags": [
                 "Essentials"
@@ -74,8 +74,8 @@
             "wordNative": "How much does it cost?",
             "sentenceTarget": "¿Cuánto cuesta el sombrero?",
             "sentenceNative": "How much does the hat cost?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_cu_nto_cuesta_es_p_a1_05_word.mp3",
+            "audioSentenceFile": "es_cu_nto_cuesta_es_p_a1_05_sentence.mp3",
             "mediaFile": "es_sombrero.png",
             "tags": [
                 "Shopping"
@@ -87,8 +87,8 @@
             "wordNative": "The bill",
             "sentenceTarget": "La cuenta, por favor.",
             "sentenceNative": "The bill, please.",
-            "audioWordFile": "es_dinero_word.mp3",
-            "audioSentenceFile": null,
+            "audioWordFile": "es_la_cuenta_es_p_a1_06_word.mp3",
+            "audioSentenceFile": "es_la_cuenta_es_p_a1_06_sentence.mp3",
             "mediaFile": "es_dinero.png",
             "tags": [
                 "Dining",
@@ -101,8 +101,8 @@
             "wordNative": "Where is it?",
             "sentenceTarget": "¿Dónde está el baño?",
             "sentenceNative": "Where is the bathroom?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_d_nde_est_es_p_a1_07_word.mp3",
+            "audioSentenceFile": "es_d_nde_est_es_p_a1_07_sentence.mp3",
             "mediaFile": "es_puerta.png",
             "tags": [
                 "Essentials",
@@ -115,8 +115,8 @@
             "wordNative": "I am hungry",
             "sentenceTarget": "Tengo hambre, quiero arroz.",
             "sentenceNative": "I am hungry, I want rice.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_tengo_hambre_es_p_a1_08_word.mp3",
+            "audioSentenceFile": "es_tengo_hambre_es_p_a1_08_sentence.mp3",
             "mediaFile": "es_arroz.jpg",
             "tags": [
                 "Essentials",
@@ -129,8 +129,8 @@
             "wordNative": "I am thirsty",
             "sentenceTarget": "Tengo sed, necesito agua.",
             "sentenceNative": "I am thirsty, I need water.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_tengo_sed_es_p_a1_09_word.mp3",
+            "audioSentenceFile": "es_tengo_sed_es_p_a1_09_sentence.mp3",
             "mediaFile": "es_leche.jpg",
             "tags": [
                 "Essentials",
@@ -143,8 +143,8 @@
             "wordNative": "What time is it",
             "sentenceTarget": "¿Qué hora es ahora?",
             "sentenceNative": "What time is it now?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_qu_hora_es_es_p_a1_10_word.mp3",
+            "audioSentenceFile": "es_qu_hora_es_es_p_a1_10_sentence.mp3",
             "mediaFile": "es_reloj.png",
             "tags": [
                 "Essentials",
@@ -157,8 +157,8 @@
             "wordNative": "I don't understand",
             "sentenceTarget": "Lo siento, no entiendo.",
             "sentenceNative": "Sorry, I don't understand.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_no_entiendo_es_p_a1_11_word.mp3",
+            "audioSentenceFile": "es_no_entiendo_es_p_a1_11_sentence.mp3",
             "mediaFile": "es_libro.png",
             "tags": [
                 "Essentials"
@@ -170,8 +170,8 @@
             "wordNative": "Help",
             "sentenceTarget": "Necesito ayuda con mi coche.",
             "sentenceNative": "I need help with my car.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_ayuda_es_p_a1_12_word.mp3",
+            "audioSentenceFile": "es_ayuda_es_p_a1_12_sentence.mp3",
             "mediaFile": "es_coche.png",
             "tags": [
                 "Essentials",
@@ -184,8 +184,8 @@
             "wordNative": "I like",
             "sentenceTarget": "Me gusta la playa.",
             "sentenceNative": "I like the beach.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_me_gusta_es_p_a1_13_word.mp3",
+            "audioSentenceFile": "es_me_gusta_es_p_a1_13_sentence.mp3",
             "mediaFile": "es_playa.png",
             "tags": [
                 "General"
@@ -197,8 +197,8 @@
             "wordNative": "Let's go",
             "sentenceTarget": "Vamos al mercado.",
             "sentenceNative": "Let's go to the market.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_vamos_es_p_a1_14_word.mp3",
+            "audioSentenceFile": "es_vamos_es_p_a1_14_sentence.mp3",
             "mediaFile": "es_mercado.png",
             "tags": [
                 "General",
@@ -211,8 +211,8 @@
             "wordNative": "You are kind",
             "sentenceTarget": "Eres muy amable.",
             "sentenceNative": "You are very kind.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_eres_amable_es_p_a1_15_word.mp3",
+            "audioSentenceFile": "es_eres_amable_es_p_a1_15_sentence.mp3",
             "mediaFile": "es_mujer.png",
             "tags": [
                 "Compliments"

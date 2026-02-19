@@ -22,8 +22,8 @@
             "wordNative": "To develop",
             "sentenceTarget": "Debemos desarrollar nuevas estrategias.",
             "sentenceNative": "We must develop new strategies.",
-            "audioWordFile": "es_desarrollar_word.mp3",
-            "audioSentenceFile": "es_desarrollar_sentence.mp3",
+            "audioWordFile": "es_desarrollar_es_i_c1_word.mp3",
+            "audioSentenceFile": "es_desarrollar_es_i_c1_sentence.mp3",
             "mediaFile": "es_desarrollar.png",
             "tags": [
                 "Prepositions",
@@ -38,8 +38,8 @@
             "wordNative": "To take advantage of / To make the most of",
             "sentenceTarget": "Hay que aprovechar el buen tiempo.",
             "sentenceNative": "We have to make the most of the good weather.",
-            "audioWordFile": "es_aprovechar_word.mp3",
-            "audioSentenceFile": "es_aprovechar_sentence.mp3",
+            "audioWordFile": "es_aprovechar_es_i_c2_word.mp3",
+            "audioSentenceFile": "es_aprovechar_es_i_c2_sentence.mp3",
             "mediaFile": "es_aprovechar.png",
             "tags": [
                 "Prepositions",
@@ -54,8 +54,8 @@
             "wordNative": "However",
             "sentenceTarget": "Estaba cansado; sin embargo, siguió trabajando.",
             "sentenceNative": "He was tired; however, he kept working.",
-            "audioWordFile": "es_sinembargo_word.mp3",
-            "audioSentenceFile": "es_sinembargo_sentence.mp3",
+            "audioWordFile": "es_sin_embargo_es_i_c3_word.mp3",
+            "audioSentenceFile": "es_sin_embargo_es_i_c3_sentence.mp3",
             "mediaFile": "es_sinembargo.png",
             "tags": [
                 "Verbs & Concepts",
@@ -68,8 +68,8 @@
             "wordNative": "To carry out / To perform",
             "sentenceTarget": "Van a realizar un experimento científico.",
             "sentenceNative": "They are going to carry out a scientific experiment.",
-            "audioWordFile": "es_realizar_word.mp3",
-            "audioSentenceFile": "es_realizar_sentence.mp3",
+            "audioWordFile": "es_realizar_es_i_c4_word.mp3",
+            "audioSentenceFile": "es_realizar_es_i_c4_sentence.mp3",
             "mediaFile": "es_realizar.png",
             "tags": [
                 "Prepositions",
@@ -84,8 +84,8 @@
             "wordNative": "Although / Even though",
             "sentenceTarget": "Iré a la fiesta aunque esté lloviendo.",
             "sentenceNative": "I will go to the party even if it is raining.",
-            "audioWordFile": "es_aunque_word.mp3",
-            "audioSentenceFile": "es_aunque_sentence.mp3",
+            "audioWordFile": "es_aunque_es_i_c5_word.mp3",
+            "audioSentenceFile": "es_aunque_es_i_c5_sentence.mp3",
             "mediaFile": "es_aunque.png",
             "tags": [
                 "Conjunctions",
@@ -99,8 +99,8 @@
             "wordNative": "But (rather)",
             "sentenceTarget": "No es rojo, sino naranja.",
             "sentenceNative": "It is not red, but rather orange.",
-            "audioWordFile": "es_sino_word.mp3",
-            "audioSentenceFile": "es_sino_sentence.mp3",
+            "audioWordFile": "es_sino_es_i_c6_word.mp3",
+            "audioSentenceFile": "es_sino_es_i_c6_sentence.mp3",
             "mediaFile": "es_sino.png",
             "tags": [
                 "Conjunctions",
@@ -114,8 +114,8 @@
             "wordNative": "Right / Law",
             "sentenceTarget": "Todos tenemos derecho a la educación.",
             "sentenceNative": "We all have a right to education.",
-            "audioWordFile": "es_derecho_word.mp3",
-            "audioSentenceFile": "es_derecho_sentence.mp3",
+            "audioWordFile": "es_derecho_es_i_c7_word.mp3",
+            "audioSentenceFile": "es_derecho_es_i_c7_sentence.mp3",
             "mediaFile": "es_derecho.png",
             "tags": [
                 "Concepts",
@@ -129,8 +129,8 @@
             "wordNative": "Left",
             "sentenceTarget": "Gira a la izquierda en el semáforo.",
             "sentenceNative": "Turn left at the traffic light.",
-            "audioWordFile": "es_izquierda_word.mp3",
-            "audioSentenceFile": "es_izquierda_sentence.mp3",
+            "audioWordFile": "es_izquierda_es_i_c8_word.mp3",
+            "audioSentenceFile": "es_izquierda_es_i_c8_sentence.mp3",
             "mediaFile": "es_izquierda.jpg",
             "tags": [
                 "Directions",
@@ -143,8 +143,8 @@
             "wordNative": "On top / Above",
             "sentenceTarget": "Las llaves están encima de la mesa.",
             "sentenceNative": "The keys are on top of the table.",
-            "audioWordFile": "es_encima_word.mp3",
-            "audioSentenceFile": "es_encima_sentence.mp3",
+            "audioWordFile": "es_encima_es_i_c9_word.mp3",
+            "audioSentenceFile": "es_encima_es_i_c9_sentence.mp3",
             "mediaFile": "es_encima.jpg",
             "tags": [
                 "Location",
@@ -158,8 +158,8 @@
             "wordNative": "Under / Beneath",
             "sentenceTarget": "El perro está debajo de la cama.",
             "sentenceNative": "The dog is under the bed.",
-            "audioWordFile": "es_debajo_word.mp3",
-            "audioSentenceFile": "es_debajo_sentence.mp3",
+            "audioWordFile": "es_debajo_es_i_c10_word.mp3",
+            "audioSentenceFile": "es_debajo_es_i_c10_sentence.mp3",
             "mediaFile": "es_debajo.jpg",
             "tags": [
                 "Location",
@@ -172,8 +172,8 @@
             "wordNative": "Behind",
             "sentenceTarget": "Alguien está caminando detrás de mí.",
             "sentenceNative": "Someone is walking behind me.",
-            "audioWordFile": "es_detras_word.mp3",
-            "audioSentenceFile": "es_detras_sentence.mp3",
+            "audioWordFile": "es_detr_s_es_i_c11_word.mp3",
+            "audioSentenceFile": "es_detr_s_es_i_c11_sentence.mp3",
             "mediaFile": "es_detras.jpg",
             "tags": [
                 "Directions",
@@ -186,8 +186,8 @@
             "wordNative": "In front of",
             "sentenceTarget": "Ponte delante de la cámara.",
             "sentenceNative": "Stand in front of the camera.",
-            "audioWordFile": "es_delante_word.mp3",
-            "audioSentenceFile": "es_delante_sentence.mp3",
+            "audioWordFile": "es_delante_es_i_c12_word.mp3",
+            "audioSentenceFile": "es_delante_es_i_c12_sentence.mp3",
             "mediaFile": "es_delante.jpg",
             "tags": [
                 "Directions",
@@ -201,8 +201,8 @@
             "wordNative": "Near / Close",
             "sentenceTarget": "Vivo muy cerca del centro.",
             "sentenceNative": "I live very close to the center.",
-            "audioWordFile": "es_cerca_word.mp3",
-            "audioSentenceFile": "es_cerca_sentence.mp3",
+            "audioWordFile": "es_cerca_es_i_c13_word.mp3",
+            "audioSentenceFile": "es_cerca_es_i_c13_sentence.mp3",
             "mediaFile": "es_cerca.jpg",
             "tags": [
                 "Location",
@@ -215,8 +215,8 @@
             "wordNative": "Far",
             "sentenceTarget": "Mi país está muy lejos de aquí.",
             "sentenceNative": "My country is very far from here.",
-            "audioWordFile": "es_lejos_word.mp3",
-            "audioSentenceFile": "es_lejos_sentence.mp3",
+            "audioWordFile": "es_lejos_es_i_c14_word.mp3",
+            "audioSentenceFile": "es_lejos_es_i_c14_sentence.mp3",
             "mediaFile": "es_lejos.jpg",
             "tags": [
                 "Location",
@@ -229,8 +229,8 @@
             "wordNative": "Early",
             "sentenceTarget": "Mañana tengo que levantarme temprano.",
             "sentenceNative": "Tomorrow I have to wake up early.",
-            "audioWordFile": "es_temprano_word.mp3",
-            "audioSentenceFile": "es_temprano_sentence.mp3",
+            "audioWordFile": "es_temprano_es_i_c15_word.mp3",
+            "audioSentenceFile": "es_temprano_es_i_c15_sentence.mp3",
             "mediaFile": "es_temprano.jpg",
             "tags": [
                 "Adjectives",
@@ -244,8 +244,8 @@
             "wordNative": "Late / Afternoon",
             "sentenceTarget": "Llegó tarde a la reunión.",
             "sentenceNative": "He arrived late to the meeting.",
-            "audioWordFile": "es_tarde_word.mp3",
-            "audioSentenceFile": "es_tarde_sentence.mp3",
+            "audioWordFile": "es_tarde_es_i_c16_word.mp3",
+            "audioSentenceFile": "es_tarde_es_i_c16_sentence.mp3",
             "mediaFile": "es_tarde.jpg",
             "tags": [
                 "Adjectives",
@@ -260,8 +260,8 @@
             "wordNative": "Soon",
             "sentenceTarget": "Espero verte pronto.",
             "sentenceNative": "I hope to see you soon.",
-            "audioWordFile": "es_pronto_word.mp3",
-            "audioSentenceFile": "es_pronto_sentence.mp3",
+            "audioWordFile": "es_pronto_es_i_c17_word.mp3",
+            "audioSentenceFile": "es_pronto_es_i_c17_sentence.mp3",
             "mediaFile": "es_pronto.jpg",
             "tags": [
                 "Time",
@@ -274,8 +274,8 @@
             "wordNative": "After / Then",
             "sentenceTarget": "Iremos al cine después de cenar.",
             "sentenceNative": "We will go to the cinema after dinner.",
-            "audioWordFile": "es_despues_word.mp3",
-            "audioSentenceFile": "es_despues_sentence.mp3",
+            "audioWordFile": "es_despu_s_es_i_c18_word.mp3",
+            "audioSentenceFile": "es_despu_s_es_i_c18_sentence.mp3",
             "mediaFile": "es_despues.jpg",
             "tags": [
                 "Adverbs",
@@ -289,8 +289,8 @@
             "wordNative": "Before",
             "sentenceTarget": "Lávate las manos antes de comer.",
             "sentenceNative": "Wash your hands before eating.",
-            "audioWordFile": "es_antes_word.mp3",
-            "audioSentenceFile": "es_antes_sentence.mp3",
+            "audioWordFile": "es_antes_es_i_c19_word.mp3",
+            "audioSentenceFile": "es_antes_es_i_c19_sentence.mp3",
             "mediaFile": "es_antes.jpg",
             "tags": [
                 "Time",
@@ -303,8 +303,8 @@
             "wordNative": "Still / Yet",
             "sentenceTarget": "Todavía no he terminado mis deberes.",
             "sentenceNative": "I haven't finished my homework yet.",
-            "audioWordFile": "es_todavia_word.mp3",
-            "audioSentenceFile": "es_todavia_sentence.mp3",
+            "audioWordFile": "es_todav_a_es_i_c20_word.mp3",
+            "audioSentenceFile": "es_todav_a_es_i_c20_sentence.mp3",
             "mediaFile": "es_todavia.jpg",
             "tags": [
                 "Time",
@@ -317,8 +317,8 @@
             "wordNative": "Maybe / Perhaps",
             "sentenceTarget": "Quizás vaya a España el próximo año.",
             "sentenceNative": "Maybe I will go to Spain next year.",
-            "audioWordFile": "es_quizas_word.mp3",
-            "audioSentenceFile": "es_quizas_sentence.mp3",
+            "audioWordFile": "es_quiz_s_es_i_c21_word.mp3",
+            "audioSentenceFile": "es_quiz_s_es_i_c21_sentence.mp3",
             "mediaFile": "es_quizas.jpg",
             "tags": [
                 "Adverbs",
@@ -331,8 +331,8 @@
             "wordNative": "Enough / Quite",
             "sentenceTarget": "Habló bastante durante la clase.",
             "sentenceNative": "He spoke quite a bit during the class.",
-            "audioWordFile": "es_bastante_word.mp3",
-            "audioSentenceFile": "es_bastante_sentence.mp3",
+            "audioWordFile": "es_bastante_es_i_c22_word.mp3",
+            "audioSentenceFile": "es_bastante_es_i_c22_sentence.mp3",
             "mediaFile": "es_bastante.jpg",
             "tags": [
                 "Quantity"
@@ -344,8 +344,8 @@
             "wordNative": "Too / Too much",
             "sentenceTarget": "Este café está demasiado caliente.",
             "sentenceNative": "This coffee is too hot.",
-            "audioWordFile": "es_demasiado_word.mp3",
-            "audioSentenceFile": "es_demasiado_sentence.mp3",
+            "audioWordFile": "es_demasiado_es_i_c23_word.mp3",
+            "audioSentenceFile": "es_demasiado_es_i_c23_sentence.mp3",
             "mediaFile": "es_demasiado.jpg",
             "tags": [
                 "Quantity"
@@ -357,8 +357,8 @@
             "wordNative": "Already",
             "sentenceTarget": "Ya he visto esa película.",
             "sentenceNative": "I have already seen that movie.",
-            "audioWordFile": "es_ya_word.mp3",
-            "audioSentenceFile": "es_ya_sentence.mp3",
+            "audioWordFile": "es_ya_es_i_c24_word.mp3",
+            "audioSentenceFile": "es_ya_es_i_c24_sentence.mp3",
             "mediaFile": "es_ya.jpg",
             "tags": [
                 "Concepts"
@@ -370,8 +370,8 @@
             "wordNative": "Also / Too",
             "sentenceTarget": "A mí también me gusta el chocolate.",
             "sentenceNative": "I also like chocolate.",
-            "audioWordFile": "es_tambien_word.mp3",
-            "audioSentenceFile": "es_tambien_sentence.mp3",
+            "audioWordFile": "es_tambi_n_es_i_c25_word.mp3",
+            "audioSentenceFile": "es_tambi_n_es_i_c25_sentence.mp3",
             "mediaFile": "es_tambien.jpg",
             "tags": [
                 "Concepts"
@@ -383,8 +383,8 @@
             "wordNative": "Neither / Either",
             "sentenceTarget": "No quiero ir, y mi amigo tampoco.",
             "sentenceNative": "I don't want to go, and neither does my friend.",
-            "audioWordFile": "es_tampoco_word.mp3",
-            "audioSentenceFile": "es_tampoco_sentence.mp3",
+            "audioWordFile": "es_tampoco_es_i_c26_word.mp3",
+            "audioSentenceFile": "es_tampoco_es_i_c26_sentence.mp3",
             "mediaFile": "es_tampoco.jpg",
             "tags": [
                 "Concepts"
@@ -396,8 +396,8 @@
             "wordNative": "Sure / Safe / Insurance",
             "sentenceTarget": "¿Estás seguro de que quieres ir?",
             "sentenceNative": "Are you sure you want to go?",
-            "audioWordFile": "es_seguro_word.mp3",
-            "audioSentenceFile": "es_seguro_sentence.mp3",
+            "audioWordFile": "es_seguro_es_i_c27_word.mp3",
+            "audioSentenceFile": "es_seguro_es_i_c27_sentence.mp3",
             "mediaFile": "es_seguro.jpg",
             "tags": [
                 "Adjectives",
@@ -410,8 +410,8 @@
             "wordNative": "Possible",
             "sentenceTarget": "Es posible que llueva mañana.",
             "sentenceNative": "It's possible it will rain tomorrow.",
-            "audioWordFile": "es_posible_word.mp3",
-            "audioSentenceFile": "es_posible_sentence.mp3",
+            "audioWordFile": "es_posible_es_i_c28_word.mp3",
+            "audioSentenceFile": "es_posible_es_i_c28_sentence.mp3",
             "mediaFile": "es_posible.jpg",
             "tags": [
                 "Concepts"
@@ -423,8 +423,8 @@
             "wordNative": "Impossible",
             "sentenceTarget": "Nada es imposible si te esfuerzas.",
             "sentenceNative": "Nothing is impossible if you try hard.",
-            "audioWordFile": "es_imposible_word.mp3",
-            "audioSentenceFile": "es_imposible_sentence.mp3",
+            "audioWordFile": "es_imposible_es_i_c29_word.mp3",
+            "audioSentenceFile": "es_imposible_es_i_c29_sentence.mp3",
             "mediaFile": "es_imposible.jpg",
             "tags": [
                 "Concepts"
@@ -436,8 +436,8 @@
             "wordNative": "Easy",
             "sentenceTarget": "El examen fue muy fácil.",
             "sentenceNative": "The exam was very easy.",
-            "audioWordFile": "es_facil_word.mp3",
-            "audioSentenceFile": "es_facil_sentence.mp3",
+            "audioWordFile": "es_f_cil_es_i_c30_word.mp3",
+            "audioSentenceFile": "es_f_cil_es_i_c30_sentence.mp3",
             "mediaFile": "es_facil.jpg",
             "tags": [
                 "Adjectives"
@@ -449,8 +449,8 @@
             "wordNative": "Difficult",
             "sentenceTarget": "Es difícil aprender chino.",
             "sentenceNative": "It is difficult to learn Chinese.",
-            "audioWordFile": "es_dificil_word.mp3",
-            "audioSentenceFile": "es_dificil_sentence.mp3",
+            "audioWordFile": "es_dif_cil_es_i_c31_word.mp3",
+            "audioSentenceFile": "es_dif_cil_es_i_c31_sentence.mp3",
             "mediaFile": "es_dificil.jpg",
             "tags": [
                 "Adjectives"
@@ -462,8 +462,8 @@
             "wordNative": "Different",
             "sentenceTarget": "Cada persona es diferente.",
             "sentenceNative": "Every person is different.",
-            "audioWordFile": "es_diferente_word.mp3",
-            "audioSentenceFile": "es_diferente_sentence.mp3",
+            "audioWordFile": "es_diferente_es_i_c32_word.mp3",
+            "audioSentenceFile": "es_diferente_es_i_c32_sentence.mp3",
             "mediaFile": "es_diferente.jpg",
             "tags": [
                 "Adjectives"
@@ -475,8 +475,8 @@
             "wordNative": "Safe / Equal",
             "sentenceTarget": "El resultado es igual para todos.",
             "sentenceNative": "The result is equal for everyone.",
-            "audioWordFile": "es_igual_word.mp3",
-            "audioSentenceFile": "es_igual_sentence.mp3",
+            "audioWordFile": "es_igual_es_i_c33_word.mp3",
+            "audioSentenceFile": "es_igual_es_i_c33_sentence.mp3",
             "mediaFile": "es_igual.jpg",
             "tags": [
                 "Adjectives"
@@ -488,8 +488,8 @@
             "wordNative": "Important",
             "sentenceTarget": "Salud es lo más importante.",
             "sentenceNative": "Health is the most important thing.",
-            "audioWordFile": "es_importante_word.mp3",
-            "audioSentenceFile": "es_importante_sentence.mp3",
+            "audioWordFile": "es_importante_es_i_c34_word.mp3",
+            "audioSentenceFile": "es_importante_es_i_c34_sentence.mp3",
             "mediaFile": "es_importante.jpg",
             "tags": [
                 "Adjectives"
@@ -501,8 +501,8 @@
             "wordNative": "Useful",
             "sentenceTarget": "Esta herramienta es muy útil.",
             "sentenceNative": "This tool is very useful.",
-            "audioWordFile": "es_util_word.mp3",
-            "audioSentenceFile": "es_util_sentence.mp3",
+            "audioWordFile": "es_til_es_i_c35_word.mp3",
+            "audioSentenceFile": "es_til_es_i_c35_sentence.mp3",
             "mediaFile": "es_util.jpg",
             "tags": [
                 "Adjectives"
@@ -514,8 +514,8 @@
             "wordNative": "Useless",
             "sentenceTarget": "Es inútil quejarse ahora.",
             "sentenceNative": "It's useless to complain now.",
-            "audioWordFile": "es_inutil_word.mp3",
-            "audioSentenceFile": "es_inutil_sentence.mp3",
+            "audioWordFile": "es_in_til_es_i_c36_word.mp3",
+            "audioSentenceFile": "es_in_til_es_i_c36_sentence.mp3",
             "mediaFile": "es_inutil.jpg",
             "tags": [
                 "Adjectives"
@@ -527,8 +527,8 @@
             "wordNative": "New",
             "sentenceTarget": "Tengo un coche nuevo.",
             "sentenceNative": "I have a new car.",
-            "audioWordFile": "es_nuevo_word.mp3",
-            "audioSentenceFile": "es_nuevo_sentence.mp3",
+            "audioWordFile": "es_nuevo_es_i_c37_word.mp3",
+            "audioSentenceFile": "es_nuevo_es_i_c37_sentence.mp3",
             "mediaFile": "es_nuevo.jpg",
             "tags": [
                 "Adjectives",
@@ -541,8 +541,8 @@
             "wordNative": "Old",
             "sentenceTarget": "Ese edificio es muy viejo.",
             "sentenceNative": "That building is very old.",
-            "audioWordFile": "es_viejo_word.mp3",
-            "audioSentenceFile": "es_viejo_sentence.mp3",
+            "audioWordFile": "es_viejo_es_i_c38_word.mp3",
+            "audioSentenceFile": "es_viejo_es_i_c38_sentence.mp3",
             "mediaFile": "es_viejo.jpg",
             "tags": [
                 "Adjectives",
@@ -555,8 +555,8 @@
             "wordNative": "Much / Many",
             "sentenceTarget": "Hace mucho frío fuera.",
             "sentenceNative": "It's very cold outside.",
-            "audioWordFile": "es_mucho_word.mp3",
-            "audioSentenceFile": "es_mucho_sentence.mp3",
+            "audioWordFile": "es_mucho_es_i_c39_word.mp3",
+            "audioSentenceFile": "es_mucho_es_i_c39_sentence.mp3",
             "mediaFile": "es_mucho.jpg",
             "tags": [
                 "Quantity"
@@ -568,8 +568,8 @@
             "wordNative": "Little / Few",
             "sentenceTarget": "Tengo poco tiempo libre.",
             "sentenceNative": "I have little free time.",
-            "audioWordFile": "es_poco_word.mp3",
-            "audioSentenceFile": "es_poco_sentence.mp3",
+            "audioWordFile": "es_poco_es_i_c40_word.mp3",
+            "audioSentenceFile": "es_poco_es_i_c40_sentence.mp3",
             "mediaFile": "es_poco.jpg",
             "tags": [
                 "Quantity"
@@ -581,8 +581,8 @@
             "wordNative": "Several / Various",
             "sentenceTarget": "He visitado varios países.",
             "sentenceNative": "I have visited several countries.",
-            "audioWordFile": "es_varios_word.mp3",
-            "audioSentenceFile": "es_varios_sentence.mp3",
+            "audioWordFile": "es_varios_es_i_c41_word.mp3",
+            "audioSentenceFile": "es_varios_es_i_c41_sentence.mp3",
             "mediaFile": "es_varios.jpg",
             "tags": [
                 "Concepts"
@@ -594,8 +594,8 @@
             "wordNative": "Some / Any",
             "sentenceTarget": "¿Tienes algún plan para hoy?",
             "sentenceNative": "Do you have any plans for today?",
-            "audioWordFile": "es_alguno_word.mp3",
-            "audioSentenceFile": "es_alguno_sentence.mp3",
+            "audioWordFile": "es_alguno_es_i_c42_word.mp3",
+            "audioSentenceFile": "es_alguno_es_i_c42_sentence.mp3",
             "mediaFile": "es_alguno.jpg",
             "tags": [
                 "Concepts"
@@ -607,8 +607,8 @@
             "wordNative": "None / Neither",
             "sentenceTarget": "Ninguno de mis amigos fuma.",
             "sentenceNative": "None of my friends smoke.",
-            "audioWordFile": "es_ninguno_word.mp3",
-            "audioSentenceFile": "es_ninguno_sentence.mp3",
+            "audioWordFile": "es_ninguno_es_i_c43_word.mp3",
+            "audioSentenceFile": "es_ninguno_es_i_c43_sentence.mp3",
             "mediaFile": "es_ninguno.jpg",
             "tags": [
                 "Concepts"
@@ -620,8 +620,8 @@
             "wordNative": "Each / Every",
             "sentenceTarget": "Cada día es una nueva oportunidad.",
             "sentenceNative": "Each day is a new opportunity.",
-            "audioWordFile": "es_cada_word.mp3",
-            "audioSentenceFile": "es_cada_sentence.mp3",
+            "audioWordFile": "es_cada_es_i_c44_word.mp3",
+            "audioSentenceFile": "es_cada_es_i_c44_sentence.mp3",
             "mediaFile": "es_cada.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -633,8 +633,8 @@
             "wordNative": "Any / Whichever",
             "sentenceTarget": "Puedes venir en cualquier momento.",
             "sentenceNative": "You can come at any time.",
-            "audioWordFile": "es_cualquier_word.mp3",
-            "audioSentenceFile": "es_cualquier_sentence.mp3",
+            "audioWordFile": "es_cualquier_es_i_c45_word.mp3",
+            "audioSentenceFile": "es_cualquier_es_i_c45_sentence.mp3",
             "mediaFile": "es_cualquier.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -646,8 +646,8 @@
             "wordNative": "Both",
             "sentenceTarget": "Ambos estamos de acuerdo.",
             "sentenceNative": "We both agree.",
-            "audioWordFile": "es_ambos_word.mp3",
-            "audioSentenceFile": "es_ambos_sentence.mp3",
+            "audioWordFile": "es_ambos_es_i_c46_word.mp3",
+            "audioSentenceFile": "es_ambos_es_i_c46_sentence.mp3",
             "mediaFile": "es_ambos.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -659,8 +659,8 @@
             "wordNative": "Same",
             "sentenceTarget": "Llevamos el mismo vestido.",
             "sentenceNative": "We are wearing the same dress.",
-            "audioWordFile": "es_mismo_word.mp3",
-            "audioSentenceFile": "es_mismo_sentence.mp3",
+            "audioWordFile": "es_mismo_es_i_c47_word.mp3",
+            "audioSentenceFile": "es_mismo_es_i_c47_sentence.mp3",
             "mediaFile": "es_mismo.jpg",
             "tags": [
                 "Adjectives",
@@ -673,8 +673,8 @@
             "wordNative": "Next / Following",
             "sentenceTarget": "La siguiente salida es en 5 km.",
             "sentenceNative": "The next exit is in 5 km.",
-            "audioWordFile": "es_siguiente_word.mp3",
-            "audioSentenceFile": "es_siguiente_sentence.mp3",
+            "audioWordFile": "es_siguiente_es_i_c48_word.mp3",
+            "audioSentenceFile": "es_siguiente_es_i_c48_sentence.mp3",
             "mediaFile": "es_siguiente.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -686,8 +686,8 @@
             "wordNative": "Previous",
             "sentenceTarget": "En la página anterior está la respuesta.",
             "sentenceNative": "On the previous page is the answer.",
-            "audioWordFile": "es_anterior_word.mp3",
-            "audioSentenceFile": "es_anterior_sentence.mp3",
+            "audioWordFile": "es_anterior_es_i_c49_word.mp3",
+            "audioSentenceFile": "es_anterior_es_i_c49_sentence.mp3",
             "mediaFile": "es_anterior.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -699,8 +699,8 @@
             "wordNative": "Last",
             "sentenceTarget": "Este es mi último día de trabajo.",
             "sentenceNative": "This is my last day of work.",
-            "audioWordFile": "es_ultimo_word.mp3",
-            "audioSentenceFile": "es_ultimo_sentence.mp3",
+            "audioWordFile": "es_ltimo_es_i_c50_word.mp3",
+            "audioSentenceFile": "es_ltimo_es_i_c50_sentence.mp3",
             "mediaFile": "es_ultimo.jpg",
             "tags": [
                 "Determiners & Ordinals"
@@ -712,8 +712,8 @@
             "wordNative": "First",
             "sentenceTarget": "El primero en llegar gana un premio.",
             "sentenceNative": "The first to arrive wins a prize.",
-            "audioWordFile": "es_primero_word.mp3",
-            "audioSentenceFile": "es_primero_sentence.mp3",
+            "audioWordFile": "es_primero_es_i_c51_word.mp3",
+            "audioSentenceFile": "es_primero_es_i_c51_sentence.mp3",
             "mediaFile": "es_primero.jpg",
             "tags": [
                 "Determiners & Ordinals",
@@ -726,8 +726,8 @@
             "wordNative": "Around",
             "sentenceTarget": "Hay muchos árboles alrededor de la casa.",
             "sentenceNative": "There are many trees around the house.",
-            "audioWordFile": "es_alrededor_word.mp3",
-            "audioSentenceFile": "es_alrededor_sentence.mp3",
+            "audioWordFile": "es_alrededor_es_i_c52_word.mp3",
+            "audioSentenceFile": "es_alrededor_es_i_c52_sentence.mp3",
             "mediaFile": "es_alrededor.jpg",
             "tags": [
                 "Location"
@@ -739,8 +739,8 @@
             "wordNative": "Inside",
             "sentenceTarget": "Entra dentro de la habitación.",
             "sentenceNative": "Go inside the room.",
-            "audioWordFile": "es_dentro_word.mp3",
-            "audioSentenceFile": "es_dentro_sentence.mp3",
+            "audioWordFile": "es_dentro_es_i_c53_word.mp3",
+            "audioSentenceFile": "es_dentro_es_i_c53_sentence.mp3",
             "mediaFile": "es_dentro.jpg",
             "tags": [
                 "Location",
@@ -753,8 +753,8 @@
             "wordNative": "Outside",
             "sentenceTarget": "Por favor, quédate fuera.",
             "sentenceNative": "Please stay outside.",
-            "audioWordFile": "es_fuera_word.mp3",
-            "audioSentenceFile": "es_fuera_sentence.mp3",
+            "audioWordFile": "es_fuera_es_i_c54_word.mp3",
+            "audioSentenceFile": "es_fuera_es_i_c54_sentence.mp3",
             "mediaFile": "es_fuera.jpg",
             "tags": [
                 "Location",
@@ -767,8 +767,8 @@
             "wordNative": "Up / Above / Upstairs",
             "sentenceTarget": "El baño está arriba.",
             "sentenceNative": "The bathroom is upstairs.",
-            "audioWordFile": "es_arriba_word.mp3",
-            "audioSentenceFile": "es_arriba_sentence.mp3",
+            "audioWordFile": "es_arriba_es_i_c55_word.mp3",
+            "audioSentenceFile": "es_arriba_es_i_c55_sentence.mp3",
             "mediaFile": "es_arriba.jpg",
             "tags": [
                 "Location",
@@ -782,8 +782,8 @@
             "wordNative": "Down / Below / Downstairs",
             "sentenceTarget": "Espérame abajo.",
             "sentenceNative": "Wait for me downstairs.",
-            "audioWordFile": "es_abajo_word.mp3",
-            "audioSentenceFile": "es_abajo_sentence.mp3",
+            "audioWordFile": "es_abajo_es_i_c56_word.mp3",
+            "audioSentenceFile": "es_abajo_es_i_c56_sentence.mp3",
             "mediaFile": "es_abajo.jpg",
             "tags": [
                 "Location",
@@ -797,8 +797,8 @@
             "wordNative": "Next",
             "sentenceTarget": "El próximo tren sale a las seis.",
             "sentenceNative": "The next train leaves at six.",
-            "audioWordFile": "es_proximo_word.mp3",
-            "audioSentenceFile": "es_proximo_sentence.mp3",
+            "audioWordFile": "es_pr_ximo_es_i_c57_word.mp3",
+            "audioSentenceFile": "es_pr_ximo_es_i_c57_sentence.mp3",
             "mediaFile": "es_proximo.jpg",
             "tags": [
                 "Location"
@@ -810,8 +810,8 @@
             "wordNative": "Then / So",
             "sentenceTarget": "Si no vienes, entonces iré solo.",
             "sentenceNative": "If you don't come, then I'll go alone.",
-            "audioWordFile": "es_entonces_word.mp3",
-            "audioSentenceFile": "es_entonces_sentence.mp3",
+            "audioWordFile": "es_entonces_es_i_c58_word.mp3",
+            "audioSentenceFile": "es_entonces_es_i_c58_sentence.mp3",
             "mediaFile": "es_entonces.jpg",
             "tags": [
                 "Adverbs",
@@ -825,8 +825,8 @@
             "wordNative": "Later / Then",
             "sentenceTarget": "Te veo luego.",
             "sentenceNative": "I'll see you later.",
-            "audioWordFile": "es_luego_word.mp3",
-            "audioSentenceFile": "es_luego_sentence.mp3",
+            "audioWordFile": "es_luego_es_i_c59_word.mp3",
+            "audioSentenceFile": "es_luego_es_i_c59_sentence.mp3",
             "mediaFile": "es_luego.jpg",
             "tags": [
                 "Adverbs",
@@ -839,8 +839,8 @@
             "wordNative": "While",
             "sentenceTarget": "Yo cocino mientras tú limpias.",
             "sentenceNative": "I cook while you clean.",
-            "audioWordFile": "es_mientras_word.mp3",
-            "audioSentenceFile": "es_mientras_sentence.mp3",
+            "audioWordFile": "es_mientras_es_i_c60_word.mp3",
+            "audioSentenceFile": "es_mientras_es_i_c60_sentence.mp3",
             "mediaFile": "es_mientras.jpg",
             "tags": [
                 "Conjunctions",
@@ -853,8 +853,8 @@
             "wordNative": "Always",
             "sentenceTarget": "Siempre estaré aquí para ti.",
             "sentenceNative": "I will always be here for you.",
-            "audioWordFile": "es_siempre_word.mp3",
-            "audioSentenceFile": "es_siempre_sentence.mp3",
+            "audioWordFile": "es_siempre_es_i_c61_word.mp3",
+            "audioSentenceFile": "es_siempre_es_i_c61_sentence.mp3",
             "mediaFile": "es_siempre.jpg",
             "tags": [
                 "Adverbs",
@@ -867,8 +867,8 @@
             "wordNative": "Never",
             "sentenceTarget": "Nunca he estado en Asia.",
             "sentenceNative": "I have never been to Asia.",
-            "audioWordFile": "es_nunca_word.mp3",
-            "audioSentenceFile": "es_nunca_sentence.mp3",
+            "audioWordFile": "es_nunca_es_i_c62_word.mp3",
+            "audioSentenceFile": "es_nunca_es_i_c62_sentence.mp3",
             "mediaFile": "es_nunca.jpg",
             "tags": [
                 "Adverbs",
@@ -881,8 +881,8 @@
             "wordNative": "Never / Ever",
             "sentenceTarget": "No olvidaré este día jamás.",
             "sentenceNative": "I will never forget this day.",
-            "audioWordFile": "es_jamas_word.mp3",
-            "audioSentenceFile": "es_jamas_sentence.mp3",
+            "audioWordFile": "es_jam_s_es_i_c63_word.mp3",
+            "audioSentenceFile": "es_jam_s_es_i_c63_sentence.mp3",
             "mediaFile": "es_jamas.jpg",
             "tags": [
                 "Adverbs",
@@ -895,8 +895,8 @@
             "wordNative": "Sometimes",
             "sentenceTarget": "A veces me gusta caminar solo.",
             "sentenceNative": "Sometimes I like to walk alone.",
-            "audioWordFile": "es_aveces_word.mp3",
-            "audioSentenceFile": "es_aveces_sentence.mp3",
+            "audioWordFile": "es_a_veces_es_i_c64_word.mp3",
+            "audioSentenceFile": "es_a_veces_es_i_c64_sentence.mp3",
             "mediaFile": "es_aveces.jpg",
             "tags": [
                 "Adverbs",
@@ -909,8 +909,8 @@
             "wordNative": "Often",
             "sentenceTarget": "Viajo a menudo por trabajo.",
             "sentenceNative": "I travel often for work.",
-            "audioWordFile": "es_amenudo_word.mp3",
-            "audioSentenceFile": "es_amenudo_sentence.mp3",
+            "audioWordFile": "es_a_menudo_es_i_c65_word.mp3",
+            "audioSentenceFile": "es_a_menudo_es_i_c65_sentence.mp3",
             "mediaFile": "es_amenudo.jpg",
             "tags": [
                 "Adverbs",
@@ -923,8 +923,8 @@
             "wordNative": "Almost",
             "sentenceTarget": "Casi hemos terminado la tarea.",
             "sentenceNative": "We have almost finished the task.",
-            "audioWordFile": "es_casi_word.mp3",
-            "audioSentenceFile": "es_casi_sentence.mp3",
+            "audioWordFile": "es_casi_es_i_c66_word.mp3",
+            "audioSentenceFile": "es_casi_es_i_c66_sentence.mp3",
             "mediaFile": "es_casi.jpg",
             "tags": [
                 "Concepts"
@@ -936,8 +936,8 @@
             "wordNative": "Only / Alone",
             "sentenceTarget": "Solo quiero dormir un poco.",
             "sentenceNative": "I only want to sleep a bit.",
-            "audioWordFile": "es_solo_word.mp3",
-            "audioSentenceFile": "es_solo_sentence.mp3",
+            "audioWordFile": "es_solo_es_i_c67_word.mp3",
+            "audioSentenceFile": "es_solo_es_i_c67_sentence.mp3",
             "mediaFile": "es_solo.jpg",
             "tags": [
                 "Concepts"
@@ -949,8 +949,8 @@
             "wordNative": "Too / Too much",
             "sentenceTarget": "Cuesta demasiado dinero.",
             "sentenceNative": "It costs too much money.",
-            "audioWordFile": "es_demasiado_word.mp3",
-            "audioSentenceFile": "es_demasiado_sentence.mp3",
+            "audioWordFile": "es_demasiado_es_i_c68_word.mp3",
+            "audioSentenceFile": "es_demasiado_es_i_c68_sentence.mp3",
             "mediaFile": "es_demasiado.jpg",
             "tags": [
                 "Quantity"
@@ -962,8 +962,8 @@
             "wordNative": "Very",
             "sentenceTarget": "Es una película muy buena.",
             "sentenceNative": "It's a very good movie.",
-            "audioWordFile": "es_muy_word.mp3",
-            "audioSentenceFile": "es_muy_sentence.mp3",
+            "audioWordFile": "es_muy_es_i_c69_word.mp3",
+            "audioSentenceFile": "es_muy_es_i_c69_sentence.mp3",
             "mediaFile": "es_muy.jpg",
             "tags": [
                 "Quantity"
@@ -975,8 +975,8 @@
             "wordNative": "Much / A lot",
             "sentenceTarget": "Te quiero mucho.",
             "sentenceNative": "I love you a lot.",
-            "audioWordFile": "es_mucho_word.mp3",
-            "audioSentenceFile": "es_mucho_sentence.mp3",
+            "audioWordFile": "es_mucho_es_i_c70_word.mp3",
+            "audioSentenceFile": "es_mucho_es_i_c70_sentence.mp3",
             "mediaFile": "es_mucho.jpg",
             "tags": [
                 "Quantity"
@@ -988,8 +988,8 @@
             "wordNative": "What",
             "sentenceTarget": "¿Qué estás haciendo?",
             "sentenceNative": "What are you doing?",
-            "audioWordFile": "es_que_word.mp3",
-            "audioSentenceFile": "es_que_sentence.mp3",
+            "audioWordFile": "es_qu_es_i_c71_word.mp3",
+            "audioSentenceFile": "es_qu_es_i_c71_sentence.mp3",
             "mediaFile": "es_que.jpg",
             "tags": [
                 "Questions"
@@ -1001,8 +1001,8 @@
             "wordNative": "Who",
             "sentenceTarget": "¿Quién llamó a la puerta?",
             "sentenceNative": "Who knocked at the door?",
-            "audioWordFile": "es_quien_word.mp3",
-            "audioSentenceFile": "es_quien_sentence.mp3",
+            "audioWordFile": "es_qui_n_es_i_c72_word.mp3",
+            "audioSentenceFile": "es_qui_n_es_i_c72_sentence.mp3",
             "mediaFile": "es_quien.jpg",
             "tags": [
                 "Questions"
@@ -1014,8 +1014,8 @@
             "wordNative": "Where",
             "sentenceTarget": "¿Dónde vives ahora?",
             "sentenceNative": "Where do you live now?",
-            "audioWordFile": "es_donde_word.mp3",
-            "audioSentenceFile": "es_donde_sentence.mp3",
+            "audioWordFile": "es_d_nde_es_i_c73_word.mp3",
+            "audioSentenceFile": "es_d_nde_es_i_c73_sentence.mp3",
             "mediaFile": "es_donde.jpg",
             "tags": [
                 "Questions"
@@ -1027,8 +1027,8 @@
             "wordNative": "When",
             "sentenceTarget": "¿Cuándo volverás a casa?",
             "sentenceNative": "When will you return home?",
-            "audioWordFile": "es_cuando_word.mp3",
-            "audioSentenceFile": "es_cuando_sentence.mp3",
+            "audioWordFile": "es_cu_ndo_es_i_c74_word.mp3",
+            "audioSentenceFile": "es_cu_ndo_es_i_c74_sentence.mp3",
             "mediaFile": "es_cuando.jpg",
             "tags": [
                 "Conjunctions",
@@ -1041,8 +1041,8 @@
             "wordNative": "How",
             "sentenceTarget": "¿Cómo se dice 'gato' en inglés?",
             "sentenceNative": "How do you say 'cat' in English?",
-            "audioWordFile": "es_como_word.mp3",
-            "audioSentenceFile": "es_como_sentence.mp3",
+            "audioWordFile": "es_c_mo_es_i_c75_word.mp3",
+            "audioSentenceFile": "es_c_mo_es_i_c75_sentence.mp3",
             "mediaFile": "es_como.jpg",
             "tags": [
                 "Questions"
@@ -1054,8 +1054,8 @@
             "wordNative": "Why",
             "sentenceTarget": "¿Por qué estás llorando?",
             "sentenceNative": "Why are you crying?",
-            "audioWordFile": "es_porque_word.mp3",
-            "audioSentenceFile": "es_porque_sentence.mp3",
+            "audioWordFile": "es_por_qu_es_i_c76_word.mp3",
+            "audioSentenceFile": "es_por_qu_es_i_c76_sentence.mp3",
             "mediaFile": "es_porque.jpg",
             "tags": [
                 "Questions"
@@ -1067,8 +1067,8 @@
             "wordNative": "How much / How many",
             "sentenceTarget": "¿Cuánto cuesta esta camiseta?",
             "sentenceNative": "How much does this t-shirt cost?",
-            "audioWordFile": "es_cuanto_word.mp3",
-            "audioSentenceFile": "es_cuanto_sentence.mp3",
+            "audioWordFile": "es_cu_nto_es_i_c77_word.mp3",
+            "audioSentenceFile": "es_cu_nto_es_i_c77_sentence.mp3",
             "mediaFile": "es_cuanto.jpg",
             "tags": [
                 "Questions"
@@ -1080,8 +1080,8 @@
             "wordNative": "Which",
             "sentenceTarget": "¿Cuál es tu color favorito?",
             "sentenceNative": "Which is your favorite color?",
-            "audioWordFile": "es_cual_word.mp3",
-            "audioSentenceFile": "es_cual_sentence.mp3",
+            "audioWordFile": "es_cu_l_es_i_c78_word.mp3",
+            "audioSentenceFile": "es_cu_l_es_i_c78_sentence.mp3",
             "mediaFile": "es_cual.jpg",
             "tags": [
                 "Questions"
@@ -1093,8 +1093,8 @@
             "wordNative": "For / To / In order to",
             "sentenceTarget": "Este regalo es para ti.",
             "sentenceNative": "This gift is for you.",
-            "audioWordFile": "es_para_word.mp3",
-            "audioSentenceFile": "es_para_sentence.mp3",
+            "audioWordFile": "es_para_es_i_c79_word.mp3",
+            "audioSentenceFile": "es_para_es_i_c79_sentence.mp3",
             "mediaFile": "es_para.jpg",
             "tags": [
                 "Concepts",
@@ -1107,8 +1107,8 @@
             "wordNative": "By / For / Through",
             "sentenceTarget": "Caminamos por la playa.",
             "sentenceNative": "We walked along the beach.",
-            "audioWordFile": "es_por_word.mp3",
-            "audioSentenceFile": "es_por_sentence.mp3",
+            "audioWordFile": "es_por_es_i_c80_word.mp3",
+            "audioSentenceFile": "es_por_es_i_c80_sentence.mp3",
             "mediaFile": "es_por.jpg",
             "tags": [
                 "Concepts",
@@ -1121,8 +1121,8 @@
             "wordNative": "With",
             "sentenceTarget": "Quiero ir con mis amigos.",
             "sentenceNative": "I want to go with my friends.",
-            "audioWordFile": "es_con_word.mp3",
-            "audioSentenceFile": "es_con_sentence.mp3",
+            "audioWordFile": "es_con_es_i_c81_word.mp3",
+            "audioSentenceFile": "es_con_es_i_c81_sentence.mp3",
             "mediaFile": "es_con.jpg",
             "tags": [
                 "Concepts",
@@ -1135,8 +1135,8 @@
             "wordNative": "Without",
             "sentenceTarget": "No puedo vivir sin ti.",
             "sentenceNative": "I cannot live without you.",
-            "audioWordFile": "es_sin_word.mp3",
-            "audioSentenceFile": "es_sin_sentence.mp3",
+            "audioWordFile": "es_sin_es_i_c82_word.mp3",
+            "audioSentenceFile": "es_sin_es_i_c82_sentence.mp3",
             "mediaFile": "es_sin.jpg",
             "tags": [
                 "Concepts"
@@ -1148,8 +1148,8 @@
             "wordNative": "About / Over / On",
             "sentenceTarget": "Hablamos sobre el futuro.",
             "sentenceNative": "We talk about the future.",
-            "audioWordFile": "es_sobre_word.mp3",
-            "audioSentenceFile": "es_sobre_sentence.mp3",
+            "audioWordFile": "es_sobre_es_i_c83_word.mp3",
+            "audioSentenceFile": "es_sobre_es_i_c83_sentence.mp3",
             "mediaFile": "es_sobre.jpg",
             "tags": [
                 "Concepts",
@@ -1162,8 +1162,8 @@
             "wordNative": "Towards",
             "sentenceTarget": "Caminamos hacia la cima.",
             "sentenceNative": "We walk towards the summit.",
-            "audioWordFile": "es_hacia_word.mp3",
-            "audioSentenceFile": "es_hacia_sentence.mp3",
+            "audioWordFile": "es_hacia_es_i_c84_word.mp3",
+            "audioSentenceFile": "es_hacia_es_i_c84_sentence.mp3",
             "mediaFile": "es_hacia.jpg",
             "tags": [
                 "Concepts"
@@ -1175,8 +1175,8 @@
             "wordNative": "From / Since",
             "sentenceTarget": "Desde ayer no me siento bien.",
             "sentenceNative": "Since yesterday I don't feel well.",
-            "audioWordFile": "es_desde_word.mp3",
-            "audioSentenceFile": "es_desde_sentence.mp3",
+            "audioWordFile": "es_desde_es_i_c85_word.mp3",
+            "audioSentenceFile": "es_desde_es_i_c85_sentence.mp3",
             "mediaFile": "es_desde.jpg",
             "tags": [
                 "Concepts",
@@ -1189,8 +1189,8 @@
             "wordNative": "Until / Even",
             "sentenceTarget": "Trabajaré hasta las ocho.",
             "sentenceNative": "I will work until eight.",
-            "audioWordFile": "es_hasta_word.mp3",
-            "audioSentenceFile": "es_hasta_sentence.mp3",
+            "audioWordFile": "es_hasta_es_i_c86_word.mp3",
+            "audioSentenceFile": "es_hasta_es_i_c86_sentence.mp3",
             "mediaFile": "es_hasta.jpg",
             "tags": [
                 "Concepts",
@@ -1203,8 +1203,8 @@
             "wordNative": "Between / Among",
             "sentenceTarget": "Hay secretos entre nosotros.",
             "sentenceNative": "There are secrets between us.",
-            "audioWordFile": "es_entre_word.mp3",
-            "audioSentenceFile": "es_entre_sentence.mp3",
+            "audioWordFile": "es_entre_es_i_c87_word.mp3",
+            "audioSentenceFile": "es_entre_es_i_c87_sentence.mp3",
             "mediaFile": "es_entre.jpg",
             "tags": [
                 "Concepts",
@@ -1218,8 +1218,8 @@
             "wordNative": "Against",
             "sentenceTarget": "Luchamos contra la injusticia.",
             "sentenceNative": "We fight against injustice.",
-            "audioWordFile": "es_contra_word.mp3",
-            "audioSentenceFile": "es_contra_sentence.mp3",
+            "audioWordFile": "es_contra_es_i_c88_word.mp3",
+            "audioSentenceFile": "es_contra_es_i_c88_sentence.mp3",
             "mediaFile": "es_contra.jpg",
             "tags": [
                 "Concepts"
@@ -1231,8 +1231,8 @@
             "wordNative": "According to",
             "sentenceTarget": "Según las noticias, mañana lloverá.",
             "sentenceNative": "According to the news, it will rain tomorrow.",
-            "audioWordFile": "es_segun_word.mp3",
-            "audioSentenceFile": "es_segun_sentence.mp3",
+            "audioWordFile": "es_seg_n_es_i_c89_word.mp3",
+            "audioSentenceFile": "es_seg_n_es_i_c89_sentence.mp3",
             "mediaFile": "es_segun.jpg",
             "tags": [
                 "Concepts",
@@ -1245,8 +1245,8 @@
             "wordNative": "Under / Short",
             "sentenceTarget": "El gato está bajo la mesa.",
             "sentenceNative": "The cat is under the table.",
-            "audioWordFile": "es_bajo_word.mp3",
-            "audioSentenceFile": "es_bajo_sentence.mp3",
+            "audioWordFile": "es_bajo_es_i_c90_word.mp3",
+            "audioSentenceFile": "es_bajo_es_i_c90_sentence.mp3",
             "mediaFile": "es_bajo.jpg",
             "tags": [
                 "Adjectives",
@@ -1260,8 +1260,8 @@
             "wordNative": "Any / Whichever",
             "sentenceTarget": "Puedes tomar cualquier libro.",
             "sentenceNative": "You can take any book.",
-            "audioWordFile": "es_cualquier_word.mp3",
-            "audioSentenceFile": "es_cualquier_sentence.mp3",
+            "audioWordFile": "es_cualquier_es_i_c91_word.mp3",
+            "audioSentenceFile": "es_cualquier_es_i_c91_sentence.mp3",
             "mediaFile": "es_cualquier.jpg",
             "tags": [
                 "Concepts"
@@ -1273,8 +1273,8 @@
             "wordNative": "Own / Same",
             "sentenceTarget": "Lo vi con mis propios ojos.",
             "sentenceNative": "I saw it with my own eyes.",
-            "audioWordFile": "es_propio_word.mp3",
-            "audioSentenceFile": "es_propio_sentence.mp3",
+            "audioWordFile": "es_propio_es_i_c92_word.mp3",
+            "audioSentenceFile": "es_propio_es_i_c92_sentence.mp3",
             "mediaFile": "es_propio.jpg",
             "tags": [
                 "Adjectives",
@@ -1287,8 +1287,8 @@
             "wordNative": "Strange / Weird",
             "sentenceTarget": "Es un hombre muy extraño.",
             "sentenceNative": "He is a very strange man.",
-            "audioWordFile": "es_extrano_word.mp3",
-            "audioSentenceFile": "es_extrano_sentence.mp3",
+            "audioWordFile": "es_extra_o_es_i_c93_word.mp3",
+            "audioSentenceFile": "es_extra_o_es_i_c93_sentence.mp3",
             "mediaFile": "es_extrano.jpg",
             "tags": [
                 "Concepts"
@@ -1300,8 +1300,8 @@
             "wordNative": "To seem / To lock like",
             "sentenceTarget": "Parece que va a llover.",
             "sentenceNative": "It seems like it's going to rain.",
-            "audioWordFile": "es_parecer_word.mp3",
-            "audioSentenceFile": "es_parecer_sentence.mp3",
+            "audioWordFile": "es_parecer_es_i_c94_word.mp3",
+            "audioSentenceFile": "es_parecer_es_i_c94_sentence.mp3",
             "mediaFile": "es_parecer.jpg",
             "tags": [
                 "Concepts",
@@ -1315,8 +1315,8 @@
             "wordNative": "To pass / To happen",
             "sentenceTarget": "¿Qué te pasa?",
             "sentenceNative": "What's happening to you? (What's wrong?)",
-            "audioWordFile": "es_pasar_word.mp3",
-            "audioSentenceFile": "es_pasar_sentence.mp3",
+            "audioWordFile": "es_pasar_es_i_c95_word.mp3",
+            "audioSentenceFile": "es_pasar_es_i_c95_sentence.mp3",
             "mediaFile": "es_pasar.jpg",
             "tags": [
                 "Concepts",
@@ -1330,8 +1330,8 @@
             "wordNative": "To leave / To allow",
             "sentenceTarget": "Déjame solo, por favor.",
             "sentenceNative": "Leave me alone, please.",
-            "audioWordFile": "es_dejar_word.mp3",
-            "audioSentenceFile": "es_dejar_sentence.mp3",
+            "audioWordFile": "es_dejar_es_i_c96_word.mp3",
+            "audioSentenceFile": "es_dejar_es_i_c96_sentence.mp3",
             "mediaFile": "es_dejar.jpg",
             "tags": [
                 "Concepts",
@@ -1345,8 +1345,8 @@
             "wordNative": "To arrive",
             "sentenceTarget": "El tren llegará a tiempo.",
             "sentenceNative": "The train will arrive on time.",
-            "audioWordFile": "es_llegar_word.mp3",
-            "audioSentenceFile": "es_llegar_sentence.mp3",
+            "audioWordFile": "es_llegar_es_i_c97_word.mp3",
+            "audioSentenceFile": "es_llegar_es_i_c97_sentence.mp3",
             "mediaFile": "es_llegar.jpg",
             "tags": [
                 "Concepts",
@@ -1360,8 +1360,8 @@
             "wordNative": "To find",
             "sentenceTarget": "No encuentro mis llaves.",
             "sentenceNative": "I can't find my keys.",
-            "audioWordFile": "es_encontrar_word.mp3",
-            "audioSentenceFile": "es_encontrar_sentence.mp3",
+            "audioWordFile": "es_encontrar_es_i_c98_word.mp3",
+            "audioSentenceFile": "es_encontrar_es_i_c98_sentence.mp3",
             "mediaFile": "es_encontrar.jpg",
             "tags": [
                 "Concepts",
@@ -1375,8 +1375,8 @@
             "wordNative": "To believe",
             "sentenceTarget": "No puedo creer lo que pasó.",
             "sentenceNative": "I can't believe what happened.",
-            "audioWordFile": "es_creer_word.mp3",
-            "audioSentenceFile": "es_creer_sentence.mp3",
+            "audioWordFile": "es_creer_es_i_c99_word.mp3",
+            "audioSentenceFile": "es_creer_es_i_c99_sentence.mp3",
             "mediaFile": "es_creer.jpg",
             "tags": [
                 "Concepts",
@@ -1390,8 +1390,8 @@
             "wordNative": "To know (fact)",
             "sentenceTarget": "No sé la respuesta.",
             "sentenceNative": "I don't know the answer.",
-            "audioWordFile": "es_saber_word.mp3",
-            "audioSentenceFile": "es_saber_sentence.mp3",
+            "audioWordFile": "es_saber_es_i_c100_word.mp3",
+            "audioSentenceFile": "es_saber_es_i_c100_sentence.mp3",
             "mediaFile": "es_saber.jpg",
             "tags": [
                 "Concepts",

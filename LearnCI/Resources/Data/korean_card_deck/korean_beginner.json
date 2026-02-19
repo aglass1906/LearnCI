@@ -22,8 +22,8 @@
             "wordNative": "I / Me",
             "sentenceTarget": "저는 학생입니다.",
             "sentenceNative": "I am a student.",
-            "audioWordFile": "ko_jeo_word.mp3",
-            "audioSentenceFile": "ko_jeo_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c1_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c1_sentence.mp3",
             "mediaFile": "ko_jeo.jpg",
             "tags": [
                 "People & Pronouns",
@@ -36,8 +36,8 @@
             "wordNative": "You",
             "sentenceTarget": "너는 누구니?",
             "sentenceNative": "Who are you?",
-            "audioWordFile": "ko_neo_word.mp3",
-            "audioSentenceFile": "ko_neo_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c2_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c2_sentence.mp3",
             "mediaFile": "ko_neo.jpg",
             "tags": [
                 "People & Pronouns",
@@ -50,8 +50,8 @@
             "wordNative": "He",
             "sentenceTarget": "그는 내 친구예요.",
             "sentenceNative": "He is my friend.",
-            "audioWordFile": "ko_geu_word.mp3",
-            "audioSentenceFile": "ko_geu_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c3_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c3_sentence.mp3",
             "mediaFile": "ko_geu.jpg",
             "tags": [
                 "People & Pronouns",
@@ -64,8 +64,8 @@
             "wordNative": "She",
             "sentenceTarget": "그녀는 아주 예뻐요.",
             "sentenceNative": "She is very pretty.",
-            "audioWordFile": "ko_geunyeo_word.mp3",
-            "audioSentenceFile": "ko_geunyeo_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c4_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c4_sentence.mp3",
             "mediaFile": "ko_geunyeo.jpg",
             "tags": [
                 "People & Pronouns",
@@ -78,8 +78,8 @@
             "wordNative": "Person",
             "sentenceTarget": "여기에 사람이 많아요.",
             "sentenceNative": "There are many people here.",
-            "audioWordFile": "ko_saram_word.mp3",
-            "audioSentenceFile": "ko_saram_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c5_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c5_sentence.mp3",
             "mediaFile": "ko_saram.jpg",
             "tags": [
                 "People",
@@ -92,8 +92,8 @@
             "wordNative": "Man",
             "sentenceTarget": "저 남자는 누구예요?",
             "sentenceNative": "Who is that man?",
-            "audioWordFile": "ko_namja_word.mp3",
-            "audioSentenceFile": "ko_namja_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c6_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c6_sentence.mp3",
             "mediaFile": "ko_namja.jpg",
             "tags": [
                 "People",
@@ -106,8 +106,8 @@
             "wordNative": "Woman",
             "sentenceTarget": "여자가 노래를 불러요.",
             "sentenceNative": "The woman is singing.",
-            "audioWordFile": "ko_yeoja_word.mp3",
-            "audioSentenceFile": "ko_yeoja_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c7_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c7_sentence.mp3",
             "mediaFile": "ko_yeoja.jpg",
             "tags": [
                 "People",
@@ -120,8 +120,8 @@
             "wordNative": "Child",
             "sentenceTarget": "아이가 웃고 있어요.",
             "sentenceNative": "The child is laughing.",
-            "audioWordFile": "ko_ai_word.mp3",
-            "audioSentenceFile": "ko_ai_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c8_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c8_sentence.mp3",
             "mediaFile": "ko_ai.jpg",
             "tags": [
                 "Family",
@@ -134,8 +134,8 @@
             "wordNative": "Father",
             "sentenceTarget": "아버지는 회사원이에요.",
             "sentenceNative": "Father is an office worker.",
-            "audioWordFile": "ko_abeoji_word.mp3",
-            "audioSentenceFile": "ko_abeoji_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c9_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c9_sentence.mp3",
             "mediaFile": "ko_abeoji.jpg",
             "tags": [
                 "Family",
@@ -148,8 +148,8 @@
             "wordNative": "Mother",
             "sentenceTarget": "어머니는 요리를 잘하세요.",
             "sentenceNative": "Mother is good at cooking.",
-            "audioWordFile": "ko_eomeoni_word.mp3",
-            "audioSentenceFile": "ko_eomeoni_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c10_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c10_sentence.mp3",
             "mediaFile": "ko_eomeoni.jpg",
             "tags": [
                 "Family",
@@ -162,8 +162,8 @@
             "wordNative": "Younger sibling",
             "sentenceTarget": "동생이 숙제를 해요.",
             "sentenceNative": "The younger sibling does homework.",
-            "audioWordFile": "ko_dongsaeng_word.mp3",
-            "audioSentenceFile": "ko_dongsaeng_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c11_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c11_sentence.mp3",
             "mediaFile": "ko_dongsaeng.jpg",
             "tags": [
                 "People & Family"
@@ -175,8 +175,8 @@
             "wordNative": "Older brother",
             "sentenceTarget": "형은 키가 커요.",
             "sentenceNative": "Older brother is tall.",
-            "audioWordFile": "ko_hyeong_word.mp3",
-            "audioSentenceFile": "ko_hyeong_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c12_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c12_sentence.mp3",
             "mediaFile": "ko_hyeong.jpg",
             "tags": [
                 "Family",
@@ -189,8 +189,8 @@
             "wordNative": "Older sister",
             "sentenceTarget": "누나는 대학생이에요.",
             "sentenceNative": "Older sister is a college student.",
-            "audioWordFile": "ko_nuna_word.mp3",
-            "audioSentenceFile": "ko_nuna_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c13_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c13_sentence.mp3",
             "mediaFile": "ko_nuna.jpg",
             "tags": [
                 "Family",
@@ -203,8 +203,8 @@
             "wordNative": "Friend",
             "sentenceTarget": "친구가 선물을 줬어요.",
             "sentenceNative": "The friend gave a gift.",
-            "audioWordFile": "ko_chingu_word.mp3",
-            "audioSentenceFile": "ko_chingu_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c14_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c14_sentence.mp3",
             "mediaFile": "ko_chingu.jpg",
             "tags": [
                 "People",
@@ -217,8 +217,8 @@
             "wordNative": "School",
             "sentenceTarget": "학교에 일찍 가요.",
             "sentenceNative": "I go to school early.",
-            "audioWordFile": "ko_hakgyo_word.mp3",
-            "audioSentenceFile": "ko_hakgyo_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c15_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c15_sentence.mp3",
             "mediaFile": "ko_hakgyo.jpg",
             "tags": [
                 "Daily Routine",
@@ -231,8 +231,8 @@
             "wordNative": "Company / Office",
             "sentenceTarget": "회사가 서울에 있어요.",
             "sentenceNative": "The company is in Seoul.",
-            "audioWordFile": "ko_hoesa_word.mp3",
-            "audioSentenceFile": "ko_hoesa_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c16_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c16_sentence.mp3",
             "mediaFile": "ko_hoesa.jpg",
             "tags": [
                 "Places"
@@ -244,8 +244,8 @@
             "wordNative": "Hospital",
             "sentenceTarget": "병원에 가야 해요.",
             "sentenceNative": "I have to go to the hospital.",
-            "audioWordFile": "ko_byeongwon_word.mp3",
-            "audioSentenceFile": "ko_byeongwon_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c17_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c17_sentence.mp3",
             "mediaFile": "ko_byeongwon.jpg",
             "tags": [
                 "Places"
@@ -257,8 +257,8 @@
             "wordNative": "Market",
             "sentenceTarget": "시장에서 과일을 샀어요.",
             "sentenceNative": "I bought fruit at the market.",
-            "audioWordFile": "ko_sijang_word.mp3",
-            "audioSentenceFile": "ko_sijang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c18_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c18_sentence.mp3",
             "mediaFile": "ko_sijang.jpg",
             "tags": [
                 "Places"
@@ -270,8 +270,8 @@
             "wordNative": "Restaurant",
             "sentenceTarget": "이 식당은 비빔밥이 맛있어요.",
             "sentenceNative": "This restaurant's bibimbap is delicious.",
-            "audioWordFile": "ko_sikdang_word.mp3",
-            "audioSentenceFile": "ko_sikdang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c19_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c19_sentence.mp3",
             "mediaFile": "ko_sikdang.jpg",
             "tags": [
                 "Food",
@@ -284,8 +284,8 @@
             "wordNative": "Coffee shop",
             "sentenceTarget": "커피숍에서 친구를 만나요.",
             "sentenceNative": "I meet a friend at the coffee shop.",
-            "audioWordFile": "ko_keopisyop_word.mp3",
-            "audioSentenceFile": "ko_keopisyop_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c20_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c20_sentence.mp3",
             "mediaFile": "ko_keopisyop.jpg",
             "tags": [
                 "Food",
@@ -298,8 +298,8 @@
             "wordNative": "House",
             "sentenceTarget": "집이 아주 깨끗해요.",
             "sentenceNative": "The house is very clean.",
-            "audioWordFile": "ko_jip_word.mp3",
-            "audioSentenceFile": "ko_jip_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c21_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c21_sentence.mp3",
             "mediaFile": "ko_jip.jpg",
             "tags": [
                 "Home & Furniture",
@@ -312,8 +312,8 @@
             "wordNative": "Room",
             "sentenceTarget": "방이 따뜻해요.",
             "sentenceNative": "The room is warm.",
-            "audioWordFile": "ko_bang_word.mp3",
-            "audioSentenceFile": "ko_bang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c22_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c22_sentence.mp3",
             "mediaFile": "ko_bang.jpg",
             "tags": [
                 "Home & Furniture",
@@ -326,8 +326,8 @@
             "wordNative": "Bathroom",
             "sentenceTarget": "화장실이 어디예요?",
             "sentenceNative": "Where is the bathroom?",
-            "audioWordFile": "ko_hwajangsil_word.mp3",
-            "audioSentenceFile": "ko_hwajangsil_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c23_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c23_sentence.mp3",
             "mediaFile": "ko_hwajangsil.jpg",
             "tags": [
                 "Home & Furniture",
@@ -340,8 +340,8 @@
             "wordNative": "Kitchen",
             "sentenceTarget": "주방에서 물을 마셔요.",
             "sentenceNative": "I drink water in the kitchen.",
-            "audioWordFile": "ko_jubang_word.mp3",
-            "audioSentenceFile": "ko_jubang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c24_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c24_sentence.mp3",
             "mediaFile": "ko_jubang.jpg",
             "tags": [
                 "Home & Furniture",
@@ -354,8 +354,8 @@
             "wordNative": "Bed",
             "sentenceTarget": "침대가 아주 편해요.",
             "sentenceNative": "The bed is very comfortable.",
-            "audioWordFile": "ko_chimdae_word.mp3",
-            "audioSentenceFile": "ko_chimdae_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c25_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c25_sentence.mp3",
             "mediaFile": "ko_chimdae.jpg",
             "tags": [
                 "Daily Routine",
@@ -369,8 +369,8 @@
             "wordNative": "Desk",
             "sentenceTarget": "책상 위에 책이 있어요.",
             "sentenceNative": "There is a book on the desk.",
-            "audioWordFile": "ko_chaeksang_word.mp3",
-            "audioSentenceFile": "ko_chaeksang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c26_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c26_sentence.mp3",
             "mediaFile": "ko_chaeksang.jpg",
             "tags": [
                 "Home & Furniture"
@@ -382,8 +382,8 @@
             "wordNative": "Chair",
             "sentenceTarget": "의자에 앉으세요.",
             "sentenceNative": "Please sit in the chair.",
-            "audioWordFile": "ko_uija_word.mp3",
-            "audioSentenceFile": "ko_uija_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c27_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c27_sentence.mp3",
             "mediaFile": "ko_uija.jpg",
             "tags": [
                 "Home & Furniture",
@@ -396,8 +396,8 @@
             "wordNative": "Phone",
             "sentenceTarget": "전화번호가 뭐예요?",
             "sentenceNative": "What is your phone number?",
-            "audioWordFile": "ko_jeonhwa_word.mp3",
-            "audioSentenceFile": "ko_jeonhwa_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c28_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c28_sentence.mp3",
             "mediaFile": "ko_jeonhwa.jpg",
             "tags": [
                 "Objects"
@@ -409,8 +409,8 @@
             "wordNative": "Computer",
             "sentenceTarget": "컴퓨터로 게임을 해요.",
             "sentenceNative": "I play games on the computer.",
-            "audioWordFile": "ko_keompyuteo_word.mp3",
-            "audioSentenceFile": "ko_keompyuteo_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c29_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c29_sentence.mp3",
             "mediaFile": "ko_keompyuteo.jpg",
             "tags": [
                 "Objects"
@@ -422,8 +422,8 @@
             "wordNative": "Book",
             "sentenceTarget": "매일 책을 읽어요.",
             "sentenceNative": "I read books every day.",
-            "audioWordFile": "ko_chaek_word.mp3",
-            "audioSentenceFile": "ko_chaek_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c30_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c30_sentence.mp3",
             "mediaFile": "ko_chaek.jpg",
             "tags": [
                 "Objects"
@@ -435,8 +435,8 @@
             "wordNative": "Pencil",
             "sentenceTarget": "연필을 빌려주세요.",
             "sentenceNative": "Please lend me a pencil.",
-            "audioWordFile": "ko_yeonpil_word.mp3",
-            "audioSentenceFile": "ko_yeonpil_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c31_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c31_sentence.mp3",
             "mediaFile": "ko_yeonpil.jpg",
             "tags": [
                 "Objects"
@@ -448,8 +448,8 @@
             "wordNative": "Paper",
             "sentenceTarget": "종이에 이름을 쓰세요.",
             "sentenceNative": "Please write your name on the paper.",
-            "audioWordFile": "ko_jong_i_word.mp3",
-            "audioSentenceFile": "ko_jong_i_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c32_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c32_sentence.mp3",
             "mediaFile": "ko_jong_i.jpg",
             "tags": [
                 "Objects"
@@ -461,8 +461,8 @@
             "wordNative": "Money",
             "sentenceTarget": "돈을 많이 벌고 싶어요.",
             "sentenceNative": "I want to earn a lot of money.",
-            "audioWordFile": "ko_don_word.mp3",
-            "audioSentenceFile": "ko_don_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c33_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c33_sentence.mp3",
             "mediaFile": "ko_don.jpg",
             "tags": [
                 "Concepts",
@@ -475,8 +475,8 @@
             "wordNative": "Clothes",
             "sentenceTarget": "두꺼운 옷을 입으세요.",
             "sentenceNative": "Please wear thick clothes.",
-            "audioWordFile": "ko_ot_word.mp3",
-            "audioSentenceFile": "ko_ot_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c34_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c34_sentence.mp3",
             "mediaFile": "ko_ot.jpg",
             "tags": [
                 "Clothing"
@@ -488,8 +488,8 @@
             "wordNative": "Shoes",
             "sentenceTarget": "신발을 벗고 들어오세요.",
             "sentenceNative": "Please take off your shoes and come in.",
-            "audioWordFile": "ko_sinbal_word.mp3",
-            "audioSentenceFile": "ko_sinbal_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c35_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c35_sentence.mp3",
             "mediaFile": "ko_sinbal.jpg",
             "tags": [
                 "Clothing"
@@ -501,8 +501,8 @@
             "wordNative": "Bag",
             "sentenceTarget": "가방이 너무 무거워요.",
             "sentenceNative": "The bag is too heavy.",
-            "audioWordFile": "ko_gabang_word.mp3",
-            "audioSentenceFile": "ko_gabang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c36_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c36_sentence.mp3",
             "mediaFile": "ko_gabang.jpg",
             "tags": [
                 "Clothing",
@@ -515,8 +515,8 @@
             "wordNative": "Time",
             "sentenceTarget": "시간이 벌써 이렇게 됐네요.",
             "sentenceNative": "Time has passed so quickly.",
-            "audioWordFile": "ko_sigan_word.mp3",
-            "audioSentenceFile": "ko_sigan_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c37_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c37_sentence.mp3",
             "mediaFile": "ko_sigan.jpg",
             "tags": [
                 "Time",
@@ -529,8 +529,8 @@
             "wordNative": "Today",
             "sentenceTarget": "오늘은 파티가 있어요.",
             "sentenceNative": "There is a party today.",
-            "audioWordFile": "ko_oneul_word.mp3",
-            "audioSentenceFile": "ko_oneul_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c38_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c38_sentence.mp3",
             "mediaFile": "ko_oneul.jpg",
             "tags": [
                 "Adverbs",
@@ -544,8 +544,8 @@
             "wordNative": "Yesterday",
             "sentenceTarget": "어제 영화를 봤어요.",
             "sentenceNative": "I watched a movie yesterday.",
-            "audioWordFile": "ko_eoje_word.mp3",
-            "audioSentenceFile": "ko_eoje_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c39_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c39_sentence.mp3",
             "mediaFile": "ko_eoje.jpg",
             "tags": [
                 "Adverbs",
@@ -559,8 +559,8 @@
             "wordNative": "Tomorrow",
             "sentenceTarget": "내일 바다에 갈 거예요.",
             "sentenceNative": "I'm going to the sea tomorrow.",
-            "audioWordFile": "ko_naeil_word.mp3",
-            "audioSentenceFile": "ko_naeil_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c40_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c40_sentence.mp3",
             "mediaFile": "ko_naeil.jpg",
             "tags": [
                 "Adverbs",
@@ -574,8 +574,8 @@
             "wordNative": "Morning / Breakfast",
             "sentenceTarget": "아침 일찍 일어나요.",
             "sentenceNative": "I wake up early in the morning.",
-            "audioWordFile": "ko_achim_word.mp3",
-            "audioSentenceFile": "ko_achim_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c41_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c41_sentence.mp3",
             "mediaFile": "ko_achim.jpg",
             "tags": [
                 "Daily Routine",
@@ -591,8 +591,8 @@
             "wordNative": "Lunch",
             "sentenceTarget": "점심 메뉴가 뭐예요?",
             "sentenceNative": "What's the lunch menu?",
-            "audioWordFile": "ko_jeomsim_word.mp3",
-            "audioSentenceFile": "ko_jeomsim_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c42_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c42_sentence.mp3",
             "mediaFile": "ko_jeomsim.jpg",
             "tags": [
                 "Daily Routine",
@@ -606,8 +606,8 @@
             "wordNative": "Evening / Dinner",
             "sentenceTarget": "저녁에 외식을 해요.",
             "sentenceNative": "We are eating out in the evening.",
-            "audioWordFile": "ko_jeonyeok_word.mp3",
-            "audioSentenceFile": "ko_jeonyeok_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c43_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c43_sentence.mp3",
             "mediaFile": "ko_jeonyeok.jpg",
             "tags": [
                 "Daily Routine",
@@ -623,8 +623,8 @@
             "wordNative": "Night",
             "sentenceTarget": "밤에 라면을 먹으면 안 돼요.",
             "sentenceNative": "You shouldn't eat ramen at night.",
-            "audioWordFile": "ko_bam_word.mp3",
-            "audioSentenceFile": "ko_bam_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c44_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c44_sentence.mp3",
             "mediaFile": "ko_bam.jpg",
             "tags": [
                 "Time",
@@ -638,8 +638,8 @@
             "wordNative": "Food",
             "sentenceTarget": "매운 음식을 좋아하세요?",
             "sentenceNative": "Do you like spicy food?",
-            "audioWordFile": "ko_eumsik_word.mp3",
-            "audioSentenceFile": "ko_eumsik_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c45_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c45_sentence.mp3",
             "mediaFile": "ko_eumsik.jpg",
             "tags": [
                 "Food",
@@ -652,8 +652,8 @@
             "wordNative": "Water",
             "sentenceTarget": "물을 많이 마시세요.",
             "sentenceNative": "Please drink a lot of water.",
-            "audioWordFile": "ko_mul_word.mp3",
-            "audioSentenceFile": "ko_mul_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c46_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c46_sentence.mp3",
             "mediaFile": "ko_mul.jpg",
             "tags": [
                 "Food",
@@ -666,8 +666,8 @@
             "wordNative": "Rice / Meal",
             "sentenceTarget": "밥 먹었어?",
             "sentenceNative": "Did you eat? (Have you had your meal?)",
-            "audioWordFile": "ko_bap_word.mp3",
-            "audioSentenceFile": "ko_bap_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c47_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c47_sentence.mp3",
             "mediaFile": "ko_bap.jpg",
             "tags": [
                 "Food",
@@ -680,8 +680,8 @@
             "wordNative": "Meat",
             "sentenceTarget": "불고기는 소고기로 만들어요.",
             "sentenceNative": "Bulgogi is made with beef.",
-            "audioWordFile": "ko_gogi_word.mp3",
-            "audioSentenceFile": "ko_gogi_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c48_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c48_sentence.mp3",
             "mediaFile": "ko_gogi.jpg",
             "tags": [
                 "Food",
@@ -694,8 +694,8 @@
             "wordNative": "Fish (edible)",
             "sentenceTarget": "시장에서 싱싱한 생선을 샀어요.",
             "sentenceNative": "I bought fresh fish at the market.",
-            "audioWordFile": "ko_saengseon_word.mp3",
-            "audioSentenceFile": "ko_saengseon_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c49_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c49_sentence.mp3",
             "mediaFile": "ko_saengseon.jpg",
             "tags": [
                 "Animals",
@@ -709,8 +709,8 @@
             "wordNative": "Vegetable",
             "sentenceTarget": "야채를 골고루 먹어야 해요.",
             "sentenceNative": "You must eat a variety of vegetables.",
-            "audioWordFile": "ko_yachae_word.mp3",
-            "audioSentenceFile": "ko_yachae_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c50_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c50_sentence.mp3",
             "mediaFile": "ko_yachae.jpg",
             "tags": [
                 "Food",
@@ -723,8 +723,8 @@
             "wordNative": "Fruit",
             "sentenceTarget": "어떤 과일을 제일 좋아해요?",
             "sentenceNative": "Which fruit do you like best?",
-            "audioWordFile": "ko_gwail_word.mp3",
-            "audioSentenceFile": "ko_gwail_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c51_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c51_sentence.mp3",
             "mediaFile": "ko_gwail.jpg",
             "tags": [
                 "Food",
@@ -737,8 +737,8 @@
             "wordNative": "Milk",
             "sentenceTarget": "우유가 상했어요.",
             "sentenceNative": "The milk has gone bad.",
-            "audioWordFile": "ko_uyu_word.mp3",
-            "audioSentenceFile": "ko_uyu_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c52_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c52_sentence.mp3",
             "mediaFile": "ko_uyu.jpg",
             "tags": [
                 "Food",
@@ -751,8 +751,8 @@
             "wordNative": "Bread",
             "sentenceTarget": "빵집에서 갓 구운 빵을 샀어요.",
             "sentenceNative": "I bought freshly baked bread from the bakery.",
-            "audioWordFile": "ko_ppang_word.mp3",
-            "audioSentenceFile": "ko_ppang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c53_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c53_sentence.mp3",
             "mediaFile": "ko_ppang.jpg",
             "tags": [
                 "Food",
@@ -765,8 +765,8 @@
             "wordNative": "Egg",
             "sentenceTarget": "계란 후라이를 해 줄게요.",
             "sentenceNative": "I'll make you a fried egg.",
-            "audioWordFile": "ko_gyeran_word.mp3",
-            "audioSentenceFile": "ko_gyeran_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c54_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c54_sentence.mp3",
             "mediaFile": "ko_gyeran.jpg",
             "tags": [
                 "Food",
@@ -779,8 +779,8 @@
             "wordNative": "Tea / Car",
             "sentenceTarget": "따뜻한 차 한 잔 하실래요?",
             "sentenceNative": "Would you like a cup of warm tea?",
-            "audioWordFile": "ko_cha_word.mp3",
-            "audioSentenceFile": "ko_cha_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c55_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c55_sentence.mp3",
             "mediaFile": "ko_cha.jpg",
             "tags": [
                 "Food",
@@ -794,8 +794,8 @@
             "wordNative": "Coffee",
             "sentenceTarget": "커피에 설탕을 넣으세요?",
             "sentenceNative": "Do you put sugar in your coffee?",
-            "audioWordFile": "ko_keopi_word.mp3",
-            "audioSentenceFile": "ko_keopi_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c56_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c56_sentence.mp3",
             "mediaFile": "ko_keopi.jpg",
             "tags": [
                 "Food",
@@ -808,8 +808,8 @@
             "wordNative": "Alcohol",
             "sentenceTarget": "술을 적당히 마시세요.",
             "sentenceNative": "Please drink alcohol in moderation.",
-            "audioWordFile": "ko_sul_word.mp3",
-            "audioSentenceFile": "ko_sul_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c57_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c57_sentence.mp3",
             "mediaFile": "ko_sul.jpg",
             "tags": [
                 "Food & Drink"
@@ -821,8 +821,8 @@
             "wordNative": "Study",
             "sentenceTarget": "한국어 공부가 재미있어요.",
             "sentenceNative": "Studying Korean is fun.",
-            "audioWordFile": "ko_gongbu_word.mp3",
-            "audioSentenceFile": "ko_gongbu_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c58_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c58_sentence.mp3",
             "mediaFile": "ko_gongbu.jpg",
             "tags": [
                 "Activities"
@@ -834,8 +834,8 @@
             "wordNative": "Work / Job",
             "sentenceTarget": "무슨 일을 하세요?",
             "sentenceNative": "What kind of work do you do?",
-            "audioWordFile": "ko_il_word.mp3",
-            "audioSentenceFile": "ko_il_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c59_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c59_sentence.mp3",
             "mediaFile": "ko_il.jpg",
             "tags": [
                 "Activities",
@@ -848,8 +848,8 @@
             "wordNative": "Exercise / Sports",
             "sentenceTarget": "건강을 위해 운동을 해요.",
             "sentenceNative": "I exercise for my health.",
-            "audioWordFile": "ko_undong_word.mp3",
-            "audioSentenceFile": "ko_undong_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c60_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c60_sentence.mp3",
             "mediaFile": "ko_undong.jpg",
             "tags": [
                 "Activities",
@@ -862,8 +862,8 @@
             "wordNative": "Travel",
             "sentenceTarget": "이번 휴가 때 여행을 가요.",
             "sentenceNative": "I'm going on a trip during this vacation.",
-            "audioWordFile": "ko_yeohaeng_word.mp3",
-            "audioSentenceFile": "ko_yeohaeng_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c61_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c61_sentence.mp3",
             "mediaFile": "ko_yeohaeng.jpg",
             "tags": [
                 "Activities"
@@ -875,8 +875,8 @@
             "wordNative": "Song",
             "sentenceTarget": "이 노래는 내가 좋아하는 노래예요.",
             "sentenceNative": "This is a song I like.",
-            "audioWordFile": "ko_norae_word.mp3",
-            "audioSentenceFile": "ko_norae_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c62_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c62_sentence.mp3",
             "mediaFile": "ko_norae.jpg",
             "tags": [
                 "Activities"
@@ -888,8 +888,8 @@
             "wordNative": "Movie",
             "sentenceTarget": "어떤 영화 장르를 좋아하세요?",
             "sentenceNative": "What kind of movie genre do you like?",
-            "audioWordFile": "ko_yeonghwa_word.mp3",
-            "audioSentenceFile": "ko_yeonghwa_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c63_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c63_sentence.mp3",
             "mediaFile": "ko_yeonghwa.jpg",
             "tags": [
                 "Activities"
@@ -901,8 +901,8 @@
             "wordNative": "Weather",
             "sentenceTarget": "오늘 날씨가 정말 화창해요.",
             "sentenceNative": "The weather is really sunny today.",
-            "audioWordFile": "ko_nalssi_word.mp3",
-            "audioSentenceFile": "ko_nalssi_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c64_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c64_sentence.mp3",
             "mediaFile": "ko_nalssi.jpg",
             "tags": [
                 "Nature & Weather"
@@ -914,8 +914,8 @@
             "wordNative": "Rain",
             "sentenceTarget": "비가 오니까 우산을 챙기세요.",
             "sentenceNative": "It's raining, so take an umbrella.",
-            "audioWordFile": "ko_bi_word.mp3",
-            "audioSentenceFile": "ko_bi_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c65_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c65_sentence.mp3",
             "mediaFile": "ko_bi.jpg",
             "tags": [
                 "Nature",
@@ -928,8 +928,8 @@
             "wordNative": "Snow / Eye",
             "sentenceTarget": "하얀 눈이 내려요.",
             "sentenceNative": "White snow is falling.",
-            "audioWordFile": "ko_nun_word.mp3",
-            "audioSentenceFile": "ko_nun_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c66_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c66_sentence.mp3",
             "mediaFile": "ko_nun.jpg",
             "tags": [
                 "Body",
@@ -943,8 +943,8 @@
             "wordNative": "Wind",
             "sentenceTarget": "시원한 바람이 불어요.",
             "sentenceNative": "A cool breeze is blowing.",
-            "audioWordFile": "ko_baram_word.mp3",
-            "audioSentenceFile": "ko_baram_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c67_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c67_sentence.mp3",
             "mediaFile": "ko_baram.jpg",
             "tags": [
                 "Nature",
@@ -957,8 +957,8 @@
             "wordNative": "Sky",
             "sentenceTarget": "하늘이 아주 높고 푸르네요.",
             "sentenceNative": "The sky is very high and blue.",
-            "audioWordFile": "ko_haneul_word.mp3",
-            "audioSentenceFile": "ko_haneul_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c68_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c68_sentence.mp3",
             "mediaFile": "ko_haneul.jpg",
             "tags": [
                 "Nature",
@@ -971,8 +971,8 @@
             "wordNative": "Cloud",
             "sentenceTarget": "하늘에 구름이 많아요.",
             "sentenceNative": "There are many clouds in the sky.",
-            "audioWordFile": "ko_gureum_word.mp3",
-            "audioSentenceFile": "ko_gureum_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c69_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c69_sentence.mp3",
             "mediaFile": "ko_gureum.jpg",
             "tags": [
                 "Nature",
@@ -985,8 +985,8 @@
             "wordNative": "Sun",
             "sentenceTarget": "해가 지고 있어요.",
             "sentenceNative": "The sun is setting.",
-            "audioWordFile": "ko_hae_word.mp3",
-            "audioSentenceFile": "ko_hae_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c70_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c70_sentence.mp3",
             "mediaFile": "ko_hae.jpg",
             "tags": [
                 "Nature",
@@ -999,8 +999,8 @@
             "wordNative": "Moon",
             "sentenceTarget": "보름달이 떴어요.",
             "sentenceNative": "A full moon has risen.",
-            "audioWordFile": "ko_dal_word.mp3",
-            "audioSentenceFile": "ko_dal_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c71_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c71_sentence.mp3",
             "mediaFile": "ko_dal.jpg",
             "tags": [
                 "Nature",
@@ -1013,8 +1013,8 @@
             "wordNative": "Star",
             "sentenceTarget": "밤하늘에 별이 반짝여요.",
             "sentenceNative": "Stars twinkle in the night sky.",
-            "audioWordFile": "ko_byeol_word.mp3",
-            "audioSentenceFile": "ko_byeol_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c72_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c72_sentence.mp3",
             "mediaFile": "ko_byeol.jpg",
             "tags": [
                 "Nature",
@@ -1027,8 +1027,8 @@
             "wordNative": "Mountain",
             "sentenceTarget": "주말에 산에 가요.",
             "sentenceNative": "I go to the mountain on weekends.",
-            "audioWordFile": "ko_san_word.mp3",
-            "audioSentenceFile": "ko_san_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c73_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c73_sentence.mp3",
             "mediaFile": "ko_san.jpg",
             "tags": [
                 "Nature",
@@ -1041,8 +1041,8 @@
             "wordNative": "Sea / Ocean",
             "sentenceTarget": "여름에는 바다가 최고예요.",
             "sentenceNative": "In summer, the sea is the best.",
-            "audioWordFile": "ko_bada_word.mp3",
-            "audioSentenceFile": "ko_bada_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c74_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c74_sentence.mp3",
             "mediaFile": "ko_bada.jpg",
             "tags": [
                 "Nature",
@@ -1055,8 +1055,8 @@
             "wordNative": "River",
             "sentenceTarget": "한강에서 자전거를 타요.",
             "sentenceNative": "I ride a bicycle at the Han River.",
-            "audioWordFile": "ko_gang_word.mp3",
-            "audioSentenceFile": "ko_gang_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c75_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c75_sentence.mp3",
             "mediaFile": "ko_gang.jpg",
             "tags": [
                 "Nature",
@@ -1069,8 +1069,8 @@
             "wordNative": "Tree",
             "sentenceTarget": "나무 아래에서 쉬어요.",
             "sentenceNative": "Rest under the tree.",
-            "audioWordFile": "ko_namu_word.mp3",
-            "audioSentenceFile": "ko_namu_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c76_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c76_sentence.mp3",
             "mediaFile": "ko_namu.jpg",
             "tags": [
                 "Nature",
@@ -1083,8 +1083,8 @@
             "wordNative": "Flower",
             "sentenceTarget": "꽃이 활짝 피었네요.",
             "sentenceNative": "The flowers are in full bloom.",
-            "audioWordFile": "ko_kkot_word.mp3",
-            "audioSentenceFile": "ko_kkot_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c77_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c77_sentence.mp3",
             "mediaFile": "ko_kkot.jpg",
             "tags": [
                 "Nature",
@@ -1097,8 +1097,8 @@
             "wordNative": "Big / Large",
             "sentenceTarget": "이 수박은 정말 크네요.",
             "sentenceNative": "This watermelon is really big.",
-            "audioWordFile": "ko_keuda_word.mp3",
-            "audioSentenceFile": "ko_keuda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c78_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c78_sentence.mp3",
             "mediaFile": "ko_keuda.jpg",
             "tags": [
                 "Adjectives"
@@ -1110,8 +1110,8 @@
             "wordNative": "Small / Little",
             "sentenceTarget": "방이 너무 작아요.",
             "sentenceNative": "The room is too small.",
-            "audioWordFile": "ko_jakda_word.mp3",
-            "audioSentenceFile": "ko_jakda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c79_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c79_sentence.mp3",
             "mediaFile": "ko_jakda.jpg",
             "tags": [
                 "Adjectives"
@@ -1123,8 +1123,8 @@
             "wordNative": "Many / Much",
             "sentenceTarget": "숙제가 너무 많아요.",
             "sentenceNative": "There is too much homework.",
-            "audioWordFile": "ko_manta_word.mp3",
-            "audioSentenceFile": "ko_manta_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c80_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c80_sentence.mp3",
             "mediaFile": "ko_manta.jpg",
             "tags": [
                 "Adjectives"
@@ -1136,8 +1136,8 @@
             "wordNative": "Few / Little",
             "sentenceTarget": "사람이 별로 없네요. (적네요)",
             "sentenceNative": "There aren't many people. (There are few people)",
-            "audioWordFile": "ko_jeokda_word.mp3",
-            "audioSentenceFile": "ko_jeokda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c81_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c81_sentence.mp3",
             "mediaFile": "ko_jeokda.jpg",
             "tags": [
                 "Adjectives"
@@ -1149,8 +1149,8 @@
             "wordNative": "Expensive",
             "sentenceTarget": "이 옷은 너무 비싸요.",
             "sentenceNative": "This clothing is too expensive.",
-            "audioWordFile": "ko_bissada_word.mp3",
-            "audioSentenceFile": "ko_bissada_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c82_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c82_sentence.mp3",
             "mediaFile": "ko_bissada.jpg",
             "tags": [
                 "Adjectives"
@@ -1162,8 +1162,8 @@
             "wordNative": "Cheap / Inexpensive",
             "sentenceTarget": "이 시장은 물건이 싸요.",
             "sentenceNative": "Items are cheap in this market.",
-            "audioWordFile": "ko_ssada_word.mp3",
-            "audioSentenceFile": "ko_ssada_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c83_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c83_sentence.mp3",
             "mediaFile": "ko_ssada.jpg",
             "tags": [
                 "Adjectives"
@@ -1175,8 +1175,8 @@
             "wordNative": "Good / Nice",
             "sentenceTarget": "성격이 아주 좋으세요.",
             "sentenceNative": "You have a very good personality.",
-            "audioWordFile": "ko_jota_word.mp3",
-            "audioSentenceFile": "ko_jota_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c84_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c84_sentence.mp3",
             "mediaFile": "ko_jota.jpg",
             "tags": [
                 "Adjectives"
@@ -1188,8 +1188,8 @@
             "wordNative": "Bad",
             "sentenceTarget": "기분이 아주 나빠요.",
             "sentenceNative": "I feel very bad.",
-            "audioWordFile": "ko_nappeuda_word.mp3",
-            "audioSentenceFile": "ko_nappeuda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c85_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c85_sentence.mp3",
             "mediaFile": "ko_nappeuda.jpg",
             "tags": [
                 "Adjectives"
@@ -1201,8 +1201,8 @@
             "wordNative": "Difficult / Hard",
             "sentenceTarget": "문제가 너무 어려워요.",
             "sentenceNative": "The problem is too difficult.",
-            "audioWordFile": "ko_eoryeopda_word.mp3",
-            "audioSentenceFile": "ko_eoryeopda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c86_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c86_sentence.mp3",
             "mediaFile": "ko_eoryeopda.jpg",
             "tags": [
                 "Adjectives"
@@ -1214,8 +1214,8 @@
             "wordNative": "Easy",
             "sentenceTarget": "이 게임은 정말 쉬워요.",
             "sentenceNative": "This game is really easy.",
-            "audioWordFile": "ko_swipda_word.mp3",
-            "audioSentenceFile": "ko_swipda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c87_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c87_sentence.mp3",
             "mediaFile": "ko_swipda.jpg",
             "tags": [
                 "Adjectives"
@@ -1227,8 +1227,8 @@
             "wordNative": "Fun / Interesting",
             "sentenceTarget": "영화를 재미있게 봤어요.",
             "sentenceNative": "I enjoyed watching the movie.",
-            "audioWordFile": "ko_jaemiitda_word.mp3",
-            "audioSentenceFile": "ko_jaemiitda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c88_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c88_sentence.mp3",
             "mediaFile": "ko_jaemiitda.jpg",
             "tags": [
                 "Adjectives"
@@ -1240,8 +1240,8 @@
             "wordNative": "Boring / Not fun",
             "sentenceTarget": "수업이 재미없어요.",
             "sentenceNative": "The class is not fun (boring).",
-            "audioWordFile": "ko_jaemieopda_word.mp3",
-            "audioSentenceFile": "ko_jaemieopda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c89_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c89_sentence.mp3",
             "mediaFile": "ko_jaemieopda.jpg",
             "tags": [
                 "Adjectives"
@@ -1253,8 +1253,8 @@
             "wordNative": "Far",
             "sentenceTarget": "여기에서 집까지 멀어요.",
             "sentenceNative": "It's far from here to my house.",
-            "audioWordFile": "ko_meolda_word.mp3",
-            "audioSentenceFile": "ko_meolda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c90_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c90_sentence.mp3",
             "mediaFile": "ko_meolda.jpg",
             "tags": [
                 "Adjectives",
@@ -1267,8 +1267,8 @@
             "wordNative": "Near / Close",
             "sentenceTarget": "역이 아주 가까워요.",
             "sentenceNative": "The station is very near.",
-            "audioWordFile": "ko_gakkapda_word.mp3",
-            "audioSentenceFile": "ko_gakkapda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c91_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c91_sentence.mp3",
             "mediaFile": "ko_gakkapda.jpg",
             "tags": [
                 "Adjectives",
@@ -1281,8 +1281,8 @@
             "wordNative": "Hot (Weather)",
             "sentenceTarget": "여름은 너무 더워요.",
             "sentenceNative": "Summer is too hot.",
-            "audioWordFile": "ko_deopda_word.mp3",
-            "audioSentenceFile": "ko_deopda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c92_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c92_sentence.mp3",
             "mediaFile": "ko_deopda.jpg",
             "tags": [
                 "Adjectives"
@@ -1294,8 +1294,8 @@
             "wordNative": "Cold (Weather)",
             "sentenceTarget": "겨울은 아주 추워요.",
             "sentenceNative": "Winter is very cold.",
-            "audioWordFile": "ko_chupda_word.mp3",
-            "audioSentenceFile": "ko_chupda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c93_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c93_sentence.mp3",
             "mediaFile": "ko_chupda.jpg",
             "tags": [
                 "Adjectives"
@@ -1307,8 +1307,8 @@
             "wordNative": "Busy",
             "sentenceTarget": "요즘 정말 바빠요.",
             "sentenceNative": "I'm really busy these days.",
-            "audioWordFile": "ko_bappeuda_word.mp3",
-            "audioSentenceFile": "ko_bappeuda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c94_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c94_sentence.mp3",
             "mediaFile": "ko_bappeuda.jpg",
             "tags": [
                 "Adjectives"
@@ -1320,8 +1320,8 @@
             "wordNative": "Free (not busy)",
             "sentenceTarget": "이번 주말은 한가해요.",
             "sentenceNative": "I'm free this weekend.",
-            "audioWordFile": "ko_hangahada_word.mp3",
-            "audioSentenceFile": "ko_hangahada_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c95_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c95_sentence.mp3",
             "mediaFile": "ko_hangahada.jpg",
             "tags": [
                 "Adjectives"
@@ -1333,8 +1333,8 @@
             "wordNative": "Delicious / Tasty",
             "sentenceTarget": "이 케이크 정말 맛있네요!",
             "sentenceNative": "This cake is really delicious!",
-            "audioWordFile": "ko_masitda_word.mp3",
-            "audioSentenceFile": "ko_masitda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c96_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c96_sentence.mp3",
             "mediaFile": "ko_masitda.jpg",
             "tags": [
                 "Adjectives"
@@ -1346,8 +1346,8 @@
             "wordNative": "Not delicious / Tastes bad",
             "sentenceTarget": "국이 너무 싱거워서 맛없어요.",
             "sentenceNative": "The soup is too bland, so it doesn't taste good.",
-            "audioWordFile": "ko_madeopda_word.mp3",
-            "audioSentenceFile": "ko_madeopda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c97_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c97_sentence.mp3",
             "mediaFile": "ko_madeopda.jpg",
             "tags": [
                 "Adjectives"
@@ -1359,8 +1359,8 @@
             "wordNative": "To go",
             "sentenceTarget": "어디에 가세요?",
             "sentenceNative": "Where are you going?",
-            "audioWordFile": "ko_gada_word.mp3",
-            "audioSentenceFile": "ko_gada_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c98_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c98_sentence.mp3",
             "mediaFile": "ko_gada.jpg",
             "tags": [
                 "Adjectives",
@@ -1374,8 +1374,8 @@
             "wordNative": "To come",
             "sentenceTarget": "빨리 오세요.",
             "sentenceNative": "Please come quickly.",
-            "audioWordFile": "ko_oda_word.mp3",
-            "audioSentenceFile": "ko_oda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c99_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c99_sentence.mp3",
             "mediaFile": "ko_oda.jpg",
             "tags": [
                 "Adjectives",
@@ -1389,8 +1389,8 @@
             "wordNative": "To eat",
             "sentenceTarget": "점심을 맛있게 먹었어요.",
             "sentenceNative": "I had a delicious lunch.",
-            "audioWordFile": "ko_meokda_word.mp3",
-            "audioSentenceFile": "ko_meokda_sentence.mp3",
+            "audioWordFile": "ko__ko_b_c100_word.mp3",
+            "audioSentenceFile": "ko__ko_b_c100_sentence.mp3",
             "mediaFile": "ko_meokda.jpg",
             "tags": [
                 "Adjectives",

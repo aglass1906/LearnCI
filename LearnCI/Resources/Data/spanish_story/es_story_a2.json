@@ -33,8 +33,8 @@
             "wordNative": "My First Morning",
             "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
             "sentenceNative": "Click the Next Button to begin the story.",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_mi_primera_ma_ana_es_story_003_c1_word.mp3",
+            "audioSentenceFile": "es_mi_primera_ma_ana_es_story_003_c1_sentence.mp3",
             "mediaFile": "",
             "usage": [
                 "story_only"
@@ -55,8 +55,8 @@
             "wordNative": "Man",
             "sentenceTarget": "El hombre se despierta temprano porque tiene que trabajar.",
             "sentenceNative": "The man wakes up early because he has to work.",
-            "audioWordFile": "es_hombre_word.mp3",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_hombre_es_story_003_c2_word.mp3",
+            "audioSentenceFile": "es_hombre_es_story_003_c2_sentence.mp3",
             "mediaFile": "es_b1_01_hombre_despierta.png",
             "tags": [
                 "People",
@@ -71,8 +71,8 @@
             "wordNative": "Coffee",
             "sentenceTarget": "Después de levantarse, el hombre prepara café en la cocina.",
             "sentenceNative": "After getting up, the man prepares coffee in the kitchen.",
-            "audioWordFile": "es_cafe_word.mp3",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_caf_es_story_003_c3_word.mp3",
+            "audioSentenceFile": "es_caf_es_story_003_c3_sentence.mp3",
             "mediaFile": "es_b1_02_hombre_cafe.png",
             "tags": [
                 "Food",
@@ -87,8 +87,8 @@
             "wordNative": "Street",
             "sentenceTarget": "Con su café en la mano, el hombre camina por la calle y mira las tiendas.",
             "sentenceNative": "With his coffee in hand, the man walks down the street and looks at the shops.",
-            "audioWordFile": "es_calle_word.mp3",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_calle_es_story_003_c4_word.mp3",
+            "audioSentenceFile": "es_calle_es_story_003_c4_sentence.mp3",
             "mediaFile": "es_b1_03_hombre_calle.png",
             "tags": [
                 "Places",
@@ -103,8 +103,8 @@
             "wordNative": "Friend",
             "sentenceTarget": "En la calle, el hombre ve a un amigo y habla con él por unos minutos.",
             "sentenceNative": "On the street, the man sees a friend and talks with him for a few minutes.",
-            "audioWordFile": "es_amigo_word.mp3",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_amigo_es_story_003_c5_word.mp3",
+            "audioSentenceFile": "es_amigo_es_story_003_c5_sentence.mp3",
             "mediaFile": "es_b1_04_hombre_amigo.png",
             "tags": [
                 "People",
@@ -119,8 +119,8 @@
             "wordNative": "Conversation",
             "sentenceTarget": "Después de hablar con su amigo, el hombre continúa su mañana.",
             "sentenceNative": "After talking with his friend, the man continues his morning.",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_conversaci_n_es_story_003_c6_word.mp3",
+            "audioSentenceFile": "es_conversaci_n_es_story_003_c6_sentence.mp3",
             "mediaFile": "es_b1_05_hombre_conversa.png",
             "usage": [
                 "story_only"
@@ -137,8 +137,8 @@
             "wordNative": "My Morning",
             "sentenceTarget": "Después de hablar con su amigo, el hombre continúa su mañana.",
             "sentenceNative": "After talking with his friend, the man continues his morning.",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_mi_ma_ana_es_story_003_c7_word.mp3",
+            "audioSentenceFile": "es_mi_ma_ana_es_story_003_c7_sentence.mp3",
             "mediaFile": "es_b1_06_hombre_despedida.png",
             "usage": [
                 "story_only"
@@ -158,8 +158,8 @@
             "wordNative": "The End",
             "sentenceTarget": "Fin",
             "sentenceNative": "The end",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_el_fin_es_story_003_c8_word.mp3",
+            "audioSentenceFile": "es_el_fin_es_story_003_c8_sentence.mp3",
             "mediaFile": "",
             "usage": [
                 "story_only"

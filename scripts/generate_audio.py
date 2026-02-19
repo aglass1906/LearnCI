@@ -182,7 +182,7 @@ def main():
                             # Select a voice for this card so word/sentence match
                             card_voice = selected_voice if selected_voice else random.choice(voices)
                             
-                            if 'audioWordFile' in card and ('audioWordFile' not in existing_audio or args.force):
+                            if 'audioWordFile' in card and (card['audioWordFile'] not in existing_audio or args.force):
                                 missing_files.append({
                                     'text': card['wordTarget'], 
                                     'filename': card['audioWordFile'], 
@@ -191,7 +191,7 @@ def main():
                                     'voice': card_voice,
                                     'language': deck_language
                                 })
-                            if 'audioSentenceFile' in card and ('audioSentenceFile' not in existing_audio or args.force):
+                            if 'audioSentenceFile' in card and (card['audioSentenceFile'] not in existing_audio or args.force):
                                 missing_files.append({
                                     'text': card['sentenceTarget'], 
                                     'filename': card['audioSentenceFile'], 

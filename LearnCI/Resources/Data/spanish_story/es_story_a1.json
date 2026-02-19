@@ -34,8 +34,8 @@
             "wordNative": "My First Morning",
             "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
             "sentenceNative": "Click the Next Button to begin the story.",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_mi_primera_ma_ana_es_story_002_c1_word.mp3",
+            "audioSentenceFile": "es_mi_primera_ma_ana_es_story_002_c1_sentence.mp3",
             "mediaFile": "",
             "usage": [
                 "story_only"
@@ -56,8 +56,8 @@
             "wordNative": "Man",
             "sentenceTarget": "El hombre se despierta.",
             "sentenceNative": "The man wakes up.",
-            "audioWordFile": "es_hombre_word.mp3",
-            "audioSentenceFile": "es_el_hombre_se_despierta.mp3",
+            "audioWordFile": "es_hombre_es_story_002_c2_word.mp3",
+            "audioSentenceFile": "es_hombre_es_story_002_c2_sentence.mp3",
             "mediaFile": "es_b1_01_hombre_despierta.png",
             "tags": [
                 "People",
@@ -72,8 +72,8 @@
             "wordNative": "Coffee",
             "sentenceTarget": "El hombre bebe café.",
             "sentenceNative": "The man drinks coffee.",
-            "audioWordFile": "es_cafe_word.mp3",
-            "audioSentenceFile": "es_el_hombre_bebe_cafe.mp3",
+            "audioWordFile": "es_caf_es_story_002_c3_word.mp3",
+            "audioSentenceFile": "es_caf_es_story_002_c3_sentence.mp3",
             "mediaFile": "es_b1_02_hombre_cafe.png",
             "tags": [
                 "Food",
@@ -88,8 +88,8 @@
             "wordNative": "Street",
             "sentenceTarget": "El hombre camina por la calle.",
             "sentenceNative": "The man walks down the street.",
-            "audioWordFile": "es_calle_word.mp3",
-            "audioSentenceFile": "es_el_hombre_camina_calle.mp3",
+            "audioWordFile": "es_calle_es_story_002_c4_word.mp3",
+            "audioSentenceFile": "es_calle_es_story_002_c4_sentence.mp3",
             "mediaFile": "es_b1_03_hombre_calle.png",
             "tags": [
                 "Places",
@@ -104,8 +104,8 @@
             "wordNative": "Friend",
             "sentenceTarget": "El hombre ve a su amigo.",
             "sentenceNative": "The man sees his friend.",
-            "audioWordFile": "es_amigo_word.mp3",
-            "audioSentenceFile": "es_el_hombre_ve_amigo.mp3",
+            "audioWordFile": "es_amigo_es_story_002_c5_word.mp3",
+            "audioSentenceFile": "es_amigo_es_story_002_c5_sentence.mp3",
             "mediaFile": "es_b1_04_hombre_amigo.png",
             "tags": [
                 "People",
@@ -120,8 +120,8 @@
             "wordNative": "To converse",
             "sentenceTarget": "El hombre conversa con su amigo.",
             "sentenceNative": "The man converses with his friend.",
-            "audioWordFile": "es_conversa_word.mp3",
-            "audioSentenceFile": "es_el_hombre_conversa_amigo.mp3",
+            "audioWordFile": "es_conversar_es_story_002_c6_word.mp3",
+            "audioSentenceFile": "es_conversar_es_story_002_c6_sentence.mp3",
             "mediaFile": "es_b1_05_hombre_conversa.png",
             "tags": [
                 "Prepositions",
@@ -137,8 +137,8 @@
             "wordNative": "Goodbye",
             "sentenceTarget": "El hombre se despide.",
             "sentenceNative": "The man says goodbye.",
-            "audioWordFile": "es_adios_word.mp3",
-            "audioSentenceFile": "es_el_hombre_se_despide.mp3",
+            "audioWordFile": "es_adi_s_es_story_002_c7_word.mp3",
+            "audioSentenceFile": "es_adi_s_es_story_002_c7_sentence.mp3",
             "mediaFile": "es_b1_06_hombre_despedida.png",
             "tags": [
                 "Story"
@@ -152,8 +152,8 @@
             "wordNative": "My Morning",
             "sentenceTarget": "Fin",
             "sentenceNative": "The end",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_mi_ma_ana_es_story_002_c8_word.mp3",
+            "audioSentenceFile": "es_mi_ma_ana_es_story_002_c8_sentence.mp3",
             "mediaFile": "",
             "usage": [
                 "story_only"

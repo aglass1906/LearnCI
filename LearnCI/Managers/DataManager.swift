@@ -101,6 +101,7 @@ class DataManager {
         if metadata.folderName == "Virtual" {
             print("DEBUG: Checking cache for virtual deck ID: \(metadata.id)")
             if let cached = deckCache[metadata.id] {
+                 self.loadedDeck = cached // Update observable property
                  return cached
             }
             print("Error: Virtual deck \(metadata.id) not found in cache. Cache keys: \(deckCache.keys)")

@@ -32,8 +32,8 @@
             "wordNative": "Free Pizza",
             "sentenceTarget": "Haz clic en el botón Siguiente para comenzar la historia.",
             "sentenceNative": "Click the Next Button to begin the story.",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_pizza_gratis_es_video_001_c1_word.mp3",
+            "audioSentenceFile": "es_pizza_gratis_es_video_001_c1_sentence.mp3",
             "mediaFile": "",
             "usage": [
                 "story_only"
@@ -51,8 +51,8 @@
             "wordNative": "Free Pizza",
             "sentenceTarget": "",
             "sentenceNative": "",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_pizza_gratis_es_video_001_c2_word.mp3",
+            "audioSentenceFile": "es_pizza_gratis_es_video_001_c2_sentence.mp3",
             "mediaFile": "DUO_Pizza_Gratis.mov",
             "tags": [
                 "Adjectives",
@@ -67,8 +67,8 @@
             "wordNative": "Free Pizza",
             "sentenceTarget": "The end",
             "sentenceNative": "",
-            "audioWordFile": "",
-            "audioSentenceFile": "",
+            "audioWordFile": "es_pizza_gratis_es_video_001_c3_word.mp3",
+            "audioSentenceFile": "es_pizza_gratis_es_video_001_c3_sentence.mp3",
             "mediaFile": "DUO_Pizza_Gratis.jpeg",
             "usage": [
                 "story_only"

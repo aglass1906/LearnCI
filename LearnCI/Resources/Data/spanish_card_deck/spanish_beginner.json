@@ -22,8 +22,8 @@
             "wordNative": "Man",
             "sentenceTarget": "El hombre camina por la calle.",
             "sentenceNative": "The man walks down the street.",
-            "audioWordFile": "es_hombre_word.mp3",
-            "audioSentenceFile": "es_hombre_sentence.mp3",
+            "audioWordFile": "es_hombre_es_b_c1_word.mp3",
+            "audioSentenceFile": "es_hombre_es_b_c1_sentence.mp3",
             "mediaFile": "es_hombre.png",
             "tags": [
                 "Family",
@@ -36,8 +36,8 @@
             "wordNative": "Woman",
             "sentenceTarget": "La mujer habla con su amiga.",
             "sentenceNative": "The woman talks with her friend.",
-            "audioWordFile": "es_mujer_word.mp3",
-            "audioSentenceFile": "es_mujer_sentence.mp3",
+            "audioWordFile": "es_mujer_es_b_c2_word.mp3",
+            "audioSentenceFile": "es_mujer_es_b_c2_sentence.mp3",
             "mediaFile": "es_mujer.png",
             "tags": [
                 "Family",
@@ -50,8 +50,8 @@
             "wordNative": "Boy / Child",
             "sentenceTarget": "El niño juega con la pelota.",
             "sentenceNative": "The boy plays with the ball.",
-            "audioWordFile": "es_nino_word.mp3",
-            "audioSentenceFile": "es_nino_sentence.mp3",
+            "audioWordFile": "es_ni_o_es_b_c3_word.mp3",
+            "audioSentenceFile": "es_ni_o_es_b_c3_sentence.mp3",
             "mediaFile": "es_nino.png",
             "tags": [
                 "Family",
@@ -64,8 +64,8 @@
             "wordNative": "Girl / Child",
             "sentenceTarget": "La niña baila en el jardín.",
             "sentenceNative": "The girl dances in the garden.",
-            "audioWordFile": "es_nina_word.mp3",
-            "audioSentenceFile": "es_nina_sentence.mp3",
+            "audioWordFile": "es_ni_a_es_b_c4_word.mp3",
+            "audioSentenceFile": "es_ni_a_es_b_c4_sentence.mp3",
             "mediaFile": "es_nina.png",
             "tags": [
                 "Family",
@@ -78,8 +78,8 @@
             "wordNative": "Brother",
             "sentenceTarget": "Mi hermano vive en Madrid.",
             "sentenceNative": "My brother lives in Madrid.",
-            "audioWordFile": "es_hermano_word.mp3",
-            "audioSentenceFile": "es_hermano_sentence.mp3",
+            "audioWordFile": "es_hermano_es_b_c5_word.mp3",
+            "audioSentenceFile": "es_hermano_es_b_c5_sentence.mp3",
             "mediaFile": "es_hermano.png",
             "tags": [
                 "Family"
@@ -91,8 +91,8 @@
             "wordNative": "Sister",
             "sentenceTarget": "Tengo una hermana mayor.",
             "sentenceNative": "I have an older sister.",
-            "audioWordFile": "es_hermana_word.mp3",
-            "audioSentenceFile": "es_hermana_sentence.mp3",
+            "audioWordFile": "es_hermana_es_b_c6_word.mp3",
+            "audioSentenceFile": "es_hermana_es_b_c6_sentence.mp3",
             "mediaFile": "es_hermana.png",
             "tags": [
                 "Family"
@@ -104,8 +104,8 @@
             "wordNative": "Father",
             "sentenceTarget": "Mi padre trabaja en un banco.",
             "sentenceNative": "My father works in a bank.",
-            "audioWordFile": "es_padre_word.mp3",
-            "audioSentenceFile": "es_padre_sentence.mp3",
+            "audioWordFile": "es_padre_es_b_c7_word.mp3",
+            "audioSentenceFile": "es_padre_es_b_c7_sentence.mp3",
             "mediaFile": "es_padre.png",
             "tags": [
                 "Family"
@@ -117,8 +117,8 @@
             "wordNative": "Mother",
             "sentenceTarget": "Mi madre es profesora.",
             "sentenceNative": "My mother is a teacher.",
-            "audioWordFile": "es_madre_word.mp3",
-            "audioSentenceFile": "es_madre_sentence.mp3",
+            "audioWordFile": "es_madre_es_b_c8_word.mp3",
+            "audioSentenceFile": "es_madre_es_b_c8_sentence.mp3",
             "mediaFile": "es_madre.png",
             "tags": [
                 "Family"
@@ -130,8 +130,8 @@
             "wordNative": "Grandfather",
             "sentenceTarget": "Mi abuelo cuenta historias.",
             "sentenceNative": "My grandfather tells stories.",
-            "audioWordFile": "es_abuelo_word.mp3",
-            "audioSentenceFile": "es_abuelo_sentence.mp3",
+            "audioWordFile": "es_abuelo_es_b_c9_word.mp3",
+            "audioSentenceFile": "es_abuelo_es_b_c9_sentence.mp3",
             "mediaFile": "es_abuelo.png",
             "tags": [
                 "Family"
@@ -139,12 +139,12 @@
         },
         {
             "id": "es_b_c10",
-            "wordTarget": "Abuja",
+            "wordTarget": "Aguja",
             "wordNative": "Needle",
             "sentenceTarget": "La aguja es muy pequeña.",
             "sentenceNative": "The needle is very small.",
-            "audioWordFile": "es_aguja_word.mp3",
-            "audioSentenceFile": "es_aguja_sentence.mp3",
+            "audioWordFile": "es_aguja_es_b_c10_word.mp3",
+            "audioSentenceFile": "es_aguja_es_b_c10_sentence.mp3",
             "mediaFile": "es_aguja.png",
             "tags": [
                 "Home"
@@ -156,8 +156,8 @@
             "wordNative": "Table",
             "sentenceTarget": "La comida está en la mesa.",
             "sentenceNative": "The food is on the table.",
-            "audioWordFile": "es_mesa_word.mp3",
-            "audioSentenceFile": "es_mesa_sentence.mp3",
+            "audioWordFile": "es_mesa_es_b_c11_word.mp3",
+            "audioSentenceFile": "es_mesa_es_b_c11_sentence.mp3",
             "mediaFile": "es_mesa.png",
             "tags": [
                 "Home",
@@ -170,8 +170,8 @@
             "wordNative": "Chair",
             "sentenceTarget": "Siéntate en la silla, por favor.",
             "sentenceNative": "Please sit in the chair.",
-            "audioWordFile": "es_silla_word.mp3",
-            "audioSentenceFile": "es_silla_sentence.mp3",
+            "audioWordFile": "es_silla_es_b_c12_word.mp3",
+            "audioSentenceFile": "es_silla_es_b_c12_sentence.mp3",
             "mediaFile": "es_silla.png",
             "tags": [
                 "Home",
@@ -184,8 +184,8 @@
             "wordNative": "Bed",
             "sentenceTarget": "Voy a la cama ahora.",
             "sentenceNative": "I'm going to bed now.",
-            "audioWordFile": "es_cama_word.mp3",
-            "audioSentenceFile": "es_cama_sentence.mp3",
+            "audioWordFile": "es_cama_es_b_c13_word.mp3",
+            "audioSentenceFile": "es_cama_es_b_c13_sentence.mp3",
             "mediaFile": "es_cama.png",
             "tags": [
                 "Daily Routine",
@@ -199,8 +199,8 @@
             "wordNative": "Door",
             "sentenceTarget": "Cierra la puerta al salir.",
             "sentenceNative": "Close the door when you leave.",
-            "audioWordFile": "es_puerta_word.mp3",
-            "audioSentenceFile": "es_puerta_sentence.mp3",
+            "audioWordFile": "es_puerta_es_b_c14_word.mp3",
+            "audioSentenceFile": "es_puerta_es_b_c14_sentence.mp3",
             "mediaFile": "es_puerta.png",
             "tags": [
                 "Home",
@@ -213,8 +213,8 @@
             "wordNative": "Window",
             "sentenceTarget": "Abre la ventana, hace calor.",
             "sentenceNative": "Open the window, it's hot.",
-            "audioWordFile": "es_ventana_word.mp3",
-            "audioSentenceFile": "es_ventana_sentence.mp3",
+            "audioWordFile": "es_ventana_es_b_c15_word.mp3",
+            "audioSentenceFile": "es_ventana_es_b_c15_sentence.mp3",
             "mediaFile": "es_ventana.png",
             "tags": [
                 "Home",
@@ -227,8 +227,8 @@
             "wordNative": "Kitchen",
             "sentenceTarget": "Estoy cocinando en la cocina.",
             "sentenceNative": "I am cooking in the kitchen.",
-            "audioWordFile": "es_cocina_word.mp3",
-            "audioSentenceFile": "es_cocina_sentence.mp3",
+            "audioWordFile": "es_cocina_es_b_c16_word.mp3",
+            "audioSentenceFile": "es_cocina_es_b_c16_sentence.mp3",
             "mediaFile": "es_cocina.png",
             "tags": [
                 "Home",
@@ -241,8 +241,8 @@
             "wordNative": "Food",
             "sentenceTarget": "Tengo mucha comida en casa.",
             "sentenceNative": "I have a lot of food at home.",
-            "audioWordFile": "es_comida_word.mp3",
-            "audioSentenceFile": "es_comida_sentence.mp3",
+            "audioWordFile": "es_comida_es_b_c17_word.mp3",
+            "audioSentenceFile": "es_comida_es_b_c17_sentence.mp3",
             "mediaFile": "es_comida.png",
             "tags": [
                 "Food"
@@ -254,8 +254,8 @@
             "wordNative": "Breakfast",
             "sentenceTarget": "El desayuno es muy importante.",
             "sentenceNative": "Breakfast is very important.",
-            "audioWordFile": "es_desayuno_word.mp3",
-            "audioSentenceFile": "es_desayuno_sentence.mp3",
+            "audioWordFile": "es_desayuno_es_b_c18_word.mp3",
+            "audioSentenceFile": "es_desayuno_es_b_c18_sentence.mp3",
             "mediaFile": "es_desayuno.png",
             "tags": [
                 "Daily Routine",
@@ -268,8 +268,8 @@
             "wordNative": "Lunch",
             "sentenceTarget": "Comemos el almuerzo a las dos.",
             "sentenceNative": "We eat lunch at two.",
-            "audioWordFile": "es_almuerzo_word.mp3",
-            "audioSentenceFile": "es_almuerzo_sentence.mp3",
+            "audioWordFile": "es_almuerzo_es_b_c19_word.mp3",
+            "audioSentenceFile": "es_almuerzo_es_b_c19_sentence.mp3",
             "mediaFile": "es_almuerzo.png",
             "tags": [
                 "Daily Routine",
@@ -282,8 +282,8 @@
             "wordNative": "Dinner",
             "sentenceTarget": "La cena está lista.",
             "sentenceNative": "Dinner is ready.",
-            "audioWordFile": "es_cena_word.mp3",
-            "audioSentenceFile": "es_cena_sentence.mp3",
+            "audioWordFile": "es_cena_es_b_c20_word.mp3",
+            "audioSentenceFile": "es_cena_es_b_c20_sentence.mp3",
             "mediaFile": "es_cena.png",
             "tags": [
                 "Daily Routine",
@@ -296,8 +296,8 @@
             "wordNative": "Clothes",
             "sentenceTarget": "Compré ropa nueva ayer.",
             "sentenceNative": "I bought new clothes yesterday.",
-            "audioWordFile": "es_ropa_word.mp3",
-            "audioSentenceFile": "es_ropa_sentence.mp3",
+            "audioWordFile": "es_ropa_es_b_c21_word.mp3",
+            "audioSentenceFile": "es_ropa_es_b_c21_sentence.mp3",
             "mediaFile": "es_ropa.png",
             "tags": [
                 "Clothing"
@@ -309,8 +309,8 @@
             "wordNative": "Shoes",
             "sentenceTarget": "Mis zapatos son negros.",
             "sentenceNative": "My shoes are black.",
-            "audioWordFile": "es_zapatos_word.mp3",
-            "audioSentenceFile": "es_zapatos_sentence.mp3",
+            "audioWordFile": "es_zapatos_es_b_c22_word.mp3",
+            "audioSentenceFile": "es_zapatos_es_b_c22_sentence.mp3",
             "mediaFile": "es_zapatos.png",
             "tags": [
                 "Clothing"
@@ -322,8 +322,8 @@
             "wordNative": "Hat",
             "sentenceTarget": "Lleva un sombrero rojo.",
             "sentenceNative": "He's wearing a red hat.",
-            "audioWordFile": "es_sombrero_word.mp3",
-            "audioSentenceFile": "es_sombrero_sentence.mp3",
+            "audioWordFile": "es_sombrero_es_b_c23_word.mp3",
+            "audioSentenceFile": "es_sombrero_es_b_c23_sentence.mp3",
             "mediaFile": "es_sombrero.png",
             "tags": [
                 "Clothing"
@@ -335,8 +335,8 @@
             "wordNative": "Watch / Clock",
             "sentenceTarget": "Mi reloj no funciona.",
             "sentenceNative": "My watch doesn't work.",
-            "audioWordFile": "es_reloj_word.mp3",
-            "audioSentenceFile": "es_reloj_sentence.mp3",
+            "audioWordFile": "es_reloj_es_b_c24_word.mp3",
+            "audioSentenceFile": "es_reloj_es_b_c24_sentence.mp3",
             "mediaFile": "es_reloj.png",
             "tags": [
                 "Clothing",
@@ -349,8 +349,8 @@
             "wordNative": "Book",
             "sentenceTarget": "Este libro es muy largo.",
             "sentenceNative": "This book is very long.",
-            "audioWordFile": "es_libro_word.mp3",
-            "audioSentenceFile": "es_libro_sentence.mp3",
+            "audioWordFile": "es_libro_es_b_c25_word.mp3",
+            "audioSentenceFile": "es_libro_es_b_c25_sentence.mp3",
             "mediaFile": "es_libro.png",
             "tags": [
                 "Objects",
@@ -363,8 +363,8 @@
             "wordNative": "Pencil",
             "sentenceTarget": "¿Tienes un lápiz?",
             "sentenceNative": "Do you have a pencil?",
-            "audioWordFile": "es_lapiz_word.mp3",
-            "audioSentenceFile": "es_lapiz_sentence.mp3",
+            "audioWordFile": "es_l_piz_es_b_c26_word.mp3",
+            "audioSentenceFile": "es_l_piz_es_b_c26_sentence.mp3",
             "mediaFile": "es_lapiz.png",
             "tags": [
                 "Objects",
@@ -377,8 +377,8 @@
             "wordNative": "Paper",
             "sentenceTarget": "Escribe en el papel.",
             "sentenceNative": "Write on the paper.",
-            "audioWordFile": "es_papel_word.mp3",
-            "audioSentenceFile": "es_papel_sentence.mp3",
+            "audioWordFile": "es_papel_es_b_c27_word.mp3",
+            "audioSentenceFile": "es_papel_es_b_c27_sentence.mp3",
             "mediaFile": "es_papel.png",
             "tags": [
                 "Objects",
@@ -391,8 +391,8 @@
             "wordNative": "Money",
             "sentenceTarget": "No tengo dinero hoy.",
             "sentenceNative": "I don't have money today.",
-            "audioWordFile": "es_dinero_word.mp3",
-            "audioSentenceFile": "es_dinero_sentence.mp3",
+            "audioWordFile": "es_dinero_es_b_c28_word.mp3",
+            "audioSentenceFile": "es_dinero_es_b_c28_sentence.mp3",
             "mediaFile": "es_dinero.png",
             "tags": [
                 "City Life",
@@ -405,8 +405,8 @@
             "wordNative": "Market",
             "sentenceTarget": "Vamos al mercado juntos.",
             "sentenceNative": "Let's go to the market together.",
-            "audioWordFile": "es_mercado_word.mp3",
-            "audioSentenceFile": "es_mercado_sentence.mp3",
+            "audioWordFile": "es_mercado_es_b_c29_word.mp3",
+            "audioSentenceFile": "es_mercado_es_b_c29_sentence.mp3",
             "mediaFile": "es_mercado.png",
             "tags": [
                 "City Life",
@@ -419,8 +419,8 @@
             "wordNative": "Shop / Store",
             "sentenceTarget": "La tienda cierra tarde.",
             "sentenceNative": "The shop closes late.",
-            "audioWordFile": "es_tienda_word.mp3",
-            "audioSentenceFile": "es_tienda_sentence.mp3",
+            "audioWordFile": "es_tienda_es_b_c30_word.mp3",
+            "audioSentenceFile": "es_tienda_es_b_c30_sentence.mp3",
             "mediaFile": "es_tienda.png",
             "tags": [
                 "City Life",
@@ -433,8 +433,8 @@
             "wordNative": "Work / Job",
             "sentenceTarget": "Tengo mucho trabajo hoy.",
             "sentenceNative": "I have a lot of work today.",
-            "audioWordFile": "es_trabajo_word.mp3",
-            "audioSentenceFile": "es_trabajo_sentence.mp3",
+            "audioWordFile": "es_trabajo_es_b_c31_word.mp3",
+            "audioSentenceFile": "es_trabajo_es_b_c31_sentence.mp3",
             "mediaFile": "es_trabajo.png",
             "tags": [
                 "City Life",
@@ -447,8 +447,8 @@
             "wordNative": "Car",
             "sentenceTarget": "Mi coche es azul.",
             "sentenceNative": "My car is blue.",
-            "audioWordFile": "es_coche_word.mp3",
-            "audioSentenceFile": "es_coche_sentence.mp3",
+            "audioWordFile": "es_coche_es_b_c32_word.mp3",
+            "audioSentenceFile": "es_coche_es_b_c32_sentence.mp3",
             "mediaFile": "es_coche.png",
             "tags": [
                 "Objects",
@@ -461,8 +461,8 @@
             "wordNative": "Bus",
             "sentenceTarget": "Tomo el bus cada día.",
             "sentenceNative": "I take the bus every day.",
-            "audioWordFile": "es_bus_word.mp3",
-            "audioSentenceFile": "es_bus_sentence.mp3",
+            "audioWordFile": "es_bus_es_b_c33_word.mp3",
+            "audioSentenceFile": "es_bus_es_b_c33_sentence.mp3",
             "mediaFile": "es_bus.png",
             "tags": [
                 "Objects",
@@ -475,8 +475,8 @@
             "wordNative": "Train",
             "sentenceTarget": "El tren sale a las diez.",
             "sentenceNative": "The train leaves at ten.",
-            "audioWordFile": "es_tren_word.mp3",
-            "audioSentenceFile": "es_tren_sentence.mp3",
+            "audioWordFile": "es_tren_es_b_c34_word.mp3",
+            "audioSentenceFile": "es_tren_es_b_c34_sentence.mp3",
             "mediaFile": "es_tren.png",
             "tags": [
                 "Objects",
@@ -490,8 +490,8 @@
             "wordNative": "Plane",
             "sentenceTarget": "El avión vuela alto.",
             "sentenceNative": "The plane flies high.",
-            "audioWordFile": "es_avion_word.mp3",
-            "audioSentenceFile": "es_avion_sentence.mp3",
+            "audioWordFile": "es_avi_n_es_b_c35_word.mp3",
+            "audioSentenceFile": "es_avi_n_es_b_c35_sentence.mp3",
             "mediaFile": "es_avion.png",
             "tags": [
                 "Objects",
@@ -504,8 +504,8 @@
             "wordNative": "Street",
             "sentenceTarget": "Camina por la calle principal.",
             "sentenceNative": "Walk down the main street.",
-            "audioWordFile": "es_calle_word.mp3",
-            "audioSentenceFile": "es_calle_sentence.mp3",
+            "audioWordFile": "es_calle_es_b_c36_word.mp3",
+            "audioSentenceFile": "es_calle_es_b_c36_sentence.mp3",
             "mediaFile": "es_calle.png",
             "tags": [
                 "City Life",
@@ -518,8 +518,8 @@
             "wordNative": "Park",
             "sentenceTarget": "Jugamos en el parque.",
             "sentenceNative": "We play in the park.",
-            "audioWordFile": "es_parque_word.mp3",
-            "audioSentenceFile": "es_parque_sentence.mp3",
+            "audioWordFile": "es_parque_es_b_c37_word.mp3",
+            "audioSentenceFile": "es_parque_es_b_c37_sentence.mp3",
             "mediaFile": "es_parque.png",
             "tags": [
                 "City Life",
@@ -532,8 +532,8 @@
             "wordNative": "Cinema",
             "sentenceTarget": "Vamos al cine esta noche.",
             "sentenceNative": "Let's go to the cinema tonight.",
-            "audioWordFile": "es_cine_word.mp3",
-            "audioSentenceFile": "es_cine_sentence.mp3",
+            "audioWordFile": "es_cine_es_b_c38_word.mp3",
+            "audioSentenceFile": "es_cine_es_b_c38_sentence.mp3",
             "mediaFile": "es_cine.png",
             "tags": [
                 "City Life"
@@ -545,8 +545,8 @@
             "wordNative": "Restaurant",
             "sentenceTarget": "El restaurante es gourmet.",
             "sentenceNative": "The restaurant is gourmet.",
-            "audioWordFile": "es_restaurante_word.mp3",
-            "audioSentenceFile": "es_restaurante_sentence.mp3",
+            "audioWordFile": "es_restaurante_es_b_c39_word.mp3",
+            "audioSentenceFile": "es_restaurante_es_b_c39_sentence.mp3",
             "mediaFile": "es_restaurante.png",
             "tags": [
                 "City Life",
@@ -560,8 +560,8 @@
             "wordNative": "Hotel",
             "sentenceTarget": "Dormimos en un hotel.",
             "sentenceNative": "We slept in a hotel.",
-            "audioWordFile": "es_hotel_word.mp3",
-            "audioSentenceFile": "es_hotel_sentence.mp3",
+            "audioWordFile": "es_hotel_es_b_c40_word.mp3",
+            "audioSentenceFile": "es_hotel_es_b_c40_sentence.mp3",
             "mediaFile": "es_hotel.png",
             "tags": [
                 "City Life",
@@ -574,8 +574,8 @@
             "wordNative": "Beach",
             "sentenceTarget": "La playa es muy hermosa.",
             "sentenceNative": "The beach is very beautiful.",
-            "audioWordFile": "es_playa_word.mp3",
-            "audioSentenceFile": "es_playa_sentence.mp3",
+            "audioWordFile": "es_play_es_b_c41_word.mp3",
+            "audioSentenceFile": "es_play_es_b_c41_sentence.mp3",
             "mediaFile": "es_playa.png",
             "tags": [
                 "Nature"
@@ -587,8 +587,8 @@
             "wordNative": "Mountain",
             "sentenceTarget": "Escalamos la montaña.",
             "sentenceNative": "We climbed the mountain.",
-            "audioWordFile": "es_montana_word.mp3",
-            "audioSentenceFile": "es_montana_sentence.mp3",
+            "audioWordFile": "es_monta_a_es_b_c42_word.mp3",
+            "audioSentenceFile": "es_monta_a_es_b_c42_sentence.mp3",
             "mediaFile": "es_montana.png",
             "tags": [
                 "Nature"
@@ -600,8 +600,8 @@
             "wordNative": "Sun",
             "sentenceTarget": "El sol brilla mucho.",
             "sentenceNative": "The sun shines a lot.",
-            "audioWordFile": "es_sol_word.mp3",
-            "audioSentenceFile": "es_sol_sentence.mp3",
+            "audioWordFile": "es_sol_es_b_c43_word.mp3",
+            "audioSentenceFile": "es_sol_es_b_c43_sentence.mp3",
             "mediaFile": "es_sol.jpg",
             "tags": [
                 "Nature"
@@ -613,8 +613,8 @@
             "wordNative": "Moon",
             "sentenceTarget": "La luna es redonda.",
             "sentenceNative": "The moon is round.",
-            "audioWordFile": "es_luna_word.mp3",
-            "audioSentenceFile": "es_luna_sentence.mp3",
+            "audioWordFile": "es_luna_es_b_c44_word.mp3",
+            "audioSentenceFile": "es_luna_es_b_c44_sentence.mp3",
             "mediaFile": "es_luna.jpg",
             "tags": [
                 "Nature"
@@ -626,8 +626,8 @@
             "wordNative": "Star",
             "sentenceTarget": "Veo una estrella fugaz.",
             "sentenceNative": "I see a shooting star.",
-            "audioWordFile": "es_estrella_word.mp3",
-            "audioSentenceFile": "es_estrella_sentence.mp3",
+            "audioWordFile": "es_estrella_es_b_c45_word.mp3",
+            "audioSentenceFile": "es_estrella_es_b_c45_sentence.mp3",
             "mediaFile": "es_estrella.jpg",
             "tags": [
                 "Nature"
@@ -639,8 +639,8 @@
             "wordNative": "Sky",
             "sentenceTarget": "El cielo está azul.",
             "sentenceNative": "The sky is blue.",
-            "audioWordFile": "es_cielo_word.mp3",
-            "audioSentenceFile": "es_cielo_sentence.mp3",
+            "audioWordFile": "es_cielo_es_b_c46_word.mp3",
+            "audioSentenceFile": "es_cielo_es_b_c46_sentence.mp3",
             "mediaFile": "es_cielo.jpg",
             "tags": [
                 "Nature"
@@ -652,8 +652,8 @@
             "wordNative": "Sea",
             "sentenceTarget": "El mar está tranquilo.",
             "sentenceNative": "The sea is calm.",
-            "audioWordFile": "es_mar_word.mp3",
-            "audioSentenceFile": "es_mar_sentence.mp3",
+            "audioWordFile": "es_mar_es_b_c47_word.mp3",
+            "audioSentenceFile": "es_mar_es_b_c47_sentence.mp3",
             "mediaFile": "es_mar.jpg",
             "tags": [
                 "Nature"
@@ -665,8 +665,8 @@
             "wordNative": "Flower",
             "sentenceTarget": "La flor huele bien.",
             "sentenceNative": "The flower smells good.",
-            "audioWordFile": "es_flor_word.mp3",
-            "audioSentenceFile": "es_flor_sentence.mp3",
+            "audioWordFile": "es_flor_es_b_c48_word.mp3",
+            "audioSentenceFile": "es_flor_es_b_c48_sentence.mp3",
             "mediaFile": "es_flor.jpg",
             "tags": [
                 "Nature"
@@ -678,8 +678,8 @@
             "wordNative": "Tree",
             "sentenceTarget": "El árbol es muy viejo.",
             "sentenceNative": "The tree is very old.",
-            "audioWordFile": "es_arbol_word.mp3",
-            "audioSentenceFile": "es_arbol_sentence.mp3",
+            "audioWordFile": "es_rbol_es_b_c49_word.mp3",
+            "audioSentenceFile": "es_rbol_es_b_c49_sentence.mp3",
             "mediaFile": "es_arbol.jpg",
             "tags": [
                 "Nature"
@@ -691,8 +691,8 @@
             "wordNative": "Fruit",
             "sentenceTarget": "Me gusta la fruta fresca.",
             "sentenceNative": "I like fresh fruit.",
-            "audioWordFile": "es_fruta_word.mp3",
-            "audioSentenceFile": "es_fruta_sentence.mp3",
+            "audioWordFile": "es_fruta_es_b_c50_word.mp3",
+            "audioSentenceFile": "es_fruta_es_b_c50_sentence.mp3",
             "mediaFile": "es_fruta.jpg",
             "tags": [
                 "Food"
@@ -704,8 +704,8 @@
             "wordNative": "Apple",
             "sentenceTarget": "Como una manzana roja.",
             "sentenceNative": "I eat a red apple.",
-            "audioWordFile": "es_manzana_word.mp3",
-            "audioSentenceFile": "es_manzana_sentence.mp3",
+            "audioWordFile": "es_manzana_es_b_c51_word.mp3",
+            "audioSentenceFile": "es_manzana_es_b_c51_sentence.mp3",
             "mediaFile": "es_manzana.jpg",
             "tags": [
                 "Food"
@@ -717,8 +717,8 @@
             "wordNative": "Pear",
             "sentenceTarget": "La pera es dulce.",
             "sentenceNative": "The pear is sweet.",
-            "audioWordFile": "es_pera_word.mp3",
-            "audioSentenceFile": "es_pera_sentence.mp3",
+            "audioWordFile": "es_pera_es_b_c52_word.mp3",
+            "audioSentenceFile": "es_pera_es_b_c52_sentence.mp3",
             "mediaFile": "es_pera.jpg",
             "tags": [
                 "Food"
@@ -730,8 +730,8 @@
             "wordNative": "Milk",
             "sentenceTarget": "Bebo leche cada mañana.",
             "sentenceNative": "I drink milk every morning.",
-            "audioWordFile": "es_leche_word.mp3",
-            "audioSentenceFile": "es_leche_sentence.mp3",
+            "audioWordFile": "es_leche_es_b_c53_word.mp3",
+            "audioSentenceFile": "es_leche_es_b_c53_sentence.mp3",
             "mediaFile": "es_leche.jpg",
             "tags": [
                 "Food"
@@ -743,8 +743,8 @@
             "wordNative": "Bread",
             "sentenceTarget": "El pan está crujiente.",
             "sentenceNative": "The bread is crunchy.",
-            "audioWordFile": "es_pan_word.mp3",
-            "audioSentenceFile": "es_pan_sentence.mp3",
+            "audioWordFile": "es_pan_es_b_c54_word.mp3",
+            "audioSentenceFile": "es_pan_es_b_c54_sentence.mp3",
             "mediaFile": "es_pan.jpg",
             "tags": [
                 "Food"
@@ -756,8 +756,8 @@
             "wordNative": "Cheese",
             "sentenceTarget": "Me encanta el queso.",
             "sentenceNative": "I love cheese.",
-            "audioWordFile": "es_queso_word.mp3",
-            "audioSentenceFile": "es_queso_sentence.mp3",
+            "audioWordFile": "es_queso_es_b_c55_word.mp3",
+            "audioSentenceFile": "es_queso_es_b_c55_sentence.mp3",
             "mediaFile": "es_queso.jpg",
             "tags": [
                 "Food"
@@ -769,8 +769,8 @@
             "wordNative": "Meat",
             "sentenceTarget": "No como carne.",
             "sentenceNative": "I don't eat meat.",
-            "audioWordFile": "es_carne_word.mp3",
-            "audioSentenceFile": "es_carne_sentence.mp3",
+            "audioWordFile": "es_carne_es_b_c56_word.mp3",
+            "audioSentenceFile": "es_carne_es_b_c56_sentence.mp3",
             "mediaFile": "es_carne.jpg",
             "tags": [
                 "Food"
@@ -782,8 +782,8 @@
             "wordNative": "Fish",
             "sentenceTarget": "El pescado es saludable.",
             "sentenceNative": "Fish is healthy.",
-            "audioWordFile": "es_pescado_word.mp3",
-            "audioSentenceFile": "es_pescado_sentence.mp3",
+            "audioWordFile": "es_pescado_es_b_c57_word.mp3",
+            "audioSentenceFile": "es_pescado_es_b_c57_sentence.mp3",
             "mediaFile": "es_pescado.jpg",
             "tags": [
                 "Animals",
@@ -796,8 +796,8 @@
             "wordNative": "Rice",
             "sentenceTarget": "El arroz es blanco.",
             "sentenceNative": "The rice is white.",
-            "audioWordFile": "es_arroz_word.mp3",
-            "audioSentenceFile": "es_arroz_sentence.mp3",
+            "audioWordFile": "es_arroz_es_b_c58_word.mp3",
+            "audioSentenceFile": "es_arroz_es_b_c58_sentence.mp3",
             "mediaFile": "es_arroz.jpg",
             "tags": [
                 "Food"
@@ -809,8 +809,8 @@
             "wordNative": "Egg",
             "sentenceTarget": "Quiero un huevo frito.",
             "sentenceNative": "I want a fried egg.",
-            "audioWordFile": "es_huevo_word.mp3",
-            "audioSentenceFile": "es_huevo_sentence.mp3",
+            "audioWordFile": "es_huevo_es_b_c59_word.mp3",
+            "audioSentenceFile": "es_huevo_es_b_c59_sentence.mp3",
             "mediaFile": "es_huevo.jpg",
             "tags": [
                 "Food"
@@ -822,8 +822,8 @@
             "wordNative": "Salt",
             "sentenceTarget": "Añade un poco de sal.",
             "sentenceNative": "Add a little bit of salt.",
-            "audioWordFile": "es_sal_word.mp3",
-            "audioSentenceFile": "es_sal_sentence.mp3",
+            "audioWordFile": "es_sal_es_b_c60_word.mp3",
+            "audioSentenceFile": "es_sal_es_b_c60_sentence.mp3",
             "mediaFile": "es_sal.jpg",
             "tags": [
                 "Food"
@@ -835,8 +835,8 @@
             "wordNative": "Sugar",
             "sentenceTarget": "El azúcar es dulce.",
             "sentenceNative": "Sugar is sweet.",
-            "audioWordFile": "es_azucar_word.mp3",
-            "audioSentenceFile": "es_azucar_sentence.mp3",
+            "audioWordFile": "es_az_car_es_b_c61_word.mp3",
+            "audioSentenceFile": "es_az_car_es_b_c61_sentence.mp3",
             "mediaFile": "es_azucar.jpg",
             "tags": [
                 "Food"
@@ -848,8 +848,8 @@
             "wordNative": "Tea",
             "sentenceTarget": "Bebe té verde.",
             "sentenceNative": "Drink green tea.",
-            "audioWordFile": "es_te_word.mp3",
-            "audioSentenceFile": "es_te_sentence.mp3",
+            "audioWordFile": "es_t_es_b_c62_word.mp3",
+            "audioSentenceFile": "es_t_es_b_c62_sentence.mp3",
             "mediaFile": "es_te.jpg",
             "tags": [
                 "Food"
@@ -861,8 +861,8 @@
             "wordNative": "Coffee",
             "sentenceTarget": "Prefiero el café sólo.",
             "sentenceNative": "I prefer black coffee.",
-            "audioWordFile": "es_cafe_word.mp3",
-            "audioSentenceFile": "es_cafe_sentence.mp3",
+            "audioWordFile": "es_caf_es_b_c63_word.mp3",
+            "audioSentenceFile": "es_caf_es_b_c63_sentence.mp3",
             "mediaFile": "es_cafe.jpg",
             "tags": [
                 "Food"
@@ -874,8 +874,8 @@
             "wordNative": "Beer",
             "sentenceTarget": "La cerveza está fría.",
             "sentenceNative": "The beer is cold.",
-            "audioWordFile": "es_cerveza_word.mp3",
-            "audioSentenceFile": "es_cerveza_sentence.mp3",
+            "audioWordFile": "es_cerveza_es_b_c64_word.mp3",
+            "audioSentenceFile": "es_cerveza_es_b_c64_sentence.mp3",
             "mediaFile": "es_cerveza.jpg",
             "tags": [
                 "Food"
@@ -887,8 +887,8 @@
             "wordNative": "Wine",
             "sentenceTarget": "El vino tinto es rico.",
             "sentenceNative": "Red wine is tasty.",
-            "audioWordFile": "es_vino_word.mp3",
-            "audioSentenceFile": "es_vino_sentence.mp3",
+            "audioWordFile": "es_vino_es_b_c65_word.mp3",
+            "audioSentenceFile": "es_vino_es_b_c65_sentence.mp3",
             "mediaFile": "es_vino.jpg",
             "tags": [
                 "Food"
@@ -900,8 +900,8 @@
             "wordNative": "Body",
             "sentenceTarget": "Cuida tu cuerpo.",
             "sentenceNative": "Take care of your body.",
-            "audioWordFile": "es_cuerpo_word.mp3",
-            "audioSentenceFile": "es_cuerpo_sentence.mp3",
+            "audioWordFile": "es_cuerpo_es_b_c66_word.mp3",
+            "audioSentenceFile": "es_cuerpo_es_b_c66_sentence.mp3",
             "mediaFile": "es_cuerpo.jpg",
             "tags": [
                 "Body"
@@ -913,8 +913,8 @@
             "wordNative": "Head",
             "sentenceTarget": "Me duele la cabeza.",
             "sentenceNative": "My head hurts.",
-            "audioWordFile": "es_cabeza_word.mp3",
-            "audioSentenceFile": "es_cabeza_sentence.mp3",
+            "audioWordFile": "es_cabeza_es_b_c67_word.mp3",
+            "audioSentenceFile": "es_cabeza_es_b_c67_sentence.mp3",
             "mediaFile": "es_cabeza.jpg",
             "tags": [
                 "Body"
@@ -926,8 +926,8 @@
             "wordNative": "Face",
             "sentenceTarget": "Lávate la cara.",
             "sentenceNative": "Wash your face.",
-            "audioWordFile": "es_cara_word.mp3",
-            "audioSentenceFile": "es_cara_sentence.mp3",
+            "audioWordFile": "es_cara_es_b_c68_word.mp3",
+            "audioSentenceFile": "es_cara_es_b_c68_sentence.mp3",
             "mediaFile": "es_cara.jpg",
             "tags": [
                 "Body"
@@ -939,8 +939,8 @@
             "wordNative": "Eye",
             "sentenceTarget": "Tengo un ojo azul.",
             "sentenceNative": "I have one blue eye.",
-            "audioWordFile": "es_ojo_word.mp3",
-            "audioSentenceFile": "es_ojo_sentence.mp3",
+            "audioWordFile": "es_ojo_es_b_c69_word.mp3",
+            "audioSentenceFile": "es_ojo_es_b_c69_sentence.mp3",
             "mediaFile": "es_ojo.jpg",
             "tags": [
                 "Body"
@@ -952,8 +952,8 @@
             "wordNative": "Nose",
             "sentenceTarget": "Respiro por la nariz.",
             "sentenceNative": "I breathe through my nose.",
-            "audioWordFile": "es_nariz_word.mp3",
-            "audioSentenceFile": "es_nariz_sentence.mp3",
+            "audioWordFile": "es_nariz_es_b_c70_word.mp3",
+            "audioSentenceFile": "es_nariz_es_b_c70_sentence.mp3",
             "mediaFile": "es_nariz.jpg",
             "tags": [
                 "Body"
@@ -965,8 +965,8 @@
             "wordNative": "Mouth",
             "sentenceTarget": "Cierra la boca.",
             "sentenceNative": "Close your mouth.",
-            "audioWordFile": "es_boca_word.mp3",
-            "audioSentenceFile": "es_boca_sentence.mp3",
+            "audioWordFile": "es_boca_es_b_c71_word.mp3",
+            "audioSentenceFile": "es_boca_es_b_c71_sentence.mp3",
             "mediaFile": "es_boca.jpg",
             "tags": [
                 "Body"
@@ -978,8 +978,8 @@
             "wordNative": "Ear",
             "sentenceTarget": "Me pica la oreja.",
             "sentenceNative": "My ear is itchy.",
-            "audioWordFile": "es_oreja_word.mp3",
-            "audioSentenceFile": "es_oreja_sentence.mp3",
+            "audioWordFile": "es_oreja_es_b_c72_word.mp3",
+            "audioSentenceFile": "es_oreja_es_b_c72_sentence.mp3",
             "mediaFile": "es_oreja.jpg",
             "tags": [
                 "Body"
@@ -991,8 +991,8 @@
             "wordNative": "Hair",
             "sentenceTarget": "Tiene el pelo largo.",
             "sentenceNative": "She has long hair.",
-            "audioWordFile": "es_pelo_word.mp3",
-            "audioSentenceFile": "es_pelo_sentence.mp3",
+            "audioWordFile": "es_pelo_es_b_c73_word.mp3",
+            "audioSentenceFile": "es_pelo_es_b_c73_sentence.mp3",
             "mediaFile": "es_pelo.jpg",
             "tags": [
                 "Body"
@@ -1004,8 +1004,8 @@
             "wordNative": "Hand",
             "sentenceTarget": "Dame la mano.",
             "sentenceNative": "Give me your hand.",
-            "audioWordFile": "es_mano_word.mp3",
-            "audioSentenceFile": "es_mano_sentence.mp3",
+            "audioWordFile": "es_mano_es_b_c74_word.mp3",
+            "audioSentenceFile": "es_mano_es_b_c74_sentence.mp3",
             "mediaFile": "es_mano.jpg",
             "tags": [
                 "Body"
@@ -1017,8 +1017,8 @@
             "wordNative": "Arm",
             "sentenceTarget": "Mi brazo es fuerte.",
             "sentenceNative": "My arm is strong.",
-            "audioWordFile": "es_brazo_word.mp3",
-            "audioSentenceFile": "es_brazo_sentence.mp3",
+            "audioWordFile": "es_brazo_es_b_c75_word.mp3",
+            "audioSentenceFile": "es_brazo_es_b_c75_sentence.mp3",
             "mediaFile": "es_brazo.jpg",
             "tags": [
                 "Body"
@@ -1030,8 +1030,8 @@
             "wordNative": "Leg",
             "sentenceTarget": "Corre con la pierna derecha.",
             "sentenceNative": "Run with your right leg.",
-            "audioWordFile": "es_pierna_word.mp3",
-            "audioSentenceFile": "es_pierna_sentence.mp3",
+            "audioWordFile": "es_pierna_es_b_c76_word.mp3",
+            "audioSentenceFile": "es_pierna_es_b_c76_sentence.mp3",
             "mediaFile": "es_pierna.jpg",
             "tags": [
                 "Body"
@@ -1043,8 +1043,8 @@
             "wordNative": "Foot",
             "sentenceTarget": "Me duele el pie.",
             "sentenceNative": "My foot hurts.",
-            "audioWordFile": "es_pie_word.mp3",
-            "audioSentenceFile": "es_pie_sentence.mp3",
+            "audioWordFile": "es_pie_es_b_c77_word.mp3",
+            "audioSentenceFile": "es_pie_es_b_c77_sentence.mp3",
             "mediaFile": "es_pie.jpg",
             "tags": [
                 "Body"
@@ -1056,8 +1056,8 @@
             "wordNative": "Doctor",
             "sentenceTarget": "Voy al médico.",
             "sentenceNative": "I'm going to the doctor.",
-            "audioWordFile": "es_medico_word.mp3",
-            "audioSentenceFile": "es_medico_sentence.mp3",
+            "audioWordFile": "es_m_dico_es_b_c78_word.mp3",
+            "audioSentenceFile": "es_m_dico_es_b_c78_sentence.mp3",
             "mediaFile": "es_medico.jpg",
             "tags": [
                 "Jobs",
@@ -1071,8 +1071,8 @@
             "wordNative": "Sick",
             "sentenceTarget": "Estoy muy enfermo.",
             "sentenceNative": "I am very sick.",
-            "audioWordFile": "es_enfermo_word.mp3",
-            "audioSentenceFile": "es_enfermo_sentence.mp3",
+            "audioWordFile": "es_enfermo_es_b_c79_word.mp3",
+            "audioSentenceFile": "es_enfermo_es_b_c79_sentence.mp3",
             "mediaFile": "es_enfermo.jpg",
             "tags": [
                 "Society"
@@ -1084,8 +1084,8 @@
             "wordNative": "Hospital",
             "sentenceTarget": "El hospital es grande.",
             "sentenceNative": "The hospital is big.",
-            "audioWordFile": "es_hospital_word.mp3",
-            "audioSentenceFile": "es_hospital_sentence.mp3",
+            "audioWordFile": "es_hospital_es_b_c80_word.mp3",
+            "audioSentenceFile": "es_hospital_es_b_c80_sentence.mp3",
             "mediaFile": "es_hospital.jpg",
             "tags": [
                 "Places",
@@ -1098,8 +1098,8 @@
             "wordNative": "Police",
             "sentenceTarget": "Llama a la policía.",
             "sentenceNative": "Call the police.",
-            "audioWordFile": "es_policia_word.mp3",
-            "audioSentenceFile": "es_policia_sentence.mp3",
+            "audioWordFile": "es_polic_a_es_b_c81_word.mp3",
+            "audioSentenceFile": "es_polic_a_es_b_c81_sentence.mp3",
             "mediaFile": "es_policia.jpg",
             "tags": [
                 "Jobs",
@@ -1113,8 +1113,8 @@
             "wordNative": "Firefighter",
             "sentenceTarget": "El bombero apaga el fuego.",
             "sentenceNative": "The firefighter puts out the fire.",
-            "audioWordFile": "es_bombero_word.mp3",
-            "audioSentenceFile": "es_bombero_sentence.mp3",
+            "audioWordFile": "es_bombero_es_b_c82_word.mp3",
+            "audioSentenceFile": "es_bombero_es_b_c82_sentence.mp3",
             "mediaFile": "es_bombero.jpg",
             "tags": [
                 "Jobs",
@@ -1127,8 +1127,8 @@
             "wordNative": "City",
             "sentenceTarget": "Barcelona es mi ciudad.",
             "sentenceNative": "Barcelona is my city.",
-            "audioWordFile": "es_ciudad_word.mp3",
-            "audioSentenceFile": "es_ciudad_sentence.mp3",
+            "audioWordFile": "es_ciudad_es_b_c83_word.mp3",
+            "audioSentenceFile": "es_ciudad_es_b_c83_sentence.mp3",
             "mediaFile": "es_ciudad.jpg",
             "tags": [
                 "Places",
@@ -1141,8 +1141,8 @@
             "wordNative": "Country / Field",
             "sentenceTarget": "Vivo en el campo.",
             "sentenceNative": "I live in the countryside.",
-            "audioWordFile": "es_campo_word.mp3",
-            "audioSentenceFile": "es_campo_sentence.mp3",
+            "audioWordFile": "es_campo_es_b_c84_word.mp3",
+            "audioSentenceFile": "es_campo_es_b_c84_sentence.mp3",
             "mediaFile": "es_campo.jpg",
             "tags": [
                 "Nature",
@@ -1156,8 +1156,8 @@
             "wordNative": "World",
             "sentenceTarget": "El mundo es pequeño.",
             "sentenceNative": "The world is small.",
-            "audioWordFile": "es_mundo_word.mp3",
-            "audioSentenceFile": "es_mundo_sentence.mp3",
+            "audioWordFile": "es_mundo_es_b_c85_word.mp3",
+            "audioSentenceFile": "es_mundo_es_b_c85_sentence.mp3",
             "mediaFile": "es_mundo.jpg",
             "tags": [
                 "Nature",
@@ -1170,8 +1170,8 @@
             "wordNative": "War",
             "sentenceTarget": "No queremos guerra.",
             "sentenceNative": "We don't want war.",
-            "audioWordFile": "es_guerra_word.mp3",
-            "audioSentenceFile": "es_guerra_sentence.mp3",
+            "audioWordFile": "es_guerra_es_b_c86_word.mp3",
+            "audioSentenceFile": "es_guerra_es_b_c86_sentence.mp3",
             "mediaFile": "es_guerra.jpg",
             "tags": [
                 "Concepts",
@@ -1184,8 +1184,8 @@
             "wordNative": "Peace",
             "sentenceTarget": "Queremos paz.",
             "sentenceNative": "We want peace.",
-            "audioWordFile": "es_paz_word.mp3",
-            "audioSentenceFile": "es_paz_sentence.mp3",
+            "audioWordFile": "es_paz_es_b_c87_word.mp3",
+            "audioSentenceFile": "es_paz_es_b_c87_sentence.mp3",
             "mediaFile": "es_paz.jpg",
             "tags": [
                 "Concepts",
@@ -1198,8 +1198,8 @@
             "wordNative": "Love",
             "sentenceTarget": "El amor es eterno.",
             "sentenceNative": "Love is eternal.",
-            "audioWordFile": "es_amor_word.mp3",
-            "audioSentenceFile": "es_amor_sentence.mp3",
+            "audioWordFile": "es_amor_es_b_c88_word.mp3",
+            "audioSentenceFile": "es_amor_es_b_c88_sentence.mp3",
             "mediaFile": "es_amor.jpg",
             "tags": [
                 "Concepts",
@@ -1212,8 +1212,8 @@
             "wordNative": "Hate",
             "sentenceTarget": "No sientas odio.",
             "sentenceNative": "Don't feel hate.",
-            "audioWordFile": "es_odio_word.mp3",
-            "audioSentenceFile": "es_odio_sentence.mp3",
+            "audioWordFile": "es_odio_es_b_c89_word.mp3",
+            "audioSentenceFile": "es_odio_es_b_c89_sentence.mp3",
             "mediaFile": "es_odio.jpg",
             "tags": [
                 "Concepts",
@@ -1226,8 +1226,8 @@
             "wordNative": "Summer",
             "sentenceTarget": "Hace calor en verano.",
             "sentenceNative": "It's hot in summer.",
-            "audioWordFile": "es_verano_word.mp3",
-            "audioSentenceFile": "es_verano_sentence.mp3",
+            "audioWordFile": "es_verano_es_b_c90_word.mp3",
+            "audioSentenceFile": "es_verano_es_b_c90_sentence.mp3",
             "mediaFile": "es_verano.jpg",
             "tags": [
                 "Time"
@@ -1239,8 +1239,8 @@
             "wordNative": "Winter",
             "sentenceTarget": "Nieva en invierno.",
             "sentenceNative": "It snows in winter.",
-            "audioWordFile": "es_invierno_word.mp3",
-            "audioSentenceFile": "es_invierno_sentence.mp3",
+            "audioWordFile": "es_invierno_es_b_c91_word.mp3",
+            "audioSentenceFile": "es_invierno_es_b_c91_sentence.mp3",
             "mediaFile": "es_invierno.jpg",
             "tags": [
                 "Time"
@@ -1252,8 +1252,8 @@
             "wordNative": "Spring",
             "sentenceTarget": "Las flores nacen en primavera.",
             "sentenceNative": "Flowers bloom in spring.",
-            "audioWordFile": "es_primavera_word.mp3",
-            "audioSentenceFile": "es_primavera_sentence.mp3",
+            "audioWordFile": "es_primavera_es_b_c92_word.mp3",
+            "audioSentenceFile": "es_primavera_es_b_c92_sentence.mp3",
             "mediaFile": "es_primavera.jpg",
             "tags": [
                 "Time"
@@ -1265,8 +1265,8 @@
             "wordNative": "Autumn",
             "sentenceTarget": "Las hojas caen en otoño.",
             "sentenceNative": "The leaves fall in autumn.",
-            "audioWordFile": "es_otono_word.mp3",
-            "audioSentenceFile": "es_otono_sentence.mp3",
+            "audioWordFile": "es_oto_o_es_b_c93_word.mp3",
+            "audioSentenceFile": "es_oto_o_es_b_c93_sentence.mp3",
             "mediaFile": "es_otono.jpg",
             "tags": [
                 "Time"
@@ -1278,8 +1278,8 @@
             "wordNative": "Monday",
             "sentenceTarget": "Hoy es lunes.",
             "sentenceNative": "Today is Monday.",
-            "audioWordFile": "es_lunes_word.mp3",
-            "audioSentenceFile": "es_lunes_sentence.mp3",
+            "audioWordFile": "es_lunes_es_b_c94_word.mp3",
+            "audioSentenceFile": "es_lunes_es_b_c94_sentence.mp3",
             "mediaFile": "es_lunes.jpg",
             "tags": [
                 "Days",
@@ -1292,8 +1292,8 @@
             "wordNative": "Tuesday",
             "sentenceTarget": "Mañana es martes.",
             "sentenceNative": "Tomorrow is Tuesday.",
-            "audioWordFile": "es_martes_word.mp3",
-            "audioSentenceFile": "es_martes_sentence.mp3",
+            "audioWordFile": "es_martes_es_b_c95_word.mp3",
+            "audioSentenceFile": "es_martes_es_b_c95_sentence.mp3",
             "mediaFile": "es_martes.jpg",
             "tags": [
                 "Days",
@@ -1306,8 +1306,8 @@
             "wordNative": "Saturday",
             "sentenceTarget": "Me gusta el sábado.",
             "sentenceNative": "I like Saturday.",
-            "audioWordFile": "es_sabado_word.mp3",
-            "audioSentenceFile": "es_sabado_sentence.mp3",
+            "audioWordFile": "es_s_bado_es_b_c96_word.mp3",
+            "audioSentenceFile": "es_s_bado_es_b_c96_sentence.mp3",
             "mediaFile": "es_sabado.jpg",
             "tags": [
                 "Days",
@@ -1320,8 +1320,8 @@
             "wordNative": "Sunday",
             "sentenceTarget": "El domingo es de descanso.",
             "sentenceNative": "Sunday is for rest.",
-            "audioWordFile": "es_domingo_word.mp3",
-            "audioSentenceFile": "es_domingo_sentence.mp3",
+            "audioWordFile": "es_domingo_es_b_c97_word.mp3",
+            "audioSentenceFile": "es_domingo_es_b_c97_sentence.mp3",
             "mediaFile": "es_domingo.jpg",
             "tags": [
                 "Days",
@@ -1334,8 +1334,8 @@
             "wordNative": "Color",
             "sentenceTarget": "Me gusta este color.",
             "sentenceNative": "I like this color.",
-            "audioWordFile": "es_color_word.mp3",
-            "audioSentenceFile": "es_color_sentence.mp3",
+            "audioWordFile": "es_color_es_b_c98_word.mp3",
+            "audioSentenceFile": "es_color_es_b_c98_sentence.mp3",
             "mediaFile": "es_color.jpg",
             "tags": [
                 "Adjectives",
@@ -1348,8 +1348,8 @@
             "wordNative": "White",
             "sentenceTarget": "El papel es blanco.",
             "sentenceNative": "The paper is white.",
-            "audioWordFile": "es_blanco_word.mp3",
-            "audioSentenceFile": "es_blanco_sentence.mp3",
+            "audioWordFile": "es_blanco_es_b_c99_word.mp3",
+            "audioSentenceFile": "es_blanco_es_b_c99_sentence.mp3",
             "mediaFile": "es_blanco.jpg",
             "tags": [
                 "Adjectives",
@@ -1362,8 +1362,8 @@
             "wordNative": "Black",
             "sentenceTarget": "La noche es negra.",
             "sentenceNative": "The night is black.",
-            "audioWordFile": "es_negro_word.mp3",
-            "audioSentenceFile": "es_negro_sentence.mp3",
+            "audioWordFile": "es_negro_es_b_c100_word.mp3",
+            "audioSentenceFile": "es_negro_es_b_c100_sentence.mp3",
             "mediaFile": "es_negro.jpg",
             "tags": [
                 "Adjectives",
@@ -1376,8 +1376,8 @@
             "wordNative": "Red",
             "sentenceTarget": "La manzana es roja.",
             "sentenceNative": "The apple is red.",
-            "audioWordFile": "es_rojo_word.mp3",
-            "audioSentenceFile": "es_rojo_sentence.mp3",
+            "audioWordFile": "es_rojo_es_b_c101_word.mp3",
+            "audioSentenceFile": "es_rojo_es_b_c101_sentence.mp3",
             "mediaFile": "es_rojo.jpg",
             "tags": [
                 "Adjectives",
@@ -1390,8 +1390,8 @@
             "wordNative": "Blue",
             "sentenceTarget": "El cielo es azul.",
             "sentenceNative": "The sky is blue.",
-            "audioWordFile": "es_azul_word.mp3",
-            "audioSentenceFile": "es_azul_sentence.mp3",
+            "audioWordFile": "es_azul_es_b_c102_word.mp3",
+            "audioSentenceFile": "es_azul_es_b_c102_sentence.mp3",
             "mediaFile": "es_azul.jpg",
             "tags": [
                 "Adjectives",
@@ -1404,8 +1404,8 @@
             "wordNative": "Green",
             "sentenceTarget": "El árbol es verde.",
             "sentenceNative": "The tree is green.",
-            "audioWordFile": "es_verde_word.mp3",
-            "audioSentenceFile": "es_verde_sentence.mp3",
+            "audioWordFile": "es_verde_es_b_c103_word.mp3",
+            "audioSentenceFile": "es_verde_es_b_c103_sentence.mp3",
             "mediaFile": "es_verde.jpg",
             "tags": [
                 "Adjectives",
@@ -1418,8 +1418,8 @@
             "wordNative": "Yellow",
             "sentenceTarget": "El sol es amarillo.",
             "sentenceNative": "The sun is yellow.",
-            "audioWordFile": "es_amarillo_word.mp3",
-            "audioSentenceFile": "es_amarillo_sentence.mp3",
+            "audioWordFile": "es_amarillo_es_b_c104_word.mp3",
+            "audioSentenceFile": "es_amarillo_es_b_c104_sentence.mp3",
             "mediaFile": "es_amarillo.jpg",
             "tags": [
                 "Adjectives",
@@ -1432,8 +1432,8 @@
             "wordNative": "Orange",
             "sentenceTarget": "La naranja es naranja.",
             "sentenceNative": "The orange is orange.",
-            "audioWordFile": "es_naranja_word.mp3",
-            "audioSentenceFile": "es_naranja_sentence.mp3",
+            "audioWordFile": "es_naranja_es_b_c105_word.mp3",
+            "audioSentenceFile": "es_naranja_es_b_c105_sentence.mp3",
             "mediaFile": "es_naranja.jpg",
             "tags": [
                 "Adjectives",
@@ -1447,8 +1447,8 @@
             "wordNative": "Purple",
             "sentenceTarget": "Las uvas son moradas.",
             "sentenceNative": "The grapes are purple.",
-            "audioWordFile": "es_morado_word.mp3",
-            "audioSentenceFile": "es_morado_sentence.mp3",
+            "audioWordFile": "es_morado_es_b_c106_word.mp3",
+            "audioSentenceFile": "es_morado_es_b_c106_sentence.mp3",
             "mediaFile": "es_morado.jpg",
             "tags": [
                 "Adjectives",
@@ -1461,8 +1461,8 @@
             "wordNative": "Pink",
             "sentenceTarget": "La flor es rosa.",
             "sentenceNative": "The flower is pink.",
-            "audioWordFile": "es_rosa_word.mp3",
-            "audioSentenceFile": "es_rosa_sentence.mp3",
+            "audioWordFile": "es_rosa_es_b_c107_word.mp3",
+            "audioSentenceFile": "es_rosa_es_b_c107_sentence.mp3",
             "mediaFile": "es_rosa.jpg",
             "tags": [
                 "Adjectives",
@@ -1475,8 +1475,8 @@
             "wordNative": "Grey",
             "sentenceTarget": "El cielo está gris.",
             "sentenceNative": "The sky is grey.",
-            "audioWordFile": "es_gris_word.mp3",
-            "audioSentenceFile": "es_gris_sentence.mp3",
+            "audioWordFile": "es_gris_es_b_c108_word.mp3",
+            "audioSentenceFile": "es_gris_es_b_c108_sentence.mp3",
             "mediaFile": "es_gris.jpg",
             "tags": [
                 "Adjectives",
@@ -1489,8 +1489,8 @@
             "wordNative": "Brown",
             "sentenceTarget": "El oso es marrón.",
             "sentenceNative": "The bear is brown.",
-            "audioWordFile": "es_marron_word.mp3",
-            "audioSentenceFile": "es_marron_sentence.mp3",
+            "audioWordFile": "es_marr_n_es_b_c109_word.mp3",
+            "audioSentenceFile": "es_marr_n_es_b_c109_sentence.mp3",
             "mediaFile": "es_marron.jpg",
             "tags": [
                 "Adjectives",
@@ -1503,8 +1503,8 @@
             "wordNative": "Wednesday",
             "sentenceTarget": "El miércoles tengo clase.",
             "sentenceNative": "On Wednesday I have class.",
-            "audioWordFile": "es_miercoles_word.mp3",
-            "audioSentenceFile": "es_miercoles_sentence.mp3",
+            "audioWordFile": "es_mi_rcoles_es_b_c110_word.mp3",
+            "audioSentenceFile": "es_mi_rcoles_es_b_c110_sentence.mp3",
             "mediaFile": "es_miercoles.jpg",
             "tags": [
                 "Days",
@@ -1517,8 +1517,8 @@
             "wordNative": "Thursday",
             "sentenceTarget": "Nos vemos el jueves.",
             "sentenceNative": "See you on Thursday.",
-            "audioWordFile": "es_jueves_word.mp3",
-            "audioSentenceFile": "es_jueves_sentence.mp3",
+            "audioWordFile": "es_jueves_es_b_c111_word.mp3",
+            "audioSentenceFile": "es_jueves_es_b_c111_sentence.mp3",
             "mediaFile": "es_jueves.jpg",
             "tags": [
                 "Days",
@@ -1531,8 +1531,8 @@
             "wordNative": "Friday",
             "sentenceTarget": "¡Es viernes!",
             "sentenceNative": "It's Friday!",
-            "audioWordFile": "es_viernes_word.mp3",
-            "audioSentenceFile": "es_viernes_sentence.mp3",
+            "audioWordFile": "es_viernes_es_b_c112_word.mp3",
+            "audioSentenceFile": "es_viernes_es_b_c112_sentence.mp3",
             "mediaFile": "es_viernes.jpg",
             "tags": [
                 "Days",
@@ -1545,8 +1545,8 @@
             "wordNative": "January",
             "sentenceTarget": "Enero es frío.",
             "sentenceNative": "January is cold.",
-            "audioWordFile": "es_enero_word.mp3",
-            "audioSentenceFile": "es_enero_sentence.mp3",
+            "audioWordFile": "es_enero_es_b_c113_word.mp3",
+            "audioSentenceFile": "es_enero_es_b_c113_sentence.mp3",
             "mediaFile": "es_enero.jpg",
             "tags": [
                 "Months",
@@ -1559,8 +1559,8 @@
             "wordNative": "February",
             "sentenceTarget": "Febrero tiene veintiocho días.",
             "sentenceNative": "February has twenty-eight days.",
-            "audioWordFile": "es_febrero_word.mp3",
-            "audioSentenceFile": "es_febrero_sentence.mp3",
+            "audioWordFile": "es_febrero_es_b_c114_word.mp3",
+            "audioSentenceFile": "es_febrero_es_b_c114_sentence.mp3",
             "mediaFile": "es_febrero.jpg",
             "tags": [
                 "Months",
@@ -1573,8 +1573,8 @@
             "wordNative": "March",
             "sentenceTarget": "Marzo trae la primavera.",
             "sentenceNative": "March brings spring.",
-            "audioWordFile": "es_marzo_word.mp3",
-            "audioSentenceFile": "es_marzo_sentence.mp3",
+            "audioWordFile": "es_marzo_es_b_c115_word.mp3",
+            "audioSentenceFile": "es_marzo_es_b_c115_sentence.mp3",
             "mediaFile": "es_marzo.jpg",
             "tags": [
                 "Months",
@@ -1587,8 +1587,8 @@
             "wordNative": "April",
             "sentenceTarget": "En abril, aguas mil.",
             "sentenceNative": "April showers.",
-            "audioWordFile": "es_abril_word.mp3",
-            "audioSentenceFile": "es_abril_sentence.mp3",
+            "audioWordFile": "es_abril_es_b_c116_word.mp3",
+            "audioSentenceFile": "es_abril_es_b_c116_sentence.mp3",
             "mediaFile": "es_abril.jpg",
             "tags": [
                 "Months",
@@ -1601,8 +1601,8 @@
             "wordNative": "May",
             "sentenceTarget": "Mayo es el mes de las flores.",
             "sentenceNative": "May is the month of flowers.",
-            "audioWordFile": "es_mayo_word.mp3",
-            "audioSentenceFile": "es_mayo_sentence.mp3",
+            "audioWordFile": "es_mayo_es_b_c117_word.mp3",
+            "audioSentenceFile": "es_mayo_es_b_c117_sentence.mp3",
             "mediaFile": "es_mayo.jpg",
             "tags": [
                 "Months",
@@ -1616,8 +1616,8 @@
             "wordNative": "June",
             "sentenceTarget": "Junio marca el inicio del verano.",
             "sentenceNative": "June marks the start of summer.",
-            "audioWordFile": "es_junio_word.mp3",
-            "audioSentenceFile": "es_junio_sentence.mp3",
+            "audioWordFile": "es_junio_es_b_c118_word.mp3",
+            "audioSentenceFile": "es_junio_es_b_c118_sentence.mp3",
             "mediaFile": "es_junio.jpg",
             "tags": [
                 "Months",
@@ -1630,8 +1630,8 @@
             "wordNative": "July",
             "sentenceTarget": "Julio es muy caluroso.",
             "sentenceNative": "July is very hot.",
-            "audioWordFile": "es_julio_word.mp3",
-            "audioSentenceFile": "es_julio_sentence.mp3",
+            "audioWordFile": "es_julio_es_b_c119_word.mp3",
+            "audioSentenceFile": "es_julio_es_b_c119_sentence.mp3",
             "mediaFile": "es_julio.jpg",
             "tags": [
                 "Months",
@@ -1644,8 +1644,8 @@
             "wordNative": "August",
             "sentenceTarget": "Vacaciones en agosto.",
             "sentenceNative": "Holidays in August.",
-            "audioWordFile": "es_agosto_word.mp3",
-            "audioSentenceFile": "es_agosto_sentence.mp3",
+            "audioWordFile": "es_agosto_es_b_c120_word.mp3",
+            "audioSentenceFile": "es_agosto_es_b_c120_sentence.mp3",
             "mediaFile": "es_agosto.jpg",
             "tags": [
                 "Months",
@@ -1658,8 +1658,8 @@
             "wordNative": "September",
             "sentenceTarget": "Vuelta al cole en septiembre.",
             "sentenceNative": "Back to school in September.",
-            "audioWordFile": "es_septiembre_word.mp3",
-            "audioSentenceFile": "es_septiembre_sentence.mp3",
+            "audioWordFile": "es_septiembre_es_b_c121_word.mp3",
+            "audioSentenceFile": "es_septiembre_es_b_c121_sentence.mp3",
             "mediaFile": "es_septiembre.jpg",
             "tags": [
                 "Months",
@@ -1672,8 +1672,8 @@
             "wordNative": "October",
             "sentenceTarget": "Octubre tiene hojas rojas.",
             "sentenceNative": "October has red leaves.",
-            "audioWordFile": "es_octubre_word.mp3",
-            "audioSentenceFile": "es_octubre_sentence.mp3",
+            "audioWordFile": "es_octubre_es_b_c122_word.mp3",
+            "audioSentenceFile": "es_octubre_es_b_c122_sentence.mp3",
             "mediaFile": "es_octubre.jpg",
             "tags": [
                 "Months",
@@ -1686,8 +1686,8 @@
             "wordNative": "November",
             "sentenceTarget": "Noviembre es lluvioso.",
             "sentenceNative": "November is rainy.",
-            "audioWordFile": "es_noviembre_word.mp3",
-            "audioSentenceFile": "es_noviembre_sentence.mp3",
+            "audioWordFile": "es_noviembre_es_b_c123_word.mp3",
+            "audioSentenceFile": "es_noviembre_es_b_c123_sentence.mp3",
             "mediaFile": "es_noviembre.jpg",
             "tags": [
                 "Months",
@@ -1700,8 +1700,8 @@
             "wordNative": "December",
             "sentenceTarget": "Navidad es en diciembre.",
             "sentenceNative": "Christmas is in December.",
-            "audioWordFile": "es_diciembre_word.mp3",
-            "audioSentenceFile": "es_diciembre_sentence.mp3",
+            "audioWordFile": "es_diciembre_es_b_c124_word.mp3",
+            "audioSentenceFile": "es_diciembre_es_b_c124_sentence.mp3",
             "mediaFile": "es_diciembre.jpg",
             "tags": [
                 "Months",

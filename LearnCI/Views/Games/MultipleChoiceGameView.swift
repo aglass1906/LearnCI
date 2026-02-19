@@ -114,6 +114,7 @@ struct MultipleChoiceGameView: View {
     
     func loadNextChallenge() {
         guard currentCardIndex < sessionCards.count else { return }
+        print("DEBUG: loadNextChallenge for index \(currentCardIndex)")
         let card = sessionCards[currentCardIndex]
         
         // Reset State
@@ -129,12 +130,17 @@ struct MultipleChoiceGameView: View {
         
         // Auto Play
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            playAudio()
+            print("DEBUG: MC AutoPlay triggering for index \(self.currentCardIndex)")
+            self.playAudio()
         }
     }
     
     func playAudio() {
-        guard let challenge = challenge else { return }
+        guard let challenge = challenge else { 
+            print("DEBUG: MC playAudio SKIPPED (No challenge)")
+            return 
+        }
+        print("DEBUG: MC playAudio STARTING for \(challenge.correctCard.wordTarget)")
         let card = challenge.correctCard
         
         var sequence: [AudioManager.AudioItem] = []

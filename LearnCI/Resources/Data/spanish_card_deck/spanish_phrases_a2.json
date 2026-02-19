@@ -22,8 +22,8 @@
             "wordNative": "My head hurts",
             "sentenceTarget": "No puedo ir, me duele la cabeza.",
             "sentenceNative": "I can't go, my head hurts.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_me_duele_la_cabeza_es_p_a2_01_word.mp3",
+            "audioSentenceFile": "es_me_duele_la_cabeza_es_p_a2_01_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Health"
@@ -35,8 +35,8 @@
             "wordNative": "I would like to reserve",
             "sentenceTarget": "Quisiera reservar una mesa para dos.",
             "sentenceNative": "I would like to reserve a table for two.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_quisiera_reservar_es_p_a2_02_word.mp3",
+            "audioSentenceFile": "es_quisiera_reservar_es_p_a2_02_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Dining",
@@ -49,8 +49,8 @@
             "wordNative": "How do I get to?",
             "sentenceTarget": "¿Cómo llego a la estación de tren?",
             "sentenceNative": "How do I get to the train station?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_c_mo_llego_es_p_a2_03_word.mp3",
+            "audioSentenceFile": "es_c_mo_llego_es_p_a2_03_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Travel",
@@ -63,8 +63,8 @@
             "wordNative": "Yesterday I went",
             "sentenceTarget": "Ayer fui al cine con mis amigos.",
             "sentenceNative": "Yesterday I went to the movies with my friends.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_ayer_fui_es_p_a2_04_word.mp3",
+            "audioSentenceFile": "es_ayer_fui_es_p_a2_04_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Past Events",
@@ -77,8 +77,8 @@
             "wordNative": "Try this on",
             "sentenceTarget": "¿Puedo probarme esto, por favor?",
             "sentenceNative": "Can I try this on, please?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_probarme_esto_es_p_a2_05_word.mp3",
+            "audioSentenceFile": "es_probarme_esto_es_p_a2_05_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Shopping"
@@ -90,8 +90,8 @@
             "wordNative": "You are going to do",
             "sentenceTarget": "¿Qué vas a hacer este fin de semana?",
             "sentenceNative": "What are you going to do this weekend?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_vas_a_hacer_es_p_a2_06_word.mp3",
+            "audioSentenceFile": "es_vas_a_hacer_es_p_a2_06_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Future Plans",
@@ -104,8 +104,8 @@
             "wordNative": "I don't feel well",
             "sentenceTarget": "Me voy a casa, no me siento bien.",
             "sentenceNative": "I'm going home, I don't feel well.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_no_me_siento_bien_es_p_a2_07_word.mp3",
+            "audioSentenceFile": "es_no_me_siento_bien_es_p_a2_07_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Health"
@@ -117,8 +117,8 @@
             "wordNative": "It was delicious",
             "sentenceTarget": "La cena estuvo deliciosa, gracias.",
             "sentenceNative": "Dinner was delicious, thank you.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_estuvo_deliciosa_es_p_a2_08_word.mp3",
+            "audioSentenceFile": "es_estuvo_deliciosa_es_p_a2_08_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Dining",
@@ -131,8 +131,8 @@
             "wordNative": "Turn right",
             "sentenceTarget": "Siga todo recto y gire a la derecha.",
             "sentenceNative": "Go straight ahead and turn right.",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_gire_a_la_derecha_es_p_a2_09_word.mp3",
+            "audioSentenceFile": "es_gire_a_la_derecha_es_p_a2_09_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Directions",
@@ -145,8 +145,8 @@
             "wordNative": "More slowly",
             "sentenceTarget": "¿Podría hablar más despacio, por favor?",
             "sentenceNative": "Could you speak more slowly, please?",
-            "audioWordFile": null,
-            "audioSentenceFile": null,
+            "audioWordFile": "es_m_s_despacio_es_p_a2_10_word.mp3",
+            "audioSentenceFile": "es_m_s_despacio_es_p_a2_10_sentence.mp3",
             "mediaFile": null,
             "tags": [
                 "Communication"

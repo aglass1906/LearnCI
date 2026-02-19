@@ -53,24 +53,57 @@ final class UserProfile {
     
     var defaultGamePreset: GameConfiguration.Preset {
         get { GameConfiguration.Preset(rawValue: defaultGamePresetRaw) ?? .inputFocus }
-        set { defaultGamePresetRaw = newValue.rawValue }
+        set { 
+            defaultGamePresetRaw = newValue.rawValue
+            bumpUpdate()
+        }
     }
     
     var preferredScale: ProficiencyScale {
         get { ProficiencyScale(rawValue: preferredScaleRaw) ?? .simple }
-        set { preferredScaleRaw = newValue.rawValue }
+        set { 
+            preferredScaleRaw = newValue.rawValue
+            bumpUpdate()
+        }
     }
     
     var currentGameType: GameConfiguration.GameType {
         get { GameConfiguration.GameType(rawValue: lastGameTypeRaw) ?? .flashcards }
-        set { lastGameTypeRaw = newValue.rawValue }
+        set { 
+            lastGameTypeRaw = newValue.rawValue
+            bumpUpdate()
+        }
     }
     
-    var lastSelectedDeckId: String?
+    private var lastIdRaw: String?
+    var lastSelectedDeckId: String? {
+        get { lastIdRaw }
+        set { 
+            lastIdRaw = newValue
+            bumpUpdate()
+        }
+    }
+    
     var lastCheckInHours: Int = 0 // Tracks the last milestone (0, 25, 50...)
     var startingHours: Int = 0 // Manual offset for previous experience
-    var ttsRate: Float = 0.5 // Audio Speed Preference
-    var ttsVoiceGender: String = "female" // "male" or "female"
+    
+    private var ttsRateRaw: Float = 0.5
+    var ttsRate: Float { // Audio Speed Preference
+        get { ttsRateRaw }
+        set { 
+            ttsRateRaw = newValue
+            bumpUpdate()
+        }
+    }
+    
+    private var ttsVoiceGenderRaw: String = "female"
+    var ttsVoiceGender: String { // "male" or "female"
+        get { ttsVoiceGenderRaw }
+        set { 
+            ttsVoiceGenderRaw = newValue
+            bumpUpdate()
+        }
+    }
     
     init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5, ttsVoiceGender: String = "female") {
         self.id = UUID()
@@ -89,18 +122,24 @@ final class UserProfile {
         self.updatedAt = Date()
         self.defaultGamePresetRaw = defaultPreset.rawValue
         self.lastGameTypeRaw = lastGameType.rawValue
-        self.lastSelectedDeckId = lastSelectedDeckId
+        self.lastIdRaw = lastSelectedDeckId
         self.lastCheckInHours = lastCheckInHours
         self.startingHours = startingHours
-        self.ttsRate = ttsRate
-        self.ttsVoiceGender = ttsVoiceGender
+        self.ttsRateRaw = ttsRate
+        self.ttsVoiceGenderRaw = ttsVoiceGender
     }
     
     private func languageRawUpdate(_ newValue: Language) {
         currentLanguageRaw = newValue.rawValue
+        bumpUpdate()
     }
     
     private func levelRawUpdate(_ newValue: LearningLevel) {
         currentLevelRaw = newValue.rawValue
+        bumpUpdate()
+    }
+
+    func bumpUpdate() {
+        updatedAt = Date()
     }
 }

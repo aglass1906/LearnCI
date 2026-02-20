@@ -39,6 +39,7 @@ class SessionController {
         isGameOver = false
         score = 0
         streak = 0
+        learnedCount = 0
         timeRemaining = duration
         startTimer()
     }

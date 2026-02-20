@@ -40,7 +40,8 @@
             "back": {
                 "translation": "visible",
                 "sentenceMeaning": "visible",
-                "studyLinks": "visible"
+                "studyLinks": "visible",
+                "autoplay": false
             },
             "useTTSFallback": true
         },
@@ -67,7 +68,8 @@
             "back": {
                 "translation": "visible",
                 "sentenceMeaning": "visible",
-                "studyLinks": "visible"
+                "studyLinks": "visible",
+                "autoplay": false
             },
             "useTTSFallback": true
         },
@@ -94,7 +96,8 @@
             "back": {
                 "translation": "visible",
                 "sentenceMeaning": "visible",
-                "studyLinks": "visible"
+                "studyLinks": "visible",
+                "autoplay": false
             },
             "useTTSFallback": true
         },
@@ -121,7 +124,8 @@
             "back": {
                 "translation": "visible",
                 "sentenceMeaning": "visible",
-                "studyLinks": "visible"
+                "studyLinks": "visible",
+                "autoplay": false
             },
             "useTTSFallback": true
         },
@@ -148,7 +152,8 @@
             "back": {
                 "translation": "hint",
                 "sentenceMeaning": "hint",
-                "studyLinks": "visible"
+                "studyLinks": "visible",
+                "autoplay": false
             },
             "useTTSFallback": true
         }

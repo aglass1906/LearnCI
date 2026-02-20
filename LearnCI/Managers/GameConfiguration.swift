@@ -76,6 +76,34 @@ struct BackConfiguration: Codable, Equatable {
     var translation: ElementVisibility
     var sentenceMeaning: ElementVisibility
     var studyLinks: ElementVisibility
+    var autoplay: Bool = false // Default to false for back of card
+    
+    enum CodingKeys: String, CodingKey {
+        case translation, sentenceMeaning, studyLinks, autoplay
+    }
+    
+    init(translation: ElementVisibility, sentenceMeaning: ElementVisibility, studyLinks: ElementVisibility, autoplay: Bool = false) {
+        self.translation = translation
+        self.sentenceMeaning = sentenceMeaning
+        self.studyLinks = studyLinks
+        self.autoplay = autoplay
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        translation = try container.decode(ElementVisibility.self, forKey: .translation)
+        sentenceMeaning = try container.decode(ElementVisibility.self, forKey: .sentenceMeaning)
+        studyLinks = try container.decode(ElementVisibility.self, forKey: .studyLinks)
+        autoplay = try container.decodeIfPresent(Bool.self, forKey: .autoplay) ?? false
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(translation, forKey: .translation)
+        try container.encode(sentenceMeaning, forKey: .sentenceMeaning)
+        try container.encode(studyLinks, forKey: .studyLinks)
+        try container.encode(autoplay, forKey: .autoplay)
+    }
 }
 
 struct GameConfiguration: Codable, Equatable {

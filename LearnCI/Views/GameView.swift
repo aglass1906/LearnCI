@@ -136,6 +136,15 @@ struct GameView: View {
                         profile.lastSelectedDeckId = deck.id
                         try? modelContext.save()
                     }
+                    
+                    // Clamp card goal to available cards
+                    if let loaded = dataManager.loadDeck(from: deck) {
+                        let count = loaded.cards.count
+                        if sessionCardGoal > count {
+                            print("DEBUG: Clamping sessionCardGoal from \(sessionCardGoal) to \(count)")
+                            sessionCardGoal = count
+                        }
+                    }
                 } else {
                     print("DEBUG: selectedDeck CHANGED to NIL")
                 }
@@ -342,7 +351,7 @@ struct GameView: View {
         
         // Brief delay to allow flip animation to settle before audio starts
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            playCurrentCardAudio()
+            playCurrentCardAudio(force: !newValue) // Force play if flipping back to front (newValue is false)
         }
     }
     
@@ -590,6 +599,14 @@ struct GameView: View {
         sessionConfig.order = order
         sessionConfig.gameType = selectedGameType
         
+        // Enforce SRS grading for Smart Queue
+        if sessionConfig.order == .smart {
+            sessionConfig.confirmation = .srs
+            print("DEBUG: Smart Queue active - Enforcing SRS grading style.")
+        } else {
+            sessionConfig.confirmation = confirmationStyle
+        }
+        
         // Apply Global Audio Settings
         sessionConfig.ttsRate = ttsRate
         sessionConfig.useTTSFallback = useTTSFallback
@@ -597,7 +614,6 @@ struct GameView: View {
         // Apply Global UI Settings
         sessionConfig.navigation = navigationStyle
         sessionConfig.autoNextDelay = autoNextDelay
-        sessionConfig.confirmation = confirmationStyle
         sessionConfig.linkerTargetMode = linkerTargetMode
         
         // Initialize Controller
@@ -630,7 +646,7 @@ struct GameView: View {
         }
     }
     
-    func playCurrentCardAudio() {
+    func playCurrentCardAudio(force: Bool = false) {
         // Only auto-play audio for Flashcards/Story mode.
         guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { 
             print("DEBUG: playCurrentCardAudio SKIPPED (Wrong GameType: \(sessionConfig.gameType))")
@@ -660,21 +676,23 @@ struct GameView: View {
         
         if isFlipped {
             // BACK of card: Use English TTS for meanings
-            if sessionConfig.back.translation != .hidden {
-                // We use an empty filename to trigger fallback TTS in AudioManager
-                sequence.append(AudioManager.AudioItem(filename: "native_word", text: card.wordNative, language: .english))
-            }
-            if sessionConfig.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
-                 sequence.append(AudioManager.AudioItem(filename: "native_sentence", text: card.sentenceNative, language: .english))
+            if sessionConfig.back.autoplay {
+                if sessionConfig.back.translation != .hidden {
+                    // We use an empty filename to trigger fallback TTS in AudioManager
+                    sequence.append(AudioManager.AudioItem(filename: "native_word", text: card.wordNative, language: .english))
+                }
+                if sessionConfig.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
+                     sequence.append(AudioManager.AudioItem(filename: "native_sentence", text: card.sentenceNative, language: .english))
+                }
             }
         } else {
             // FRONT of card: Use target language audio
-            let showWordAudio = sessionConfig.word.audio == .visible || (sessionConfig.word.audio == .hint && sessionConfig.word.autoplay)
+            let showWordAudio = force || sessionConfig.word.audio == .visible || (sessionConfig.word.audio == .hint && sessionConfig.word.autoplay)
             if showWordAudio, let wordFile = card.audioWordFile {
                  sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language))
             }
             
-            let showSentenceAudio = sessionConfig.sentence.audio == .visible || (sessionConfig.sentence.audio == .hint && sessionConfig.sentence.autoplay)
+            let showSentenceAudio = force || sessionConfig.sentence.audio == .visible || (sessionConfig.sentence.audio == .hint && sessionConfig.sentence.autoplay)
             if showSentenceAudio, let sentenceFile = card.audioSentenceFile {
                  sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language))
             }
@@ -903,17 +921,22 @@ struct GameView: View {
             */
             
             if let autoPlay = defaults.audioAutoplay {
-                // If TRUE -> Visible. If FALSE -> Hint?
-                // For input focus, typical is Visible.
+                // Front of card
                 if !autoPlay {
-                    // Turn off autoplay by setting audio to .hint or .hidden
-                    // .hint = Manual Play
                     config.word.audio = .hint
                     config.sentence.audio = .hint
+                    config.word.autoplay = false
+                    config.sentence.autoplay = false
                 } else {
                     config.word.audio = .visible
                     config.sentence.audio = .visible
+                    config.word.autoplay = true
+                    config.sentence.autoplay = true
                 }
+            }
+            
+            if let autoPlayBack = defaults.audioAutoplayBack {
+                config.back.autoplay = autoPlayBack
             }
         }
     }

@@ -35,7 +35,7 @@ struct SessionOptionsView: View {
                     HStack {
                         Text("\(sessionCardGoal) cards")
                         Spacer()
-                        Stepper("", value: $sessionCardGoal, in: 5...maxCards)
+                        Stepper("", value: $sessionCardGoal, in: min(5, maxCards)...maxCards)
                     }
                     Text("Max \(maxCards) cards available")
                         .font(.caption)
@@ -61,7 +61,7 @@ struct SessionOptionsView: View {
             
             // Input & Flow (Flashcards Only)
             if gameType == .flashcards {
-                Section("Flashcard Controls") {
+                Section(header: Text("Flashcard Controls"), footer: order == .smart ? Text("SRS order requires SRS grading.") : nil) {
                     Picker("Navigation", selection: $navigationStyle) {
                         ForEach(NavigationStyle.allCases) { style in
                             Text(style.displayName).tag(style)
@@ -75,6 +75,8 @@ struct SessionOptionsView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .disabled(order == .smart)
+                    .opacity(order == .smart ? 0.6 : 1.0)
                 }
             }
             
@@ -88,6 +90,21 @@ struct SessionOptionsView: View {
                         Slider(value: $ttsRate, in: 0.1...1.0, step: 0.1)
                     }
                 }
+            }
+        }
+        .onAppear {
+            if let max = maxCards {
+                if sessionCardGoal > max {
+                    sessionCardGoal = max
+                }
+                if sessionCardGoal < min(5, max) {
+                    sessionCardGoal = min(5, max)
+                }
+            }
+        }
+        .onChange(of: order) { _, newValue in
+            if newValue == .smart {
+                confirmationStyle = .srs
             }
         }
     }

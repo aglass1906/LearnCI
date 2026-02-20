@@ -5,36 +5,89 @@ struct LearningCardBackView: View {
     let deck: CardDeck
     let config: GameConfiguration
     
+    @Environment(AudioManager.self) private var audioManager
+    
     var body: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 20) {
             // Word Meaning
             if config.back.translation != .hidden {
-                Text("Meaning:")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                Text(card.wordNative)
-                    .font(.title)
-                    .foregroundColor(.secondary)
-                    .blur(radius: config.back.translation == .hint ? 5 : 0)
+                VStack(spacing: 8) {
+                    Text("Meaning:")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    HStack {
+                        Spacer()
+                        Text(card.wordNative)
+                            .font(.title)
+                            .foregroundColor(.secondary)
+                            .blur(radius: config.back.translation == .hint ? 5 : 0)
+                            .multilineTextAlignment(.center)
+                        
+                        Button(action: {
+                            audioManager.playAudio(
+                                named: "native_word",
+                                folderName: deck.baseFolderName,
+                                text: card.wordNative,
+                                language: .english,
+                                voiceGender: config.ttsVoiceGender,
+                                useFallback: true,
+                                ttsRate: config.ttsRate
+                            )
+                        }) {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.body)
+                                .foregroundColor(.blue)
+                                .padding(8)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Circle())
+                        }
+                        Spacer()
+                    }
+                }
             }
             
             // Divider if both are shown
-            if config.back.translation != .hidden && config.back.sentenceMeaning != .hidden {
+            if config.back.translation != .hidden && config.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
                 Divider()
             }
             
             // Sentence Meaning
             if config.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
-                Text("Sentence Meaning:")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                VStack(spacing: 8) {
+                    Text("Sentence Meaning:")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                     
-                Text(card.sentenceNative)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .blur(radius: config.back.sentenceMeaning == .hint ? 5 : 0)
+                    HStack {
+                        Spacer()
+                        Text(card.sentenceNative)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .blur(radius: config.back.sentenceMeaning == .hint ? 5 : 0)
+                        
+                        Button(action: {
+                            audioManager.playAudio(
+                                named: "native_sentence",
+                                folderName: deck.baseFolderName,
+                                text: card.sentenceNative,
+                                language: .english,
+                                voiceGender: config.ttsVoiceGender,
+                                useFallback: true,
+                                ttsRate: config.ttsRate
+                            )
+                        }) {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .padding(6)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Circle())
+                        }
+                        Spacer()
+                    }
+                }
             }
             
             Spacer()

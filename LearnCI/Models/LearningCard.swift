@@ -170,6 +170,7 @@ struct LearningCard: Identifiable, Codable, Hashable {
 
 struct DeckDefaults: Codable, Equatable {
     var audioAutoplay: Bool?
+    var audioAutoplayBack: Bool?
     var replayCount: Int?
     var nativeHiddenByDefault: Bool?
     var randomize: Bool?

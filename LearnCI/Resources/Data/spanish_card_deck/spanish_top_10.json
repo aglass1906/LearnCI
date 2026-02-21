@@ -3,6 +3,7 @@
     "language": "es",
     "proficiencyLevel": 1,
     "title": "Spanish Top 10 Common Words",
+    "description": "The 10 most frequently used Spanish words that form the foundation of the language.",
     "supportedModes": [
         "flashcards",
         "memoryMatch",

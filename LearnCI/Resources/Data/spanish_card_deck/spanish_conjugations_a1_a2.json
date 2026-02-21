@@ -3,6 +3,7 @@
     "language": "es",
     "proficiencyLevel": 2,
     "title": "Spanish Conjugations",
+    "description": "Common verb conjugations for A1 and A2 levels, focusing on regular and irregular patterns.",
     "supportedModes": [
         "flashcards",
         "multipleChoice",

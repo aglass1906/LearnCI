@@ -1,0 +1,320 @@
+{
+    "id": "es_contextual_001",
+    "language": "es",
+    "proficiencyLevel": 3,
+    "title": "Spanish Contextual Synonyms",
+    "description": "Words that require context to differentiate their usage, helping students speak more naturally.",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "es_cont_1a",
+            "wordTarget": "Ser",
+            "wordNative": "To be (Permanent / Identity)",
+            "sentenceTarget": "Yo soy de España.",
+            "sentenceNative": "I am from Spain.",
+            "audioWordFile": "es_ser_1a_word.mp3",
+            "audioSentenceFile": "es_ser_1a_sentence.mp3",
+            "mediaFile": "es_ser_identity.png",
+            "tags": [
+                "Verbs",
+                "Grammar Topics"
+            ]
+        },
+        {
+            "id": "es_cont_1b",
+            "wordTarget": "Estar",
+            "wordNative": "To be (Temporary / Location)",
+            "sentenceTarget": "Estoy en el supermercado.",
+            "sentenceNative": "I am at the supermarket.",
+            "audioWordFile": "es_estar_1b_word.mp3",
+            "audioSentenceFile": "es_estar_1b_sentence.mp3",
+            "mediaFile": "es_estar_location.png",
+            "tags": [
+                "Verbs",
+                "Grammar Topics",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_2a",
+            "wordTarget": "Saber",
+            "wordNative": "To know (Information / Skills)",
+            "sentenceTarget": "Sé hablar tres idiomas.",
+            "sentenceNative": "I know how to speak three languages.",
+            "audioWordFile": "es_saber_2a_word.mp3",
+            "audioSentenceFile": "es_saber_2a_sentence.mp3",
+            "mediaFile": "es_saber_skill.png",
+            "tags": [
+                "Verbs",
+                "Strategic Verbs"
+            ]
+        },
+        {
+            "id": "es_cont_2b",
+            "wordTarget": "Conocer",
+            "wordNative": "To know (People / Places / Familiarity)",
+            "sentenceTarget": "Conozco a tu hermano desde hace años.",
+            "sentenceNative": "I've known your brother for years.",
+            "audioWordFile": "es_conocer_2b_word.mp3",
+            "audioSentenceFile": "es_conocer_2b_sentence.mp3",
+            "mediaFile": "es_conocer_familiarity.png",
+            "tags": [
+                "Verbs",
+                "Strategic Verbs",
+                "Family"
+            ]
+        },
+        {
+            "id": "es_cont_3a",
+            "wordTarget": "Por",
+            "wordNative": "For / Because of / Through",
+            "sentenceTarget": "Camino por el parque cada mañana.",
+            "sentenceNative": "I walk through the park every morning.",
+            "audioWordFile": "es_por_3a_word.mp3",
+            "audioSentenceFile": "es_por_3a_sentence.mp3",
+            "mediaFile": "es_por_through.png",
+            "tags": [
+                "Prepositions",
+                "Grammar Topics",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_3b",
+            "wordTarget": "Para",
+            "wordNative": "For / In order to / Deadline",
+            "sentenceTarget": "Este regalo es para ti.",
+            "sentenceNative": "This gift is for you.",
+            "audioWordFile": "es_para_3b_word.mp3",
+            "audioSentenceFile": "es_para_3b_sentence.mp3",
+            "mediaFile": "es_para_purpose.png",
+            "tags": [
+                "Prepositions",
+                "Grammar Topics"
+            ]
+        },
+        {
+            "id": "es_cont_4a",
+            "wordTarget": "Traer",
+            "wordNative": "To bring (Towards the speaker)",
+            "sentenceTarget": "¿Puedes traerme un vaso de agua?",
+            "sentenceNative": "Can you bring me a glass of water?",
+            "audioWordFile": "es_traer_4a_word.mp3",
+            "audioSentenceFile": "es_traer_4a_sentence.mp3",
+            "mediaFile": "es_traer_towards.png",
+            "tags": [
+                "Verbs",
+                "Food"
+            ]
+        },
+        {
+            "id": "es_cont_4b",
+            "wordTarget": "Llevar",
+            "wordNative": "To take / carry (Away from the speaker)",
+            "sentenceTarget": "Llevo estos libros a la biblioteca.",
+            "sentenceNative": "I'm taking these books to the library.",
+            "audioWordFile": "es_llevar_4b_word.mp3",
+            "audioSentenceFile": "es_llevar_4b_sentence.mp3",
+            "mediaFile": "es_llevar_away.png",
+            "tags": [
+                "Verbs",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_5a",
+            "wordTarget": "Venir",
+            "wordNative": "To come (Towards the speaker's location)",
+            "sentenceTarget": "¿Cuándo vienes a mi casa?",
+            "sentenceNative": "When are you coming to my house?",
+            "audioWordFile": "es_venir_5a_word.mp3",
+            "audioSentenceFile": "es_venir_5a_sentence.mp3",
+            "mediaFile": "es_venir_location.png",
+            "tags": [
+                "Verbs",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_5b",
+            "wordTarget": "Ir",
+            "wordNative": "To go (Away from the speaker's location)",
+            "sentenceTarget": "Voy al cine con mis amigos.",
+            "sentenceNative": "I'm going to the cinema with my friends.",
+            "audioWordFile": "es_ir_5b_word.mp3",
+            "audioSentenceFile": "es_ir_5b_sentence.mp3",
+            "mediaFile": "es_ir_away.png",
+            "tags": [
+                "Verbs",
+                "City Life"
+            ]
+        },
+        {
+            "id": "es_cont_6a",
+            "wordTarget": "Tiempo",
+            "wordNative": "Time (General / Weather)",
+            "sentenceTarget": "¿Qué tiempo hace hoy en Londres?",
+            "sentenceNative": "What's the weather like today in London?",
+            "audioWordFile": "es_tiempo_6a_word.mp3",
+            "audioSentenceFile": "es_tiempo_6a_sentence.mp3",
+            "mediaFile": "es_tiempo_weather.png",
+            "tags": [
+                "Time",
+                "Nature",
+                "Concepts"
+            ]
+        },
+        {
+            "id": "es_cont_6b",
+            "wordTarget": "Vez",
+            "wordNative": "Time (Instance / Occurrence)",
+            "sentenceTarget": "He estado en París una vez.",
+            "sentenceNative": "I've been to Paris once.",
+            "audioWordFile": "es_vez_6b_word.mp3",
+            "audioSentenceFile": "es_vez_6b_sentence.mp3",
+            "mediaFile": "es_vez_instance.png",
+            "tags": [
+                "Time",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_6c",
+            "wordTarget": "Hora",
+            "wordNative": "Time (Clock time)",
+            "sentenceTarget": "¿Qué hora es?",
+            "sentenceNative": "What time is it?",
+            "audioWordFile": "es_hora_6c_word.mp3",
+            "audioSentenceFile": "es_hora_6c_sentence.mp3",
+            "mediaFile": "es_hora_clock.png",
+            "tags": [
+                "Time",
+                "Grammar Topics"
+            ]
+        },
+        {
+            "id": "es_cont_7a",
+            "wordTarget": "Pedir",
+            "wordNative": "To ask for (an object / service)",
+            "sentenceTarget": "Voy a pedir una pizza.",
+            "sentenceNative": "I'm going to order a pizza.",
+            "audioWordFile": "es_pedir_7a_word.mp3",
+            "audioSentenceFile": "es_pedir_7a_sentence.mp3",
+            "mediaFile": "es_pedir_order.png",
+            "tags": [
+                "Verbs",
+                "Food"
+            ]
+        },
+        {
+            "id": "es_cont_7b",
+            "wordTarget": "Preguntar",
+            "wordNative": "To ask (a question)",
+            "sentenceTarget": "Quiero preguntar por el precio.",
+            "sentenceNative": "I want to ask about the price.",
+            "audioWordFile": "es_preguntar_7b_word.mp3",
+            "audioSentenceFile": "es_preguntar_7b_sentence.mp3",
+            "mediaFile": "es_preguntar_question.png",
+            "tags": [
+                "Verbs",
+                "Strategic Verbs",
+                "Communication"
+            ]
+        },
+        {
+            "id": "es_cont_8a",
+            "wordTarget": "Mirar",
+            "wordNative": "To look at",
+            "sentenceTarget": "Mira ese pájaro tan bonito.",
+            "sentenceNative": "Look at that beautiful bird.",
+            "audioWordFile": "es_mirar_8a_word.mp3",
+            "audioSentenceFile": "es_mirar_8a_sentence.mp3",
+            "mediaFile": "es_mirar_look.png",
+            "tags": [
+                "Verbs",
+                "Animals"
+            ]
+        },
+        {
+            "id": "es_cont_8b",
+            "wordTarget": "Ver",
+            "wordNative": "To see / watch",
+            "sentenceTarget": "Veo la televisión por la noche.",
+            "sentenceNative": "I watch television at night.",
+            "audioWordFile": "es_ver_8b_word.mp3",
+            "audioSentenceFile": "es_ver_8b_sentence.mp3",
+            "mediaFile": "es_ver_see.png",
+            "tags": [
+                "Verbs",
+                "Objects"
+            ]
+        },
+        {
+            "id": "es_cont_9a",
+            "wordTarget": "Oír",
+            "wordNative": "To hear (Involuntary)",
+            "sentenceTarget": "Oigo un ruido extraño en la cocina.",
+            "sentenceNative": "I hear a strange noise in the kitchen.",
+            "audioWordFile": "es_oir_9a_word.mp3",
+            "audioSentenceFile": "es_oir_9a_sentence.mp3",
+            "mediaFile": "es_oir_hear.png",
+            "tags": [
+                "Verbs",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_cont_9b",
+            "wordTarget": "Escuchar",
+            "wordNative": "To listen (Voluntary)",
+            "sentenceTarget": "Me gusta escuchar música clásica.",
+            "sentenceNative": "I like to listen to classical music.",
+            "audioWordFile": "es_escuchar_9b_word.mp3",
+            "audioSentenceFile": "es_escuchar_9b_sentence.mp3",
+            "mediaFile": "es_escuchar_listen.png",
+            "tags": [
+                "Verbs",
+                "Music"
+            ]
+        },
+        {
+            "id": "es_cont_10a",
+            "wordTarget": "Dormir",
+            "wordNative": "To sleep",
+            "sentenceTarget": "Duermo ocho horas cada noche.",
+            "sentenceNative": "I sleep eight hours every night.",
+            "audioWordFile": "es_dormir_10a_word.mp3",
+            "audioSentenceFile": "es_dormir_10a_sentence.mp3",
+            "mediaFile": "es_dormir_sleep.png",
+            "tags": [
+                "Verbs",
+                "Daily Routine"
+            ]
+        },
+        {
+            "id": "es_cont_10b",
+            "wordTarget": "Quedarse dormido",
+            "wordNative": "To fall asleep / oversleep",
+            "sentenceTarget": "Me quedé dormido y llegué tarde al trabajo.",
+            "sentenceNative": "I fell asleep and arrived late to work.",
+            "audioWordFile": "es_quedarse_dormido_10b_word.mp3",
+            "audioSentenceFile": "es_quedarse_dormido_10b_sentence.mp3",
+            "mediaFile": "es_quedarse_dormido_fall.png",
+            "tags": [
+                "Verbs",
+                "Daily Routine"
+            ]
+        }
+    ]
+}

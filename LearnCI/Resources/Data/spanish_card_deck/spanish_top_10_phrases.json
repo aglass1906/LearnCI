@@ -3,6 +3,7 @@
     "language": "es",
     "proficiencyLevel": 1,
     "title": "Spanish Top 10 Phrases",
+    "description": "The 10 most essential Spanish phrases for common interactions and greetings.",
     "supportedModes": [
         "flashcards",
         "memoryMatch",

@@ -1,0 +1,564 @@
+{
+    "id": "es_polysemy_001",
+    "language": "es",
+    "proficiencyLevel": 3,
+    "title": "Spanish Words with Multiple Meanings",
+    "description": "Common Spanish words that have different meanings depending on the context.",
+    "supportedModes": [
+        "flashcards",
+        "memoryMatch",
+        "multipleChoice",
+        "audioCloze",
+        "linker"
+    ],
+    "gameConfiguration": {
+        "flashcards": {
+            "randomize": true
+        }
+    },
+    "cards": [
+        {
+            "id": "es_poly_1a",
+            "wordTarget": "Banco",
+            "wordNative": "Bank (Financial Institution)",
+            "sentenceTarget": "Tengo que ir al banco a cobrar un cheque.",
+            "sentenceNative": "I have to go to the bank to cash a check.",
+            "audioWordFile": "es_banco_1a_word.mp3",
+            "audioSentenceFile": "es_banco_1a_sentence.mp3",
+            "mediaFile": "es_banco_bank.png",
+            "tags": [
+                "Places",
+                "City Life"
+            ]
+        },
+        {
+            "id": "es_poly_1b",
+            "wordTarget": "Banco",
+            "wordNative": "Bench",
+            "sentenceTarget": "Nos sentamos en un banco del parque.",
+            "sentenceNative": "We sat on a bench in the park.",
+            "audioWordFile": "es_banco_1b_word.mp3",
+            "audioSentenceFile": "es_banco_1b_sentence.mp3",
+            "mediaFile": "es_banco_bench.png",
+            "tags": [
+                "Objects",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_poly_2a",
+            "wordTarget": "Hoja",
+            "wordNative": "Leaf",
+            "sentenceTarget": "La hoja cayó del árbol en otoño.",
+            "sentenceNative": "The leaf fell from the tree in autumn.",
+            "audioWordFile": "es_hoja_2a_word.mp3",
+            "audioSentenceFile": "es_hoja_2a_sentence.mp3",
+            "mediaFile": "es_hoja_leaf.png",
+            "tags": [
+                "Nature"
+            ]
+        },
+        {
+            "id": "es_poly_2b",
+            "wordTarget": "Hoja",
+            "wordNative": "Sheet (of paper)",
+            "sentenceTarget": "Escribe tu nombre en esta hoja de papel.",
+            "sentenceNative": "Write your name on this sheet of paper.",
+            "audioWordFile": "es_hoja_2b_word.mp3",
+            "audioSentenceFile": "es_hoja_2b_sentence.mp3",
+            "mediaFile": "es_hoja_paper.png",
+            "tags": [
+                "Objects",
+                "School"
+            ]
+        },
+        {
+            "id": "es_poly_3a",
+            "wordTarget": "Planta",
+            "wordNative": "Plant (Botanical)",
+            "sentenceTarget": "Tengo que regar la planta del salón.",
+            "sentenceNative": "I have to water the plant in the living room.",
+            "audioWordFile": "es_planta_3a_word.mp3",
+            "audioSentenceFile": "es_planta_3a_sentence.mp3",
+            "mediaFile": "es_planta_botanical.png",
+            "tags": [
+                "Nature",
+                "Home"
+            ]
+        },
+        {
+            "id": "es_poly_3b",
+            "wordTarget": "Planta",
+            "wordNative": "Floor / Level",
+            "sentenceTarget": "Mi oficina está en la tercera planta.",
+            "sentenceNative": "My office is on the third floor.",
+            "audioWordFile": "es_planta_3b_word.mp3",
+            "audioSentenceFile": "es_planta_3b_sentence.mp3",
+            "mediaFile": "es_planta_floor.png",
+            "tags": [
+                "Places",
+                "City Life"
+            ]
+        },
+        {
+            "id": "es_poly_4a",
+            "wordTarget": "Muñeca",
+            "wordNative": "Wrist",
+            "sentenceTarget": "Me duele la muñeca después de escribir mucho.",
+            "sentenceNative": "My wrist hurts after writing a lot.",
+            "audioWordFile": "es_muneca_4a_word.mp3",
+            "audioSentenceFile": "es_muneca_4a_sentence.mp3",
+            "mediaFile": "es_muneca_wrist.png",
+            "tags": [
+                "Body"
+            ]
+        },
+        {
+            "id": "es_poly_4b",
+            "wordTarget": "Muñeca",
+            "wordNative": "Doll",
+            "sentenceTarget": "La niña juega con su muñeca favorita.",
+            "sentenceNative": "The girl plays with her favorite doll.",
+            "audioWordFile": "es_muneca_4b_word.mp3",
+            "audioSentenceFile": "es_muneca_4b_sentence.mp3",
+            "mediaFile": "es_muneca_doll.png",
+            "tags": [
+                "Objects"
+            ]
+        },
+        {
+            "id": "es_poly_5a",
+            "wordTarget": "Carta",
+            "wordNative": "Letter (Mail)",
+            "sentenceTarget": "Recibí una carta de mi abuelo hoy.",
+            "sentenceNative": "I received a letter from my grandfather today.",
+            "audioWordFile": "es_carta_5a_word.mp3",
+            "audioSentenceFile": "es_carta_5a_sentence.mp3",
+            "mediaFile": "es_carta_letter.png",
+            "tags": [
+                "Objects",
+                "Communication"
+            ]
+        },
+        {
+            "id": "es_poly_5b",
+            "wordTarget": "Carta",
+            "wordNative": "Menu",
+            "sentenceTarget": "Por favor, ¿me trae la carta para elegir la comida?",
+            "sentenceNative": "Please, can you bring me the menu to choose the food?",
+            "audioWordFile": "es_carta_5b_word.mp3",
+            "audioSentenceFile": "es_carta_5b_sentence.mp3",
+            "mediaFile": "es_carta_menu.png",
+            "tags": [
+                "Food",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_poly_6a",
+            "wordTarget": "Gato",
+            "wordNative": "Cat (Animal)",
+            "sentenceTarget": "Mi gato duerme todo el día en el sofá.",
+            "sentenceNative": "My cat sleeps all day on the sofa.",
+            "audioWordFile": "es_gato_6a_word.mp3",
+            "audioSentenceFile": "es_gato_6a_sentence.mp3",
+            "mediaFile": "es_gato_animal.png",
+            "tags": [
+                "Animals"
+            ]
+        },
+        {
+            "id": "es_poly_6b",
+            "wordTarget": "Gato",
+            "wordNative": "Jack (Tool)",
+            "sentenceTarget": "Necesito el gato para cambiar la rueda del coche.",
+            "sentenceNative": "I need the jack to change the car wheel.",
+            "audioWordFile": "es_gato_6b_word.mp3",
+            "audioSentenceFile": "es_gato_6b_sentence.mp3",
+            "mediaFile": "es_gato_tool.png",
+            "tags": [
+                "Objects",
+                "Transport"
+            ]
+        },
+        {
+            "id": "es_poly_7a",
+            "wordTarget": "Copa",
+            "wordNative": "Wine Glass",
+            "sentenceTarget": "Bebimos una copa de vino tinto durante la cena.",
+            "sentenceNative": "We drank a glass of red wine during dinner.",
+            "audioWordFile": "es_copa_7a_word.mp3",
+            "audioSentenceFile": "es_copa_7a_sentence.mp3",
+            "mediaFile": "es_copa_glass.png",
+            "tags": [
+                "Food",
+                "Objects"
+            ]
+        },
+        {
+            "id": "es_poly_7b",
+            "wordTarget": "Copa",
+            "wordNative": "Trophy (Cup)",
+            "sentenceTarget": "El equipo ganó la copa del campeonato.",
+            "sentenceNative": "The team won the championship cup.",
+            "audioWordFile": "es_copa_7b_word.mp3",
+            "audioSentenceFile": "es_copa_7b_sentence.mp3",
+            "mediaFile": "es_copa_trophy.png",
+            "tags": [
+                "Sports",
+                "Objects"
+            ]
+        },
+        {
+            "id": "es_poly_8a",
+            "wordTarget": "Bajo",
+            "wordNative": "Short (Height) / Low",
+            "sentenceTarget": "El estante está muy bajo para mí.",
+            "sentenceNative": "The shelf is very low for me.",
+            "audioWordFile": "es_bajo_8a_word.mp3",
+            "audioSentenceFile": "es_bajo_8a_sentence.mp3",
+            "mediaFile": "es_bajo_short.png",
+            "tags": [
+                "Adjectives"
+            ]
+        },
+        {
+            "id": "es_poly_8b",
+            "wordTarget": "Bajo",
+            "wordNative": "Bass (Instrument)",
+            "sentenceTarget": "Él toca el bajo en una banda de rock.",
+            "sentenceNative": "He plays the bass in a rock band.",
+            "audioWordFile": "es_bajo_8b_word.mp3",
+            "audioSentenceFile": "es_bajo_8b_sentence.mp3",
+            "mediaFile": "es_bajo_instrument.png",
+            "tags": [
+                "Objects",
+                "Music"
+            ]
+        },
+        {
+            "id": "es_poly_9a",
+            "wordTarget": "Capital",
+            "wordNative": "Capital City",
+            "sentenceTarget": "Madrid es la capital de España.",
+            "sentenceNative": "Madrid is the capital of Spain.",
+            "audioWordFile": "es_capital_9a_word.mp3",
+            "audioSentenceFile": "es_capital_9a_sentence.mp3",
+            "mediaFile": "es_capital_city.png",
+            "tags": [
+                "Places",
+                "City Life"
+            ]
+        },
+        {
+            "id": "es_poly_9b",
+            "wordTarget": "Capital",
+            "wordNative": "Capital (Money)",
+            "sentenceTarget": "Necesitamos más capital para abrir el negocio.",
+            "sentenceNative": "We need more capital to open the business.",
+            "audioWordFile": "es_capital_9b_word.mp3",
+            "audioSentenceFile": "es_capital_9b_sentence.mp3",
+            "mediaFile": "es_capital_money.png",
+            "tags": [
+                "Concepts",
+                "Money"
+            ]
+        },
+        {
+            "id": "es_poly_10a",
+            "wordTarget": "Cura",
+            "wordNative": "Priest",
+            "sentenceTarget": "El cura dio un sermón en la iglesia.",
+            "sentenceNative": "The priest gave a sermon in the church.",
+            "audioWordFile": "es_cura_10a_word.mp3",
+            "audioSentenceFile": "es_cura_10a_sentence.mp3",
+            "mediaFile": "es_cura_priest.png",
+            "tags": [
+                "People",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_poly_10b",
+            "wordTarget": "Cura",
+            "wordNative": "Cure / Healing",
+            "sentenceTarget": "Los científicos buscan una cura para la enfermedad.",
+            "sentenceNative": "Scientists are looking for a cure for the disease.",
+            "audioWordFile": "es_cura_10b_word.mp3",
+            "audioSentenceFile": "es_cura_10b_sentence.mp3",
+            "mediaFile": "es_cura_healing.png",
+            "tags": [
+                "Concepts",
+                "Body"
+            ]
+        },
+        {
+            "id": "es_poly_11a",
+            "wordTarget": "Frente",
+            "wordNative": "Forehead",
+            "sentenceTarget": "El niño tiene fiebre en la frente.",
+            "sentenceNative": "The boy has a fever on his forehead.",
+            "audioWordFile": "es_frente_11a_word.mp3",
+            "audioSentenceFile": "es_frente_11a_sentence.mp3",
+            "mediaFile": "es_frente_forehead.png",
+            "tags": [
+                "Body"
+            ]
+        },
+        {
+            "id": "es_poly_11b",
+            "wordTarget": "Frente",
+            "wordNative": "Front / War Front",
+            "sentenceTarget": "Los soldados marcharon hacia el frente.",
+            "sentenceNative": "The soldiers marched towards the front.",
+            "audioWordFile": "es_frente_11b_word.mp3",
+            "audioSentenceFile": "es_frente_11b_sentence.mp3",
+            "mediaFile": "es_frente_front.png",
+            "tags": [
+                "Concepts",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_poly_12a",
+            "wordTarget": "Orden",
+            "wordNative": "Order (Organization)",
+            "sentenceTarget": "Mantén tu habitación en orden.",
+            "sentenceNative": "Keep your room in order.",
+            "audioWordFile": "es_orden_组织_12a_word.mp3",
+            "audioSentenceFile": "es_orden_组织_12a_sentence.mp3",
+            "mediaFile": "es_orden_organization.png",
+            "tags": [
+                "Concepts"
+            ]
+        },
+        {
+            "id": "es_poly_12b",
+            "wordTarget": "Orden",
+            "wordNative": "Command / Order (Instruction)",
+            "sentenceTarget": "El capitán dio la orden de avanzar.",
+            "sentenceNative": "The captain gave the order to advance.",
+            "audioWordFile": "es_orden_命令_12b_word.mp3",
+            "audioSentenceFile": "es_orden_命令_12b_sentence.mp3",
+            "mediaFile": "es_orden_command.png",
+            "tags": [
+                "Concepts"
+            ]
+        },
+        {
+            "id": "es_poly_13a",
+            "wordTarget": "Pesa",
+            "wordNative": "Weight (for gym)",
+            "sentenceTarget": "Levanto una pesa pesada en el gimnasio.",
+            "sentenceNative": "I lift a heavy weight at the gym.",
+            "audioWordFile": "es_pesa_13a_word.mp3",
+            "audioSentenceFile": "es_pesa_13a_sentence.mp3",
+            "mediaFile": "es_pesa_gym.png",
+            "tags": [
+                "Objects",
+                "Sports"
+            ]
+        },
+        {
+            "id": "es_poly_13b",
+            "wordTarget": "Pesa",
+            "wordNative": "It weighs (Verb - Pesar)",
+            "sentenceTarget": "Esta maleta pesa mucho.",
+            "sentenceNative": "This suitcase weighs a lot.",
+            "audioWordFile": "es_pesa_13b_word.mp3",
+            "audioSentenceFile": "es_pesa_13b_sentence.mp3",
+            "mediaFile": "es_pesa_weigh.png",
+            "tags": [
+                "Verbs"
+            ]
+        },
+        {
+            "id": "es_poly_14a",
+            "wordTarget": "Radio",
+            "wordNative": "Radio (Device)",
+            "sentenceTarget": "Escuchamos música en la radio.",
+            "sentenceNative": "We listen to music on the radio.",
+            "audioWordFile": "es_radio_14a_word.mp3",
+            "audioSentenceFile": "es_radio_14a_sentence.mp3",
+            "mediaFile": "es_radio_device.png",
+            "tags": [
+                "Objects",
+                "Communication"
+            ]
+        },
+        {
+            "id": "es_poly_14b",
+            "wordTarget": "Radio",
+            "wordNative": "Radius (Geometry)",
+            "sentenceTarget": "El radio del círculo es de cinco centímetros.",
+            "sentenceNative": "The radius of the circle is five centimeters.",
+            "audioWordFile": "es_radio_14b_word.mp3",
+            "audioSentenceFile": "es_radio_14b_sentence.mp3",
+            "mediaFile": "es_radio_radius.png",
+            "tags": [
+                "Concepts",
+                "Math"
+            ]
+        },
+        {
+            "id": "es_poly_15a",
+            "wordTarget": "Sierra",
+            "wordNative": "Saw (Tool)",
+            "sentenceTarget": "Corté la madera con una sierra.",
+            "sentenceNative": "I cut the wood with a saw.",
+            "audioWordFile": "es_sierra_15a_word.mp3",
+            "audioSentenceFile": "es_sierra_15a_sentence.mp3",
+            "mediaFile": "es_sierra_tool.png",
+            "tags": [
+                "Objects"
+            ]
+        },
+        {
+            "id": "es_poly_15b",
+            "wordTarget": "Sierra",
+            "wordNative": "Mountain Range",
+            "sentenceTarget": "Fuimos de excursión a la sierra.",
+            "sentenceNative": "We went on a trip to the mountain range.",
+            "audioWordFile": "es_sierra_15b_word.mp3",
+            "audioSentenceFile": "es_sierra_15b_sentence.mp3",
+            "mediaFile": "es_sierra_mountain.png",
+            "tags": [
+                "Nature",
+                "Places"
+            ]
+        },
+        {
+            "id": "es_poly_16a",
+            "wordTarget": "Solo",
+            "wordNative": "Alone / Only (Adjective)",
+            "sentenceTarget": "Él vive solo en su apartamento.",
+            "sentenceNative": "He lives alone in his apartment.",
+            "audioWordFile": "es_solo_16a_word.mp3",
+            "audioSentenceFile": "es_solo_16a_sentence.mp3",
+            "mediaFile": "es_solo_alone.png",
+            "tags": [
+                "Adjectives"
+            ]
+        },
+        {
+            "id": "es_poly_16b",
+            "wordTarget": "Suelo",
+            "wordNative": "Ground / Floor",
+            "sentenceTarget": "Las llaves están en el suelo.",
+            "sentenceNative": "The keys are on the ground.",
+            "audioWordFile": "es_suelo_16b_word.mp3",
+            "audioSentenceFile": "es_suelo_16b_sentence.mp3",
+            "mediaFile": "es_suelo_ground.png",
+            "tags": [
+                "Places",
+                "Home"
+            ]
+        },
+        {
+            "id": "es_poly_17a",
+            "wordTarget": "Vino",
+            "wordNative": "Wine",
+            "sentenceTarget": "Me gusta el vino blanco frío.",
+            "sentenceNative": "I like cold white wine.",
+            "audioWordFile": "es_vino_17a_word.mp3",
+            "audioSentenceFile": "es_vino_17a_sentence.mp3",
+            "mediaFile": "es_vino_wine.png",
+            "tags": [
+                "Food"
+            ]
+        },
+        {
+            "id": "es_poly_17b",
+            "wordTarget": "Vino",
+            "wordNative": "He/She Came (Verb - Venir)",
+            "sentenceTarget": "Ella vino a verme ayer.",
+            "sentenceNative": "She came to see me yesterday.",
+            "audioWordFile": "es_vino_17b_word.mp3",
+            "audioSentenceFile": "es_vino_17b_sentence.mp3",
+            "mediaFile": "es_vino_came.png",
+            "tags": [
+                "Verbs"
+            ]
+        },
+        {
+            "id": "es_poly_18a",
+            "wordTarget": "Sal",
+            "wordNative": "Salt",
+            "sentenceTarget": "Pasa la sal, por favor.",
+            "sentenceNative": "Pass the salt, please.",
+            "audioWordFile": "es_sal_18a_word.mp3",
+            "audioSentenceFile": "es_sal_18a_sentence.mp3",
+            "mediaFile": "es_sal_salt.png",
+            "tags": [
+                "Food"
+            ]
+        },
+        {
+            "id": "es_poly_18b",
+            "wordTarget": "Sal",
+            "wordNative": "Go out / Exit (Verb - Salir)",
+            "sentenceTarget": "¡Sal de aquí ahora mismo!",
+            "sentenceNative": "Get out of here right now!",
+            "audioWordFile": "es_sal_18b_word.mp3",
+            "audioSentenceFile": "es_sal_18b_sentence.mp3",
+            "mediaFile": "es_sal_exit.png",
+            "tags": [
+                "Verbs"
+            ]
+        },
+        {
+            "id": "es_poly_19a",
+            "wordTarget": "Coma",
+            "wordNative": "Comma (Punctuation)",
+            "sentenceTarget": "Olvidaste poner una coma en la frase.",
+            "sentenceNative": "You forgot to put a comma in the sentence.",
+            "audioWordFile": "es_coma_19a_word.mp3",
+            "audioSentenceFile": "es_coma_19a_sentence.mp3",
+            "mediaFile": "es_coma_punctuation.png",
+            "tags": [
+                "Concepts",
+                "Communication"
+            ]
+        },
+        {
+            "id": "es_poly_19b",
+            "wordTarget": "Coma",
+            "wordNative": "Coma (Medical)",
+            "sentenceTarget": "El paciente ha estado en coma por una semana.",
+            "sentenceNative": "The patient has been in a coma for a week.",
+            "audioWordFile": "es_coma_19b_word.mp3",
+            "audioSentenceFile": "es_coma_19b_sentence.mp3",
+            "mediaFile": "es_coma_medical.png",
+            "tags": [
+                "Concepts",
+                "Body"
+            ]
+        },
+        {
+            "id": "es_poly_20a",
+            "wordTarget": "Derecha",
+            "wordNative": "Right (Direction)",
+            "sentenceTarget": "Gira a la derecha en la esquina.",
+            "sentenceNative": "Turn right at the corner.",
+            "audioWordFile": "es_derecha_20a_word.mp3",
+            "audioSentenceFile": "es_derecha_20a_sentence.mp3",
+            "mediaFile": "es_derecha_direction.png",
+            "tags": [
+                "Directions"
+            ]
+        },
+        {
+            "id": "es_poly_20b",
+            "wordTarget": "Derecha",
+            "wordNative": "Right-wing (Politics)",
+            "sentenceTarget": "El partido de derecha ganó las elecciones.",
+            "sentenceNative": "The right-wing party won the elections.",
+            "audioWordFile": "es_derecha_20b_word.mp3",
+            "audioSentenceFile": "es_derecha_20b_sentence.mp3",
+            "mediaFile": "es_derecha_politics.png",
+            "tags": [
+                "Concepts"
+            ]
+        }
+    ]
+}

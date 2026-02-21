@@ -3,6 +3,7 @@
     "language": "ko",
     "proficiencyLevel": 1,
     "title": "Korean Starter Words",
+    "description": "Fundamental Korean words and phrases for absolute beginners starting out.",
     "supportedModes": [
         "flashcards",
         "memoryMatch",

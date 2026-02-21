@@ -18,6 +18,8 @@ struct AudioClozeGameView: View {
     @State private var selectedOption: String?
     @State private var isCorrect: Bool = false
     @State private var hasAnswered: Bool = false
+    @State private var hadWrongAttempt: Bool = false
+    @State private var wrongAttemptCount: Int = 0
     
     // Audio State
     @Environment(AudioManager.self) private var audioManager
@@ -27,6 +29,12 @@ struct AudioClozeGameView: View {
     
     var currentCard: LearningCard {
         sessionCards[currentCardIndex]
+    }
+
+    /// Stable identifier for the card currently at `currentCardIndex`.
+    private var currentCardId: String {
+        guard currentCardIndex < sessionCards.count else { return "" }
+        return sessionCards[currentCardIndex].id
     }
     
     var body: some View {
@@ -115,6 +123,9 @@ struct AudioClozeGameView: View {
         .onChange(of: currentCardIndex) { _, _ in
             loadChallenge()
         }
+        .onChange(of: currentCardId) { _, _ in
+            loadChallenge()
+        }
     }
     
     // MARK: - Subviews
@@ -150,11 +161,15 @@ struct AudioClozeGameView: View {
     // MARK: - Logic
     
     func loadChallenge() {
+        guard currentCardIndex < sessionCards.count else { return }
+
         // Reset State
         selectedOption = nil
         isCorrect = false
         hasAnswered = false
-        
+        hadWrongAttempt = false
+        wrongAttemptCount = 0
+
         // Generate new challenge
         let card = currentCard
         // Get all other cards for distractors
@@ -163,35 +178,40 @@ struct AudioClozeGameView: View {
         self.challenge = ClozeManager.shared.generateChallenge(for: card, distractors: others)
         
         // Auto-play audio after slight delay
+        let expectedCardId = card.id
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard currentCardIndex < sessionCards.count,
+                  sessionCards[currentCardIndex].id == expectedCardId else { return }
             playAudio()
         }
     }
     
     func playAudio() {
         guard let challenge = challenge else { return }
-        
-        // Prefer explicit sentence audio, fallback to word audio if needed (though unlikely for sentence cloze)
-        // Or if separate sentence audio logic in AudioManager...
-        
-        if let sentenceFile = challenge.card.audioSentenceFile {
-             // We play the full sentence
-             audioManager.playAudio(
-                named: sentenceFile,
-                folderName: deck.baseFolderName,
-                text: challenge.card.sentenceTarget,
-                language: deck.language,
-                useFallback: sessionConfig.useTTSFallback,
-                ttsRate: sessionConfig.ttsRate
-             )
-        } else {
-             // Fallback TTS of full sentence
-             audioManager.speak(
-                text: challenge.card.sentenceTarget,
-                language: deck.language,
-                gender: nil, // Use default gender
-                rate: sessionConfig.ttsRate
-             )
+        let card = challenge.card
+
+        var sequence: [AudioManager.AudioItem] = []
+
+        // Word audio
+        if let wordFile = card.audioWordFile {
+            sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        }
+
+        // Sentence audio
+        if let sentenceFile = card.audioSentenceFile {
+            sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        } else if !card.sentenceTarget.isEmpty {
+            // TTS fallback for sentence
+            sequence.append(AudioManager.AudioItem(filename: "", text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        }
+
+        // If no audio files at all, at least TTS the word
+        if sequence.isEmpty && !card.wordTarget.isEmpty {
+            sequence.append(AudioManager.AudioItem(filename: "", text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        }
+
+        if !sequence.isEmpty {
+            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: sessionConfig.useTTSFallback, ttsRate: sessionConfig.ttsRate)
         }
     }
     
@@ -207,9 +227,11 @@ struct AudioClozeGameView: View {
             playSuccessSound()
         } else {
             // Incorrect
+            hadWrongAttempt = true
+            wrongAttemptCount += 1
             playErrorFeedback()
             // selectedOption stays set (to show red)
-            
+
             // "Try Again" style:
             withAnimation(.default) {
                 shakeAmount = 10
@@ -222,11 +244,10 @@ struct AudioClozeGameView: View {
     
     func handleContinue() {
         if let onGrade = onGrade {
-            onGrade(.good)
+            onGrade(hadWrongAttempt ? .hard : .good)
         } else {
-            onLearned() // Count as progress
+            onLearned()
         }
-        // Transition handled by parent (next card or finish)
     }
     
     // MARK: - Helpers
@@ -245,6 +266,11 @@ struct AudioClozeGameView: View {
     // MARK: - UI Styling
     
     func buttonBackgroundColor(for option: String) -> Color {
+        // 0. Hint: Reveal correct answer after 2 wrong attempts
+        if wrongAttemptCount >= 2, let challenge = challenge, option == challenge.missingWord, !hasAnswered {
+            return Color.green.opacity(0.15)
+        }
+
         // 1. Reveal Correct Answer if answered
         if hasAnswered, let challenge = challenge, option == challenge.missingWord {
             return Color.green.opacity(0.2)
@@ -278,9 +304,14 @@ struct AudioClozeGameView: View {
             return Color.red
         }
         
+        // Hint: Reveal correct answer after 2 wrong attempts
+        if wrongAttemptCount >= 2, let challenge = challenge, option == challenge.missingWord, !hasAnswered {
+            return Color.green.opacity(0.5)
+        }
+
         return Color.gray.opacity(0.2)
     }
-    
+
     func buttonTextColor(for option: String) -> Color {
         if hasAnswered, let challenge = challenge, option == challenge.missingWord {
             return Color.green

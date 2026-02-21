@@ -14,29 +14,41 @@ class ClozeManager {
     private init() {}
     
     func generateChallenge(for card: LearningCard, distractors: [LearningCard]) -> ClozeChallenge {
-        // 1. Choose the missing word
+        // 1. Choose the missing word, preferring the card's target word
         let sentence = card.sentenceTarget
-        let missingWord = selectMissingWord(from: sentence)
-        
+        let missingWord = selectMissingWord(from: sentence, preferring: card.wordTarget)
+
         // 2. Create the blanked sentence
-        // Case insensitive replacement to preserve original punctuation if possible,
-        // but exact match replacement is safer for now.
-        // We assume 'missingWord' was extracted directly from the string, so it matches casing.
         let sentenceWithBlank = sentence.replacingOccurrences(of: missingWord, with: "_______")
-        
+
         // 3. Generate Options
         var options: [String] = [missingWord]
-        
-        // Pick 3 random distractors from other cards
-        // Ideally we want words of similar length/type, but random is fine for V1.
-        let shuffledDistractors = distractors.shuffled().prefix(3)
+
+        // Pick 3 random distractors from other cards' target words
+        let shuffledDistractors = distractors.shuffled()
         for distractor in shuffledDistractors {
-            options.append(distractor.wordTarget)
+            if options.count >= 4 { break }
+            let word = distractor.wordTarget
+            if !options.contains(word) && !word.isEmpty {
+                options.append(word)
+            }
         }
-        
-        // If we don't have enough distractors (e.g. deck too small), fill with placeholders?
-        // Or just duplication. For now, assume deck > 4 cards.
-        
+
+        // Pad if not enough distractors (small deck)
+        let sentenceWords = sentence.components(separatedBy: CharacterSet.punctuationCharacters.union(.whitespaces))
+            .filter { !$0.isEmpty && $0 != missingWord }
+        for word in sentenceWords.shuffled() {
+            if options.count >= 4 { break }
+            if !options.contains(word) {
+                options.append(word)
+            }
+        }
+
+        // Ensure we always have at least 2 options (correct + 1 distractor)
+        if options.count < 2 {
+            options.append("...")
+        }
+
         return ClozeChallenge(
             card: card,
             sentenceWithBlank: sentenceWithBlank,
@@ -44,22 +56,23 @@ class ClozeManager {
             options: options.shuffled()
         )
     }
-    
-    private func selectMissingWord(from sentence: String) -> String {
-        // Simple strategy: Pick longest word that isn't a particle?
-        // Or specific word matching card.wordTarget if present in sentence?
-        
+
+    private func selectMissingWord(from sentence: String, preferring targetWord: String) -> String {
+        // 1. Prefer the card's target word if it appears in the sentence
+        if sentence.contains(targetWord) && targetWord.count > 1 {
+            return targetWord
+        }
+
+        // 2. Fallback: pick a meaningful word (> 3 chars)
         let words = sentence.components(separatedBy: CharacterSet.punctuationCharacters.union(.whitespaces))
             .filter { !$0.isEmpty }
-        
-        // Preference: Words > 3 chars
         let candidates = words.filter { $0.count > 3 }
-        
-        if let randomCandidate = candidates.randomElement() {
-            return randomCandidate
+
+        if let candidate = candidates.randomElement() {
+            return candidate
         }
-        
-        // Fallback: Pick any word
-        return words.randomElement() ?? ""
+
+        // 3. Last resort: any non-empty word
+        return words.first(where: { !$0.isEmpty }) ?? sentence.components(separatedBy: " ").first ?? ""
     }
 }

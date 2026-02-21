@@ -7,9 +7,9 @@ struct GameView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Query private var allProfiles: [UserProfile]
-    
+
     @Environment(AudioManager.self) private var audioManager
-    
+
     // State Management
     enum GameSetupStage {
         case deckSelection           // Stage 1
@@ -20,28 +20,22 @@ struct GameView: View {
         case playing                  // Stage 6
         case finished                 // Stage 7
     }
-    
+
     @State private var setupStage: GameSetupStage = .deckSelection
-    @State private var currentCardIndex: Int = 0
-    @State private var isFlipped: Bool = false
-    
-    // Configuration Settings
+
+    // Configuration Settings (drive setup UI bindings)
     @State private var sessionDuration: Int = 15 // Minutes
     @State private var sessionCardGoal: Int = 20
     @State private var sessionLanguage: Language = .spanish
     @State private var sessionLevel: Int = 1 // 1-6
-    
-    // Session Controller
-    @State private var sessionController = SessionController()
-    
-    // Tracking (Now mostly in Controller)
+
+    // Scene Phase
     @Environment(\.scenePhase) private var scenePhase
-    @State private var sessionStartTime: Date?
-    
+
     // New selective deck flow
     @State private var selectedDeck: DeckMetadata?
-    
-    // Game Configuration
+
+    // Game Configuration (setup UI bindings)
     @State private var selectedPreset: GameConfiguration.Preset = .inputFocus
     @State private var selectedGameType: GameConfiguration.GameType = .flashcards
     @State private var customConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
@@ -50,25 +44,24 @@ struct GameView: View {
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
     @State private var memoryMatchMode: GameConfiguration.MemoryMatchMode = .pictureToWord
-    
+
     // UI Customization State
     @State private var navigationStyle: NavigationStyle = .swipe
     @State private var autoNextDelay: TimeInterval = 2.0
     @State private var confirmationStyle: ConfirmationStyle = .quiz
     @State private var linkerTargetMode: GameConfiguration.LinkerTargetMode = .english
-    
-    // Runtime config (captured at start)
-    @State private var sessionConfig: GameConfiguration = GameConfiguration.from(preset: .inputFocus)
-    @State private var sessionCards: [LearningCard] = []
-    
+
+    // ViewModel (owns all runtime game state)
+    @State private var viewModel: GameSessionViewModel?
+
     var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
     }
-    
+
     var deck: CardDeck? {
         dataManager.loadedDeck
     }
-    
+
     var body: some View {
         NavigationStack {
             mainContent
@@ -78,26 +71,19 @@ struct GameView: View {
                     gameToolbar
                 }
                 .onAppear(perform: handleAppear)
-                // Timer is now handled by Controller, but we watch controller state
-                .onChange(of: scenePhase, handleScenePhase)
-                .onChange(of: sessionController.isPaused, handlePauseState)
-                .onChange(of: currentCardIndex, handleCardIndexChange)
-                .onChange(of: isFlipped, handleFlipState)
-                .onChange(of: sessionController.isGameOver) { _, gameOver in
-                    if gameOver {
-                        finishSession()
+                .onChange(of: scenePhase) { oldPhase, newPhase in
+                    if setupStage == .playing {
+                        viewModel?.handleScenePhase(old: oldPhase, new: newPhase)
                     }
                 }
                 .onChange(of: dataManager.loadedDeck) { _, newDeck in
-                    handleDeckLoaded(newDeck)
+                    viewModel?.handleDeckLoaded(newDeck)
                 }
                 .onChange(of: setupStage) { oldStage, newStage in
                     print("DEBUG: setupStage changed from \(oldStage) to \(newStage)")
                     if newStage == .playing {
-                        // Trigger first card audio when game starts
-                        // Brief delay to ensure view is settled
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            playCurrentCardAudio()
+                            viewModel?.playCurrentCardAudio()
                         }
                     }
                 }
@@ -136,7 +122,7 @@ struct GameView: View {
                         profile.lastSelectedDeckId = deck.id
                         try? modelContext.save()
                     }
-                    
+
                     // Clamp card goal to available cards
                     if let loaded = dataManager.loadDeck(from: deck) {
                         let count = loaded.cards.count
@@ -256,7 +242,6 @@ struct GameView: View {
             ProgressView("Preparing game...")
                 .onAppear {
                     print("DEBUG: Starting transition onAppear - will move to .playing in 0.5s")
-                    // Brief transition, then move to playing
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         print("DEBUG: Transitioning from .starting to .playing")
                         setupStage = .playing
@@ -264,97 +249,75 @@ struct GameView: View {
                 }
         case .playing:
             let _ = print("DEBUG: Showing ActiveSessionView for playing stage")
-            ActiveSessionView(
-                errorMessage: dataManager.errorMessage,
-                deck: deck,
-                sessionCards: sessionCards,
-                currentCardIndex: currentCardIndex,
-                learnedCount: sessionController.learnedCount,
-                sessionCardGoal: sessionCardGoal,
-                sessionConfig: sessionConfig,
-                isFlipped: $isFlipped,
-                matchMode: memoryMatchMode,
-                onRelearn: relearnCard,
-                onLearned: learnedCard,
-                onFinish: { sessionController.endSession() },
-                onNext: nextCard,
-                onPrev: prevCard,
-                onGrade: handleGrade
-            )
+            if let vm = viewModel {
+                ActiveSessionView(
+                    errorMessage: dataManager.errorMessage,
+                    deck: vm.deck,
+                    sessionCards: vm.sessionCards,
+                    currentCardIndex: vm.currentCardIndex,
+                    learnedCount: vm.learnedCount,
+                    sessionCardGoal: vm.sessionCardGoal,
+                    sessionConfig: vm.sessionConfig,
+                    isFlipped: Binding(
+                        get: { vm.isFlipped },
+                        set: { vm.isFlipped = $0 }
+                    ),
+                    matchMode: memoryMatchMode,
+                    onRelearn: { vm.relearnCard() },
+                    onLearned: { vm.learnedCard() },
+                    onFinish: { vm.endSession() },
+                    onNext: { vm.nextCard() },
+                    onPrev: { vm.prevCard() },
+                    onGrade: { vm.handleGrade($0) }
+                )
+            }
         case .finished:
-            SessionFinishView(
-                learnedCount: sessionController.learnedCount,
-                elapsedSeconds: Int(sessionController.duration - sessionController.timeRemaining),
-                setupStage: $setupStage,
-                deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
-                language: sessionLanguage,
-                level: sessionLevel,
-                preset: selectedPreset,
-                gameType: sessionConfig.gameType,
-                duration: sessionDuration,
-                cardGoal: sessionCardGoal,
-                order: sessionConfig.order,
-                filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
-                onPlayAgain: startActiveSession
-            )
+            if let vm = viewModel {
+                SessionFinishView(
+                    learnedCount: vm.learnedCount,
+                    elapsedSeconds: vm.elapsedSeconds,
+                    setupStage: $setupStage,
+                    deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
+                    language: sessionLanguage,
+                    level: sessionLevel,
+                    preset: selectedPreset,
+                    gameType: vm.sessionConfig.gameType,
+                    duration: sessionDuration,
+                    cardGoal: sessionCardGoal,
+                    order: vm.sessionConfig.order,
+                    filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
+                    onPlayAgain: startActiveSession
+                )
+            }
         }
     }
-    
+
     // MARK: - Event Handlers
-    
+
     func handleAppear() {
+        if viewModel == nil {
+            viewModel = GameSessionViewModel(audioManager: audioManager)
+            viewModel?.onSessionFinished = { [self] in
+                saveActivity()
+                withAnimation {
+                    setupStage = .finished
+                    dataManager.isFullScreen = false
+                }
+            }
+            viewModel?.onSessionStarting = { [self] in
+                print("DEBUG: About to set setupStage to .starting")
+                withAnimation {
+                    setupStage = .starting
+                    dataManager.isFullScreen = true
+                }
+            }
+        }
         if setupStage == .deckSelection {
             setupConfiguration()
             dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
     }
-    
-    @State private var wasPlayingBeforeBackground: Bool = false
-    
-    func handleScenePhase(_ oldPhase: ScenePhase, _ newPhase: ScenePhase) {
-        if setupStage == .playing {
-            if newPhase == .background || newPhase == .inactive {
-                if oldPhase == .active {
-                    wasPlayingBeforeBackground = !sessionController.isPaused
-                    sessionController.pauseSession()
-                }
-            } else if newPhase == .active {
-                if wasPlayingBeforeBackground {
-                    sessionController.resumeSession()
-                    wasPlayingBeforeBackground = false
-                }
-            }
-        }
-    }
-    
-    func handlePauseState(_: Bool, newValue: Bool) {
-        // Paused state change
-        if newValue {
-            audioManager.stopAudio()
-        } else {
-            playCurrentCardAudio()
-        }
-    }
-    
-    func handleCardIndexChange(_: Int, _: Int) {
-        if !isFlipped {
-            // Add slight delay to ensure state stabilization (e.g. from flip reset)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.playCurrentCardAudio()
-            }
-        }
-    }
-    
-    func handleFlipState(_: Bool, newValue: Bool) {
-        // Stop any current audio before starting new flip audio
-        audioManager.stopAudio()
-        
-        // Brief delay to allow flip animation to settle before audio starts
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            playCurrentCardAudio(force: !newValue) // Force play if flipping back to front (newValue is false)
-        }
-    }
-    
+
     var navigationTitle: String {
         switch setupStage {
         case .deckSelection: return "Select Deck"
@@ -366,7 +329,7 @@ struct GameView: View {
         case .finished: return "Session Complete"
         }
     }
-    
+
     var configurationView: some View {
         GameConfigurationView(
             sessionLanguage: $sessionLanguage,
@@ -380,36 +343,32 @@ struct GameView: View {
         )
     }
 
-    
-    // MARK: - Card Rendering Helpers
-    
 
-    
+    // MARK: - Toolbar
+
     @ToolbarContentBuilder
     private var gameToolbar: some ToolbarContent {
         Group {
-            // Leading buttons based on stage
             ToolbarItem(placement: .topBarLeading) {
-                if setupStage == .playing {
+                if setupStage == .playing, let vm = viewModel {
                     HStack {
-                        Button(action: { 
-                            if sessionController.isPaused {
-                                sessionController.resumeSession()
+                        Button(action: {
+                            if vm.isPaused {
+                                vm.resumeSession()
                             } else {
-                                sessionController.pauseSession()
+                                vm.pauseSession()
                             }
                         }) {
-                            Image(systemName: sessionController.isPaused ? "play.fill" : "pause.fill")
-                                .foregroundColor(sessionController.isPaused ? .green : .orange)
+                            Image(systemName: vm.isPaused ? "play.fill" : "pause.fill")
+                                .foregroundColor(vm.isPaused ? .green : .orange)
                         }
-                        
-                        Button(action: { sessionController.endSession() }) {
+
+                        Button(action: { vm.endSession() }) {
                             Image(systemName: "stop.fill")
                             .foregroundColor(.red)
                         }
                     }
                 } else if setupStage != .deckSelection && setupStage != .starting && setupStage != .finished {
-                    // Show Back button for stages 2-4
                     Button("Back") {
                         switch setupStage {
                         case .sessionConfiguration:
@@ -424,8 +383,7 @@ struct GameView: View {
                     }
                 }
             }
-            
-            // Principal (center) content
+
             if setupStage == .playing {
                 ToolbarItem(placement: .principal) {
                     VStack(spacing: 2) {
@@ -438,8 +396,7 @@ struct GameView: View {
                     }
                 }
             }
-            
-            // Trailing buttons based on stage
+
             trailingToolbarItems
         }
     }
@@ -459,29 +416,31 @@ struct GameView: View {
             ToolbarItem(placement: .automatic) { EmptyView() }
         }
     }
-    
+
     @ToolbarContentBuilder
     private var playingToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            HStack {
-                timerView
-                levelBadgeView
+            if let vm = viewModel {
+                HStack {
+                    timerView(vm: vm)
+                    levelBadgeView
+                }
             }
         }
     }
 
-    private var timerView: some View {
-        Text(formatTime(Int(sessionController.timeRemaining)))
+    private func timerView(vm: GameSessionViewModel) -> some View {
+        Text(vm.formattedTimeRemaining)
             .font(.system(.body, design: .monospaced))
-            .foregroundColor(sessionController.timeRemaining < 30 ? .red : .primary)
+            .foregroundColor(vm.isTimeLow ? .red : .primary)
             .fixedSize()
             .padding(6)
             .frame(minWidth: 60)
-            .background(sessionController.isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
+            .background(vm.isPaused ? Color.orange.opacity(0.2) : Color.blue.opacity(0.1))
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                   .stroke(sessionController.isPaused ? Color.orange : Color.clear, lineWidth: 1)
+                   .stroke(vm.isPaused ? Color.orange : Color.clear, lineWidth: 1)
             )
     }
 
@@ -492,7 +451,7 @@ struct GameView: View {
            .background(Color.gray.opacity(0.2))
            .cornerRadius(8)
     }
-    
+
     @ToolbarContentBuilder
     private var deckSelectionToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
@@ -520,25 +479,23 @@ struct GameView: View {
             }
         }
     }
-    
+
     // MARK: - Logic
-    
+
     func setupConfiguration() {
-        // ... (unchanged) ...
         print("DEBUG: setupConfiguration called. Profile: \(userProfile?.name ?? "nil"), Initialized: \(hasInitialized)")
-        
-        // Only initialize from profile ONCE to allow temporary overrides
+
         guard let profile = userProfile, !hasInitialized else { return }
-        
+
         sessionLanguage = profile.currentLanguage
         sessionLevel = profile.proficiencyLevel
         sessionCardGoal = profile.dailyCardGoal ?? 20
         selectedPreset = profile.defaultGamePreset
-        selectedGameType = profile.currentGameType 
-        
+        selectedGameType = profile.currentGameType
+
         ttsRate = profile.ttsRate
-        useTTSFallback = true 
-        
+        useTTSFallback = true
+
         if selectedPreset != .customize {
              customConfig = GameConfiguration.from(preset: selectedPreset)
              customConfig.ttsRate = profile.ttsRate
@@ -550,9 +507,9 @@ struct GameView: View {
                  customConfig.ttsRate = profile.ttsRate
              }
         }
-        
+
         hasInitialized = true
-        
+
         if let lastId = profile.lastSelectedDeckId {
             DispatchQueue.global(qos: .userInitiated).async {
                 if let match = self.dataManager.findDeckMetadata(id: lastId) {
@@ -572,7 +529,7 @@ struct GameView: View {
              dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
     }
-    
+
     func startActiveSession() {
         print("DEBUG: ====== startActiveSession() called ======")
         guard let metDeck = selectedDeck else {
@@ -581,367 +538,42 @@ struct GameView: View {
         }
         print("DEBUG: Selected deck: \(metDeck.title)")
         _ = dataManager.loadDeck(from: metDeck)
-        
-        currentCardIndex = 0
-        isFlipped = false
-        sessionStartTime = Date()
-        
-        // Ensure audio session is active and ready for playback
-        audioManager.configureAudioSession()
-        
-        // Capture final config
-        if selectedPreset == .customize {
-            sessionConfig = customConfig
-        } else {
-            sessionConfig = GameConfiguration.from(preset: selectedPreset)
+
+        guard let loadedDeck = deck, loadedDeck.id == metDeck.id else {
+            print("DEBUG: Deck not loaded yet, VM will handle via handleDeckLoaded")
+            return
         }
-        
-        sessionConfig.order = order
-        sessionConfig.gameType = selectedGameType
-        
-        // Enforce SRS grading for Smart Queue
-        if sessionConfig.order == .smart {
-            sessionConfig.confirmation = .srs
-            print("DEBUG: Smart Queue active - Enforcing SRS grading style.")
-        } else {
-            sessionConfig.confirmation = confirmationStyle
-        }
-        
-        // Apply Global Audio Settings
-        sessionConfig.ttsRate = ttsRate
-        sessionConfig.useTTSFallback = useTTSFallback
-        
-        // Apply Global UI Settings
-        sessionConfig.navigation = navigationStyle
-        sessionConfig.autoNextDelay = autoNextDelay
-        sessionConfig.linkerTargetMode = linkerTargetMode
-        
-        // Initialize Controller
-        // Note: We re-create it or reset it? Ideally reset.
-        // But since it's @State, better to just call startSession on existing instance
-        sessionController.duration = TimeInterval(sessionDuration * 60)
-        sessionController.sessionCardGoal = sessionCardGoal
-        sessionController.startSession()
-        
-        // Prepare Cards
-        sessionCards = []
-        
-        if let currentDeck = deck, currentDeck.id == metDeck.id {
-             applyDeckOverrides(to: &sessionConfig, from: currentDeck, type: selectedGameType)
-             let preparedCards = prepareSessionCards(currentDeck.cards)
-             
-             if sessionConfig.order == .smart {
-                 // Initialize Smart Session Logic
-                 SmartSessionManager.shared.startSession(cards: preparedCards)
-                 sessionCards = SmartSessionManager.shared.activeQueue
-             } else {
-                 sessionCards = preparedCards
-             }
-        }
-        
-        print("DEBUG: About to set setupStage to .starting")
-        withAnimation {
-            setupStage = .starting
-            dataManager.isFullScreen = true
-        }
+
+        viewModel?.startSession(
+            deck: loadedDeck,
+            selectedPreset: selectedPreset,
+            customConfig: customConfig,
+            gameType: selectedGameType,
+            order: order,
+            confirmationStyle: confirmationStyle,
+            navigationStyle: navigationStyle,
+            autoNextDelay: autoNextDelay,
+            ttsRate: ttsRate,
+            useTTSFallback: useTTSFallback,
+            linkerTargetMode: linkerTargetMode,
+            sessionDuration: sessionDuration,
+            sessionCardGoal: sessionCardGoal
+        )
     }
-    
-    func playCurrentCardAudio(force: Bool = false) {
-        // Only auto-play audio for Flashcards/Story mode.
-        guard sessionConfig.gameType == .flashcards || sessionConfig.gameType == .story else { 
-            print("DEBUG: playCurrentCardAudio SKIPPED (Wrong GameType: \(sessionConfig.gameType))")
-            return 
-        }
-        
-        guard setupStage == .playing else { 
-            print("DEBUG: playCurrentCardAudio SKIPPED (Not Playing: \(setupStage))")
-            return 
-        }
-        
-        guard !sessionController.isPaused else { 
-            print("DEBUG: playCurrentCardAudio SKIPPED (Paused)")
-            return 
-        }
-        
-        guard let deck = deck, currentCardIndex < sessionCards.count else { 
-            print("DEBUG: playCurrentCardAudio SKIPPED (No deck or invalid index: \(currentCardIndex))")
-            return 
-        }
-        
-        print("DEBUG: playCurrentCardAudio STARTING for index \(currentCardIndex)")
-        let card = sessionCards[currentCardIndex]
-        
-        var sequence: [AudioManager.AudioItem] = []
-        let useFallback = sessionConfig.useTTSFallback
-        
-        if isFlipped {
-            // BACK of card: Use English TTS for meanings
-            if sessionConfig.back.autoplay {
-                if sessionConfig.back.translation != .hidden {
-                    // We use an empty filename to trigger fallback TTS in AudioManager
-                    sequence.append(AudioManager.AudioItem(filename: "native_word", text: card.wordNative, language: .english))
-                }
-                if sessionConfig.back.sentenceMeaning != .hidden && !card.sentenceNative.isEmpty {
-                     sequence.append(AudioManager.AudioItem(filename: "native_sentence", text: card.sentenceNative, language: .english))
-                }
-            }
-        } else {
-            // FRONT of card: Use target language audio
-            let showWordAudio = force || sessionConfig.word.audio == .visible || (sessionConfig.word.audio == .hint && sessionConfig.word.autoplay)
-            if showWordAudio, let wordFile = card.audioWordFile {
-                 sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language))
-            }
-            
-            let showSentenceAudio = force || sessionConfig.sentence.audio == .visible || (sessionConfig.sentence.audio == .hint && sessionConfig.sentence.autoplay)
-            if showSentenceAudio, let sentenceFile = card.audioSentenceFile {
-                 sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language))
-            }
-        }
-        
-        if !sequence.isEmpty {
-            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: useFallback, ttsRate: sessionConfig.ttsRate)
-        }
-    }
-    
-    // handleTimerTick removed - handled by Controller
-    
-    func finishSession() {
-        saveActivity()
-        withAnimation {
-            setupStage = .finished
-            dataManager.isFullScreen = false 
-        }
-    }
-    
+
     func saveActivity() {
-        let minutes = max(1, Int(sessionController.duration - sessionController.timeRemaining) / 60)
-        let language = sessionLanguage
-        
-        var comment: String?
-        if let deckTitle = selectedDeck?.title {
-            let totalCards = deck?.cards.count ?? 0
-            comment = "\(deckTitle) · \(sessionController.learnedCount)/\(totalCards) cards"
-            comment? += " · \(selectedPreset.rawValue)"
-            comment? += " (\(sessionConfig.order.rawValue))"
-        }
-        
-        let activity = UserActivity(
-            date: Date(), 
-            minutes: minutes, 
-            activityType: .appLearning, 
-            language: language, 
+        guard let vm = viewModel else { return }
+        let activity = vm.makeActivity(
+            language: sessionLanguage,
+            deckTitle: selectedDeck?.title,
+            totalCards: deck?.cards.count,
             userID: authManager.currentUser,
-            comment: comment
+            preset: selectedPreset
         )
         modelContext.insert(activity)
     }
-    
-    func formatTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let sec = seconds % 60
-        return String(format: "%02d:%02d", minutes, sec)
-    }
-    
-    func nextCard() {
-        if currentCardIndex < sessionCards.count - 1 {
-            withAnimation {
-                currentCardIndex += 1
-                isFlipped = false
-            }
-        }
-    }
-    
-    func prevCard() {
-        if currentCardIndex > 0 {
-            withAnimation {
-                currentCardIndex -= 1
-                isFlipped = false
-            }
-        }
-    }
-    
-    func learnedCard() {
-        sessionController.incrementLearned()
-        if sessionController.isGameOver {
-             // Already triggered endSession() inside incrementLearned which sets isGameOver
-             // FinishSession will be called via onChange(of: isGameOver)
-        } else {
-             nextCard()
-        }
-    }
-    
-    func relearnCard() {
-        nextCard()
-    }
-    
-    func handleGrade(_ grade: SmartSessionManager.Grade) {
-        if sessionConfig.order == .smart {
-            // Apply grade to SRS queue
-            SmartSessionManager.shared.handleGrade(grade)
-            
-            // Sync active queue
-            sessionCards = SmartSessionManager.shared.activeQueue
-            
-        } else {
-            // Non-Smart Mode: Just increment counts and remove current card
-            if grade == .easy || grade == .good {
-                 sessionController.incrementLearned()
-            }
-            if !sessionCards.isEmpty {
-                sessionCards.removeFirst()
-            }
-        }
-        
-        // Update stats if card is mastered (SRS also tracks this internally, but we track for session total)
-        if (grade == .easy || grade == .good) && sessionConfig.order == .smart {
-            sessionController.incrementLearned()
-        }
-        
-        // Check for completion
-        if sessionCards.isEmpty {
-            sessionController.endSession()
-        } else {
-            // Reset view state for next card
-            withAnimation {
-                isFlipped = false
-                currentCardIndex = 0 // In Smart mode (and now non-smart too), we work from head of queue
-            }
-        }
-    }
-    func handleDeckLoaded(_ newDeck: CardDeck?) {
-        // Race condition fix: If we started session but deck wasn't ready,
-        // populate cards now that it is loaded.
-        if setupStage == .playing && sessionCards.isEmpty, let deck = newDeck, !deck.cards.isEmpty {
-            // Apply Deck Overrides (late load)
-            applyDeckOverrides(to: &sessionConfig, from: deck, type: sessionConfig.gameType) // Used sessionConfig.gameType instead of selectedGameType for consistency.
-            
-            let preparedCards = prepareSessionCards(deck.cards)
-            
-            if sessionConfig.order == .smart {
-                // Initialize Smart Session Logic
-                SmartSessionManager.shared.startSession(cards: preparedCards)
-                sessionCards = SmartSessionManager.shared.activeQueue
-            } else {
-                sessionCards = preparedCards
-            }
-    
-            // Trigger audio now that we have cards
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                playCurrentCardAudio()
-            }
-        }
-    }
-    
-    // MARK: - Deck Logic Helpers
-    
-    func prepareSessionCards(_ allCards: [LearningCard]) -> [LearningCard] {
-        let filtered = filterCards(allCards, for: sessionConfig.gameType)
-        
-        let limit = sessionCardGoal
-        var workingSet: [LearningCard] = []
-        
-        if filtered.count > limit {
-             if sessionConfig.order == .sequential {
-                 workingSet = Array(filtered.prefix(limit))
-             } else {
-                 // For Random/Smart, pick a random subset
-                 workingSet = Array(filtered.shuffled().prefix(limit))
-             }
-        } else {
-             workingSet = filtered
-             // If random/smart, shuffle even if full set (Smart Queue might re-order, but random start is good)
-             if sessionConfig.order != .sequential {
-                 workingSet.shuffle()
-             }
-        }
-        
-        // Setup Smart Queue if needed
-        if sessionConfig.order == .smart {
-            SmartSessionManager.shared.startSession(cards: workingSet)
-            return SmartSessionManager.shared.activeQueue
-        }
-        
-        return workingSet
-    }
-    
-    func filterCards(_ cards: [LearningCard], for type: GameConfiguration.GameType) -> [LearningCard] {
-        return cards.filter { card in
-            guard let usage = card.usage, !usage.isEmpty else { return true }
-            
-            // Story Only Logic
-            if usage.contains("story_only") && type != .story {
-                return false
-            }
-            
-            // Flashcard Only Logic ?? ("flashcard_only" - hypothetical)
-            
-            return true
-        }
-    }
-    
-    func applyDeckOverrides(to config: inout GameConfiguration, from deck: CardDeck, type: GameConfiguration.GameType) {
-        // Check for game-specific defaults from the deck JSON
-        // The key in JSON is the rawValue (e.g. "Flashcards", "Memory Match", "Story")
-        // NOTE: My JSON keys were lowercase "flashcards", "memoryMatch" in some places??
-        // Let's check `DataManager` / `GameConfiguration` raw values.
-        // GameType rawValues are "Flashcards", "Memory Match".
-        // My JSON updates used: "flashcards" (lowercase) in keys.
-        // I need to be careful with case sensitivity here.
-        
-        guard let deckConfig = deck.gameConfiguration else { return }
-        
-        // Try exact match first, then lowercase match
-        let key = type.rawValue
-        
-        // Find which key exists
-        // My JSON wrote: "flashcards": { ... }
-        // GameType.flashcards.rawValue is "Flashcards"
-        
-        var defaults: DeckDefaults?
-        
-        // Iterate keys to find case-insensitive match
-        for (jsonKey, val) in deckConfig {
-            if jsonKey.caseInsensitiveCompare(key) == .orderedSame {
-                defaults = val
-                break
-            }
-            // Also check for "flashcards" vs "Flashcards" specifically if caseInsensitive didn't catch specific 'camelCase' vs 'Title Case' mapping issues (though caseInsensitive should)
-        }
-        
-        if let defaults = defaults {
-            print("DEBUG: Applying deck defaults for \(type.rawValue): \(defaults)")
-            
-            // Dictionary "randomize" is now handled in GameConfigurationView to allow for user overrides.
-            // We do NOT override it here anymore.
-            
-            /*
-            if let random = defaults.randomize {
-                config.isRandomOrder = random
-            }
-            */
-            
-            if let autoPlay = defaults.audioAutoplay {
-                // Front of card
-                if !autoPlay {
-                    config.word.audio = .hint
-                    config.sentence.audio = .hint
-                    config.word.autoplay = false
-                    config.sentence.autoplay = false
-                } else {
-                    config.word.audio = .visible
-                    config.sentence.audio = .visible
-                    config.word.autoplay = true
-                    config.sentence.autoplay = true
-                }
-            }
-            
-            if let autoPlayBack = defaults.audioAutoplayBack {
-                config.back.autoplay = autoPlayBack
-            }
-        }
-    }
 }
-    
+
 
 // MARK: - Helpers
 
@@ -950,7 +582,7 @@ struct StatRow: View {
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         HStack {
             Image(systemName: icon)
@@ -964,12 +596,6 @@ struct StatRow: View {
         }
     }
 }
-
-
-
-
-
-
 
 
 

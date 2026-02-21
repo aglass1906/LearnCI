@@ -19,23 +19,24 @@ import SwiftUI
 /// - TODO: Standardize init signature to match other games
 
 struct MemoryGameView: View {
-    // let sessionCards: [LearningCard]  <-- Removed
     let deck: CardDeck
-    let sessionConfig: GameConfiguration // Added for ttsRate
+    let sessionCards: [LearningCard]
+    let sessionConfig: GameConfiguration
     let matchMode: GameConfiguration.MemoryMatchMode
     let onGameComplete: () -> Void
     let onMatchFound: () -> Void
-    
+
     @Environment(AudioManager.self) private var audioManager
     @State private var viewModel: MemoryGameViewModel
-    
-    init(deck: CardDeck, sessionConfig: GameConfiguration, matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
+
+    init(deck: CardDeck, sessionCards: [LearningCard], sessionConfig: GameConfiguration, matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord, onGameComplete: @escaping () -> Void, onMatchFound: @escaping () -> Void) {
         self.deck = deck
+        self.sessionCards = sessionCards
         self.sessionConfig = sessionConfig
         self.matchMode = matchMode
         self.onGameComplete = onGameComplete
         self.onMatchFound = onMatchFound
-        _viewModel = State(initialValue: MemoryGameViewModel(matchMode: matchMode))
+        _viewModel = State(initialValue: MemoryGameViewModel(sessionCards: sessionCards, matchMode: matchMode))
     }
     
     let columns = [

@@ -41,23 +41,30 @@ class MemoryGameViewModel {
     var onMistake: (() -> Void)?
     var playAudio: ((String?, String) -> Void)?
     
-    init(matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
+    private var allSessionCards: [LearningCard]
+    private var cardOffset: Int = 0
+
+    init(sessionCards: [LearningCard], matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
+        self.allSessionCards = sessionCards
         self.matchMode = matchMode
     }
-    
+
     func startSession() {
+        cardOffset = 0
         startNextRound()
     }
-    
+
     private func startNextRound() {
-        // Pull next batch of 8 cards (for 4x4 grid)
-        let nextBatch = SmartSessionManager.shared.nextBatch(count: 8)
-        
-        if nextBatch.isEmpty {
+        let remaining = Array(allSessionCards.dropFirst(cardOffset))
+        // Take up to 8 cards, but require at least 2 for a valid round
+        let nextBatch = Array(remaining.prefix(8))
+
+        if nextBatch.count < 2 {
             onGameComplete?()
             return
         }
-        
+
+        cardOffset += nextBatch.count
         setupRound(with: nextBatch)
     }
     

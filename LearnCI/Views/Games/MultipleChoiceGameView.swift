@@ -26,6 +26,12 @@ struct MultipleChoiceGameView: View {
     // Animation
     @State private var shakeTrigger: Int = 0
     
+    /// Stable identifier for the card currently at `currentCardIndex`.
+    private var currentCardId: String {
+        guard currentCardIndex < sessionCards.count else { return "" }
+        return sessionCards[currentCardIndex].id
+    }
+
     var body: some View {
         VStack {
             // Header
@@ -83,6 +89,9 @@ struct MultipleChoiceGameView: View {
             loadNextChallenge()
         }
         .onChange(of: currentCardIndex) { _, _ in
+            loadNextChallenge()
+        }
+        .onChange(of: currentCardId) { _, _ in
             loadNextChallenge()
         }
     }
@@ -157,7 +166,7 @@ struct MultipleChoiceGameView: View {
         }
         
         if !sequence.isEmpty {
-            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: true, ttsRate: sessionConfig.ttsRate)
+            audioManager.playSequence(items: sequence, folderName: deck.baseFolderName, useFallback: sessionConfig.useTTSFallback, ttsRate: sessionConfig.ttsRate)
         }
     }
     
@@ -184,15 +193,11 @@ struct MultipleChoiceGameView: View {
             isCorrect = false
             SoundManager.shared.play(.mismatch)
             shakeTrigger += 1
-            
-            // Allow retry? Or fail? The requirement says "Feedback".
-            // Typically we show the right answer then move on, or let them retry.
-            // For now, let's delay then move on (or retry logic if desired).
-            // Simplest: Auto-fail this card (move to back?) or just move next.
-            // Implementing "Retry" feels annoying in MC. Let's show correct answer then move next.
-            
+
+            // Report wrong answer to SRS so the card is re-queued
+            onGrade?(.again)
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                 // Skip to next card without marking learned
                  onNext()
             }
         }

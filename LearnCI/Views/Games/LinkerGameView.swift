@@ -96,7 +96,7 @@ struct LinkerItemView: View {
             contentView
                 .padding()
         }
-        .frame(height: 80)
+        .frame(height: item.content.isImage ? 120 : 80)
         .scaleEffect(isSelected ? 1.05 : 1.0)
         .animation(.spring(), value: isSelected)
     }
@@ -117,17 +117,7 @@ struct LinkerItemView: View {
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.8)
         case .image(let imageName):
-            // Placeholder for actual image loading logic
-            // Assuming we have a helper or AsyncImage
-            if let uiImage = UIImage(named: imageName) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } else {
-                Image(systemName: "photo")
-                    .font(.largeTitle)
-                    .foregroundColor(.gray)
-            }
+            ImageLoaderView(filename: imageName, folderName: nil, fallbackText: nil)
         case .audio(_):
             Image(systemName: "speaker.wave.2.fill")
                 .font(.title)

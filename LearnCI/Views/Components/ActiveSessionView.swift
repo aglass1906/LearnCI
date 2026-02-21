@@ -59,6 +59,7 @@ struct ActiveSessionView: View {
                 case .memoryMatch:
                     MemoryGameView(
                         deck: deck,
+                        sessionCards: sessionCards,
                         sessionConfig: sessionConfig,
                         matchMode: matchMode,
                         onGameComplete: onFinish,
@@ -91,7 +92,8 @@ struct ActiveSessionView: View {
                         sessionConfig: sessionConfig,
                         onLearned: onLearned,
                         onFinish: onFinish,
-                        onNext: onNext
+                        onNext: onNext,
+                        onGrade: onGrade
                     )
                 case .audioCloze:
                     AudioClozeGameView(
@@ -103,7 +105,8 @@ struct ActiveSessionView: View {
                         sessionConfig: sessionConfig,
                         onLearned: onLearned,
                         onFinish: onFinish,
-                        onNext: onNext
+                        onNext: onNext,
+                        onGrade: onGrade
                     )
                 case .linker:
                     LinkerGameView(

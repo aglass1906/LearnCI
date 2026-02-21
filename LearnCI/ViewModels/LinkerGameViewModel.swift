@@ -34,6 +34,11 @@ enum LinkerItemType: Equatable {
         if case .audio = self { return true }
         return false
     }
+
+    var isImage: Bool {
+        if case .image = self { return true }
+        return false
+    }
 }
 
 struct LinkerItem: Identifiable, Equatable {
@@ -58,7 +63,6 @@ class LinkerGameViewModel {
     
     // SRS / Queue State
     var sessionCards: [LearningCard] // The full queue passed from GameView
-    private var localQueue: [LearningCard] // Mutable queue for processing
     
     // Round Queue State (Streaming)
     var roundQueue: [LearningCard] = []
@@ -88,10 +92,7 @@ class LinkerGameViewModel {
         self.config = config
         self.sessionCardGoal = sessionCardGoal
         self.onGrade = onGrade
-        
-        // Initialize local queue with the provided session cards
-        self.localQueue = sessionCards
-        
+
         // Start the game
         startRound()
     }
@@ -168,16 +169,17 @@ class LinkerGameViewModel {
              return
         }
         selectedLeftId = item.id
-        
-        // Play audio if applicable
-        if item.content.isAudio {
-             playAudio(for: item)
-        }
+
+        // Play word audio for all round types
+        playAudio(for: item)
     }
     
     func selectRight(_ item: LinkerItem) {
+        // Play word audio for the tapped right-column card
+        playAudio(for: item)
+
         guard let leftId = selectedLeftId, let leftItem = leftItems.first(where: { $0.id == leftId }) else { return }
-        
+
         if leftItem.cardId == item.cardId {
             // Find index of left item
             if let index = leftItems.firstIndex(of: leftItem) {
@@ -254,11 +256,12 @@ class LinkerGameViewModel {
                 rightItems[rightIndex].isError = true
             }
             
-            // Reset error after delay
+            // Reset error after delay (look up by ID since index may be stale)
+            let itemId = rightItem.id
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                if rightIndex < self.rightItems.count {
+                if let idx = self.rightItems.firstIndex(where: { $0.id == itemId }) {
                     withAnimation {
-                         self.rightItems[rightIndex].isError = false
+                        self.rightItems[idx].isError = false
                     }
                 }
             }
@@ -266,7 +269,8 @@ class LinkerGameViewModel {
     }
     
     private func playAudio(for item: LinkerItem) {
-        guard let card = deck.cards.first(where: { $0.id == item.cardId }) else { return }
+        guard let card = sessionCards.first(where: { $0.id == item.cardId })
+                ?? deck.cards.first(where: { $0.id == item.cardId }) else { return }
         
         if let audioFile = card.audioWordFile {
             audioManager?.playAudio(
@@ -274,7 +278,7 @@ class LinkerGameViewModel {
                 folderName: deck.baseFolderName,
                 text: card.wordTarget,
                 language: deck.language,
-                useFallback: true,
+                useFallback: config.useTTSFallback,
                 ttsRate: config.ttsRate
             )
         } else {

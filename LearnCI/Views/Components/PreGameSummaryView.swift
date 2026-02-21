@@ -3,6 +3,8 @@ import SwiftUI
 /// Pre-game summary view (Stage 4) - Shows final confirmation before starting game
 struct PreGameSummaryView: View {
     let deckTitle: String
+    let coverImage: String?
+    let folderName: String?
     let language: Language
     let level: Int
     let preset: GameConfiguration.Preset
@@ -37,6 +39,8 @@ struct PreGameSummaryView: View {
                 // Summary Card
                 SessionSummaryView(
                     deckTitle: deckTitle,
+                    coverImage: coverImage,
+                    folderName: folderName,
                     language: language,
                     level: level,
                     preset: preset,

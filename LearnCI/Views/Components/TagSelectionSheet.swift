@@ -208,6 +208,7 @@ struct TagSelectionSheet: View {
         let metadata = DeckMetadata(
             id: virtualDeck.id,
             title: virtualDeck.title,
+            description: virtualDeck.description,
             language: virtualDeck.language,
             level: virtualDeck.level,
             proficiencyLevel: virtualDeck.proficiencyLevel,

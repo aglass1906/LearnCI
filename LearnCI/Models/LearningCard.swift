@@ -181,6 +181,7 @@ struct CardDeck: Codable, Identifiable, Equatable {
     var language: Language
     var level: LearningLevel?
     var title: String
+    var description: String?
     var cards: [LearningCard]
     
     // New Fields

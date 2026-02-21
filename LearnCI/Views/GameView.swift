@@ -226,6 +226,8 @@ struct GameView: View {
         case .sessionSummary:
             PreGameSummaryView(
                 deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
+                coverImage: selectedDeck?.coverImage,
+                folderName: selectedDeck?.folderName,
                 language: sessionLanguage,
                 level: sessionLevel,
                 preset: selectedPreset,
@@ -278,6 +280,8 @@ struct GameView: View {
                     elapsedSeconds: vm.elapsedSeconds,
                     setupStage: $setupStage,
                     deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
+                    coverImage: selectedDeck?.coverImage,
+                    folderName: selectedDeck?.folderName,
                     language: sessionLanguage,
                     level: sessionLevel,
                     preset: selectedPreset,

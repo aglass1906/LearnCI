@@ -130,8 +130,12 @@ struct GameConfigurationView: View {
     }
     
     private var deckSubtitleText: String {
-        guard let _ = selectedDeck else { return "Compatible with \(selectedGameType.rawValue)" }
-        return "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: preferredScale))"
+        guard let deck = selectedDeck else { return "Compatible with \(selectedGameType.rawValue)" }
+        var sub = "\(sessionLanguage.flag) \(sessionLanguage.rawValue) · \(LevelManager.shared.displayString(level: sessionLevel, language: sessionLanguage.code, preferredScale: preferredScale))"
+        if let desc = deck.description {
+            sub += "\n\(desc)"
+        }
+        return sub
     }
     
     private var tagRowTitle: String {
@@ -213,7 +217,7 @@ struct SettingsRow<Content: View>: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .minimumScaleFactor(0.9)
                 } else {
                     subContent

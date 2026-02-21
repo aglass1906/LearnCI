@@ -6,6 +6,7 @@ import UIKit
 struct DeckMetadata: Identifiable, Equatable {
     let id: String
     let title: String
+    let description: String?
     let language: Language
     let level: LearningLevel?
     let proficiencyLevel: Int?
@@ -272,14 +273,12 @@ class DataManager {
         return CardDeck(
             id: virtualId,
             language: language,
-            level: level ?? .intermediate, // If specific level, use it. If mixed, intermediate is a safe fallback for UI.
+            level: level ?? .intermediate,
             title: "Focus: \(tag)",
-            cards: combinedCards.shuffled(), // Randomize by default?
-            supportedModes: [.flashcards, .memoryMatch], // Support all basic modes
-            baseFolderName: nil // Virtual decks don't have a single folder, images might break if not handled carefully.
-            // WARNING: Images in cards rely on baseFolderName if not absolute.
-            // We need to ensure resolveURL can handle finding images from their ORIGINAL decks or flattened Assets.
-            // DataManager.resolveURL searches recursively, so it should be fine.
+            description: "Cards matching the topic '\(tag)'",
+            cards: combinedCards.shuffled(),
+            supportedModes: [.flashcards, .memoryMatch],
+            baseFolderName: nil
         )
     }
     
@@ -388,6 +387,7 @@ class DataManager {
             let metadata = DeckMetadata(
                 id: deck.id,
                 title: deck.title,
+                description: deck.description,
                 language: deck.language,
                 level: deck.level,
                 proficiencyLevel: deck.proficiencyLevel,
@@ -624,6 +624,7 @@ class DataManager {
             language: language,
             level: level,
             title: "No Decks Found",
+            description: "No decks match your criteria.",
             cards: [
                 LearningCard(id: "f1", wordTarget: "Add Data", wordNative: "Please add JSON", sentenceTarget: "Add resources to Data folder", sentenceNative: "No matching decks found for \(language.rawValue) (\(level.rawValue))", audioWordFile: nil, audioSentenceFile: nil)
             ],

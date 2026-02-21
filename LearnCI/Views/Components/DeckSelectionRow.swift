@@ -33,11 +33,20 @@ struct DeckSelectionRow: View {
                         .cornerRadius(8)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(deck.title)
                         .font(.subheadline.bold())
-                        .lineLimit(2)
+                        .lineLimit(1)
                         .multilineTextAlignment(.leading)
+                    
+                    if let description = deck.description {
+                        Text(description)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .padding(.bottom, 2)
+                    }
                     
                     HStack(spacing: 4) {
                         Text(deck.language.flag)
@@ -47,7 +56,7 @@ struct DeckSelectionRow: View {
                         let levelInt = deck.proficiencyLevel ?? (deck.level != nil ? LevelManager.shared.normalize(deck.level!) : 1)
                         Text(LevelManager.shared.displayString(level: levelInt, language: deck.language.code, preferredScale: preferredScale))
                     }
-                    .font(.caption2)
+                    .font(.system(size: 10))
                     .foregroundColor(.secondary)
                 }
                 

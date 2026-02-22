@@ -3,14 +3,16 @@ import SwiftUI
 enum DiscoveryTab: String, CaseIterable, Identifiable {
     case favorites = "Favorites"
     case videos = "Videos"
+    case podcasts = "Podcasts"
     case library = "Library"
-    
+
     var id: String { rawValue }
-    
+
     var icon: String {
         switch self {
         case .favorites: return "heart.fill"
         case .videos: return "play.rectangle.fill"
+        case .podcasts: return "headphones"
         case .library: return "books.vertical.fill"
         }
     }
@@ -37,6 +39,8 @@ struct InputDiscoveryView: View {
                         FavoritesView()
                     case .videos:
                         VideoView()
+                    case .podcasts:
+                        PodcastListView()
                     case .library:
                         ResourceLibraryView()
                     }

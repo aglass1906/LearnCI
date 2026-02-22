@@ -7,9 +7,16 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var player: AVAudioPlayer?
     private var onCompletion: (() -> Void)?
     private var sequenceWorkItem: DispatchWorkItem?
-    
+
     /// Indicates whether audio is currently playing (file or TTS)
     var isPlaying: Bool = false
+
+    // MARK: - AVPlayer Streaming
+    var streamPlayer: AVPlayer?
+    var isStreaming: Bool = false
+    var streamDuration: Double = 0
+    var streamCurrentTime: Double = 0
+    private var streamTimeObserver: Any?
     
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
@@ -48,7 +55,14 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         // Play
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
-            guard let self = self, let player = self.player else { return .commandFailed }
+            guard let self = self else { return .commandFailed }
+            if let sp = self.streamPlayer {
+                sp.play()
+                self.isStreaming = true
+                self.updateStreamNowPlayingInfo()
+                return .success
+            }
+            guard let player = self.player else { return .commandFailed }
             if !player.isPlaying {
                 player.play()
                 self.isPlaying = true
@@ -57,11 +71,18 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             }
             return .commandFailed
         }
-        
+
         // Pause
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            guard let self = self, let player = self.player else { return .commandFailed }
+            guard let self = self else { return .commandFailed }
+            if let sp = self.streamPlayer {
+                sp.pause()
+                self.isStreaming = false
+                self.updateStreamNowPlayingInfo()
+                return .success
+            }
+            guard let player = self.player else { return .commandFailed }
             if player.isPlaying {
                 player.pause()
                 self.isPlaying = false
@@ -70,33 +91,53 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             }
             return .commandFailed
         }
-        
+
         // Skip Forward (10s)
         commandCenter.skipForwardCommand.isEnabled = true
         commandCenter.skipForwardCommand.preferredIntervals = [10]
         commandCenter.skipForwardCommand.addTarget { [weak self] _ in
-            guard let self = self, let player = self.player else { return .commandFailed }
+            guard let self = self else { return .commandFailed }
+            if self.streamPlayer != nil {
+                let newTime = min(self.streamDuration, self.streamCurrentTime + 10)
+                self.seekStream(to: newTime)
+                self.updateStreamNowPlayingInfo()
+                return .success
+            }
+            guard let player = self.player else { return .commandFailed }
             let newTime = player.currentTime + 10
             player.currentTime = min(player.duration, newTime)
             self.updateNowPlayingInfo()
             return .success
         }
-        
+
         // Skip Backward (10s)
         commandCenter.skipBackwardCommand.isEnabled = true
         commandCenter.skipBackwardCommand.preferredIntervals = [10]
         commandCenter.skipBackwardCommand.addTarget { [weak self] _ in
-            guard let self = self, let player = self.player else { return .commandFailed }
+            guard let self = self else { return .commandFailed }
+            if self.streamPlayer != nil {
+                let newTime = max(0, self.streamCurrentTime - 10)
+                self.seekStream(to: newTime)
+                self.updateStreamNowPlayingInfo()
+                return .success
+            }
+            guard let player = self.player else { return .commandFailed }
             let newTime = player.currentTime - 10
             player.currentTime = max(0, newTime)
             self.updateNowPlayingInfo()
             return .success
         }
-        
+
         // Scrubbing (Seek)
         commandCenter.changePlaybackPositionCommand.isEnabled = true
         commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
-            guard let self = self, let player = self.player, let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            guard let self = self, let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            if self.streamPlayer != nil {
+                self.seekStream(to: event.positionTime)
+                self.updateStreamNowPlayingInfo()
+                return .success
+            }
+            guard let player = self.player else { return .commandFailed }
             player.currentTime = event.positionTime
             self.updateNowPlayingInfo()
             return .success
@@ -404,6 +445,113 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         isPlaying = true
     }
     
+    // MARK: - Streaming Playback (AVPlayer)
+
+    func streamAudio(url: URL, startAt: Double = 0) {
+        stopAudio()
+        configureAudioSession()
+
+        let playerItem = AVPlayerItem(url: url)
+        streamPlayer = AVPlayer(playerItem: playerItem)
+
+        // Observe when duration becomes available
+        playerItem.asset.loadValuesAsynchronously(forKeys: ["duration"]) { [weak self] in
+            DispatchQueue.main.async {
+                let duration = playerItem.asset.duration
+                if duration.isNumeric {
+                    self?.streamDuration = CMTimeGetSeconds(duration)
+                }
+            }
+        }
+
+        // Periodic time observer
+        let interval = CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        streamTimeObserver = streamPlayer?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self = self else { return }
+            self.streamCurrentTime = CMTimeGetSeconds(time)
+
+            // Update duration if it wasn't available initially
+            if self.streamDuration == 0, let item = self.streamPlayer?.currentItem {
+                let dur = item.duration
+                if dur.isNumeric {
+                    self.streamDuration = CMTimeGetSeconds(dur)
+                }
+            }
+        }
+
+        // Seek to resume position
+        if startAt > 0 {
+            let seekTime = CMTime(seconds: startAt, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+            streamPlayer?.seek(to: seekTime)
+        }
+
+        // Observe end of playback
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(streamDidFinish),
+            name: AVPlayerItem.didPlayToEndTimeNotification,
+            object: playerItem
+        )
+    }
+
+    func playStream() {
+        streamPlayer?.play()
+        isStreaming = true
+    }
+
+    func pauseStream() {
+        streamPlayer?.pause()
+        isStreaming = false
+    }
+
+    func seekStream(to seconds: Double) {
+        let time = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        streamPlayer?.seek(to: time)
+        streamCurrentTime = seconds
+    }
+
+    func setStreamRate(_ rate: Float) {
+        streamPlayer?.rate = rate
+        if isStreaming {
+            // AVPlayer pauses when rate is set; resume if needed
+            streamPlayer?.play()
+        }
+    }
+
+    func stopStream() {
+        if let observer = streamTimeObserver {
+            streamPlayer?.removeTimeObserver(observer)
+            streamTimeObserver = nil
+        }
+        NotificationCenter.default.removeObserver(self, name: AVPlayerItem.didPlayToEndTimeNotification, object: streamPlayer?.currentItem)
+        streamPlayer?.pause()
+        streamPlayer = nil
+        isStreaming = false
+        streamDuration = 0
+        streamCurrentTime = 0
+        clearNowPlayingInfo()
+    }
+
+    func updateStreamNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil) {
+        var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
+
+        if let title = title { info[MPMediaItemPropertyTitle] = title }
+        if let artist = artist { info[MPMediaItemPropertyArtist] = artist }
+        if let image = artworkImage {
+            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        }
+
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = streamCurrentTime
+        info[MPMediaItemPropertyPlaybackDuration] = streamDuration
+        info[MPNowPlayingInfoPropertyPlaybackRate] = isStreaming ? (streamPlayer?.rate ?? 1.0) : 0.0
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+
+    @objc private func streamDidFinish() {
+        isStreaming = false
+    }
+
     func stopAudio() {
         sequenceWorkItem?.cancel()
         sequenceWorkItem = nil
@@ -412,7 +560,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         onCompletion = nil
         currentSequence = []
         isPlaying = false
-        clearNowPlayingInfo()
+        stopStream()
     }
     
     // MARK: - AVAudioPlayerDelegate & AVSpeechSynthesizerDelegate

@@ -112,7 +112,11 @@ struct CoachingCheckInDTO: Codable {
             
             // NEW: Pull Stories (and download audio)
             try await pullStories(context: modelContext, userID: userID)
-            
+
+            // Podcasts
+            try await syncPodcasts(context: modelContext, userID: userID)
+            try await pullPodcasts(context: modelContext, userID: userID)
+
             // 5. Final Pull (Update Profile Totals after Push triggers)
             try await pullProfile(context: modelContext, userID: userID)
             
@@ -897,6 +901,187 @@ struct CoachingCheckInDTO: Codable {
         try context.save()
     }
 
+    // MARK: - Podcast Sync
+
+    @MainActor
+    private func syncPodcasts(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+
+        // Push unsynced shows
+        let showDescriptor = FetchDescriptor<PodcastShow>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unsyncedShows = try context.fetch(showDescriptor)
+
+        for show in unsyncedShows {
+            let dto = PodcastShowDTO(
+                id: show.id,
+                user_id: uid,
+                title: show.title,
+                author: show.author,
+                show_description: show.showDescription,
+                feed_url: show.feedUrl,
+                artwork_url: show.artworkUrl,
+                language: show.languageRaw,
+                added_at: show.addedAt
+            )
+
+            try await authManager.supabase.from("podcast_shows")
+                .upsert(dto, onConflict: "id")
+                .execute()
+
+            show.isSynced = true
+
+            // Push episodes for this show
+            let unsyncedEpisodes = show.episodes.filter { !$0.isSynced }
+            for episode in unsyncedEpisodes {
+                let epDTO = PodcastEpisodeDTO(
+                    id: episode.id,
+                    show_id: show.id,
+                    title: episode.title,
+                    episode_description: episode.episodeDescription,
+                    audio_url: episode.audioUrl,
+                    published_date: episode.publishedDate,
+                    duration: episode.duration,
+                    playback_position: episode.playbackPosition,
+                    is_played: episode.isPlayed
+                )
+
+                try await authManager.supabase.from("podcast_episodes")
+                    .upsert(epDTO, onConflict: "id")
+                    .execute()
+
+                episode.isSynced = true
+            }
+        }
+
+        // Also push episodes that changed (playback position, is_played) on already-synced shows
+        let allShowsDescriptor = FetchDescriptor<PodcastShow>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == true }
+        )
+        let syncedShows = try context.fetch(allShowsDescriptor)
+        for show in syncedShows {
+            let dirtyEpisodes = show.episodes.filter { !$0.isSynced }
+            for episode in dirtyEpisodes {
+                let epDTO = PodcastEpisodeDTO(
+                    id: episode.id,
+                    show_id: show.id,
+                    title: episode.title,
+                    episode_description: episode.episodeDescription,
+                    audio_url: episode.audioUrl,
+                    published_date: episode.publishedDate,
+                    duration: episode.duration,
+                    playback_position: episode.playbackPosition,
+                    is_played: episode.isPlayed
+                )
+
+                try await authManager.supabase.from("podcast_episodes")
+                    .upsert(epDTO, onConflict: "id")
+                    .execute()
+
+                episode.isSynced = true
+            }
+        }
+
+        try context.save()
+    }
+
+    @MainActor
+    private func pullPodcasts(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        // Pull shows
+        let showResponse = try await authManager.supabase.from("podcast_shows")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+
+        let serverShows = try decoder.decode([PodcastShowDTO].self, from: showResponse.data)
+
+        let localShowsDescriptor = FetchDescriptor<PodcastShow>(
+            predicate: #Predicate { $0.userID == userID }
+        )
+        let localShows = try context.fetch(localShowsDescriptor)
+        let serverShowIDs = Set(serverShows.map { $0.id })
+
+        // Delete shows removed on server
+        for local in localShows {
+            if local.isSynced && !serverShowIDs.contains(local.id) {
+                context.delete(local)
+            }
+        }
+
+        // Upsert shows from server
+        for dto in serverShows {
+            if let existing = localShows.first(where: { $0.id == dto.id }) {
+                existing.title = dto.title
+                existing.author = dto.author
+                existing.showDescription = dto.show_description
+                existing.feedUrl = dto.feed_url
+                existing.artworkUrl = dto.artwork_url
+                existing.languageRaw = dto.language
+                existing.isSynced = true
+            } else {
+                let newShow = PodcastShow(
+                    id: dto.id,
+                    title: dto.title,
+                    author: dto.author,
+                    showDescription: dto.show_description,
+                    feedUrl: dto.feed_url,
+                    artworkUrl: dto.artwork_url,
+                    language: Language(rawValue: dto.language) ?? .spanish,
+                    addedAt: dto.added_at,
+                    userID: userID
+                )
+                newShow.isSynced = true
+                context.insert(newShow)
+            }
+        }
+
+        try context.save()
+
+        // Pull episodes for each server show
+        let epResponse = try await authManager.supabase.from("podcast_episodes")
+            .select()
+            .in("show_id", values: serverShows.map { $0.id })
+            .execute()
+
+        let serverEpisodes = try decoder.decode([PodcastEpisodeDTO].self, from: epResponse.data)
+
+        // Refetch local shows after inserts
+        let refreshedShows = try context.fetch(localShowsDescriptor)
+
+        for dto in serverEpisodes {
+            guard let parentShow = refreshedShows.first(where: { $0.id == dto.show_id }) else { continue }
+
+            if let existing = parentShow.episodes.first(where: { $0.id == dto.id }) {
+                // Server wins for playback state
+                existing.playbackPosition = dto.playback_position
+                existing.isPlayed = dto.is_played
+                existing.isSynced = true
+            } else {
+                let newEp = PodcastEpisode(
+                    id: dto.id,
+                    title: dto.title,
+                    episodeDescription: dto.episode_description,
+                    audioUrl: dto.audio_url,
+                    publishedDate: dto.published_date,
+                    duration: dto.duration,
+                    playbackPosition: dto.playback_position,
+                    isPlayed: dto.is_played
+                )
+                newEp.isSynced = true
+                newEp.show = parentShow
+                context.insert(newEp)
+            }
+        }
+
+        try context.save()
+    }
+
     @MainActor
     func fetchLeaderboard() async throws -> [ProfileDTO] {
         let response = try await authManager.supabase.from("profiles")
@@ -983,4 +1168,28 @@ struct FavoriteDTO: Codable {
     let image_url: String?
     let source_resource_id: String?
     let created_at: Date
+}
+
+struct PodcastShowDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let title: String
+    let author: String
+    let show_description: String
+    let feed_url: String
+    let artwork_url: String?
+    let language: String
+    let added_at: Date
+}
+
+struct PodcastEpisodeDTO: Codable {
+    let id: UUID
+    let show_id: UUID
+    let title: String
+    let episode_description: String
+    let audio_url: String
+    let published_date: Date
+    let duration: Double
+    let playback_position: Double
+    let is_played: Bool
 }

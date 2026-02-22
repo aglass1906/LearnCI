@@ -210,7 +210,7 @@ extension DashboardView {
             subTitle: isCheckInDue ? nil : "Next Check-in: \(hoursToNextMilestone)h",
             accentColor: .blue,
             icon: "graduationcap.fill",
-            destination: CoachingHistoryView()
+            destination: InsightsView(initialTab: .milestones)
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 // Check-in Banner
@@ -460,7 +460,7 @@ extension DashboardView {
             subTitle: "Activity Summary",
             accentColor: .blue,
             icon: "chart.bar.xaxis",
-            destination: HistoryView()
+            destination: InsightsView(initialTab: .activity)
         ) {
             ActivityBreakdownChart(activityByType: activityByType)
                 .padding(.top, 4)

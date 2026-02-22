@@ -2,6 +2,25 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
+    enum TimeRange: String, CaseIterable, Identifiable {
+        case today = "Today"
+        case week = "Last 7 Days"
+        case month = "Last 30 Days"
+        case all = "All Time"
+        case custom = "Custom"
+        
+        var id: String { rawValue }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            ActivityHistoryContent()
+                .navigationTitle("Activity")
+        }
+    }
+}
+
+struct ActivityHistoryContent: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
     @Environment(SyncManager.self) private var syncManager
@@ -11,7 +30,7 @@ struct HistoryView: View {
         allActivities.filter { $0.userID == authManager.currentUser }
     }
     
-    @State private var selectedTimeRange: TimeRange = .today
+    @State private var selectedTimeRange: HistoryView.TimeRange = .today
     @State private var selectedActivityType: ActivityType? = nil
     @State private var editingActivity: UserActivity?
     @State private var isAddingActivity: Bool = false
@@ -19,15 +38,7 @@ struct HistoryView: View {
     @State private var startDate: Date = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
     @State private var endDate: Date = Date()
     
-    enum TimeRange: String, CaseIterable, Identifiable {
-        case today = "Today"
-        case week = "Week"
-        case month = "Month"
-        case all = "All"
-        case custom = "Custom"
-        
-        var id: String { rawValue }
-    }
+    // Move enum outside or keep in HistoryView if needed. Let's move it to HistoryView namespace.
     
     struct ActivityGroup: Identifiable {
         let date: Date
@@ -101,199 +112,193 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Filters
-                VStack(spacing: 12) {
-                    HStack {
-                        Picker("Time Range", selection: $selectedTimeRange) {
-                            ForEach(TimeRange.allCases) { range in
-                                Text(range.rawValue).tag(range)
-                            }
+        VStack(spacing: 0) {
+            // Filters
+            VStack(spacing: 12) {
+                HStack {
+                    Picker("Time Range", selection: $selectedTimeRange) {
+                        ForEach(HistoryView.TimeRange.allCases) { range in
+                            Text(range.rawValue).tag(range)
                         }
-                        .pickerStyle(.segmented)
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    Button(action: { showDateRangePicker = true }) {
+                        Image(systemName: "calendar")
+                            .font(.title3)
+                            .padding(8)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal)
+                
+                if selectedTimeRange == .custom {
+                    HStack {
+                        Text(startDate.formatted(date: .abbreviated, time: .omitted))
+                        Image(systemName: "arrow.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(endDate.formatted(date: .abbreviated, time: .omitted))
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        FilterChip(title: "All Types", isSelected: selectedActivityType == nil) {
+                            selectedActivityType = nil
+                        }
                         
-                        Button(action: { showDateRangePicker = true }) {
-                            Image(systemName: "calendar")
-                                .font(.title3)
-                                .padding(8)
-                                .background(Color.blue.opacity(0.1))
-                                .clipShape(Circle())
+                        ForEach(ActivityType.allCases) { type in
+                            FilterChip(title: type.rawValue, isSelected: selectedActivityType == type) {
+                                selectedActivityType = type
+                            }
                         }
                     }
                     .padding(.horizontal)
-                    
-                    if selectedTimeRange == .custom {
-                        HStack {
-                            Text(startDate.formatted(date: .abbreviated, time: .omitted))
-                            Image(systemName: "arrow.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text(endDate.formatted(date: .abbreviated, time: .omitted))
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            FilterChip(title: "All Types", isSelected: selectedActivityType == nil) {
-                                selectedActivityType = nil
-                            }
-                            
-                            ForEach(ActivityType.allCases) { type in
-                                FilterChip(title: type.rawValue, isSelected: selectedActivityType == type) {
-                                    selectedActivityType = type
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.vertical)
-                .background(Color(UIColor.systemGroupedBackground))
-                
-                // Details
-                if filteredActivities.isEmpty {
-                   ContentUnavailableView("No History", systemImage: "clock.arrow.circlepath", description: Text("No activities found for this period."))
-                } else {
-                    List {
-                        // Summary Section
-                        Section {
-                            VStack(spacing: 16) {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("Total Time")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text("\(totalMinutes) min")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                    }
-                                    Spacer()
-                                    VStack(alignment: .trailing) {
-                                        Text("Favored Activity")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Text(topActivityType?.rawValue ?? "None")
-                                            .font(.title3)
-                                            .fontWeight(.semibold)
-                                    }
-                                }
-                                
-                                // Simple Input/Output Gauge
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text("Input vs Output")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        Spacer()
-                                        Text("\(Int(inputRatio * 100))% Input")
-                                            .font(.caption)
-                                            .fontWeight(.bold)
-                                            .foregroundStyle(.green)
-                                    }
-                                    
-                                    GeometryReader { geometry in
-                                        ZStack(alignment: .leading) {
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .fill(Color.blue.opacity(0.3))
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .fill(Color.green)
-                                                .frame(width: geometry.size.width * CGFloat(inputRatio))
-                                        }
-                                    }
-                                    .frame(height: 8)
-                                }
-                            }
-                            .padding(.vertical, 8)
-                        }
-                        .listRowBackground(Color.blue.opacity(0.05))
-                        
-                        // Activity Breakdown Chart
-                        if !filteredActivities.isEmpty {
-                            Section {
-                                ActivityBreakdownChart(activityByType: activityByType)
-                                    .padding(.horizontal, -16) // Offset list padding for chart
-                            }
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets())
-                        }
-                        
-                        // Grouped Activities
-                        ForEach(groupedActivities) { group in
-                            Section(header: Text(group.date.formatted(date: .complete, time: .omitted))) {
-                                ForEach(group.activities) { activity in
-                                    HStack(alignment: .top, spacing: 12) {
-                                        Image(systemName: activity.activityType.icon)
-                                            .font(.title2)
-                                            .foregroundStyle(activity.activityType.isInput ? .green : .blue)
-                                            .frame(width: 32)
-                                        
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(activity.activityTypeRaw)
-                                                .font(.headline)
-                                            Text(activity.date.formatted(date: .omitted, time: .shortened))
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                            
-                                            if let comment = activity.comment, !comment.isEmpty {
-                                                Text(comment)
-                                                    .font(.caption)
-                                                    .foregroundStyle(.primary.opacity(0.7))
-                                                    .italic()
-                                                    .lineLimit(2)
-                                            }
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        Text("\(activity.minutes) min")
-                                            .fontWeight(.bold)
-                                            .padding(8)
-                                            .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
-                                            .cornerRadius(8)
-                                    }
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        editingActivity = activity
-                                    }
-                                }
-                                .onDelete { indexSet in
-                                    deleteActivities(at: indexSet, from: group.activities)
-                                }
-                            }
-                        }
-                    }
-                    .listStyle(.insetGrouped)
-                    }
-                }
-                .sheet(item: $editingActivity) { activity in
-                    EditActivityView(activity: activity)
-                }
-                .sheet(isPresented: $isAddingActivity) {
-                    AddActivityView()
-                }
-                .sheet(isPresented: $showDateRangePicker) {
-                    DateRangePickerSheet(startDate: $startDate, endDate: $endDate) {
-                        selectedTimeRange = .custom
-                    }
-                }
-            .navigationTitle("Activity")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: { isAddingActivity = true }) {
-                        Image(systemName: "plus")
-                    }
                 }
             }
-            .task {
-                await syncManager.syncNow(modelContext: modelContext)
+            .padding(.vertical)
+            .background(Color(UIColor.systemGroupedBackground))
+            
+            // Details
+            if filteredActivities.isEmpty {
+               ContentUnavailableView("No History", systemImage: "clock.arrow.circlepath", description: Text("No activities found for this period."))
+            } else {
+                List {
+                    // Summary Section
+                    Section {
+                        VStack(spacing: 16) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("Total Time")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Text("\(totalMinutes) min")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                }
+                                Spacer()
+                                VStack(alignment: .trailing) {
+                                    Text("Favored Activity")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Text(topActivityType?.rawValue ?? "None")
+                                        .font(.title3)
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                            
+                            // Simple Input/Output Gauge
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text("Input vs Output")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("\(Int(inputRatio * 100))% Input")
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(.green)
+                                }
+                                
+                                GeometryReader { geometry in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color.blue.opacity(0.3))
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color.green)
+                                            .frame(width: geometry.size.width * CGFloat(inputRatio))
+                                    }
+                                }
+                                .frame(height: 8)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .listRowBackground(Color.blue.opacity(0.05))
+                    
+                    // Activity Breakdown Chart
+                    if !filteredActivities.isEmpty {
+                        Section {
+                            ActivityBreakdownChart(activityByType: activityByType)
+                                .padding(.horizontal, -16) // Offset list padding for chart
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                    }
+                    
+                    // Grouped Activities
+                    ForEach(groupedActivities) { group in
+                        Section(header: Text(group.date.formatted(date: .complete, time: .omitted))) {
+                            ForEach(group.activities) { activity in
+                                HStack(alignment: .top, spacing: 12) {
+                                    Image(systemName: activity.activityType.icon)
+                                        .font(.title2)
+                                        .foregroundStyle(activity.activityType.isInput ? .green : .blue)
+                                        .frame(width: 32)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(activity.activityTypeRaw)
+                                            .font(.headline)
+                                        Text(activity.date.formatted(date: .omitted, time: .shortened))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        
+                                        if let comment = activity.comment, !comment.isEmpty {
+                                            Text(comment)
+                                                .font(.caption)
+                                                .foregroundStyle(.primary.opacity(0.7))
+                                                .italic()
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(activity.minutes) min")
+                                        .fontWeight(.bold)
+                                        .padding(8)
+                                        .background(activity.activityType.isInput ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    editingActivity = activity
+                                }
+                            }
+                            .onDelete { indexSet in
+                                deleteActivities(at: indexSet, from: group.activities)
+                            }
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+            }
+        }
+        .sheet(item: $editingActivity) { activity in
+            EditActivityView(activity: activity)
+        }
+        .sheet(isPresented: $isAddingActivity) {
+            AddActivityView()
+        }
+        .sheet(isPresented: $showDateRangePicker) {
+            DateRangePickerSheet(startDate: $startDate, endDate: $endDate) {
+                selectedTimeRange = .custom
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: { isAddingActivity = true }) {
+                    Image(systemName: "plus")
+                }
             }
         }
     }
@@ -396,8 +401,10 @@ struct FilterChip: View {
 }
 
 #Preview {
-    HistoryView()
+    let auth = AuthManager()
+    return HistoryView()
         .environment(DataManager())
         .environment(YouTubeManager())
-        .environment(AuthManager())
+        .environment(auth)
+        .environment(SyncManager(authManager: auth))
 }

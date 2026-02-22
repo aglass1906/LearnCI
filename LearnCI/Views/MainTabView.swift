@@ -6,7 +6,6 @@ enum AppTab: String, CaseIterable {
     case discovery
     case history
     case profile
-    case coach
 }
 
 struct MainTabView: View {
@@ -40,17 +39,11 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.discovery)
                 
-                HistoryView()
+                InsightsView()
                     .tabItem {
-                        Label("Activity", systemImage: "clock.arrow.circlepath")
+                        Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
                     }
                     .tag(AppTab.history)
-                
-                CoachingHistoryView()
-                    .tabItem {
-                        Label("Coach", systemImage: "person.bust.fill")
-                    }
-                    .tag(AppTab.coach)
                 
                 ProfileView()
                     .tabItem {

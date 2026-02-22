@@ -22,6 +22,10 @@ struct StorySessionView: View {
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     
+    // Auto-Scroll State
+    @State private var activeWordIndex: Int? = nil
+    @State private var activeParagraphId: Int? = nil
+    
     // Analytics
     @State private var startTime: Date?
     @State private var didPlayAudio: Bool = false
@@ -36,9 +40,10 @@ struct StorySessionView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    // Hero Cover Art
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Hero Cover Art
                     HeroCoverView(story: story, image: $heroImage)
                         .frame(height: 300)
                         .clipped()
@@ -71,25 +76,46 @@ struct StorySessionView: View {
                         
                         // Story Text
                         if selectedLanguage == .target {
-                            Text(story.targetLanguageText)
-                                .font(.system(size: 18, weight: .regular, design: .serif)) // Better reading font
-                                .lineSpacing(10)
-                                .textSelection(.enabled)
+                            VStack(alignment: .leading, spacing: 20) {
+                                ForEach(storyParagraphs) { chunk in
+                                    ParagraphView(
+                                        chunk: chunk,
+                                        activeWordIndex: activeWordIndex,
+                                        timings: story.wordTimings,
+                                        wordMatches: wordMatches,
+                                        onSeek: seekTo
+                                    )
+                                    .id(chunk.id)
+                                }
+                            }
                         } else if let native = story.nativeLanguageText {
-                            Text(native)
-                                .font(.system(size: 18, weight: .regular, design: .serif))
-                                .lineSpacing(10)
-                                .foregroundColor(.secondary)
-                                .textSelection(.enabled)
+                            VStack(alignment: .leading, spacing: 20) {
+                                // Just simple padding for native text
+                                Text(native)
+                                    .font(.system(size: 18, weight: .regular, design: .serif))
+                                    .lineSpacing(10)
+                                    .foregroundColor(.secondary)
+                                    .textSelection(.enabled)
+                            }
                         }
                         
                         // Spacer for sticky bar
                         Color.clear.frame(height: 180)
+                            .id("BottomSpacer")
                     }
                     .padding()
                 }
+                .onChange(of: activeParagraphId) { _, newId in
+                    if let id = newId {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            // Use .center to perfectly frame the paragraph above the play bar
+                            scrollProxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.35)) 
+                        }
+                    }
+                }
             }
             .ignoresSafeArea(edges: .top)
+            } // Close ScrollViewReader
             
             // Sticky Audio Player
             if story.audioFilename != nil || story.remoteAudioPath != nil {
@@ -160,7 +186,11 @@ struct StorySessionView: View {
             if player.isPlaying {
                 sliderValue = player.currentTime
                 isPlaying = true
-                // Sync rate if changed externally (e.g. lock screen?)
+                
+                // Update active word and paragraph
+                updateScrollState(time: sliderValue)
+                
+                // Sync rate if changed externally (e.g. lock screen)
                 if abs(player.rate - playbackRate) > 0.1 {
                     playbackRate = player.rate
                 }
@@ -260,6 +290,8 @@ struct StorySessionView: View {
     private func seekTo(_ value: Double) {
         guard let player = audioManager.player else { return }
         player.currentTime = value
+        sliderValue = value
+        updateScrollState(time: value)
         audioManager.updateNowPlayingInfo()
     }
     
@@ -272,6 +304,122 @@ struct StorySessionView: View {
                 audioManager.updateNowPlayingInfo()
             }
         }
+    }
+    
+    // MARK: - Text Chunking & Auto-Scroll
+    
+    struct ParagraphChunk: Identifiable, Equatable {
+        let id: Int
+        let text: String
+        let range: NSRange
+    }
+    
+    private var storyParagraphs: [ParagraphChunk] {
+        let text = story.targetLanguageText
+        var chunks: [ParagraphChunk] = []
+        var currentOffset = 0
+        
+        let components = text.components(separatedBy: "\n")
+        var id = 0
+        for comp in components {
+            let pLength = (comp as NSString).length
+            let range = NSRange(location: currentOffset, length: pLength)
+            if !comp.trimmingCharacters(in: .whitespaces).isEmpty {
+                chunks.append(ParagraphChunk(id: id, text: comp, range: range))
+                id += 1
+            }
+            currentOffset += pLength + 1 // +1 for the \n
+        }
+        return chunks
+    }
+    
+    private var wordMatches: [NSTextCheckingResult] {
+        let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
+        let nsString = story.targetLanguageText as NSString
+        return regex?.matches(in: story.targetLanguageText, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
+    }
+    
+    private func updateScrollState(time: Double) {
+        let timings = story.wordTimings
+        
+        if let idx = timings.firstIndex(where: { time >= $0.start && time <= $0.end }) {
+            if activeWordIndex != idx {
+                activeWordIndex = idx
+                
+                // Determine which paragraph contains this word
+                let matches = wordMatches
+                if idx < matches.count {
+                    let activeMatch = matches[idx]
+                    // Find paragraph containing this match's range
+                    if let pId = storyParagraphs.first(where: { NSLocationInRange(activeMatch.range.location, $0.range) })?.id {
+                        if pId != activeParagraphId {
+                            activeParagraphId = pId
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Paragraph Subview
+struct ParagraphView: View {
+    let chunk: StorySessionView.ParagraphChunk
+    let activeWordIndex: Int?
+    let timings: [WordTiming]
+    let wordMatches: [NSTextCheckingResult]
+    let onSeek: (Double) -> Void
+    
+    var body: some View {
+        Text(attributedParagraph)
+            .font(.system(size: 18, weight: .regular, design: .serif))
+            .lineSpacing(10)
+            .tint(.primary)
+            .environment(\.openURL, OpenURLAction { url in
+                if url.scheme == "x-learnci-seek",
+                   let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                   let tStr = components.queryItems?.first(where: { $0.name == "t" })?.value,
+                   let targetTime = Double(tStr) {
+                    onSeek(targetTime)
+                    return .handled
+                }
+                return .systemAction
+            })
+    }
+    
+    private var attributedParagraph: AttributedString {
+        var attrString = AttributedString(chunk.text)
+        
+        if timings.isEmpty || chunk.text.isEmpty {
+            return attrString
+        }
+        
+        for (i, match) in wordMatches.enumerated() {
+            guard i < timings.count else { break }
+            let timing = timings[i]
+            
+            // Focus only on matches inside this chunk
+            if NSLocationInRange(match.range.location, chunk.range) {
+                let localRange = NSRange(location: match.range.location - chunk.range.location, length: match.range.length)
+                
+                if let swiftRange = Range(localRange, in: chunk.text),
+                   let lowerBound = AttributedString.Index(swiftRange.lowerBound, within: attrString),
+                   let upperBound = AttributedString.Index(swiftRange.upperBound, within: attrString) {
+                    
+                    let attrRange = lowerBound..<upperBound
+                    
+                    // Add jump link
+                    attrString[attrRange].link = URL(string: "x-learnci-seek://?t=\(timing.start)")
+                    
+                    // Highlight active
+                    if i == activeWordIndex {
+                        attrString[attrRange].foregroundColor = .blue
+                        attrString[attrRange].font = .system(size: 19, weight: .bold, design: .serif)
+                    }
+                }
+            }
+        }
+        return attrString
     }
 }
 

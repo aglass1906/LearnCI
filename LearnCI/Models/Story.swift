@@ -20,7 +20,13 @@ final class Story: Identifiable {
     var coverArt: String? // URL or path to cover image
     var textGenPrompt: String? // The exact prompt used for text generation
     var imageGenPrompt: String? // The exact prompt used for image generation
+    var wordTimingsJSON: String? // JSON string of [WordTiming]
     
+    // Computed property to easy decoding of word timings
+    @Transient var wordTimings: [WordTiming] {
+        guard let json = wordTimingsJSON, let data = json.data(using: .utf8) else { return [] }
+        return (try? JSONDecoder().decode([WordTiming].self, from: data)) ?? []
+    }
     // Computed properties for type safety, matching existing app patterns
     var language: Language {
         get { Language(rawValue: languageRaw) ?? .spanish }
@@ -42,6 +48,7 @@ final class Story: Identifiable {
          textGenPrompt: String? = nil,
          imageGenPrompt: String? = nil,
          preferencesJSON: String? = nil,
+         wordTimingsJSON: String? = nil,
          audioFilename: String? = nil, 
          remoteAudioPath: String? = nil,
          remoteCoverPath: String? = nil,
@@ -58,6 +65,7 @@ final class Story: Identifiable {
         self.textGenPrompt = textGenPrompt
         self.imageGenPrompt = imageGenPrompt
         self.preferencesJSON = preferencesJSON
+        self.wordTimingsJSON = wordTimingsJSON
         self.audioFilename = audioFilename
         self.remoteAudioPath = remoteAudioPath
         self.remoteCoverPath = remoteCoverPath

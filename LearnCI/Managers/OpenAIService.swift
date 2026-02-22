@@ -293,6 +293,80 @@ actor OpenAIService {
         return "Create a illustration for a story titled '\(title)' about \(topic). Style: \(styleDesc). No text in the image."
     }
     
+    func generateWordTimings(for audioURL: URL) async throws -> [WordTiming] {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+        
+        let url = URL(string: "\(baseURL)/audio/transcriptions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        
+        // Model
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
+        body.append("whisper-1\r\n".data(using: .utf8)!)
+        
+        // Response format
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".data(using: .utf8)!)
+        body.append("verbose_json\r\n".data(using: .utf8)!)
+        
+        // Timestamp granularities
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"timestamp_granularities[]\"\r\n\r\n".data(using: .utf8)!)
+        body.append("word\r\n".data(using: .utf8)!)
+        
+        // File
+        let audioData = try Data(contentsOf: audioURL)
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"audio.mp3\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: audio/mpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(audioData)
+        body.append("\r\n".data(using: .utf8)!)
+        
+        // End boundary
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        request.httpBody = body
+        
+        print("--- GENERATING TIMINGS VIA WHISPER ---")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+        
+        // Decode Whisper output
+        struct WhisperResponse: Decodable {
+            struct Word: Decodable {
+                let word: String
+                let start: Double
+                let end: Double
+            }
+            let words: [Word]?
+        }
+        
+        let result = try JSONDecoder().decode(WhisperResponse.self, from: data)
+        guard let whisperWords = result.words else {
+            return []
+        }
+        
+        return whisperWords.map { WordTiming(word: $0.word, start: $0.start, end: $0.end) }
+    }
+    
     // Check if key exists
     func hasKey() -> Bool {
         return apiKey != nil && !apiKey!.isEmpty

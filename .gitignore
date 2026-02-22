@@ -7,6 +7,9 @@ xcuserdata/
 
 *.log
 Build/*
+build_log*
+build_output*
+build*
 
 .env
 .venv

@@ -70,6 +70,20 @@ class StoryManager {
             try audioData.write(to: audioURL)
             print("Audio saved to: \(audioURL.path)")
             
+            // 6.5 Generate Word Timings
+            print("Generating word timings via Whisper...")
+            var timingsJSON: String? = nil
+            do {
+                let timings = try await openAIService.generateWordTimings(for: audioURL)
+                if !timings.isEmpty {
+                    let timingsData = try JSONEncoder().encode(timings)
+                    timingsJSON = String(data: timingsData, encoding: .utf8)
+                }
+            } catch {
+                print("Warning: Failed to generate word timings: \(error)")
+                // Don't fail the whole story generation if timings fail
+            }
+            
             // 7. Create & Save Story Object
             let encoder = JSONEncoder()
             let prefInfo = try? String(data: encoder.encode(preferences), encoding: .utf8)
@@ -83,6 +97,7 @@ class StoryManager {
                 textGenPrompt: textGenPrompt,
                 imageGenPrompt: imageGenPrompt,
                 preferencesJSON: prefInfo,
+                wordTimingsJSON: timingsJSON,
                 audioFilename: filename,
                 coverArt: coverFilename,
                 language: language,

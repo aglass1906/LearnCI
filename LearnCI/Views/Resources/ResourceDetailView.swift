@@ -218,7 +218,7 @@ extension ResourceDetailView {
                                 }) {
                                     HStack {
                                         Image(systemName: "safari")
-                                        Text("Open Resource")
+                                        Text("Open Creator Page")
                                         Spacer()
                                         Image(systemName: "arrow.up.right")
                                             .font(.caption)
@@ -256,12 +256,20 @@ extension ResourceDetailView {
                                         Button(action: {
                                             openUrl(url)
                                         }) {
-                                            HStack {
+                                            HStack(spacing: 12) {
                                                 Image(systemName: getLinkIcon(link.type))
-                                                Text(link.label.isEmpty ? "Open Link" : link.label)
+                                                    .foregroundStyle(.secondary)
+                                                VStack(alignment: .leading, spacing: 2) {
+                                                    Text(link.label.isEmpty ? resource.title : link.label)
+                                                        .lineLimit(1)
+                                                    Text(link.type.capitalized.replacingOccurrences(of: "_", with: " "))
+                                                        .font(.caption2)
+                                                        .foregroundStyle(.secondary)
+                                                }
                                                 Spacer()
                                                 Image(systemName: "arrow.up.right")
                                                     .font(.caption)
+                                                    .foregroundStyle(.secondary)
                                             }
                                             .font(.subheadline)
                                             .foregroundStyle(Color.primary)

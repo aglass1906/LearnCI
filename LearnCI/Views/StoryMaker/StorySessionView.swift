@@ -17,6 +17,7 @@ struct StorySessionView: View {
     @State private var playbackRate: Float = 1.0
     
     // UI State
+    @State private var showStoryInfo = false
     @State private var showPromptDetails = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
@@ -117,14 +118,27 @@ struct StorySessionView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(action: {
-                        UIPasteboard.general.string = story.targetLanguageText
-                    }) {
-                        Label("Copy Text", systemImage: "doc.on.doc")
-                    }
-                    
-                    Button(action: { showPromptDetails = true }) {
+                    Button(action: { showStoryInfo = true }) {
                         Label("Story Info", systemImage: "info.circle")
+                    }
+
+                    Button(action: { showPromptDetails = true }) {
+                        Label("View Prompts", systemImage: "text.viewfinder")
+                    }
+
+                    Divider()
+
+                    Button(action: {
+                        if selectedLanguage == .target {
+                            UIPasteboard.general.string = story.targetLanguageText
+                        } else {
+                            UIPasteboard.general.string = story.nativeLanguageText ?? story.targetLanguageText
+                        }
+                    }) {
+                        Label(
+                            selectedLanguage == .target ? "Copy Story (\(story.language.displayName))" : "Copy Story (English)",
+                            systemImage: "doc.on.doc"
+                        )
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -133,8 +147,12 @@ struct StorySessionView: View {
                 }
             }
         }
+        .sheet(isPresented: $showStoryInfo) {
+            StoryInfoSheet(story: story)
+                .presentationDetents([.medium, .large])
+        }
         .sheet(isPresented: $showPromptDetails) {
-            PromptDetailsSheet(story: story)
+            StoryPromptsSheet(story: story)
                 .presentationDetents([.medium, .large])
         }
         .onReceive(timer) { _ in
@@ -430,39 +448,120 @@ struct RoundedCorner: Shape {
     }
 }
 
-struct PromptDetailsSheet: View {
+// MARK: - Story Info Sheet
+
+struct StoryInfoSheet: View {
     let story: Story
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-    
-    @State private var localTextPrompt: String?
-    @State private var localImagePrompt: String?
-    @State private var isRecreating: Bool = false
-    
+
+    private var preferences: StoryPreferences {
+        guard let json = story.preferencesJSON, let data = json.data(using: .utf8) else {
+            return StoryPreferences()
+        }
+        return (try? JSONDecoder().decode(StoryPreferences.self, from: data)) ?? StoryPreferences()
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    
-                    // User's Prompt
-                    promptSection(title: "User Topic", content: story.prompt ?? "N/A")
-                    
+                    // Title
+                    infoRow(label: "Title", value: story.title)
 
-                    
+                    // Language & Level
+                    infoRow(label: "Language", value: story.language.displayName)
+                    infoRow(label: "Level", value: "\(story.level) - \(LevelManager.shared.description(for: story.level))")
+
+                    // Topic
+                    if let prompt = story.prompt, !prompt.isEmpty {
+                        infoRow(label: "Topic", value: prompt)
+                    }
+
                     Divider()
-                    
-                    // Text Gen Prompt
+
+                    // Preferences
+                    Text("Story Settings")
+                        .font(.headline)
+
+                    let prefs = preferences
+                    infoRow(label: "Genre", value: prefs.genre.rawValue)
+                    infoRow(label: "Length", value: prefs.storyLength.rawValue)
+                    infoRow(label: "Ending", value: prefs.endingType.rawValue)
+                    infoRow(label: "Dialogue", value: prefs.dialogueAmount.rawValue)
+                    infoRow(label: "Voice", value: prefs.voice.displayName)
+                    infoRow(label: "Cover Style", value: prefs.coverArtStyle.rawValue)
+
+                    if !prefs.protagonistName.isEmpty {
+                        infoRow(label: "Protagonist", value: "\(prefs.protagonistName) (\(prefs.protagonistGender.rawValue))")
+                    }
+
+                    // Keywords / Vocabulary
+                    if !prefs.targetVocabulary.isEmpty {
+                        infoRow(label: "Target Vocabulary", value: prefs.targetVocabulary)
+                    }
+
+                    if !prefs.grammarFocus.isEmpty {
+                        infoRow(label: "Grammar Focus", value: prefs.grammarFocus)
+                    }
+
+                    Divider()
+
+                    // Date
+                    infoRow(label: "Created", value: story.createdAt.formatted(date: .long, time: .shortened))
+                }
+                .padding()
+            }
+            .navigationTitle("Story Info")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func infoRow(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.body)
+                .textSelection(.enabled)
+        }
+    }
+}
+
+// MARK: - Story Prompts Sheet
+
+struct StoryPromptsSheet: View {
+    let story: Story
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var localTextPrompt: String?
+    @State private var localImagePrompt: String?
+    @State private var isRecreating: Bool = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    promptSection(title: "User Topic", content: story.prompt ?? "N/A")
+
+                    Divider()
+
                     promptSection(
-                        title: "Text Generation Prompt", 
+                        title: "Text Generation Prompt",
                         content: localTextPrompt ?? story.textGenPrompt ?? "Not saved."
                     )
-                    
-                    // Image Gen Prompt
+
                     promptSection(
-                        title: "Image Generation Prompt", 
+                        title: "Image Generation Prompt",
                         content: localImagePrompt ?? story.imageGenPrompt ?? "Not saved."
                     )
-                    
+
                     Button(action: recreatePrompts) {
                         HStack {
                             if isRecreating {
@@ -478,46 +577,25 @@ struct PromptDetailsSheet: View {
                         .cornerRadius(10)
                     }
                     .disabled(isRecreating)
-                    
-                    Divider()
-                    
-                    Text("Metadata")
-                        .font(.headline)
-                    
-                    Text("Language: \(story.language.displayName)\nLevel: \(story.level)")
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.secondary.opacity(0.05))
-                        .cornerRadius(8)
                 }
                 .padding()
             }
-            .navigationTitle("Story Info")
+            .navigationTitle("AI Prompts")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
-            }
-            .onAppear {
-                // Determine if we should auto-recreate or just show what's there?
-                // For now, respect what's in the model.
             }
         }
     }
-    
+
     private func promptSection(title: String, content: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(title)
                     .font(.headline)
-                
                 Spacer()
-                
                 Button(action: {
                     UIPasteboard.general.string = content
                 }) {
@@ -526,7 +604,6 @@ struct PromptDetailsSheet: View {
                         .foregroundColor(.blue)
                 }
             }
-            
             Text(content)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -537,11 +614,10 @@ struct PromptDetailsSheet: View {
                 .textSelection(.enabled)
         }
     }
-    
+
     private func recreatePrompts() {
         isRecreating = true
         Task {
-            // preferencesJSON -> StoryPreferences
             let decoder = JSONDecoder()
             let prefs: StoryPreferences
             if let json = story.preferencesJSON, let data = json.data(using: .utf8) {
@@ -549,34 +625,30 @@ struct PromptDetailsSheet: View {
             } else {
                 prefs = StoryPreferences()
             }
-            
+
             let service = OpenAIService()
-            
-            // Text Prompt
+
             let textPrompt = await service.constructStoryPrompt(
                 topic: story.prompt ?? "",
                 language: story.language.displayName,
                 level: LevelManager.shared.description(for: story.level),
                 preferences: prefs
             )
-            
-            // Image Prompt
+
             let imagePrompt = service.constructCoverArtPrompt(
                 title: story.title,
                 topic: story.prompt ?? "",
                 style: prefs.coverArtStyle
             )
-            
+
             await MainActor.run {
                 self.localTextPrompt = textPrompt
                 self.localImagePrompt = imagePrompt
-                
-                // Optionally save back to story if missing? Use wisely.
-                // The user only asked to "show" and "recreate", but persistence is good.
+
                 if story.textGenPrompt == nil { story.textGenPrompt = textPrompt }
                 if story.imageGenPrompt == nil { story.imageGenPrompt = imagePrompt }
                 try? modelContext.save()
-                
+
                 isRecreating = false
             }
         }

@@ -54,30 +54,55 @@ struct CoachingProgressView: View {
                 } else {
                     ForEach(checkIns) { item in
                         Button(action: { editingCheckIn = item }) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Image(systemName: "trophy.fill")
-                                        .foregroundStyle(.yellow)
-                                    Text("\(item.hoursMilestone)h Check-in")
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    Text(item.date, format: .relative(presentation: .named))
+                            HStack(spacing: 16) {
+                                // Date Column
+                                VStack(alignment: .center) {
+                                    Text(item.date.formatted(.dateTime.day()))
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                    Text(item.date.formatted(.dateTime.month(.abbreviated)))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                .frame(width: 40)
                                 
-                                Text("Sentiment: \(item.progressSentiment)")
-                                    .font(.caption)
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(2)
+                                Divider()
+                                    .frame(height: 30)
                                 
-                                Text("Next: \(item.nextCyclePlan)")
-                                    .font(.caption)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack {
+                                        Image(systemName: "trophy.fill")
+                                            .foregroundStyle(.yellow)
+                                            .font(.subheadline)
+                                        Text("Milestone: \(item.hoursMilestone)h")
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                    }
+                                    
+                                    Text("Sentiment: \(item.progressSentiment)")
+                                        .font(.caption)
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(2)
+                                    
+                                    Text("Next: \(item.nextCyclePlan)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                
+                                Spacer()
+                                
+                                Text(item.date, format: .relative(presentation: .named))
+                                    .font(.caption2)
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(1)
                             }
+                            .padding()
+                            .background(Color(UIColor.secondarySystemGroupedBackground))
+                            .cornerRadius(12)
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                         }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                         .swipeActions {
                             Button("Delete", role: .destructive) {
                                 modelContext.delete(item)

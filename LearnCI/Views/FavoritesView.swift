@@ -12,6 +12,7 @@ struct FavoritesView: View {
     @Query private var allActivities: [UserActivity]
     
     @Query(sort: \Favorite.createdAt, order: .reverse) private var favorites: [Favorite]
+    @Query(sort: \PodcastShow.addedAt) private var podcastShows: [PodcastShow]
     
     // Filter State
     @State private var typeFilter: FavoriteType? = nil // nil = All
@@ -23,6 +24,8 @@ struct FavoritesView: View {
     @State private var selectedResourceLink: Favorite? // For opening links
     // @State private var showBrowser = false // Removed in favor of item-based sheet
     @State private var browserUrl: URL?
+    @State private var selectedPodcastShow: PodcastShow?
+    @State private var podcastManager = PodcastManager()
     
     // Web Scan Navigation
     @State private var webScanTarget: Favorite? // Holds the favorite to scan
@@ -137,6 +140,9 @@ struct FavoritesView: View {
             }
             .ignoresSafeArea()
         }
+        .navigationDestination(item: $selectedPodcastShow) { show in
+            PodcastShowView(show: show)
+        }
         .navigationDestination(item: $webScanTarget) { scanFav in
             if let url = URL(string: scanFav.consumptionUrl) {
                 WebScanView(url: url, title: scanFav.title)
@@ -160,7 +166,25 @@ struct FavoritesView: View {
             webScanTarget = fav
             return
         }
-        
+
+        // Podcast favorites → in-app player
+        if fav.type == .podcast {
+            let feedUrl = fav.consumptionUrl
+            if let show = podcastShows.first(where: { $0.feedUrl == feedUrl }) {
+                selectedPodcastShow = show
+            } else {
+                // Subscribe first, then navigate
+                Task {
+                    await podcastManager.addPodcast(feedUrl: feedUrl, modelContext: modelContext, userID: authManager.currentUser)
+                    let descriptor = FetchDescriptor<PodcastShow>(predicate: #Predicate { $0.feedUrl == feedUrl })
+                    if let show = try? modelContext.fetch(descriptor).first {
+                        selectedPodcastShow = show
+                    }
+                }
+            }
+            return
+        }
+
         // Check if it's explicitly a channel OR if we can resolve it to one (Runtime Fix)
         if fav.type == .channel {
             openChannel(id: fav.consumptionUrl, title: fav.title, thumbnail: fav.imageUrl)

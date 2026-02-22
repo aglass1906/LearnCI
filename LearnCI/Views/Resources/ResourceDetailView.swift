@@ -24,11 +24,31 @@ struct ResourceDetailView: View {
     @State private var logComment: String = ""
     
     @State private var browserUrl: URL?
+    @State private var podcastManager = PodcastManager()
+    @State private var selectedPodcastShow: PodcastShow?
+    @State private var isSubscribing = false
+    @Query(sort: \PodcastShow.addedAt) private var podcastShows: [PodcastShow]
     
     func openUrl(_ url: URL) {
         browserUrl = url
         startTime = Date()
         // showBrowser = true // No longer needed with sheet(item:)
+    }
+
+    func openPodcast(feedUrl: String) {
+        if let show = podcastShows.first(where: { $0.feedUrl == feedUrl }) {
+            selectedPodcastShow = show
+        } else {
+            isSubscribing = true
+            Task {
+                await podcastManager.addPodcast(feedUrl: feedUrl, modelContext: modelContext, userID: authManager.currentUser)
+                isSubscribing = false
+                let descriptor = FetchDescriptor<PodcastShow>(predicate: #Predicate { $0.feedUrl == feedUrl })
+                if let show = try? modelContext.fetch(descriptor).first {
+                    selectedPodcastShow = show
+                }
+            }
+        }
     }
     
     func getLinkIcon(_ type: String) -> String {
@@ -99,6 +119,9 @@ struct ResourceDetailView: View {
             
         case .podcast:
             type = .podcast
+            if let feedUrl = resource.feedUrl, !feedUrl.isEmpty {
+                id = feedUrl
+            }
         case .webScan:
             type = .webScan
         default:
@@ -210,29 +233,35 @@ extension ResourceDetailView {
                     
                     // Action Buttons
                     VStack(spacing: 12) {
-                        // Main URL Button
-                        if let url = URL(string: resource.mainUrl), !resource.mainUrl.isEmpty {
+                        // Podcast "Listen in App" Button
+                        if resource.type == .podcast, let feedUrl = resource.feedUrl, !feedUrl.isEmpty {
                             HStack {
                                 Button(action: {
-                                    openUrl(url)
+                                    openPodcast(feedUrl: feedUrl)
                                 }) {
                                     HStack {
-                                        Image(systemName: "safari")
-                                        Text("Open Creator Page")
+                                        if isSubscribing {
+                                            ProgressView()
+                                                .tint(.white)
+                                        } else {
+                                            Image(systemName: "headphones")
+                                        }
+                                        Text(podcastShows.contains(where: { $0.feedUrl == feedUrl }) ? "View Episodes" : "Listen in App")
                                         Spacer()
-                                        Image(systemName: "arrow.up.right")
+                                        Image(systemName: "chevron.right")
                                             .font(.caption)
                                     }
                                     .font(.headline)
                                     .foregroundStyle(.white)
                                     .padding()
-                                    .background(Color.blue)
+                                    .background(Color.purple)
                                     .cornerRadius(16)
                                 }
-                                
-                                // Favorite Main Resource Link
+                                .disabled(isSubscribing)
+
+                                // Favorite (use feedUrl for podcast routing)
                                 let (favType, favId) = resolveFavoriteTypeAndId(resource)
-                                
+
                                 FavoriteButton(
                                     consumptionUrl: favId,
                                     type: favType,
@@ -247,14 +276,60 @@ extension ResourceDetailView {
                                 .cornerRadius(16)
                             }
                         }
+
+                        // Main URL Button (secondary for podcasts, primary for others)
+                        if let url = URL(string: resource.mainUrl), !resource.mainUrl.isEmpty {
+                            let isPodcastWithFeed = resource.type == .podcast && resource.feedUrl != nil && !resource.feedUrl!.isEmpty
+                            HStack {
+                                Button(action: {
+                                    openUrl(url)
+                                }) {
+                                    HStack {
+                                        Image(systemName: "safari")
+                                        Text(isPodcastWithFeed ? "Visit Website" : "Open Creator Page")
+                                        Spacer()
+                                        Image(systemName: "arrow.up.right")
+                                            .font(.caption)
+                                    }
+                                    .font(.headline)
+                                    .foregroundStyle(isPodcastWithFeed ? Color.primary : .white)
+                                    .padding()
+                                    .background(isPodcastWithFeed ? Color(UIColor.secondarySystemBackground) : Color.blue)
+                                    .cornerRadius(16)
+                                }
+
+                                if !isPodcastWithFeed {
+                                    // Favorite Main Resource Link (only for non-podcast primary buttons)
+                                    let (favType, favId) = resolveFavoriteTypeAndId(resource)
+
+                                    FavoriteButton(
+                                        consumptionUrl: favId,
+                                        type: favType,
+                                        title: resource.title,
+                                        author: resource.author,
+                                        imageUrl: resource.coverImageUrl,
+                                        sourceResourceId: resource.id.uuidString
+                                    )
+                                    .font(.title2)
+                                    .padding()
+                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .cornerRadius(16)
+                                }
+                            }
+                        }
                         
                         // Additional Resource Links
                         if let links = resource.resourceLinks {
                             ForEach(links.filter { $0.isActive ?? true }.sorted { ($0.order ?? 0) < ($1.order ?? 0) }) { link in
                                 if let url = URL(string: link.url) {
+                                    let isPodcastLink = ["podcast", "apple_podcasts"].contains(link.type.lowercased())
                                     HStack {
                                         Button(action: {
-                                            openUrl(url)
+                                            if isPodcastLink {
+                                                openPodcast(feedUrl: link.url)
+                                            } else {
+                                                openUrl(url)
+                                            }
                                         }) {
                                             HStack(spacing: 12) {
                                                 Image(systemName: getLinkIcon(link.type))
@@ -262,14 +337,18 @@ extension ResourceDetailView {
                                                 VStack(alignment: .leading, spacing: 2) {
                                                     Text(link.label.isEmpty ? resource.title : link.label)
                                                         .lineLimit(1)
-                                                    Text(link.type.capitalized.replacingOccurrences(of: "_", with: " "))
+                                                    Text(isPodcastLink ? "Podcast Feed" : link.type.capitalized.replacingOccurrences(of: "_", with: " "))
                                                         .font(.caption2)
                                                         .foregroundStyle(.secondary)
                                                 }
                                                 Spacer()
-                                                Image(systemName: "arrow.up.right")
-                                                    .font(.caption)
-                                                    .foregroundStyle(.secondary)
+                                                if isPodcastLink && isSubscribing {
+                                                    ProgressView()
+                                                } else {
+                                                    Image(systemName: isPodcastLink ? "chevron.right" : "arrow.up.right")
+                                                        .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                }
                                             }
                                             .font(.subheadline)
                                             .foregroundStyle(Color.primary)
@@ -277,11 +356,11 @@ extension ResourceDetailView {
                                             .background(Color(UIColor.secondarySystemBackground))
                                             .cornerRadius(16)
                                         }
-                                        
+
                                         // Favorite Link
                                         FavoriteButton(
                                             consumptionUrl: link.url,
-                                            type: .other, // TODO: Map link type to FavoriteType more granularly if needed
+                                            type: isPodcastLink ? .podcast : .other,
                                             title: link.label.isEmpty ? resource.title : link.label,
                                             author: resource.author,
                                             subtitle: resource.title,
@@ -310,6 +389,9 @@ extension ResourceDetailView {
                 comment: $logComment,
                 onSave: saveActivity
             )
+        }
+        .navigationDestination(item: $selectedPodcastShow) { show in
+            PodcastShowView(show: show)
         }
     }
 }

@@ -1,35 +1,52 @@
 import SwiftUI
 import SwiftData
 
+enum PodcastTab: String, CaseIterable {
+    case newEpisodes = "New Episodes"
+    case shows = "Shows"
+}
+
 struct PodcastListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Query(sort: \PodcastShow.addedAt, order: .reverse) private var shows: [PodcastShow]
+    @Query(sort: \PodcastEpisode.publishedDate, order: .reverse) private var allEpisodes: [PodcastEpisode]
 
     @State private var podcastManager = PodcastManager()
     @State private var showAddSheet = false
+    @State private var selectedTab: PodcastTab = .newEpisodes
 
     var body: some View {
-        Group {
-            if shows.isEmpty {
-                ContentUnavailableView {
-                    Label("No Podcasts", systemImage: "headphones")
-                } description: {
-                    Text("Search for podcasts to subscribe.")
-                } actions: {
-                    Button("Find Podcasts") { showAddSheet = true }
-                        .buttonStyle(.borderedProminent)
-                }
-            } else {
-                List {
-                    ForEach(shows) { show in
-                        NavigationLink(destination: PodcastShowView(show: show)) {
-                            PodcastShowRow(show: show)
-                        }
+        VStack(spacing: 0) {
+            if !shows.isEmpty {
+                Picker("Tab", selection: $selectedTab) {
+                    ForEach(PodcastTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
                     }
-                    .onDelete(perform: deleteShows)
                 }
-                .listStyle(.plain)
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
+
+            Group {
+                if shows.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Podcasts", systemImage: "headphones")
+                    } description: {
+                        Text("Search for podcasts to subscribe.")
+                    } actions: {
+                        Button("Find Podcasts") { showAddSheet = true }
+                            .buttonStyle(.borderedProminent)
+                    }
+                } else {
+                    switch selectedTab {
+                    case .newEpisodes:
+                        newEpisodesView
+                    case .shows:
+                        showsView
+                    }
+                }
             }
         }
         .toolbar {
@@ -48,6 +65,43 @@ struct PodcastListView: View {
                 onDismiss: { showAddSheet = false }
             )
         }
+    }
+
+    // MARK: - New Episodes Tab
+
+    private var newEpisodesView: some View {
+        Group {
+            if allEpisodes.isEmpty {
+                ContentUnavailableView {
+                    Label("No Episodes", systemImage: "waveform")
+                } description: {
+                    Text("Episodes from your subscribed shows will appear here.")
+                }
+            } else {
+                List {
+                    ForEach(allEpisodes) { episode in
+                        NavigationLink(destination: PodcastPlayerView(episode: episode)) {
+                            NewEpisodeRow(episode: episode)
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Shows Tab
+
+    private var showsView: some View {
+        List {
+            ForEach(shows) { show in
+                NavigationLink(destination: PodcastShowView(show: show)) {
+                    PodcastShowRow(show: show)
+                }
+            }
+            .onDelete(perform: deleteShows)
+        }
+        .listStyle(.plain)
     }
 
     private func deleteShows(at offsets: IndexSet) {
@@ -89,6 +143,73 @@ private struct PodcastShowRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - New Episode Row
+
+private struct NewEpisodeRow: View {
+    let episode: PodcastEpisode
+
+    var body: some View {
+        HStack(spacing: 12) {
+            CachedAsyncImage(url: URL(string: episode.show?.artworkUrl ?? "")) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.secondary.opacity(0.2))
+                    .overlay(Image(systemName: "headphones").foregroundColor(.secondary))
+            }
+            .frame(width: 50, height: 50)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(episode.title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .foregroundColor(episode.isPlayed ? .secondary : .primary)
+
+                if let showTitle = episode.show?.title {
+                    Text(showTitle)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+
+                HStack {
+                    Text(episode.publishedDate, style: .date)
+                    if episode.duration > 0 {
+                        Text("·")
+                        Text(formatDuration(episode.duration))
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if episode.playbackPosition > 0 && !episode.isPlayed {
+                Image(systemName: "circle.lefthalf.filled")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
+            if episode.isPlayed {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                    .font(.caption)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func formatDuration(_ seconds: Double) -> String {
+        let h = Int(seconds) / 3600
+        let m = (Int(seconds) % 3600) / 60
+        if h > 0 {
+            return "\(h)h \(m)m"
+        }
+        return "\(m) min"
     }
 }
 

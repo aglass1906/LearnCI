@@ -503,7 +503,8 @@ extension DashboardView {
         LayoutCardView(
             title: "Word of the Day",
             accentColor: .orange,
-            icon: "sparkles"
+            icon: "sparkles",
+            destination: GameView()
         ) {
             if let word = wordOfDay {
                 VStack(alignment: .leading, spacing: 10) {

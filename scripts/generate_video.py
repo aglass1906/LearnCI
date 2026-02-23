@@ -59,13 +59,13 @@ def get_story_details(supabase: Client, story_id: str):
     response = supabase.table("stories").select("*").eq("id", story_id).single().execute()
     return response.data
 
-def generate_prompt(gemini_client, story_text, style_description):
+def generate_prompt(gemini_client, story_title, story_text, style_description):
     print("\nGenerating optimized Veo prompt via LLM...")
-    system_instruction = f"You are an expert film director and cinematographer. Read the following story excerpt and write a highly detailed, 1-2 sentence visual prompt for an AI video generator. Describe setting, lighting, camera angle, and movement. Do not include dialogue. Ensure the style matches a {style_description}."
+    system_instruction = f"You are an expert film director and cinematographer. Read the following story title and excerpt and write a highly detailed, 1-2 sentence visual prompt for an AI video generator. The prompt MUST capture the core essence and main setting of the story (e.g., if the story is about a store, make sure a store is heavily featured). Describe the main character's action, setting, lighting, camera angle, and movement. Do not include dialogue. Ensure the style matches a {style_description}."
     
     response = gemini_client.models.generate_content(
         model='gemini-2.5-pro',
-        contents=f"Story Excerpt:\n{story_text}\n\nWrite the visual prompt:",
+        contents=f"Story Title:\n{story_title}\n\nStory Excerpt:\n{story_text}\n\nWrite the visual prompt:",
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
             temperature=0.7
@@ -75,35 +75,76 @@ def generate_prompt(gemini_client, story_text, style_description):
     print(f"\n[Generated Prompt]:\n{prompt}\n")
     return prompt
 
-def generate_veo_video(gemini_client, prompt, output_path):
-    print(f"\nSubmitting to Veo API. Rendering may take a few minutes...")
+def generate_veo_video(gemini_client, prompt, output_path, operation_name=None):
+    import datetime
+    start_time = time.time()
+    start_time_str = datetime.datetime.now().strftime("%I:%M:%S %p")
     
     try:
-        operation = gemini_client.models.generate_videos(
-            model='veo-3.1-generate-preview',
-            prompt=prompt,
-            config=types.GenerateVideosConfig(
-                aspect_ratio="16:9"
+        if operation_name:
+            print(f"\n[Resuming Job] Fetching Operation: {operation_name}")
+            op_request = types.GenerateVideosOperation(name=operation_name, done=False)
+            operation = gemini_client.operations.get(operation=op_request)
+        else:
+            print(f"\nSubmitting to Veo API. Rendering may take a few minutes...")
+            operation = gemini_client.models.generate_videos(
+                model='veo-3.1-generate-preview',
+                prompt=prompt,
+                config=types.GenerateVideosConfig(
+                    aspect_ratio="16:9"
+                )
             )
-        )
-        
-        # Block and wait for completion. In google.genai, operation usually has a result method or we check done
+            print(f"\n[Job Submitted] Operation Name (Job ID): {operation.name}")
+            
+        print(f"[Tracking Started At]: {start_time_str}")
         print("Waiting for video generation", end="")
+        max_attempts = 540 # 90 minutes max (540 loops of 10 sec)
+        attempts = 0
         while not operation.done:
             print(".", end="", flush=True)
             time.sleep(10)
-            # Some SDK versions require re-fetching the operation status
-            # If `operation.done` doesn't auto-update, you might need:
-            # operation = gemini_client.models.get_operation(operation.name)
+            attempts += 1
+            # Re-fetch operation status to break the loop
+            try:
+                op_request = types.GenerateVideosOperation(name=operation.name, done=False)
+                operation = gemini_client.operations.get(operation=op_request)
+            except Exception as e:
+                pass # If fetching fails temporarily, keep waiting
+                
+            if attempts >= max_attempts:
+                print(f"\nGenerations has been running for 90 minutes.")
+                choice = input("Would you like to continue waiting? (y/n): ")
+                if choice.lower() == 'y':
+                    attempts = 0 # Reset timer
+                    print("Continuing to wait", end="")
+                else:
+                    print("\nAborted wait.")
+                    return False
+            
+        end_time = time.time()
+        end_time_str = datetime.datetime.now().strftime("%I:%M:%S %p")
+        duration_seconds = int(end_time - start_time)
+        duration_minutes = duration_seconds // 60
+        duration_remainder = duration_seconds % 60
         
         print("\nGeneration finished.")
+        print(f"[Ended At]: {end_time_str}")
+        print(f"[Total Time]: {duration_minutes}m {duration_remainder}s")
         
         if operation.error:
             print(f"API Error: {operation.error}")
             return False
             
-        if operation.result and operation.result.generated_videos:
-            video_bytes = operation.result.generated_videos[0].video.video_bytes
+        if hasattr(operation, 'result') and operation.result and hasattr(operation.result, 'generated_videos') and operation.result.generated_videos:
+            v_ref = operation.result.generated_videos[0].video
+            video_bytes = gemini_client.files.download(file=v_ref)
+            with open(output_path, "wb") as f:
+                f.write(video_bytes)
+            print(f"Saved video locally to {output_path}")
+            return True
+        elif hasattr(operation, 'response') and operation.response and hasattr(operation.response, 'generated_videos') and operation.response.generated_videos:
+            v_ref = operation.response.generated_videos[0].video
+            video_bytes = gemini_client.files.download(file=v_ref)
             with open(output_path, "wb") as f:
                 f.write(video_bytes)
             print(f"Saved video locally to {output_path}")
@@ -113,7 +154,7 @@ def generate_veo_video(gemini_client, prompt, output_path):
             return False
             
     except Exception as e:
-        print(f"Failed to generate video: {e}")
+        print(f"Failed to process video: {e}")
         return False
 
 def main():
@@ -141,45 +182,54 @@ def main():
         exit(1)
         
     print(f"\nSelected Story: {selected_story['title']}")
+    action = input("\n[1] Generate new video\n[2] Resume/retrieve existing video by Job ID\nSelect action (1/2): ")
     
-    # 2. Select Style
-    print("\n--- Visual Styles ---")
-    for key, val in STYLES.items():
-        print(f"[{key}] {val[0]}")
-    style_choice = input("Select a visual style number: ")
-    
-    if style_choice not in STYLES:
-        print("Invalid style choice.")
-        exit(1)
-        
-    style_name, style_desc = STYLES[style_choice]
-    print(f"Selected Style: {style_name}")
-    
-    # 3. Generate Prompt using LLM
-    veo_prompt = generate_prompt(gemini_client, story_text, style_desc)
-    
-    # Save the prompt & style to database immediately
-    try:
-        supabase.table("stories").update({
-            "video_prompt": veo_prompt,
-            "video_style": style_name
-        }).eq("id", story_id).execute()
-        print("Saved generated prompt and style to the database.")
-    except Exception as e:
-        print(f"Warning: Failed to save prompt to database. Make sure you ran the schema migration! ({e})")
-    
-    # 4. Generate Video
-    # Clean filename string
-    safe_title = "".join([c if c.isalnum() else "_" for c in selected_story['title']]).strip("_").lower()
+    import unicodedata
+    normalized_title = unicodedata.normalize('NFKD', selected_story['title']).encode('ascii', 'ignore').decode('utf-8')
+    safe_title = "".join([c if c.isalnum() else "_" for c in normalized_title]).strip("_").lower()
     filename = f"story_{safe_title}_{int(time.time())}.mp4"
     output_path = os.path.join(VIDEO_DIR, filename)
-    
-    proceed = input("\nProceed with video generation? This consumes API credits. (y/n): ")
-    if proceed.lower() != 'y':
-        print("Aborted.")
-        exit(0)
+
+    if action == "2":
+        job_id = input("Enter Job ID (Operation Name): ").strip()
+        if not job_id:
+            print("Job ID cannot be empty.")
+            exit(1)
+        success = generate_veo_video(gemini_client, "", output_path, operation_name=job_id)
+    else:
+        # 2. Select Style
+        print("\n--- Visual Styles ---")
+        for key, val in STYLES.items():
+            print(f"[{key}] {val[0]}")
+        style_choice = input("Select a visual style number: ")
         
-    success = generate_veo_video(gemini_client, veo_prompt, output_path)
+        if style_choice not in STYLES:
+            print("Invalid style choice.")
+            exit(1)
+            
+        style_name, style_desc = STYLES[style_choice]
+        print(f"Selected Style: {style_name}")
+        
+        # 3. Generate Prompt using LLM
+        veo_prompt = generate_prompt(gemini_client, selected_story['title'], story_text, style_desc)
+        
+        # Save the prompt & style to database immediately
+        try:
+            supabase.table("stories").update({
+                "video_prompt": veo_prompt,
+                "video_style": style_name
+            }).eq("id", story_id).execute()
+            print("Saved generated prompt and style to the database.")
+        except Exception as e:
+            print(f"Warning: Failed to save prompt to database. Make sure you ran the schema migration! ({e})")
+        
+        # 4. Generate Video
+        proceed = input("\nProceed with video generation? This consumes API credits. (y/n): ")
+        if proceed.lower() != 'y':
+            print("Aborted.")
+            exit(0)
+            
+        success = generate_veo_video(gemini_client, veo_prompt, output_path)
     
     # 5. Upload to Supabase Storage
     if success:

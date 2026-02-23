@@ -23,6 +23,8 @@ struct DashboardView: View {
     @Environment(AudioManager.self) private var audioManager
     @State private var wordOfDay: LearningCard?
     @State private var wordOfDayFolder: String?
+    @State private var wordOfDayDeckTitle: String?
+    @State private var wordOfDayDeckDescription: String?
     @State private var isLoadingWordOfDay = false
 
     
@@ -63,6 +65,18 @@ struct DashboardView: View {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 20) {
+                        
+                        // Greeting
+                        if let profile = userProfile {
+                            HStack {
+                                Text("\(profile.currentLanguage.greetingPrefix) \(profile.name.isEmpty ? "" : profile.name)")
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                                    .padding(.top, 10)
+                            }
+                        }
                         
                         // 1. Favorites
                         favoritesSection
@@ -116,6 +130,8 @@ struct DashboardView: View {
                         if let result = await dataManager.fetchWordOfDay(language: profile.currentLanguage, level: profile.currentLevel) {
                             wordOfDay = result.card
                             wordOfDayFolder = result.folder
+                            wordOfDayDeckTitle = result.deckTitle
+                            wordOfDayDeckDescription = result.deckDescription
                         }
                         isLoadingWordOfDay = false
                     }
@@ -133,6 +149,8 @@ struct DashboardView: View {
                             if let result = await dataManager.fetchWordOfDay(language: language, level: profile.currentLevel) {
                                 wordOfDay = result.card
                                 wordOfDayFolder = result.folder
+                                wordOfDayDeckTitle = result.deckTitle
+                                wordOfDayDeckDescription = result.deckDescription
                             }
                             isLoadingWordOfDay = false
                         }
@@ -551,6 +569,23 @@ extension DashboardView {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
+                                                    
+                    if let deckTitle = wordOfDayDeckTitle {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("From deck: \(deckTitle)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                            
+                            if let deckDesc = wordOfDayDeckDescription, !deckDesc.isEmpty {
+                                Text(deckDesc)
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+
                 }
             } else if isLoadingWordOfDay {
                 HStack {
@@ -577,13 +612,13 @@ extension DashboardView {
     
     private var favoritesSection: some View {
         LayoutCardView(
-            title: "My Favorites",
+            title: "My Input Favorites",
             subTitle: "Quick Access",
             accentColor: .pink,
             icon: "heart.fill",
             destination: FavoritesView()
         ) {
-             Text("Jump back into your favorite channels and resources.")
+             Text("Jump back into your favorite YouTube channels, Podcasts, and resources.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

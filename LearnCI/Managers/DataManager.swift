@@ -533,7 +533,7 @@ class DataManager {
     }
     
     // Fetch a deterministic Word of the Day based on language and level
-    func fetchWordOfDay(language: Language, level: LearningLevel) async -> (card: LearningCard, folder: String)? {
+    func fetchWordOfDay(language: Language, level: LearningLevel) async -> (card: LearningCard, folder: String, deckTitle: String, deckDescription: String?)? {
         // Ensure discovery is done and get results immediately
         let decks = discoverDecks(language: language, level: level)
         
@@ -556,7 +556,7 @@ class DataManager {
             let seed = day + year
             
             let index = seed % deck.cards.count
-            return (deck.cards[index], metadata.folderName)
+            return (deck.cards[index], metadata.folderName, metadata.title, metadata.description)
         } catch {
             print("Error fetching word of day: \(error)")
             return nil

@@ -34,6 +34,17 @@ enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
         case .english: return "English"
         }
     }
+    
+    var greetingPrefix: String {
+        switch self {
+        case .spanish: return "¡Hola"
+        case .japanese: return "こんにちは" // Konnichiwa
+        case .korean: return "안녕하세요" // Annyeonghaseyo
+        case .french: return "Bonjour"
+        case .vietnamese: return "Xin chào"
+        case .english: return "Hello"
+        }
+    }
 }
 
 enum LearningLevel: String, Codable, CaseIterable, Identifiable {

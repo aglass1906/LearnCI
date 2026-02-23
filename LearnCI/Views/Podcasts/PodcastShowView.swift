@@ -61,17 +61,27 @@ struct PodcastShowView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    Task {
-                        isRefreshing = true
-                        await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
-                        isRefreshing = false
-                    }
-                }) {
-                    if isRefreshing {
-                        ProgressView()
-                    } else {
-                        Image(systemName: "arrow.clockwise")
+                HStack(spacing: 16) {
+                    FavoriteButton(
+                        consumptionUrl: show.feedUrl,
+                        type: .podcast,
+                        title: show.title,
+                        author: show.author,
+                        imageUrl: show.artworkUrl
+                    )
+
+                    Button(action: {
+                        Task {
+                            isRefreshing = true
+                            await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
+                            isRefreshing = false
+                        }
+                    }) {
+                        if isRefreshing {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
                     }
                 }
             }

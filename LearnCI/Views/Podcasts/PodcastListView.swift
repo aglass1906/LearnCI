@@ -65,7 +65,7 @@ private struct PodcastShowRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: show.artworkUrl ?? "")) { image in
+            CachedAsyncImage(url: URL(string: show.artworkUrl ?? "")) { image in
                 image.resizable().scaledToFill()
             } placeholder: {
                 RoundedRectangle(cornerRadius: 8)
@@ -248,7 +248,7 @@ private struct SearchResultRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: result.artworkUrl)) { image in
+            CachedAsyncImage(url: URL(string: result.artworkUrl)) { image in
                 image.resizable().scaledToFill()
             } placeholder: {
                 RoundedRectangle(cornerRadius: 8)

@@ -16,7 +16,7 @@ struct PodcastShowView: View {
             // Header Section
             Section {
                 VStack(spacing: 12) {
-                    AsyncImage(url: URL(string: show.artworkUrl ?? "")) { image in
+                    CachedAsyncImage(url: URL(string: show.artworkUrl ?? "")) { image in
                         image.resizable().scaledToFill()
                     } placeholder: {
                         RoundedRectangle(cornerRadius: 12)

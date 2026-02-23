@@ -62,10 +62,14 @@ def get_story_details(supabase: Client, story_id: str):
 def generate_prompt(gemini_client, story_title, story_text, style_description):
     print("\nGenerating optimized Veo prompt via LLM...")
     system_instruction = f"You are an expert film director and cinematographer. Read the following story title and excerpt and write a highly detailed, 1-2 sentence visual prompt for an AI video generator. The prompt MUST capture the core essence and main setting of the story (e.g., if the story is about a store, make sure a store is heavily featured). Describe the main character's action, setting, lighting, camera angle, and movement. Do not include dialogue. Ensure the style matches a {style_description}."
+    contents = f"Story Title:\n{story_title}\n\nStory Excerpt:\n{story_text}\n\nWrite the visual prompt:"
+    
+    print(f"\n[System Instructions Sent to LLM]:\n{system_instruction}")
+    print(f"\n[Context Sent to LLM]:\n{contents}")
     
     response = gemini_client.models.generate_content(
         model='gemini-2.5-pro',
-        contents=f"Story Title:\n{story_title}\n\nStory Excerpt:\n{story_text}\n\nWrite the visual prompt:",
+        contents=contents,
         config=types.GenerateContentConfig(
             system_instruction=system_instruction,
             temperature=0.7

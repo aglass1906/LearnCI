@@ -9,8 +9,7 @@ struct VideoView: View {
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
     enum VideoTabMode: String, CaseIterable {
-        case recommended = "Recs"
-        case subscriptions = "My Subs"
+        case subscriptions = "New Videos"
         case channels = "Channels"
         case discovery = "Discovery"
     }
@@ -23,7 +22,7 @@ struct VideoView: View {
         var id: String { self.rawValue }
     }
     
-    @State private var mode: VideoTabMode = .recommended
+    @State private var mode: VideoTabMode = .subscriptions
     @State private var selectedCategory: String = "All"
     @State private var selectedVideo: YouTubeVideo?
     @State private var showWatchTimePrompt = false
@@ -93,8 +92,6 @@ struct VideoView: View {
                     )
                 } else {
                     switch mode {
-                    case .recommended:
-                        recommendedContentView
                     case .subscriptions:
                         subscriptionContentView
                     case .channels:
@@ -107,9 +104,6 @@ struct VideoView: View {
         }
         .onChange(of: mode) { _, _ in
             selectedChannel = nil // Reset drill-down when switching modes
-            if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
-                youtubeManager.fetchRecommendedVideos()
-            }
             if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
             }
@@ -119,9 +113,6 @@ struct VideoView: View {
         }
         .task {
             // Initial load
-            if mode == .recommended && youtubeManager.recommendedVideos.isEmpty {
-                youtubeManager.fetchRecommendedVideos()
-            }
             if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
             }
@@ -324,50 +315,6 @@ struct VideoView: View {
         }
     }
     
-    var recommendedContentView: some View {
-        Group {
-            if youtubeManager.isRecommendedLoading && youtubeManager.recommendedVideos.isEmpty {
-                ProgressView("Fetching recommendations...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if !youtubeManager.isAuthenticated && !(ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] ?? "").contains("1") {
-                // Not authenticated, show guest version or login prompt
-                VStack(spacing: 20) {
-                    ContentUnavailableView(
-                        "Sign in for Personal Recs",
-                        systemImage: "person.crop.circle.badge.plus",
-                        description: Text("Connect your YouTube account to see your personal homepage recommendations.")
-                    )
-                    Button("Sign In") {
-                        youtubeManager.signInWithGoogle()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-                }
-            } else if youtubeManager.recommendedVideos.isEmpty {
-                VStack(spacing: 12) {
-                    ContentUnavailableView(
-                        "No Recommendations",
-                        systemImage: "video.badge.plus",
-                        description: Text("Try watching more videos or subcribing to channels.")
-                    )
-                    Button("Refresh") {
-                        youtubeManager.fetchRecommendedVideos()
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                }
-            } else {
-                VideoGridView(
-                    videos: youtubeManager.recommendedVideos,
-                    isLoading: youtubeManager.isRecommendedLoading,
-                    onLoadMore: youtubeManager.loadMoreRecommendedVideos,
-                    selectedVideo: $selectedVideo,
-                    isVideoWatched: isVideoWatched
-                )
-            }
-        }
-    }
-    
     var discoveryContentView: some View {
         Group {
             if youtubeManager.isDiscoveryLoading {
@@ -455,8 +402,6 @@ struct VideoView: View {
     
     func countForMode(_ mode: VideoTabMode) -> Int {
         switch mode {
-        case .recommended:
-            return youtubeManager.recommendedVideos.count
         case .subscriptions:
             return youtubeManager.videos.count
         case .channels:

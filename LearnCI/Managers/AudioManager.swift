@@ -16,6 +16,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var isStreaming: Bool = false
     var streamDuration: Double = 0
     var streamCurrentTime: Double = 0
+    var streamFinished: Bool = false
+    var streamPlaybackRate: Float = 1.0
     private var streamTimeObserver: Any?
     
     // Caching resolved URLs to avoid repeated recursive searches
@@ -450,6 +452,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     func streamAudio(url: URL, startAt: Double = 0) {
         stopAudio()
         configureAudioSession()
+        streamFinished = false
 
         let playerItem = AVPlayerItem(url: url)
         streamPlayer = AVPlayer(playerItem: playerItem)
@@ -495,7 +498,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     func playStream() {
-        streamPlayer?.play()
+        streamPlayer?.rate = streamPlaybackRate
         isStreaming = true
     }
 
@@ -511,11 +514,16 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     func setStreamRate(_ rate: Float) {
-        streamPlayer?.rate = rate
+        guard let player = streamPlayer else { return }
         if isStreaming {
-            // AVPlayer pauses when rate is set; resume if needed
-            streamPlayer?.play()
+            // Setting rate on AVPlayer while playing: use rate directly
+            // (setting rate to non-zero both resumes and sets speed)
+            player.rate = rate
+        } else {
+            // Store rate; it will apply when playStream() is called
+            player.rate = 0 // keep paused
         }
+        streamPlaybackRate = rate
     }
 
     func stopStream() {
@@ -529,6 +537,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         isStreaming = false
         streamDuration = 0
         streamCurrentTime = 0
+        streamPlaybackRate = 1.0
         clearNowPlayingInfo()
     }
 
@@ -550,6 +559,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
     @objc private func streamDidFinish() {
         isStreaming = false
+        streamFinished = true
     }
 
     func stopAudio() {

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Supabase
 
 enum PodcastTab: String, CaseIterable {
     case newEpisodes = "New Episodes"
@@ -14,6 +15,9 @@ struct PodcastListView: View {
 
     @State private var podcastManager = PodcastManager()
     @State private var showAddSheet = false
+    @State private var showSessionSetup = false
+    @State private var sessionEpisodes: [PodcastEpisode]?
+    @State private var sessionMinutes: Int = 30
     @State private var selectedTab: PodcastTab = .newEpisodes
 
     var body: some View {
@@ -65,6 +69,28 @@ struct PodcastListView: View {
                 onDismiss: { showAddSheet = false }
             )
         }
+        .sheet(isPresented: $showSessionSetup) {
+            PodcastSessionSetupSheet(
+                shows: shows,
+                onStart: { episodes, minutes in
+                    showSessionSetup = false
+                    sessionMinutes = minutes
+                    sessionEpisodes = episodes
+                },
+                onDismiss: { showSessionSetup = false }
+            )
+        }
+        .navigationDestination(isPresented: Binding(
+            get: { sessionEpisodes != nil },
+            set: { if !$0 { sessionEpisodes = nil } }
+        )) {
+            if let episodes = sessionEpisodes {
+                PodcastSessionView(
+                    initialEpisodes: episodes,
+                    sessionMinutes: sessionMinutes
+                )
+            }
+        }
     }
 
     // MARK: - New Episodes Tab
@@ -79,9 +105,39 @@ struct PodcastListView: View {
                 }
             } else {
                 List {
-                    ForEach(allEpisodes) { episode in
-                        NavigationLink(destination: PodcastPlayerView(episode: episode)) {
-                            NewEpisodeRow(episode: episode)
+                    // Start Session Card
+                    Section {
+                        Button {
+                            showSessionSetup = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 36))
+                                    .foregroundColor(.blue)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Start Listening Session")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Text("Pick shows & set a time goal")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    // Episodes
+                    Section {
+                        ForEach(allEpisodes) { episode in
+                            NavigationLink(destination: PodcastPlayerView(episode: episode)) {
+                                NewEpisodeRow(episode: episode)
+                            }
                         }
                     }
                 }
@@ -106,7 +162,21 @@ struct PodcastListView: View {
 
     private func deleteShows(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(shows[index])
+            let show = shows[index]
+            let showId = show.id
+            modelContext.delete(show)
+
+            // Delete from Supabase so it doesn't come back on sync
+            Task {
+                try? await authManager.supabase.from("podcast_episodes")
+                    .delete()
+                    .eq("show_id", value: showId)
+                    .execute()
+                try? await authManager.supabase.from("podcast_shows")
+                    .delete()
+                    .eq("id", value: showId)
+                    .execute()
+            }
         }
         try? modelContext.save()
     }

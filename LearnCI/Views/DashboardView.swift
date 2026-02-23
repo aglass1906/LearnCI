@@ -502,6 +502,7 @@ extension DashboardView {
     private var wordOfDaySection: some View {
         LayoutCardView(
             title: "Word of the Day",
+            subTitle: "Learn vocabulary in a fun way",
             accentColor: .orange,
             icon: "sparkles",
             destination: GameView()
@@ -627,8 +628,8 @@ extension DashboardView {
     
     private var storiesSection: some View {
         LayoutCardView(
-            title: "AI Audio Stories",
-            subTitle: "Generate & Listen",
+            title: " Story Learning",
+            subTitle: "Generate, Read, & Listen",
             accentColor: .purple,
             icon: "sparkles.rectangle.stack.fill",
             destination: StoryListView(userID: authManager.currentUser)

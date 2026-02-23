@@ -17,8 +17,9 @@ struct SplashView: View {
                         .font(.system(size: 80))
                         .foregroundStyle(.white)
                     
-                    Text("LearnCI")
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                    Text("Language Learning\nwith\nComprehensible Input")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.white.opacity(0.80))
                 }
                 .scaleEffect(size)

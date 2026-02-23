@@ -28,6 +28,12 @@ struct ResourceDetailView: View {
     @State private var selectedPodcastShow: PodcastShow?
     @State private var isSubscribing = false
     @Query(sort: \PodcastShow.addedAt) private var podcastShows: [PodcastShow]
+
+    @Environment(YouTubeManager.self) private var youtubeManager
+    @State private var selectedYouTubeChannel: YouTubeChannel?
+    @State private var isResolvingChannel = false
+    @State private var showYouTubeAuthAlert = false
+    @Query private var allActivities: [UserActivity]
     
     func openUrl(_ url: URL) {
         browserUrl = url
@@ -51,6 +57,61 @@ struct ResourceDetailView: View {
         }
     }
     
+    func openYouTubeChannel(url: String, title: String, thumbnail: String?) {
+        guard youtubeManager.isAuthenticated else {
+            showYouTubeAuthAlert = true
+            return
+        }
+        if let channelId = FavoritesManager.resolveChannelId(from: url) {
+            selectedYouTubeChannel = YouTubeChannel(id: channelId, title: title, thumbnailURL: thumbnail ?? "")
+        } else if let playlistId = FavoritesManager.resolvePlaylistId(from: url) {
+            selectedYouTubeChannel = YouTubeChannel(id: playlistId, title: title, thumbnailURL: thumbnail ?? "", isPlaylist: true)
+        } else if url.contains("@") {
+            isResolvingChannel = true
+            Task {
+                var handle: String?
+                if let atRange = url.range(of: "@") {
+                    let substring = url[atRange.lowerBound...]
+                    let pathComponent = substring.components(separatedBy: "/").first ?? String(substring)
+                    handle = pathComponent.components(separatedBy: "?").first ?? pathComponent
+                }
+                if let handle, let channelId = await youtubeManager.resolveChannelFromHandle(handle) {
+                    await MainActor.run {
+                        selectedYouTubeChannel = YouTubeChannel(id: channelId, title: title, thumbnailURL: thumbnail ?? "")
+                    }
+                } else {
+                    await MainActor.run {
+                        if let url = URL(string: url) { openUrl(url) }
+                    }
+                }
+                await MainActor.run { isResolvingChannel = false }
+            }
+        } else {
+            if let url = URL(string: url) { openUrl(url) }
+        }
+    }
+
+    func isVideoWatched(_ videoId: String) -> Bool {
+        allActivities.contains { activity in
+            activity.activityType == .watchingVideos &&
+            (activity.comment?.contains(videoId) ?? false)
+        }
+    }
+
+    /// Finds the best YouTube URL for this resource — mainUrl if it's YouTube, otherwise the first YouTube resource link.
+    func bestYouTubeUrl() -> String? {
+        let main = resource.mainUrl
+        if main.contains("youtube.com") || main.contains("youtu.be") {
+            return main
+        }
+        if let links = resource.resourceLinks {
+            if let ytLink = links.first(where: { $0.type.lowercased() == "youtube" && ($0.isActive ?? true) }) {
+                return ytLink.url
+            }
+        }
+        return nil
+    }
+
     func getLinkIcon(_ type: String) -> String {
         switch type.lowercased() {
         case "youtube": return "play.rectangle.fill"
@@ -277,28 +338,28 @@ extension ResourceDetailView {
                             }
                         }
 
-                        // Main URL Button (secondary for podcasts, primary for others)
+                        // Main URL Button (secondary when native action exists, primary for others)
                         if let url = URL(string: resource.mainUrl), !resource.mainUrl.isEmpty {
-                            let isPodcastWithFeed = resource.type == .podcast && resource.feedUrl != nil && !resource.feedUrl!.isEmpty
+                            let hasNativeAction = resource.type == .podcast && resource.feedUrl != nil && !resource.feedUrl!.isEmpty
                             HStack {
                                 Button(action: {
                                     openUrl(url)
                                 }) {
                                     HStack {
                                         Image(systemName: "safari")
-                                        Text(isPodcastWithFeed ? "Visit Website" : "Open Creator Page")
+                                        Text(hasNativeAction ? "Visit Website" : "Open Creator Page")
                                         Spacer()
                                         Image(systemName: "arrow.up.right")
                                             .font(.caption)
                                     }
                                     .font(.headline)
-                                    .foregroundStyle(isPodcastWithFeed ? Color.primary : .white)
+                                    .foregroundStyle(hasNativeAction ? Color.primary : .white)
                                     .padding()
-                                    .background(isPodcastWithFeed ? Color(UIColor.secondarySystemBackground) : Color.blue)
+                                    .background(hasNativeAction ? Color(UIColor.secondarySystemBackground) : Color.blue)
                                     .cornerRadius(16)
                                 }
 
-                                if !isPodcastWithFeed {
+                                if !hasNativeAction {
                                     // Favorite Main Resource Link (only for non-podcast primary buttons)
                                     let (favType, favId) = resolveFavoriteTypeAndId(resource)
 
@@ -323,10 +384,14 @@ extension ResourceDetailView {
                             ForEach(links.filter { $0.isActive ?? true }.sorted { ($0.order ?? 0) < ($1.order ?? 0) }) { link in
                                 if let url = URL(string: link.url) {
                                     let isPodcastLink = ["podcast", "apple_podcasts"].contains(link.type.lowercased())
+                                    let isYouTubeLink = link.type.lowercased() == "youtube"
+                                    let isNativeLink = isPodcastLink || isYouTubeLink
                                     HStack {
                                         Button(action: {
                                             if isPodcastLink {
                                                 openPodcast(feedUrl: link.url)
+                                            } else if isYouTubeLink {
+                                                openYouTubeChannel(url: link.url, title: link.label.isEmpty ? resource.title : link.label, thumbnail: resource.coverImageUrl)
                                             } else {
                                                 openUrl(url)
                                             }
@@ -337,15 +402,15 @@ extension ResourceDetailView {
                                                 VStack(alignment: .leading, spacing: 2) {
                                                     Text(link.label.isEmpty ? resource.title : link.label)
                                                         .lineLimit(1)
-                                                    Text(isPodcastLink ? "Podcast Feed" : link.type.capitalized.replacingOccurrences(of: "_", with: " "))
+                                                    Text(isPodcastLink ? "Podcast Feed" : isYouTubeLink ? "YouTube" : link.type.capitalized.replacingOccurrences(of: "_", with: " "))
                                                         .font(.caption2)
                                                         .foregroundStyle(.secondary)
                                                 }
                                                 Spacer()
-                                                if isPodcastLink && isSubscribing {
+                                                if (isPodcastLink && isSubscribing) || (isYouTubeLink && isResolvingChannel) {
                                                     ProgressView()
                                                 } else {
-                                                    Image(systemName: isPodcastLink ? "chevron.right" : "arrow.up.right")
+                                                    Image(systemName: isNativeLink ? "chevron.right" : "arrow.up.right")
                                                         .font(.caption)
                                                         .foregroundStyle(.secondary)
                                                 }
@@ -360,7 +425,7 @@ extension ResourceDetailView {
                                         // Favorite Link
                                         FavoriteButton(
                                             consumptionUrl: link.url,
-                                            type: isPodcastLink ? .podcast : .other,
+                                            type: isPodcastLink ? .podcast : isYouTubeLink ? .youtube : .other,
                                             title: link.label.isEmpty ? resource.title : link.label,
                                             author: resource.author,
                                             subtitle: resource.title,
@@ -379,6 +444,15 @@ extension ResourceDetailView {
         }
         .ignoresSafeArea(edges: .top)
         .toolbarBackground(.hidden, for: .navigationBar)
+        .navigationDestination(item: $selectedPodcastShow) { show in
+            PodcastShowView(show: show)
+        }
+        .navigationDestination(item: $selectedYouTubeChannel) { channel in
+            ChannelDetailView(
+                channel: channel,
+                isVideoWatched: isVideoWatched
+            )
+        }
         .sheet(item: $browserUrl) { url in
             InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
                 .ignoresSafeArea()
@@ -390,8 +464,10 @@ extension ResourceDetailView {
                 onSave: saveActivity
             )
         }
-        .navigationDestination(item: $selectedPodcastShow) { show in
-            PodcastShowView(show: show)
+        .alert("YouTube Not Connected", isPresented: $showYouTubeAuthAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Connect your YouTube account in Settings to browse channels and videos natively.")
         }
     }
 }

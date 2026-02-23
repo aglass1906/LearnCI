@@ -26,6 +26,7 @@ struct FavoritesView: View {
     @State private var browserUrl: URL?
     @State private var selectedPodcastShow: PodcastShow?
     @State private var podcastManager = PodcastManager()
+    @State private var showYouTubeAuthAlert = false
     
     // Web Scan Navigation
     @State private var webScanTarget: Favorite? // Holds the favorite to scan
@@ -131,14 +132,7 @@ struct FavoritesView: View {
             ChannelDetailView(
                 channel: channel,
                 isVideoWatched: isVideoWatched
-                // isPlaylist is now part of channel model
             )
-        }
-        .sheet(item: $browserUrl) { url in
-            InAppBrowserView(url: url) {
-                browserUrl = nil
-            }
-            .ignoresSafeArea()
         }
         .navigationDestination(item: $selectedPodcastShow) { show in
             PodcastShowView(show: show)
@@ -150,10 +144,21 @@ struct FavoritesView: View {
                 ContentUnavailableView("Invalid URL", systemImage: "link.badge.plus")
             }
         }
+        .sheet(item: $browserUrl) { url in
+            InAppBrowserView(url: url) {
+                browserUrl = nil
+            }
+            .ignoresSafeArea()
+        }
         .alert("Debug Info", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(errorMessage)
+        }
+        .alert("YouTube Not Connected", isPresented: $showYouTubeAuthAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Connect your YouTube account in Settings to browse channels and videos natively.")
         }
     }
     
@@ -181,6 +186,41 @@ struct FavoritesView: View {
                         selectedPodcastShow = show
                     }
                 }
+            }
+            return
+        }
+
+        // YouTube favorites → native channel/playlist browser
+        if fav.type == .youtube {
+            guard youtubeManager.isAuthenticated else {
+                showYouTubeAuthAlert = true
+                return
+            }
+            let url = fav.consumptionUrl
+            if let channelId = FavoritesManager.resolveChannelId(from: url) {
+                openChannel(id: channelId, title: fav.title, thumbnail: fav.imageUrl)
+            } else if let playlistId = FavoritesManager.resolvePlaylistId(from: url) {
+                openChannel(id: playlistId, title: fav.title, thumbnail: fav.imageUrl, isPlaylist: true)
+            } else if url.contains("@") {
+                Task {
+                    var handle: String?
+                    if let atRange = url.range(of: "@") {
+                        let substring = url[atRange.lowerBound...]
+                        let pathComponent = substring.components(separatedBy: "/").first ?? String(substring)
+                        handle = pathComponent.components(separatedBy: "?").first ?? pathComponent
+                    }
+                    if let handle, let channelId = await youtubeManager.resolveChannelFromHandle(handle) {
+                        await MainActor.run {
+                            openChannel(id: channelId, title: fav.title, thumbnail: fav.imageUrl)
+                        }
+                    } else {
+                        await MainActor.run {
+                            if let url = URL(string: url) { browserUrl = url }
+                        }
+                    }
+                }
+            } else {
+                if let url = URL(string: url) { browserUrl = url }
             }
             return
         }

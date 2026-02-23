@@ -12,6 +12,9 @@ struct YouTubeVideo: Identifiable, Codable {
     // For direct video files (non-YouTube)
     var videoStreamURL: String?
     
+    // Track when video was added to channel feed
+    var addedToFeedAt: Date?
+    
     // Optional tagging for discovery
     var language: Language?
     var level: LearningLevel?

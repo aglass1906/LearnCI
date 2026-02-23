@@ -68,14 +68,18 @@ struct DashboardView: View {
                         
                         // Greeting
                         if let profile = userProfile {
-                            HStack {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text("\(profile.currentLanguage.greetingPrefix) \(profile.name.isEmpty ? "" : profile.name)")
                                     .font(.largeTitle)
                                     .fontWeight(.bold)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
-                                    .padding(.top, 10)
+                                    
+                                Text("Language Learning with Comprehensible Input")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
                         }
                         
                         // 1. Favorites

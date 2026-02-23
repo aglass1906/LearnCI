@@ -457,6 +457,7 @@ class YouTubeManager {
         // and then fetch the playlist items (1 unit).
         
         var allVideoIds: [String] = []
+        var allVideoFeedDates: [String: Date] = [:]
         let dispatchGroup = DispatchGroup()
         let lock = NSLock()
         
@@ -531,7 +532,7 @@ class YouTubeManager {
                 // Step 2: Fetch videos from that playlist
                 // Fetch more results for a single channel view
                 let maxResults = target == .singleChannel ? 50 : 10
-                let playlistUrl = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(uploadsPlaylistId)&maxResults=\(maxResults)"
+                let playlistUrl = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=\(uploadsPlaylistId)&maxResults=\(maxResults)"
                 
                 guard let pUrl = URL(string: playlistUrl) else {
 
@@ -559,10 +560,27 @@ class YouTubeManager {
                         }
                     }
                           
-                    let ids = pItems.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
+                    let itemsWithDates = pItems.compactMap { item -> (String, Date)? in
+                        guard let contentDetails = item["contentDetails"] as? [String: Any],
+                              let videoId = contentDetails["videoId"] as? String,
+                              let snippet = item["snippet"] as? [String: Any],
+                              let publishedAtString = snippet["publishedAt"] as? String else { return nil }
+                              
+                        let dateFormatter = ISO8601DateFormatter()
+                        let publishedAt = dateFormatter.date(from: publishedAtString) 
+                            ?? ISO8601DateFormatter.fractionalSecondsFormatter.date(from: publishedAtString)
+                            ?? Date()
+                            
+                        return (videoId, publishedAt)
+                    }
+                    
+                    let ids = itemsWithDates.map { $0.0 }
                     
                     lock.lock()
                     allVideoIds.append(contentsOf: ids)
+                    for (id, date) in itemsWithDates {
+                        allVideoFeedDates[id] = date
+                    }
                     lock.unlock()
                     
                 }.resume()
@@ -577,7 +595,7 @@ class YouTubeManager {
                      // Leave channelVideos empty if nothing found
                      self?.isChannelLoading = false
                 } else {
-                    self?.fetchVideoDetails(token: token, videoIds: allVideoIds, target: target)
+                    self?.fetchVideoDetails(token: token, videoIds: allVideoIds, feedDates: allVideoFeedDates, target: target)
                 }
                 return
             }
@@ -593,12 +611,12 @@ class YouTubeManager {
                 }
                 self?.isLoading = false
             } else {
-                self?.fetchVideoDetails(token: token, videoIds: allVideoIds, target: target)
+                self?.fetchVideoDetails(token: token, videoIds: allVideoIds, feedDates: allVideoFeedDates, target: target)
             }
         }
     }
     
-    private func fetchVideoDetails(token: String, videoIds: [String], target: FetchTarget = .feed) {
+    private func fetchVideoDetails(token: String, videoIds: [String], feedDates: [String: Date]? = nil, target: FetchTarget = .feed) {
         // Chunk video IDs into groups of 50 to respect API limits
         let chunks = videoIds.chunked(into: 50)
         var allFetchedVideos: [YouTubeVideo] = []
@@ -651,7 +669,7 @@ class YouTubeManager {
                         ?? ISO8601DateFormatter.fractionalSecondsFormatter.date(from: publishedAtString)
                         ?? Date()
                     
-                    return YouTubeVideo(
+                    var video = YouTubeVideo(
                         id: id,
                         title: title,
                         description: description,
@@ -660,6 +678,10 @@ class YouTubeManager {
                         duration: duration,
                         publishedAt: publishedAt
                     )
+                    
+                    // Attach the feed publication date if we have it
+                    video.addedToFeedAt = feedDates?[id]
+                    return video
                 }
                 
                 lock.lock()
@@ -670,8 +692,8 @@ class YouTubeManager {
         }
         
         dispatchGroup.notify(queue: .main) { [weak self] in
-            // Sort merged results from all chunks
-            let sortedVideos = allFetchedVideos.sorted { $0.publishedAt > $1.publishedAt }
+            // Sort merged results from all chunks prioritizing the feed published date
+            let sortedVideos = allFetchedVideos.sorted { ($0.addedToFeedAt ?? $0.publishedAt) > ($1.addedToFeedAt ?? $1.publishedAt) }
             
             if target == .feed {
                 self?.videos = sortedVideos

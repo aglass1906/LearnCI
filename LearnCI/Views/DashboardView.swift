@@ -94,7 +94,10 @@ struct DashboardView: View {
                         // 4. Coaching Section
                         coachingSection
                         
-                        // 5. Input Roadmap
+                        // 5. About CI
+                        aboutCISection
+                        
+                        // 6. Input Roadmap
                         roadmapSection
                         
                         // 6. Breakdown
@@ -365,6 +368,20 @@ extension DashboardView {
                     }
                 }
             }
+        }
+    }
+    
+    private var aboutCISection: some View {
+        LayoutCardView(
+            title: "About Comprehensible Input",
+            subTitle: "How you actually learn",
+            accentColor: .blue,
+            icon: "brain.head.profile",
+            destination: AboutCIView()
+        ) {
+            Text("Discover why stories and input are all you need to reach fluency.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
     }
     

@@ -1,0 +1,169 @@
+{
+    "schemaVersion": "1.0",
+    "page": {
+        "id": "about-comprehensible-input",
+        "locale": "en",
+        "title": "About",
+        "theme": "default"
+    },
+    "assets": {
+        "ciHero": {
+            "type": "image",
+            "src": "about/ci_hero.png",
+            "alt": "Comprehensible input illustration"
+        },
+        "playIcon": {
+            "type": "icon",
+            "name": "play.circle"
+        }
+    },
+    "sections": [
+        {
+            "id": "hero",
+            "layout": {
+                "type": "stack",
+                "padding": "lg",
+                "gap": "md"
+            },
+            "blocks": [
+                {
+                    "type": "hero",
+                    "title": "Learn languages with Comprehensible Input",
+                    "subtitle": "Understand first. Acquire naturally. Build confidence without grinding.",
+                    "media": {
+                        "assetId": "ciHero"
+                    },
+                    "badges": [
+                        "A1–B2",
+                        "Reading + Listening",
+                        "Stories-based"
+                    ]
+                },
+                {
+                    "type": "callout",
+                    "style": "info",
+                    "text": "Comprehensible Input means you learn by understanding messages — not by memorizing rules first."
+                }
+            ]
+        },
+        {
+            "id": "what",
+            "header": {
+                "title": "What it is"
+            },
+            "layout": {
+                "type": "cards",
+                "columns": 1,
+                "gap": "md"
+            },
+            "blocks": [
+                {
+                    "type": "card",
+                    "title": "You get input you can actually understand",
+                    "body": "We use simple language, pictures, and context so your brain can follow the meaning — even with new words."
+                },
+                {
+                    "type": "card",
+                    "title": "You see lots of repeated patterns",
+                    "body": "High-frequency words and common sentence structures show up again and again, so they stick."
+                },
+                {
+                    "type": "card",
+                    "title": "You stay in the flow",
+                    "body": "No constant interruptions. You can reveal translations or hints only when you want."
+                }
+            ]
+        },
+        {
+            "id": "how",
+            "header": {
+                "title": "How it works"
+            },
+            "layout": {
+                "type": "steps",
+                "gap": "md"
+            },
+            "blocks": [
+                {
+                    "type": "step",
+                    "index": 1,
+                    "title": "Pick a level",
+                    "body": "Choose A1, A2, B1… so the story stays understandable.",
+                    "icon": {
+                        "assetId": "playIcon"
+                    }
+                },
+                {
+                    "type": "step",
+                    "index": 2,
+                    "title": "Consume the story",
+                    "body": "Read or listen. Use images, context, and repetition to keep comprehension high."
+                },
+                {
+                    "type": "step",
+                    "index": 3,
+                    "title": "Tap for help only when needed",
+                    "body": "Show translation, slow audio, or word hints — without breaking the narrative."
+                },
+                {
+                    "type": "step",
+                    "index": 4,
+                    "title": "Review naturally",
+                    "body": "Optional quick checks reinforce the most useful words from what you just understood."
+                }
+            ]
+        },
+        {
+            "id": "faq",
+            "header": {
+                "title": "FAQ"
+            },
+            "layout": {
+                "type": "accordion",
+                "gap": "sm"
+            },
+            "blocks": [
+                {
+                    "type": "faq",
+                    "q": "Do I need grammar study?",
+                    "a": "Not to start. Grammar can help later, but comprehension comes first — you’ll absorb patterns through meaning."
+                },
+                {
+                    "type": "faq",
+                    "q": "What if I don’t understand enough?",
+                    "a": "Drop a level, use the translation toggle briefly, and pick content with strong context (images + simple narration)."
+                }
+            ]
+        },
+        {
+            "id": "cta",
+            "layout": {
+                "type": "stack",
+                "padding": "lg",
+                "gap": "sm"
+            },
+            "blocks": [
+                {
+                    "type": "buttonRow",
+                    "buttons": [
+                        {
+                            "label": "Start a Story",
+                            "action": {
+                                "type": "navigate",
+                                "route": "/stories"
+                            }
+                        },
+                        {
+                            "label": "Choose Level",
+                            "action": {
+                                "type": "navigate",
+                                "route": "/levels"
+                            },
+                            "style": "secondary"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

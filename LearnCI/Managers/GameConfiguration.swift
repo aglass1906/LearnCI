@@ -132,60 +132,60 @@ struct GameConfiguration: Codable, Equatable {
     
     enum GameType: String, Codable, CaseIterable, Identifiable {
         case flashcards = "Flashcards"
+        case wordCrush = "Word Crush"
         case memoryMatch = "Memory Match"
-        case story = "Story Mode"
         case multipleChoice = "Multiple Choice"
         case audioCloze = "Listening Challenge"
         case linker = "Column Connect"
-        case wordCrush = "Word Crush"
+        case story = "Story Mode"
 
         var id: String { rawValue }
 
         var icon: String {
             switch self {
             case .flashcards: return "rectangle.stack.fill"
+            case .wordCrush: return "square.grid.3x3.fill"
             case .memoryMatch: return "square.grid.2x2.fill"
-            case .story: return "book.fill"
             case .multipleChoice: return "list.bullet.clipboard"
             case .audioCloze: return "headphones"
             case .linker: return "link"
-            case .wordCrush: return "square.grid.3x3.fill"
+            case .story: return "book.fill"
             }
         }
 
         var description: String {
             switch self {
             case .flashcards: return "Classic study mode with spaced repetition."
+            case .wordCrush: return "Match word pairs in a cascading grid."
             case .memoryMatch: return "Match words with their meanings."
-            case .story: return "Read and listen to immersive stories."
             case .multipleChoice: return "Select the correct answer from 4 options."
             case .audioCloze: return "Listen and fill in the missing word."
             case .linker: return "Connect matching items between two columns."
-            case .wordCrush: return "Match word pairs in a cascading grid."
+            case .story: return "Read and listen to immersive stories."
             }
         }
 
         var imageName: String {
             switch self {
             case .flashcards: return "game_flashcards"
+            case .wordCrush: return "game_word_crush"
             case .memoryMatch: return "game_memory_match"
-            case .story: return "game_story"
             case .multipleChoice: return "game_multiple_choice"
             case .audioCloze: return "game_audio_cloze"
             case .linker: return "game_linker"
-            case .wordCrush: return "game_word_crush"
+            case .story: return "game_story"
             }
         }
 
         var tileColor: Color {
             switch self {
             case .flashcards: return .blue
+            case .wordCrush: return .indigo
             case .memoryMatch: return .purple
-            case .story: return .orange
             case .multipleChoice: return .green
             case .audioCloze: return .pink
             case .linker: return .cyan
-            case .wordCrush: return .indigo
+            case .story: return .orange
             }
         }
 

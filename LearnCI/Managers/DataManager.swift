@@ -241,45 +241,58 @@ class DataManager {
         }
     }
     
-    // Create a virtual deck from a specific tag
-    func createVirtualDeck(tag: String, language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> CardDeck {
+    // Create a virtual deck from multiple tags (cards matching ANY tag)
+    func createVirtualDeck(tags: Set<String>, language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> CardDeck {
         let decks: [DeckMetadata]
         if let limit = limitDeck {
             decks = [limit]
         } else {
             decks = discoverDecks(language: language, level: level)
         }
-        
+
         var combinedCards: [LearningCard] = []
-        
+        var seenCardIds = Set<String>()
+
         for meta in decks {
-              if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
-                  do {
-                      let data = try Data(contentsOf: url)
-                      let deck = try JSONDecoder().decode(CardDeck.self, from: data)
-                      let matching = deck.cards.filter { $0.tags?.contains(tag) == true }
-                      print("DEBUG: createVirtualDeck - Found \(matching.count) cards for tag '\(tag)' in deck '\(deck.id)'")
-                      combinedCards.append(contentsOf: matching)
-                  } catch {
-                       print("Error loading deck for virtual creation: \(error)")
-                  }
-              }
+            if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
+                do {
+                    let data = try Data(contentsOf: url)
+                    let deck = try JSONDecoder().decode(CardDeck.self, from: data)
+                    let matching = deck.cards.filter { card in
+                        guard let cardTags = card.tags else { return false }
+                        return !tags.isDisjoint(with: cardTags)
+                    }
+                    for card in matching where !seenCardIds.contains(card.id) {
+                        seenCardIds.insert(card.id)
+                        combinedCards.append(card)
+                    }
+                } catch {
+                    print("Error loading deck for virtual creation: \(error)")
+                }
+            }
         }
-        
-        // Create a unique deterministic ID for valid caching if needed
+
+        let sortedTags = tags.sorted()
+        let tagSlug = sortedTags.map { $0.lowercased().replacingOccurrences(of: " ", with: "_") }.joined(separator: "+")
         let levelSuffix = level?.rawValue ?? "All"
-        let virtualId = "virtual_\(language.code)_\(tag.lowercased().replacingOccurrences(of: " ", with: "_"))_\(levelSuffix)"
-        
+        let virtualId = "virtual_\(language.code)_\(tagSlug)_\(levelSuffix)"
+        let title = "Focus: \(sortedTags.joined(separator: ", "))"
+
         return CardDeck(
             id: virtualId,
             language: language,
             level: level ?? .intermediate,
-            title: "Focus: \(tag)",
-            description: "Cards matching the topic '\(tag)'",
+            title: title,
+            description: "\(combinedCards.count) cards matching \(sortedTags.count) topic\(sortedTags.count == 1 ? "" : "s")",
             cards: combinedCards.shuffled(),
             supportedModes: [.flashcards, .memoryMatch],
             baseFolderName: nil
         )
+    }
+
+    // Create a virtual deck from a specific tag (convenience wrapper)
+    func createVirtualDeck(tag: String, language: Language, level: LearningLevel? = nil, limitDeck: DeckMetadata? = nil) -> CardDeck {
+        return createVirtualDeck(tags: [tag], language: language, level: level, limitDeck: limitDeck)
     }
     
     // Internal helper to reuse logic

@@ -9,7 +9,7 @@ struct TagSelectionSheet: View {
     
     @State private var domainGroups: [DomainGroup] = []
     @State private var isLoading = true
-    @State private var selectedTag: String?
+    @State private var selectedTags: Set<String> = []
     
     let columns = [
         GridItem(.adaptive(minimum: 100), spacing: 12)
@@ -93,34 +93,39 @@ struct TagSelectionSheet: View {
                                     LazyVGrid(columns: columns, spacing: 12) {
                                         ForEach(domain.tags, id: \.id) { tag in
                                             Button {
-                                                selectedTag = tag.id
+                                                if selectedTags.contains(tag.id) {
+                                                    selectedTags.remove(tag.id)
+                                                } else {
+                                                    selectedTags.insert(tag.id)
+                                                }
                                             } label: {
+                                                let isSelected = selectedTags.contains(tag.id)
                                                 VStack {
-                                                    Image(systemName: "tag.fill")
+                                                    Image(systemName: isSelected ? "checkmark.circle.fill" : "tag.fill")
                                                         .font(.title2)
-                                                        .foregroundStyle(selectedTag == tag.id ? .white : .accentColor)
+                                                        .foregroundStyle(isSelected ? .white : .accentColor)
                                                         .padding(.bottom, 4)
-                                                    
+
                                                     Text(tag.id)
                                                         .font(.caption)
                                                         .fontWeight(.medium)
-                                                        .foregroundStyle(selectedTag == tag.id ? .white : .primary)
+                                                        .foregroundStyle(isSelected ? .white : .primary)
                                                         .multilineTextAlignment(.center)
-                                                    
+
                                                     Text("\(tag.count)")
                                                         .font(.caption2)
-                                                        .foregroundStyle(selectedTag == tag.id ? .white.opacity(0.8) : .secondary)
+                                                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
                                                         .padding(.top, 2)
                                                 }
                                                 .frame(maxWidth: .infinity)
                                                 .frame(height: 100)
                                                 .background {
                                                     RoundedRectangle(cornerRadius: 12)
-                                                        .fill(selectedTag == tag.id ? Color.accentColor : Color(UIColor.secondarySystemGroupedBackground))
+                                                        .fill(isSelected ? Color.accentColor : Color(UIColor.secondarySystemGroupedBackground))
                                                         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
                                                         .overlay(
                                                             RoundedRectangle(cornerRadius: 12)
-                                                                .stroke(selectedTag == tag.id ? Color.accentColor : Color.clear, lineWidth: 2)
+                                                                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
                                                         )
                                                 }
                                             }
@@ -139,26 +144,26 @@ struct TagSelectionSheet: View {
                     VStack(spacing: 12) {
                         Divider()
                         
-                        if let selected = selectedTag {
-                            // Find count across all groups
-                            let count = domainGroups.flatMap { $0.tags }.first { $0.id == selected }?.count ?? 0
-                             Text("\(count) cards selected")
+                        if !selectedTags.isEmpty {
+                            let allTags = domainGroups.flatMap { $0.tags }
+                            let totalCards = allTags.filter { selectedTags.contains($0.id) }.reduce(0) { $0 + $1.count }
+                            Text("\(selectedTags.count) tag\(selectedTags.count == 1 ? "" : "s"), ~\(totalCards) cards")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         } else {
-                            Text("Select a tag")
+                            Text("Select one or more tags")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        
+
                         Button(action: {
-                            if let tag = selectedTag {
-                                confirmSelection(tag)
+                            if !selectedTags.isEmpty {
+                                confirmSelection(selectedTags)
                             } else {
                                 dismiss()
                             }
                         }) {
-                            Text("Done")
+                            Text(selectedTags.isEmpty ? "Cancel" : "Done (\(selectedTags.count))")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
@@ -201,10 +206,10 @@ struct TagSelectionSheet: View {
         }
     }
     
-    private func confirmSelection(_ tag: String) {
+    private func confirmSelection(_ tags: Set<String>) {
         let limit = limitToInitialDeck ? initialDeck : nil
-        let virtualDeck = dataManager.createVirtualDeck(tag: tag, language: language, level: selectedLevel, limitDeck: limit)
-        
+        let virtualDeck = dataManager.createVirtualDeck(tags: tags, language: language, level: selectedLevel, limitDeck: limit)
+
         let metadata = DeckMetadata(
             id: virtualDeck.id,
             title: virtualDeck.title,
@@ -218,7 +223,7 @@ struct TagSelectionSheet: View {
             gameConfiguration: nil,
             coverImage: "tag.fill"
         )
-        
+
         dataManager.registerVirtualDeck(virtualDeck)
         selectedDeck = metadata
         dismiss()

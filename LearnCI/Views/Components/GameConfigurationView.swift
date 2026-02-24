@@ -16,7 +16,6 @@ struct GameConfigurationView: View {
     // Sheet State
     @State private var showDeckPicker = false
     @State private var showTagSelection = false
-    @State private var currentDeckCount: Int?
     
     private var deckImage: UIImage? {
         guard let deck = selectedDeck, let cover = deck.coverImage else { return nil }
@@ -55,6 +54,52 @@ struct GameConfigurationView: View {
                 }
                 .padding(.horizontal)
                 
+                // Virtual deck tag summary
+                if let deck = selectedDeck, deck.folderName == "Virtual" {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "sparkles")
+                                .font(.subheadline)
+                                .foregroundColor(.mint)
+                            Text("Custom Deck")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if let desc = deck.description {
+                                Text(desc)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        // Tag chips from the title ("Focus: A, B, C" -> ["A", "B", "C"])
+                        let tagNames = extractTags(from: deck.title)
+                        if !tagNames.isEmpty {
+                            FlowLayout(spacing: 8) {
+                                ForEach(tagNames, id: \.self) { tag in
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "tag.fill")
+                                            .font(.caption2)
+                                        Text(tag)
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(Color.mint.opacity(0.12))
+                                    .foregroundColor(.mint)
+                                    .cornerRadius(16)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                }
+
                 // Deck selection reminder
                 if selectedDeck == nil {
                     HStack {
@@ -86,15 +131,6 @@ struct GameConfigurationView: View {
                 selectedDeck: $selectedDeck
             )
         }
-        .onChange(of: selectedDeck, perform: { newDeck in
-            // Handle virtual deck card counts
-            if let deck = newDeck, deck.folderName == "Virtual" {
-                // TODO: Implement dynamic card count in DeckMetadata or via DataManager
-                currentDeckCount = nil
-            } else {
-                currentDeckCount = nil
-            }
-        })
         .onChange(of: selectedGameType, perform: { newType in
             // Validate deck compatibility
             if let deck = selectedDeck, !deck.supportedModes.contains(newType) {
@@ -120,17 +156,23 @@ struct GameConfigurationView: View {
     }
     
     private var tagRowTitle: String {
-        guard let deck = selectedDeck, deck.folderName == "Virtual" else { return "Filter by Tag" }
+        guard let deck = selectedDeck, deck.folderName == "Virtual" else { return "Filter by Tags" }
         return deck.title
     }
-    
+
     private var tagRowSubtitle: String {
         guard let deck = selectedDeck, deck.folderName == "Virtual" else { return "Create a custom deck from all cards" }
-        if let count = currentDeckCount {
-            return "\(count) cards available"
-        } else {
-            return "Loading..."
+        if let desc = deck.description {
+            return desc
         }
+        return "Custom tag deck"
+    }
+
+    private func extractTags(from title: String) -> [String] {
+        // Title format: "Focus: Tag1, Tag2, Tag3"
+        guard title.hasPrefix("Focus: ") else { return [] }
+        let raw = String(title.dropFirst("Focus: ".count))
+        return raw.components(separatedBy: ", ").filter { !$0.isEmpty }
     }
 
     private func mapLevel(_ level: Int) -> LearningLevel {
@@ -213,5 +255,46 @@ struct SettingsRow<Content: View>: View {
         }
         .padding()
         .contentShape(Rectangle()) // Full row clickable
+    }
+}
+
+// Wrapping layout for tag chips
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        for (index, position) in result.positions.enumerated() {
+            subviews[index].place(at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y), proposal: .unspecified)
+        }
+    }
+
+    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, positions: [CGPoint]) {
+        let maxWidth = proposal.width ?? .infinity
+        var positions: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var maxX: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > maxWidth, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            positions.append(CGPoint(x: x, y: y))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+            maxX = max(maxX, x - spacing)
+        }
+
+        return (CGSize(width: maxX, height: y + rowHeight), positions)
     }
 }

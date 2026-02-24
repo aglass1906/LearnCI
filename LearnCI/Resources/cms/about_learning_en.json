@@ -37,6 +37,12 @@
                         "A1–B2",
                         "Reading + Listening",
                         "Stories-based"
+                    ],
+                    "badges2": [
+                        "Spanish",
+                        "French",
+                        "Japanese",
+                        "Korean, Vietnamese"
                     ]
                 },
                 {
@@ -75,9 +81,31 @@
             ]
         },
         {
+            "id": "method",
+            "header": {
+                "title": "The Method"
+            },
+            "layout": {
+                "type": "steps",
+                "gap": "md"
+            },
+            "blocks": [
+                {
+                    "type": "step",
+                    "index": 1,
+                    "title": "The Dreaming in Spanish Method",
+                    "body": "Learn more about the premier comprehensible input learning methodology.",
+                    "url": "https://www.dreaming.com/method",
+                    "icon": {
+                        "assetId": "playIcon"
+                    }
+                }
+            ]
+        },
+        {
             "id": "how",
             "header": {
-                "title": "How it works"
+                "title": "How this App works"
             },
             "layout": {
                 "type": "steps",
@@ -89,15 +117,12 @@
                     "index": 1,
                     "title": "Pick a level",
                     "body": "Choose A1, A2, B1… so the story stays understandable.",
-                    "icon": {
-                        "assetId": "playIcon"
-                    }
                 },
                 {
                     "type": "step",
                     "index": 2,
-                    "title": "Consume the story",
-                    "body": "Read or listen. Use images, context, and repetition to keep comprehension high."
+                    "title": "Consume the Media",
+                    "body": "Watch, Listen, or Read. Use images, context, and repetition to keep comprehension high."
                 },
                 {
                     "type": "step",
@@ -110,6 +135,34 @@
                     "index": 4,
                     "title": "Review naturally",
                     "body": "Optional quick checks reinforce the most useful words from what you just understood."
+                }
+            ]
+        },
+        {
+            "id": "getting_started",
+            "header": {
+                "title": "How to get started"
+            },
+            "layout": {
+                "type": "cards",
+                "columns": 1,
+                "gap": "md"
+            },
+            "blocks": [
+                {
+                    "type": "card",
+                    "title": "1. Find your level",
+                    "body": "Start with content that feels mostly understandable. If you're struggling to follow the story, drop a level."
+                },
+                {
+                    "type": "card",
+                    "title": "2. Build a daily habit",
+                    "body": "Consistency is key. Aim for 15-30 minutes of focused input every day rather than long, infrequent sessions."
+                },
+                {
+                    "type": "card",
+                    "title": "3. Focus on meaning",
+                    "body": "Don't worry about memorizing every single word. Let the context and repetition guide your brain naturally."
                 }
             ]
         },

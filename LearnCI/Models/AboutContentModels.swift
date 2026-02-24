@@ -51,6 +51,7 @@ enum BlockType: String, Codable {
     case step
     case faq
     case buttonRow
+    case link
     case unknown
 }
 
@@ -73,9 +74,10 @@ struct ContentBlock: Codable, Identifiable {
     let q: String?
     let a: String?
     let buttons: [ButtonDefinition]?
+    let url: String?
     
     enum CodingKeys: String, CodingKey {
-        case type, title, subtitle, text, body, style, media, badges, index, icon, q, a, buttons
+        case type, title, subtitle, text, body, style, media, badges, index, icon, q, a, buttons, url
     }
     
     // Custom decoder to handle unknown block types gracefully without failing the whole decode
@@ -102,6 +104,7 @@ struct ContentBlock: Codable, Identifiable {
         self.q = try container.decodeIfPresent(String.self, forKey: .q)
         self.a = try container.decodeIfPresent(String.self, forKey: .a)
         self.buttons = try container.decodeIfPresent([ButtonDefinition].self, forKey: .buttons)
+        self.url = try container.decodeIfPresent(String.self, forKey: .url)
     }
 }
 

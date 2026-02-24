@@ -5,14 +5,18 @@
 ## User settings
 xcuserdata/
 
+##build logs
 *.log
 Build/*
 build_log*.txt
 build_output*
 build_*
 
+## enviornment variables
 .env
 .venv
+scripts/venv
+
 
 ## Obj-C/Swift specific
 *.hmap

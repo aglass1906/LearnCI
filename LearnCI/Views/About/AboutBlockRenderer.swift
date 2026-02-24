@@ -19,6 +19,8 @@ struct AboutBlockRenderer: View {
             faqBlock
         case .buttonRow:
             buttonRowBlock
+        case .link:
+            linkBlock
         case .unknown, .none:
             // Safe fallback: render nothing for unknown types
             EmptyView()
@@ -33,13 +35,31 @@ struct AboutBlockRenderer: View {
                let asset = assets[mediaId],
                asset.type == "image",
                let src = asset.src {
-                // Remove the .png extension if present since Image() looks in Asset Catalog
                 let imageName = src.replacingOccurrences(of: ".png", with: "").replacingOccurrences(of: "about/", with: "")
-                Image(imageName)
-                    .resizable()
+                if imageName == "ci_hero" {
+                    NativeAboutHeroView()
+                } else {
+                    Group {
+                        if let path = Bundle.main.path(forResource: imageName, ofType: "png", inDirectory: "Images"),
+                           let uiImage = UIImage(contentsOfFile: path) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                        } else if let path = Bundle.main.path(forResource: imageName, ofType: "png"),
+                                  let uiImage = UIImage(contentsOfFile: path) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                        } else if let uiImage = UIImage(named: imageName) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                        } else {
+                            Image(systemName: "photo")
+                                .resizable()
+                        }
+                    }
                     .scaledToFit()
                     .frame(height: 200)
                     .cornerRadius(12)
+                }
             }
             
             if let title = block.title {
@@ -118,7 +138,7 @@ struct AboutBlockRenderer: View {
     // MARK: - Step
     @ViewBuilder
     private var stepBlock: some View {
-        HStack(alignment: .top, spacing: 16) {
+        let content = HStack(alignment: .top, spacing: 16) {
             // Index Circle or Icon
             ZStack {
                 Circle()
@@ -142,8 +162,15 @@ struct AboutBlockRenderer: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 if let title = block.title {
-                    Text(title)
-                        .font(.custom("AvenirNext-DemiBold", size: 18))
+                    HStack {
+                        Text(title)
+                            .font(.custom("AvenirNext-DemiBold", size: 18))
+                        if block.url != nil {
+                            Image(systemName: "arrow.up.right.square")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                    }
                 }
                 if let body = block.body {
                     Text(body)
@@ -154,6 +181,58 @@ struct AboutBlockRenderer: View {
             .padding(.top, 4)
             
             Spacer(minLength: 0)
+        }
+        
+        if let urlString = block.url, let url = URL(string: urlString) {
+            Link(destination: url) {
+                content
+            }
+            .buttonStyle(PlainButtonStyle())
+        } else {
+            content
+        }
+    }
+    
+    // MARK: - Link
+    @ViewBuilder
+    private var linkBlock: some View {
+        if let urlString = block.url, let url = URL(string: urlString) {
+            Link(destination: url) {
+                HStack(spacing: 12) {
+                    if let iconId = block.icon?.assetId,
+                       let asset = assets[iconId],
+                       asset.type == "icon",
+                       let iconName = asset.name {
+                        Image(systemName: iconName)
+                            .foregroundColor(.blue)
+                    } else {
+                        Image(systemName: "link")
+                            .foregroundColor(.blue)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let title = block.title {
+                            Text(title)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        }
+                        if let body = block.body {
+                            Text(body)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
     
@@ -225,7 +304,60 @@ struct AboutBlockRenderer: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(button.style == "secondary" ? Color.blue.opacity(0.1) : Color.blue)
-            .foregroundColor(button.style == "secondary" ? .blue : .white)
+            .foregroundColor(button.style == "secondary" ? .white : .white)
             .cornerRadius(12)
+    }
+}
+
+// MARK: - Native Hero Graphic
+struct NativeAboutHeroView: View {
+    var body: some View {
+        ZStack {
+            // Background Gradient
+            LinearGradient(
+                colors: [Color.blue.opacity(0.8), Color.orange.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            // Icon Row
+            HStack(spacing: 36) {
+                VStack(spacing: 8) {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.system(size: 42))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    Text("Watch")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                
+                VStack(spacing: 8) {
+                    Image(systemName: "headphones")
+                        .font(.system(size: 42))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    Text("Listen")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                
+                VStack(spacing: 8) {
+                    Image(systemName: "book.fill")
+                        .font(.system(size: 42))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    Text("Read")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white.opacity(0.9))
+                }
+            }
+        }
+        .frame(height: 200)
+        .frame(maxWidth: .infinity)
+        .cornerRadius(12)
     }
 }

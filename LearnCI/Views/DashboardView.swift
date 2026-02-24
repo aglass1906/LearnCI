@@ -82,25 +82,25 @@ struct DashboardView: View {
                             .padding(.top, 10)
                         }
                         
-                        // 1. Favorites
+                        // 1. About CI
+                        aboutCISection
+                        
+                        // 2. Favorites
                         favoritesSection
                         
-                        // 2. AI Stories
+                        // 3. AI Stories
                         storiesSection
                         
-                        // 3. Word of the Day
+                        // 4. Word of the Day
                         wordOfDaySection
                         
-                        // 4. Coaching Section
+                        // 5. Coaching Section
                         coachingSection
-                        
-                        // 5. About CI
-                        aboutCISection
                         
                         // 6. Input Roadmap
                         roadmapSection
                         
-                        // 6. Breakdown
+                        // 7. Breakdown
                         breakdownSection
                         
                         // 7. Leaderboard

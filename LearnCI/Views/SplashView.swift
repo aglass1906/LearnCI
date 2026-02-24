@@ -12,15 +12,15 @@ struct SplashView: View {
             EmptyView()
         } else {
             VStack {
-                VStack {
-                    Image(systemName: "person.3.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(.white)
+                VStack(spacing: 25) {
+                    CommonHeroView()
+                        .frame(width: 300)
+                        .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
                     
                     Text("Language Learning\nwith\nComprehensible Input")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .font(.custom("AvenirNext-Bold", size: 32))
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.white.opacity(0.80))
+                        .foregroundColor(.white)
                 }
                 .scaleEffect(size)
                 .opacity(opacity)

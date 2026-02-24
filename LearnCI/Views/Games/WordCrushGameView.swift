@@ -3,6 +3,7 @@ import SwiftUI
 struct WordCrushGameView: View {
     @State private var viewModel: WordCrushGameViewModel
     @Environment(\.dismiss) var dismiss
+    @Environment(AudioManager.self) private var audioManager
 
     let sessionCardGoal: Int
     var onFinish: () -> Void
@@ -36,21 +37,31 @@ struct WordCrushGameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            headerView
-                .padding(.horizontal)
-                .padding(.top, 8)
+        ZStack {
+            VStack(spacing: 0) {
+                // Header
+                headerView
+                    .padding(.horizontal)
+                    .padding(.top, 8)
 
-            Spacer(minLength: 12)
+                Spacer(minLength: 12)
 
-            // Grid
-            gridView
-                .padding(.horizontal, 12)
+                // Grid
+                gridView
+                    .padding(.horizontal, 12)
 
-            Spacer()
+                Spacer()
+            }
+
+            // Match celebration overlay
+            if let celebration = viewModel.matchCelebration {
+                MatchCelebrationView(celebration: celebration)
+                    .id(celebration.id)
+                    .allowsHitTesting(false)
+            }
         }
         .onAppear {
+            viewModel.audioManager = audioManager
             viewModel.onMatchFound = onMatchFound
         }
     }
@@ -189,6 +200,108 @@ struct WordCrushTileView: View {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + duration * 4) {
             withAnimation(.linear(duration: duration)) { shakeOffset = 0 }
+        }
+    }
+}
+
+// MARK: - Match Celebration
+
+struct MatchCelebrationView: View {
+    let celebration: MatchCelebration
+
+    @State private var offset: CGFloat = 0
+    @State private var opacity: Double = 1.0
+    @State private var scale: CGFloat = 0.5
+    @State private var particles: [(id: Int, x: CGFloat, y: CGFloat, emoji: String)] = []
+
+    private let emojis = ["🎉", "⭐", "✨", "🔥", "💥", "🌟"]
+
+    var body: some View {
+        ZStack {
+            // Particle emojis (for streaks >= 2)
+            ForEach(particles, id: \.id) { particle in
+                Text(particle.emoji)
+                    .font(.title)
+                    .offset(x: particle.x, y: particle.y)
+                    .opacity(opacity)
+            }
+
+            // Floating points bubble
+            VStack(spacing: 4) {
+                Text("+\(celebration.points)")
+                    .font(.system(size: celebration.streak >= 3 ? 32 : 24, weight: .black, design: .rounded))
+                    .foregroundColor(bubbleColor)
+
+                if celebration.streak >= 2 {
+                    Text("\(celebration.streak)x Streak!")
+                        .font(.caption.bold())
+                        .foregroundColor(.orange)
+                }
+
+                Text(celebration.word)
+                    .font(.subheadline.bold())
+                    .foregroundColor(.primary.opacity(0.8))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: bubbleColor.opacity(0.3), radius: 8)
+            )
+            .scaleEffect(scale)
+            .offset(y: offset)
+            .opacity(opacity)
+        }
+        .onAppear {
+            // Spawn particles for streaks
+            if celebration.streak >= 2 {
+                spawnParticles()
+            }
+
+            // Animate in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                scale = 1.0
+            }
+
+            // Float up to top of screen and fade out
+            withAnimation(.easeOut(duration: 1.5).delay(0.3)) {
+                offset = -UIScreen.main.bounds.height / 2
+                opacity = 0
+            }
+
+            // Animate particles outward
+            withAnimation(.easeOut(duration: 1.0).delay(0.1)) {
+                for i in particles.indices {
+                    particles[i].x *= 3
+                    particles[i].y *= 3
+                }
+            }
+        }
+    }
+
+    private var bubbleColor: Color {
+        switch celebration.streak {
+        case 1: return .green
+        case 2: return .blue
+        case 3: return .purple
+        case 4: return .orange
+        default: return .red
+        }
+    }
+
+    private func spawnParticles() {
+        let count = min(celebration.streak + 2, 8)
+        particles = (0..<count).map { i in
+            let angle = Double(i) / Double(count) * 2 * .pi
+            let radius: CGFloat = 30
+            return (
+                id: i,
+                x: cos(angle) * radius,
+                y: sin(angle) * radius,
+                emoji: emojis.randomElement()!
+            )
         }
     }
 }

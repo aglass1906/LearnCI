@@ -1,5 +1,12 @@
 import SwiftUI
 
+struct MatchCelebration: Identifiable, Equatable {
+    let id = UUID()
+    let points: Int
+    let streak: Int
+    let word: String
+}
+
 struct WordCrushTile: Identifiable, Equatable {
     let id: UUID
     var word: String
@@ -27,6 +34,7 @@ class WordCrushGameViewModel {
     var streak: Int = 0
     var isAnimating: Bool = false
     var shakeTileIds: Set<UUID> = []
+    var matchCelebration: MatchCelebration?
 
     // Data
     var deck: CardDeck
@@ -38,6 +46,9 @@ class WordCrushGameViewModel {
     private var cardPool: [LearningCard] = []
     private var cardPoolIndex: Int = 0
     private var batchErrors: [String: Bool] = [:]
+
+    // Dependencies
+    var audioManager: AudioManager?
 
     // Callbacks
     var onGrade: ((SmartSessionManager.Grade) -> Void)?
@@ -116,6 +127,33 @@ class WordCrushGameViewModel {
             if let idx = tiles.firstIndex(where: { $0.id == tile.id }) {
                 tiles[idx].isSelected = true
             }
+            playAudio(for: tile)
+        }
+    }
+
+    // MARK: - Audio
+
+    private func playAudio(for tile: WordCrushTile) {
+        guard tile.isTarget else { return }
+        guard let card = sessionCards.first(where: { $0.id == tile.cardId })
+                ?? deck.cards.first(where: { $0.id == tile.cardId }) else { return }
+
+        if let audioFile = card.audioWordFile {
+            audioManager?.playAudio(
+                named: audioFile,
+                folderName: deck.baseFolderName,
+                text: card.wordTarget,
+                language: deck.language,
+                useFallback: config.useTTSFallback,
+                ttsRate: config.ttsRate
+            )
+        } else {
+            audioManager?.speak(
+                text: card.wordTarget,
+                language: deck.language,
+                gender: config.ttsVoiceGender,
+                rate: config.ttsRate
+            )
         }
     }
 
@@ -129,6 +167,11 @@ class WordCrushGameViewModel {
         matchesFound += 1
 
         SoundManager.shared.play(.match)
+
+        // Show celebration
+        let pointsEarned = 10 * streakBonus
+        let matchedWord = tile1.isTarget ? tile1.word : tile2.word
+        matchCelebration = MatchCelebration(points: pointsEarned, streak: streak, word: matchedWord.isEmpty ? tile2.word : matchedWord)
 
         // Mark as matched
         withAnimation(.easeOut(duration: 0.3)) {

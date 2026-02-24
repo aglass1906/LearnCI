@@ -295,7 +295,7 @@ struct GameConfiguration: Codable, Equatable {
     var ttsVoiceGender: String = "female"
     
     var linkerTargetMode: LinkerTargetMode = .english
-    var wordCrushGridSize: WordCrushGridSize = .medium
+    var wordCrushGridSize: WordCrushGridSize = .small
     var wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord
 
     enum CodingKeys: String, CodingKey {
@@ -317,7 +317,7 @@ struct GameConfiguration: Codable, Equatable {
          ttsRate: Float = 0.5, 
          ttsVoiceGender: String = "female",
          linkerTargetMode: LinkerTargetMode = .english,
-         wordCrushGridSize: WordCrushGridSize = .medium,
+         wordCrushGridSize: WordCrushGridSize = .small,
          wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord) {
         self.gameType = gameType
         self.word = word
@@ -363,7 +363,7 @@ struct GameConfiguration: Codable, Equatable {
         autoNextDelay = try container.decodeIfPresent(TimeInterval.self, forKey: .autoNextDelay) ?? 2.0
         confirmation = try container.decodeIfPresent(ConfirmationStyle.self, forKey: .confirmation) ?? .quiz
         linkerTargetMode = try container.decodeIfPresent(LinkerTargetMode.self, forKey: .linkerTargetMode) ?? .english
-        wordCrushGridSize = try container.decodeIfPresent(WordCrushGridSize.self, forKey: .wordCrushGridSize) ?? .medium
+        wordCrushGridSize = try container.decodeIfPresent(WordCrushGridSize.self, forKey: .wordCrushGridSize) ?? .small
         wordCrushDisplayMode = try container.decodeIfPresent(WordCrushDisplayMode.self, forKey: .wordCrushDisplayMode) ?? .wordToWord
     }
     

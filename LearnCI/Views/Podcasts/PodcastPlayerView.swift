@@ -133,6 +133,20 @@ struct PodcastPlayerView: View {
             title: episode.title,
             artist: episode.show?.title ?? "Podcast"
         )
+
+        // Load artwork for lock screen / Dynamic Island
+        if let artworkUrlStr = episode.show?.artworkUrl,
+           let artworkUrl = URL(string: artworkUrlStr) {
+            Task {
+                if let (data, _) = try? await URLSession.shared.data(from: artworkUrl),
+                   let image = UIImage(data: data) {
+                    await MainActor.run {
+                        artworkImage = image
+                        audioManager.updateStreamNowPlayingInfo(artworkImage: image)
+                    }
+                }
+            }
+        }
     }
 
     private func cleanupSession() {

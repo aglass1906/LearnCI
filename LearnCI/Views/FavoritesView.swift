@@ -24,6 +24,7 @@ struct FavoritesView: View {
     @State private var selectedResourceLink: Favorite? // For opening links
     // @State private var showBrowser = false // Removed in favor of item-based sheet
     @State private var browserUrl: URL?
+    @State private var browserStartTime: Date?
     @State private var selectedPodcastShow: PodcastShow?
     @State private var podcastManager = PodcastManager()
     @State private var showYouTubeAuthAlert = false
@@ -146,9 +147,8 @@ struct FavoritesView: View {
         }
         .sheet(item: $browserUrl) { url in
             InAppBrowserView(url: url) {
-                browserUrl = nil
+                handleBrowserDismiss()
             }
-            .ignoresSafeArea()
         }
         .alert("Debug Info", isPresented: $showError) {
             Button("OK", role: .cancel) { }
@@ -190,10 +190,10 @@ struct FavoritesView: View {
             return
         }
 
-        // YouTube favorites → native channel/playlist browser
+        // YouTube favorites → native channel/playlist browser (or fallback to browser)
         if fav.type == .youtube {
-            guard youtubeManager.isAuthenticated else {
-                showYouTubeAuthAlert = true
+            if !youtubeManager.isAuthenticated {
+                if let url = URL(string: fav.consumptionUrl) { openInBrowser(url) }
                 return
             }
             let url = fav.consumptionUrl
@@ -215,12 +215,12 @@ struct FavoritesView: View {
                         }
                     } else {
                         await MainActor.run {
-                            if let url = URL(string: url) { browserUrl = url }
+                            if let url = URL(string: url) { openInBrowser(url) }
                         }
                     }
                 }
             } else {
-                if let url = URL(string: url) { browserUrl = url }
+                if let url = URL(string: url) { openInBrowser(url) }
             }
             return
         }
@@ -268,14 +268,14 @@ struct FavoritesView: View {
                              showError = true
                              
                              if let url = URL(string: fav.consumptionUrl) {
-                                browserUrl = url
+                                openInBrowser(url)
                             }
                         }
                     }
                 } else {
                       await MainActor.run {
                             if let url = URL(string: fav.consumptionUrl) {
-                                browserUrl = url
+                                openInBrowser(url)
                             }
                         }
                 }
@@ -283,7 +283,7 @@ struct FavoritesView: View {
         } else {
             // Open Link
             if let url = URL(string: fav.consumptionUrl) {
-                browserUrl = url
+                openInBrowser(url)
             }
         }
     }
@@ -307,11 +307,38 @@ struct FavoritesView: View {
     
     // @State private var isPlaylistNavigation = false // Removed State
 
+    // MARK: - Browser Helpers
+
+    func openInBrowser(_ url: URL) {
+        browserUrl = url
+        browserStartTime = Date()
+    }
+
+    func handleBrowserDismiss() {
+        browserUrl = nil
+        if let start = browserStartTime {
+            let minutes = Int(Date().timeIntervalSince(start) / 60)
+            if minutes > 0 {
+                let activity = UserActivity(
+                    date: start,
+                    minutes: minutes,
+                    activityType: .watchingVideos,
+                    language: .spanish,
+                    userID: authManager.currentUser,
+                    comment: "Browsed content"
+                )
+                modelContext.insert(activity)
+                try? modelContext.save()
+            }
+        }
+        browserStartTime = nil
+    }
+
     // MARK: - Helpers (Duplicated from VideoView - should be extracted if exact match needed)
-    
+
     private func isVideoWatched(_ videoId: String) -> Bool {
         allActivities.contains { activity in
-            activity.activityType == .watchingVideos && 
+            activity.activityType == .watchingVideos &&
             (activity.comment?.contains(videoId) ?? false)
         }
     }

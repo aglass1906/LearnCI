@@ -18,10 +18,6 @@ struct ResourceDetailView: View {
     
     // @State private var showBrowser = false // Removed in favor of item-based sheet
     @State private var startTime: Date?
-    @State private var readingDuration: TimeInterval = 0
-    @State private var showTimeLogSheet = false
-    @State private var logMinutes: Double = 5
-    @State private var logComment: String = ""
     
     @State private var browserUrl: URL?
     @State private var podcastManager = PodcastManager()
@@ -58,8 +54,8 @@ struct ResourceDetailView: View {
     }
     
     func openYouTubeChannel(url: String, title: String, thumbnail: String?) {
-        guard youtubeManager.isAuthenticated else {
-            showYouTubeAuthAlert = true
+        if !youtubeManager.isAuthenticated {
+            if let url = URL(string: url) { openUrl(url) }
             return
         }
         if let channelId = FavoritesManager.resolveChannelId(from: url) {
@@ -125,33 +121,21 @@ struct ResourceDetailView: View {
     func handleBrowserDismiss() {
         browserUrl = nil
         if let start = startTime {
-            let end = Date()
-            readingDuration = end.timeIntervalSince(start)
-            
-            // If read for more than 1 minute, prompt to log
-            if readingDuration > 60 {
-                logMinutes = max(1, round(readingDuration / 60))
-                logComment = "Read: \(resource.title)"
-                showTimeLogSheet = true
+            let minutes = Int(Date().timeIntervalSince(start) / 60)
+            if minutes > 0 {
+                let activity = UserActivity(
+                    date: start,
+                    minutes: minutes,
+                    activityType: mapResourceTypeToActivity(resource.type),
+                    language: Language(rawValue: resource.language) ?? .spanish,
+                    userID: authManager.currentUser,
+                    comment: "\(resource.title)"
+                )
+                modelContext.insert(activity)
+                try? modelContext.save()
             }
+            startTime = nil
         }
-    }
-    
-    func saveActivity() {
-        let minutes = Int(logMinutes)
-        guard minutes > 0 else { return }
-        
-        let activity = UserActivity(
-            date: Date(),
-            minutes: minutes,
-            activityType: mapResourceTypeToActivity(resource.type),
-            language: Language(rawValue: resource.language) ?? .spanish,
-            userID: authManager.currentUser,
-            comment: logComment
-        )
-        
-        modelContext.insert(activity)
-        // SwiftData autosaves, try? modelContext.save() is optional but good practice
     }
     
     func mapResourceTypeToActivity(_ type: ResourceType) -> ActivityType {
@@ -455,14 +439,6 @@ extension ResourceDetailView {
         }
         .sheet(item: $browserUrl) { url in
             InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
-                .ignoresSafeArea()
-        }
-        .sheet(isPresented: $showTimeLogSheet) {
-            LogActivitySheet(
-                minutes: $logMinutes,
-                comment: $logComment,
-                onSave: saveActivity
-            )
         }
         .alert("YouTube Not Connected", isPresented: $showYouTubeAuthAlert) {
             Button("OK", role: .cancel) { }

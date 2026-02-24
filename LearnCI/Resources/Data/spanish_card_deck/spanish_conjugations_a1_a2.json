@@ -9,7 +9,8 @@
         "multipleChoice",
         "audioCloze",
         "memoryMatch",
-        "linker"
+        "linker",
+        "wordCrush"
     ],
     "gameConfiguration": {
         "flashcards": {

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum ElementVisibility: String, Codable, CaseIterable, Identifiable {
     case visible = "Show"      // Text: Visible, Audio: Auto-play
@@ -136,9 +137,10 @@ struct GameConfiguration: Codable, Equatable {
         case multipleChoice = "Multiple Choice"
         case audioCloze = "Listening Challenge"
         case linker = "Column Connect"
-        
+        case wordCrush = "Word Crush"
+
         var id: String { rawValue }
-        
+
         var icon: String {
             switch self {
             case .flashcards: return "rectangle.stack.fill"
@@ -147,9 +149,10 @@ struct GameConfiguration: Codable, Equatable {
             case .multipleChoice: return "list.bullet.clipboard"
             case .audioCloze: return "headphones"
             case .linker: return "link"
+            case .wordCrush: return "square.grid.3x3.fill"
             }
         }
-        
+
         var description: String {
             switch self {
             case .flashcards: return "Classic study mode with spaced repetition."
@@ -158,9 +161,34 @@ struct GameConfiguration: Codable, Equatable {
             case .multipleChoice: return "Select the correct answer from 4 options."
             case .audioCloze: return "Listen and fill in the missing word."
             case .linker: return "Connect matching items between two columns."
+            case .wordCrush: return "Match word pairs in a cascading grid."
             }
         }
-        
+
+        var imageName: String {
+            switch self {
+            case .flashcards: return "game_flashcards"
+            case .memoryMatch: return "game_memory_match"
+            case .story: return "game_story"
+            case .multipleChoice: return "game_multiple_choice"
+            case .audioCloze: return "game_audio_cloze"
+            case .linker: return "game_linker"
+            case .wordCrush: return "game_word_crush"
+            }
+        }
+
+        var tileColor: Color {
+            switch self {
+            case .flashcards: return .blue
+            case .memoryMatch: return .purple
+            case .story: return .orange
+            case .multipleChoice: return .green
+            case .audioCloze: return .pink
+            case .linker: return .cyan
+            case .wordCrush: return .indigo
+            }
+        }
+
         // Custom decoding to handle case-insensitive "flashcards" vs "Flashcards"
         init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
@@ -188,6 +216,7 @@ struct GameConfiguration: Codable, Equatable {
             case "memorymatch", "memory match": self = .memoryMatch
             case "story": self = .story
             case "multiplechoice": self = .multipleChoice
+            case "wordcrush", "word crush", "word_crush": self = .wordCrush
             default:
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid GameType: \(rawString)")
             }

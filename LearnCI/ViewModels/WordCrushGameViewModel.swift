@@ -1,0 +1,319 @@
+import SwiftUI
+
+struct WordCrushTile: Identifiable, Equatable {
+    let id: UUID
+    var word: String
+    var cardId: String       // links back to LearningCard.id
+    var isTarget: Bool       // true = target language, false = native
+    var row: Int
+    var col: Int
+    var isMatched: Bool = false
+    var isSelected: Bool = false
+}
+
+@Observable
+class WordCrushGameViewModel {
+    // Grid constants
+    let columns = 4
+    let rows = 5
+    var tileCount: Int { columns * rows }
+
+    // Game state
+    var tiles: [WordCrushTile] = []
+    var selectedTileId: UUID?
+    var matchesFound: Int = 0
+    var score: Int = 0
+    var streak: Int = 0
+    var isAnimating: Bool = false
+    var shakeTileIds: Set<UUID> = []
+
+    // Data
+    var deck: CardDeck
+    var sessionCards: [LearningCard]
+    var config: GameConfiguration
+    var sessionCardGoal: Int
+
+    // Card pool for refilling
+    private var cardPool: [LearningCard] = []
+    private var cardPoolIndex: Int = 0
+    private var batchErrors: [String: Bool] = [:]
+
+    // Callbacks
+    var onGrade: ((SmartSessionManager.Grade) -> Void)?
+    var onMatchFound: (() -> Void)?
+
+    init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
+        self.deck = deck
+        self.sessionCards = sessionCards
+        self.config = config
+        self.sessionCardGoal = sessionCardGoal
+        self.onGrade = onGrade
+        setupGrid()
+    }
+
+    // MARK: - Setup
+
+    func setupGrid() {
+        tiles.removeAll()
+        cardPoolIndex = 0
+
+        // Build a shuffled pool of cards, repeating if needed to fill at least 10 pairs (20 tiles)
+        var pool = sessionCards.shuffled()
+        while pool.count < 10 {
+            pool.append(contentsOf: sessionCards.shuffled())
+        }
+        cardPool = pool
+
+        // Take first 10 cards for 20 tiles (10 pairs)
+        let initialCards = Array(cardPool.prefix(10))
+        cardPoolIndex = 10
+
+        var newTiles: [WordCrushTile] = []
+        for card in initialCards {
+            newTiles.append(WordCrushTile(
+                id: UUID(),
+                word: card.wordTarget,
+                cardId: card.id,
+                isTarget: true,
+                row: 0, col: 0
+            ))
+            newTiles.append(WordCrushTile(
+                id: UUID(),
+                word: card.wordNative,
+                cardId: card.id,
+                isTarget: false,
+                row: 0, col: 0
+            ))
+        }
+
+        newTiles.shuffle()
+
+        // Assign grid positions
+        for i in newTiles.indices {
+            newTiles[i].row = i / columns
+            newTiles[i].col = i % columns
+        }
+
+        tiles = newTiles
+    }
+
+    // MARK: - Tile Selection
+
+    func selectTile(_ tile: WordCrushTile) {
+        guard !isAnimating, !tile.isMatched else { return }
+
+        if let selectedId = selectedTileId {
+            // Second selection
+            if selectedId == tile.id {
+                // Deselect
+                deselectAll()
+                return
+            }
+
+            guard let firstTile = tiles.first(where: { $0.id == selectedId }) else {
+                deselectAll()
+                return
+            }
+
+            // Check match: same cardId, different language side
+            if firstTile.cardId == tile.cardId && firstTile.isTarget != tile.isTarget {
+                handleMatch(tile1: firstTile, tile2: tile)
+            } else {
+                handleMismatch(tile1: firstTile, tile2: tile)
+            }
+        } else {
+            // First selection
+            selectedTileId = tile.id
+            if let idx = tiles.firstIndex(where: { $0.id == tile.id }) {
+                tiles[idx].isSelected = true
+            }
+        }
+    }
+
+    // MARK: - Match / Mismatch
+
+    private func handleMatch(tile1: WordCrushTile, tile2: WordCrushTile) {
+        isAnimating = true
+        streak += 1
+        let streakBonus = min(streak, 5) // Cap bonus at 5x
+        score += 10 * streakBonus
+        matchesFound += 1
+
+        SoundManager.shared.play(.match)
+
+        // Mark as matched
+        withAnimation(.easeOut(duration: 0.3)) {
+            if let idx1 = tiles.firstIndex(where: { $0.id == tile1.id }) {
+                tiles[idx1].isMatched = true
+                tiles[idx1].isSelected = false
+            }
+            if let idx2 = tiles.firstIndex(where: { $0.id == tile2.id }) {
+                tiles[idx2].isMatched = true
+                tiles[idx2].isSelected = false
+            }
+        }
+        selectedTileId = nil
+
+        // Grade the card
+        let grade: SmartSessionManager.Grade = batchErrors[tile1.cardId] == true ? .hard : .good
+        if let card = sessionCards.first(where: { $0.id == tile1.cardId }) {
+            SmartSessionManager.shared.completeBatch(cards: [card], grade: grade)
+        }
+        onMatchFound?()
+
+        // Apply gravity + refill after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            self.applyGravity()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.refillGrid()
+                self.isAnimating = false
+            }
+        }
+    }
+
+    private func handleMismatch(tile1: WordCrushTile, tile2: WordCrushTile) {
+        streak = 0
+        batchErrors[tile1.cardId] = true
+        batchErrors[tile2.cardId] = true
+
+        SoundManager.shared.play(.mismatch)
+
+        // Shake animation
+        shakeTileIds = [tile1.id, tile2.id]
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.shakeTileIds.removeAll()
+            self.deselectAll()
+        }
+    }
+
+    private func deselectAll() {
+        selectedTileId = nil
+        for i in tiles.indices {
+            tiles[i].isSelected = false
+        }
+    }
+
+    // MARK: - Gravity
+
+    func applyGravity() {
+        // Process column by column: matched tiles leave gaps, tiles above fall down
+        withAnimation(.easeIn(duration: 0.25)) {
+            for col in 0..<columns {
+                // Get non-matched tiles in this column, sorted by row (bottom to top)
+                var columnTiles = tiles.filter { $0.col == col && !$0.isMatched }
+                    .sorted { $0.row > $1.row }
+
+                // Assign new rows from bottom up
+                var currentRow = rows - 1
+                for i in columnTiles.indices {
+                    columnTiles[i].row = currentRow
+                    currentRow -= 1
+                }
+
+                // Update the main tiles array
+                for updated in columnTiles {
+                    if let idx = tiles.firstIndex(where: { $0.id == updated.id }) {
+                        tiles[idx].row = updated.row
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Refill
+
+    func refillGrid() {
+        // Remove matched tiles
+        tiles.removeAll { $0.isMatched }
+
+        let emptySlots = tileCount - tiles.count
+        guard emptySlots > 0 else { return }
+
+        // We need pairs (2 tiles per card), so calculate how many cards we need
+        let pairsNeeded = emptySlots / 2
+
+        var newTiles: [WordCrushTile] = []
+
+        for _ in 0..<pairsNeeded {
+            let card = nextCard()
+            newTiles.append(WordCrushTile(
+                id: UUID(),
+                word: card.wordTarget,
+                cardId: card.id,
+                isTarget: true,
+                row: 0, col: 0
+            ))
+            newTiles.append(WordCrushTile(
+                id: UUID(),
+                word: card.wordNative,
+                cardId: card.id,
+                isTarget: false,
+                row: 0, col: 0
+            ))
+        }
+
+        // If odd slot remains, add a single random tile (won't form a pair immediately)
+        if emptySlots % 2 != 0 {
+            let card = nextCard()
+            newTiles.append(WordCrushTile(
+                id: UUID(),
+                word: card.wordTarget,
+                cardId: card.id,
+                isTarget: Bool.random(),
+                row: 0, col: 0
+            ))
+        }
+
+        newTiles.shuffle()
+
+        // Find empty positions (top-first for drop-in effect)
+        var occupied = Set(tiles.map { "\($0.row),\($0.col)" })
+        var emptyPositions: [(row: Int, col: Int)] = []
+        for r in 0..<rows {
+            for c in 0..<columns {
+                let key = "\(r),\(c)"
+                if !occupied.contains(key) {
+                    emptyPositions.append((r, c))
+                }
+            }
+        }
+
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            for i in newTiles.indices where i < emptyPositions.count {
+                var tile = newTiles[i]
+                tile.row = emptyPositions[i].row
+                tile.col = emptyPositions[i].col
+                tiles.append(tile)
+            }
+        }
+    }
+
+    private func nextCard() -> LearningCard {
+        if cardPoolIndex >= cardPool.count {
+            // Reshuffle and restart
+            cardPool = sessionCards.shuffled()
+            cardPoolIndex = 0
+        }
+        let card = cardPool[cardPoolIndex]
+        cardPoolIndex += 1
+        return card
+    }
+
+    // MARK: - Helpers
+
+    func tilesAt(row: Int, col: Int) -> WordCrushTile? {
+        tiles.first { $0.row == row && $0.col == col && !$0.isMatched }
+    }
+
+    func restartGame() {
+        score = 0
+        streak = 0
+        matchesFound = 0
+        batchErrors.removeAll()
+        shakeTileIds.removeAll()
+        selectedTileId = nil
+        isAnimating = false
+        setupGrid()
+    }
+}

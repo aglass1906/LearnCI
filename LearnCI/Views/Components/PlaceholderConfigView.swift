@@ -74,6 +74,8 @@ struct PlaceholderConfigView: View {
             return "Connect words or phrases to form correct sentences or associations. Test your understanding of relationships between words."
         case .story:
             return "Read through stories in your target language with audio support. Immerse yourself in contextual learning."
+        case .wordCrush:
+            return "Match word pairs in a cascading grid. Tap matching target and native language tiles to clear them and earn streak bonuses."
         }
     }
 }

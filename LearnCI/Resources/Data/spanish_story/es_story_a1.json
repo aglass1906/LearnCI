@@ -13,7 +13,8 @@
         "memoryMatch",
         "multipleChoice",
         "audioCloze",
-        "linker"
+        "linker",
+        "wordCrush"
     ],
     "gameConfiguration": {
         "story": {

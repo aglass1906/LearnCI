@@ -28,26 +28,7 @@ struct GameConfigurationView: View {
             VStack(spacing: 25) {
                 // Stage 1: Deck Selection Only
                 VStack(spacing: 16) {
-                    // Row 1: Game Mode
-                    Menu {
-                        Picker("Game Mode", selection: $selectedGameType) {
-                            ForEach(GameConfiguration.GameType.allCases) { type in
-                                Label(type.rawValue, systemImage: type.icon)
-                                    .tag(type)
-                            }
-                        }
-                    } label: {
-                        SettingsRow(
-                            icon: selectedGameType.icon,
-                            iconColor: .indigo,
-                            text: selectedGameType.rawValue,
-                            subText: "Tap to change game mode"
-                        )
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
-                        .cornerRadius(12)
-                    }
-                    
-                    // Row 2: Deck Selection
+                    // Row 1: Deck Selection
                     Button(action: { showDeckPicker = true }) {
                         SettingsRow(
                             icon: "menucard.fill",

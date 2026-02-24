@@ -12,6 +12,7 @@ struct GameView: View {
 
     // State Management
     enum GameSetupStage {
+        case gameSelection            // Stage 0
         case deckSelection           // Stage 1
         case sessionConfiguration     // Stage 2
         case gameSpecificConfig       // Stage 3
@@ -21,7 +22,7 @@ struct GameView: View {
         case finished                 // Stage 7
     }
 
-    @State private var setupStage: GameSetupStage = .deckSelection
+    @State private var setupStage: GameSetupStage = .gameSelection
 
     // Configuration Settings (drive setup UI bindings)
     @State private var sessionDuration: Int = 15 // Minutes
@@ -187,6 +188,12 @@ struct GameView: View {
     @ViewBuilder
     var mainContent: some View {
         switch setupStage {
+        case .gameSelection:
+            let _ = print("DEBUG: Showing gameSelection view")
+            GameSelectionView(
+                selectedGameType: $selectedGameType,
+                onGameSelected: { setupStage = .deckSelection }
+            )
         case .deckSelection:
             let _ = print("DEBUG: Showing deckSelection view")
             configurationView
@@ -316,7 +323,7 @@ struct GameView: View {
                 }
             }
         }
-        if setupStage == .deckSelection {
+        if setupStage == .gameSelection {
             setupConfiguration()
             dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
@@ -324,6 +331,7 @@ struct GameView: View {
 
     var navigationTitle: String {
         switch setupStage {
+        case .gameSelection: return "Choose a Game"
         case .deckSelection: return "Select Deck"
         case .sessionConfiguration: return "Session Options"
         case .gameSpecificConfig: return "Game Settings"
@@ -372,9 +380,11 @@ struct GameView: View {
                             .foregroundColor(.red)
                         }
                     }
-                } else if setupStage != .deckSelection && setupStage != .starting && setupStage != .finished {
+                } else if setupStage != .gameSelection && setupStage != .starting && setupStage != .finished {
                     Button("Back") {
                         switch setupStage {
+                        case .deckSelection:
+                            setupStage = .gameSelection
                         case .sessionConfiguration:
                             setupStage = .deckSelection
                         case .gameSpecificConfig:

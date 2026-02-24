@@ -9,7 +9,17 @@ struct WordCrushGameView: View {
     var onGrade: ((SmartSessionManager.Grade) -> Void)?
     var onMatchFound: (() -> Void)?
 
-    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
+    private var gridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 8), count: viewModel.columns)
+    }
+
+    private var tileHeight: CGFloat {
+        switch viewModel.config.wordCrushGridSize {
+        case .small: return 64
+        case .medium: return 56
+        case .large: return 48
+        }
+    }
 
     init(deck: CardDeck, sessionCards: [LearningCard], sessionConfig: GameConfiguration, sessionCardGoal: Int = 20, onFinish: @escaping () -> Void, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil, onMatchFound: (() -> Void)? = nil) {
         _viewModel = State(initialValue: WordCrushGameViewModel(
@@ -93,7 +103,9 @@ struct WordCrushGameView: View {
             ForEach(sortedTiles) { tile in
                 WordCrushTileView(
                     tile: tile,
-                    isShaking: viewModel.shakeTileIds.contains(tile.id)
+                    isShaking: viewModel.shakeTileIds.contains(tile.id),
+                    height: tileHeight,
+                    folderName: viewModel.deck.baseFolderName
                 )
                 .onTapGesture {
                     viewModel.selectTile(tile)
@@ -116,17 +128,15 @@ struct WordCrushGameView: View {
 struct WordCrushTileView: View {
     let tile: WordCrushTile
     let isShaking: Bool
+    var height: CGFloat = 56
+    var folderName: String?
 
     @State private var shakeOffset: CGFloat = 0
 
     var body: some View {
-        Text(tile.word)
-            .font(.system(.body, design: .rounded).bold())
-            .minimumScaleFactor(0.6)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
+        tileContent
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: height)
             .background(tileColor)
             .cornerRadius(10)
             .overlay(
@@ -141,6 +151,20 @@ struct WordCrushTileView: View {
                     performShake()
                 }
             }
+    }
+
+    @ViewBuilder
+    private var tileContent: some View {
+        if let media = tile.mediaFile {
+            ImageLoaderView(filename: media, folderName: folderName, fallbackText: tile.word.isEmpty ? "?" : tile.word)
+                .padding(4)
+        } else {
+            Text(tile.word)
+                .font(.system(height < 56 ? .caption : .body, design: .rounded).bold())
+                .minimumScaleFactor(0.5)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+        }
     }
 
     private var tileColor: Color {

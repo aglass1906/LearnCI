@@ -9,13 +9,14 @@ struct WordCrushTile: Identifiable, Equatable {
     var col: Int
     var isMatched: Bool = false
     var isSelected: Bool = false
+    var mediaFile: String?   // for image display mode
 }
 
 @Observable
 class WordCrushGameViewModel {
-    // Grid constants
-    let columns = 4
-    let rows = 5
+    // Grid dimensions (from config)
+    var columns: Int { config.wordCrushGridSize.columns }
+    var rows: Int { config.wordCrushGridSize.rows }
     var tileCount: Int { columns * rows }
 
     // Game state
@@ -57,33 +58,21 @@ class WordCrushGameViewModel {
         tiles.removeAll()
         cardPoolIndex = 0
 
-        // Build a shuffled pool of cards, repeating if needed to fill at least 10 pairs (20 tiles)
+        let pairsNeeded = tileCount / 2
+
+        // Build a shuffled pool of cards, repeating if needed
         var pool = sessionCards.shuffled()
-        while pool.count < 10 {
+        while pool.count < pairsNeeded {
             pool.append(contentsOf: sessionCards.shuffled())
         }
         cardPool = pool
 
-        // Take first 10 cards for 20 tiles (10 pairs)
-        let initialCards = Array(cardPool.prefix(10))
-        cardPoolIndex = 10
+        let initialCards = Array(cardPool.prefix(pairsNeeded))
+        cardPoolIndex = pairsNeeded
 
         var newTiles: [WordCrushTile] = []
         for card in initialCards {
-            newTiles.append(WordCrushTile(
-                id: UUID(),
-                word: card.wordTarget,
-                cardId: card.id,
-                isTarget: true,
-                row: 0, col: 0
-            ))
-            newTiles.append(WordCrushTile(
-                id: UUID(),
-                word: card.wordNative,
-                cardId: card.id,
-                isTarget: false,
-                row: 0, col: 0
-            ))
+            newTiles.append(contentsOf: makeTilePair(for: card))
         }
 
         newTiles.shuffle()
@@ -237,32 +226,14 @@ class WordCrushGameViewModel {
 
         for _ in 0..<pairsNeeded {
             let card = nextCard()
-            newTiles.append(WordCrushTile(
-                id: UUID(),
-                word: card.wordTarget,
-                cardId: card.id,
-                isTarget: true,
-                row: 0, col: 0
-            ))
-            newTiles.append(WordCrushTile(
-                id: UUID(),
-                word: card.wordNative,
-                cardId: card.id,
-                isTarget: false,
-                row: 0, col: 0
-            ))
+            newTiles.append(contentsOf: makeTilePair(for: card))
         }
 
-        // If odd slot remains, add a single random tile (won't form a pair immediately)
+        // If odd slot remains, add a single random tile
         if emptySlots % 2 != 0 {
             let card = nextCard()
-            newTiles.append(WordCrushTile(
-                id: UUID(),
-                word: card.wordTarget,
-                cardId: card.id,
-                isTarget: Bool.random(),
-                row: 0, col: 0
-            ))
+            let pair = makeTilePair(for: card)
+            newTiles.append(pair[0])
         }
 
         newTiles.shuffle()
@@ -298,6 +269,28 @@ class WordCrushGameViewModel {
         let card = cardPool[cardPoolIndex]
         cardPoolIndex += 1
         return card
+    }
+
+    // MARK: - Tile Factory
+
+    private func makeTilePair(for card: LearningCard) -> [WordCrushTile] {
+        switch config.wordCrushDisplayMode {
+        case .wordToWord:
+            return [
+                WordCrushTile(id: UUID(), word: card.wordTarget, cardId: card.id, isTarget: true, row: 0, col: 0),
+                WordCrushTile(id: UUID(), word: card.wordNative, cardId: card.id, isTarget: false, row: 0, col: 0)
+            ]
+        case .wordToSentence:
+            return [
+                WordCrushTile(id: UUID(), word: card.wordTarget, cardId: card.id, isTarget: true, row: 0, col: 0),
+                WordCrushTile(id: UUID(), word: card.sentenceNative, cardId: card.id, isTarget: false, row: 0, col: 0)
+            ]
+        case .imageToWord:
+            return [
+                WordCrushTile(id: UUID(), word: "", cardId: card.id, isTarget: true, row: 0, col: 0, mediaFile: card.mediaFile),
+                WordCrushTile(id: UUID(), word: card.wordNative, cardId: card.id, isTarget: false, row: 0, col: 0)
+            ]
+        }
     }
 
     // MARK: - Helpers

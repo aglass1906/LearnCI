@@ -80,7 +80,7 @@ struct SessionFinishView: View {
                     }
                     
                     Button(action: {
-                        setupStage = .deckSelection
+                        setupStage = .gameSelection
                     }) {
                         Text("Return to Menu")
                             .foregroundColor(.secondary)

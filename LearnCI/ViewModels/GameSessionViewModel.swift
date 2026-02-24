@@ -119,6 +119,8 @@ class GameSessionViewModel {
         config.navigation = navigationStyle
         config.autoNextDelay = autoNextDelay
         config.linkerTargetMode = linkerTargetMode
+        config.wordCrushGridSize = customConfig.wordCrushGridSize
+        config.wordCrushDisplayMode = customConfig.wordCrushDisplayMode
 
         // Timer/scoring reset
         self.duration = TimeInterval(sessionDuration * 60)

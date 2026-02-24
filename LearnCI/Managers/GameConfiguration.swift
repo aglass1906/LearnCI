@@ -242,7 +242,39 @@ struct GameConfiguration: Codable, Equatable {
         case wordToWord = "Word to Word"
         case wordToPicture = "Word to Picture"
         case pictureToWord = "Picture to Word"
-        
+
+        var id: String { rawValue }
+    }
+
+    enum WordCrushGridSize: String, Codable, CaseIterable, Identifiable {
+        case small = "Small"    // 3x4 = 12 tiles, 6 pairs
+        case medium = "Medium"  // 4x5 = 20 tiles, 10 pairs
+        case large = "Large"    // 5x6 = 30 tiles, 15 pairs
+
+        var id: String { rawValue }
+
+        var columns: Int {
+            switch self {
+            case .small: return 3
+            case .medium: return 4
+            case .large: return 5
+            }
+        }
+
+        var rows: Int {
+            switch self {
+            case .small: return 4
+            case .medium: return 5
+            case .large: return 6
+            }
+        }
+    }
+
+    enum WordCrushDisplayMode: String, Codable, CaseIterable, Identifiable {
+        case wordToWord = "Word \u{2194} Word"
+        case wordToSentence = "Word \u{2194} Sentence"
+        case imageToWord = "Image \u{2194} Word"
+
         var id: String { rawValue }
     }
     
@@ -263,10 +295,13 @@ struct GameConfiguration: Codable, Equatable {
     var ttsVoiceGender: String = "female"
     
     var linkerTargetMode: LinkerTargetMode = .english
-    
+    var wordCrushGridSize: WordCrushGridSize = .medium
+    var wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord
+
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
         case navigation, autoNextDelay, confirmation, linkerTargetMode
+        case wordCrushGridSize, wordCrushDisplayMode
     }
     
     init(gameType: GameType = .flashcards, 
@@ -281,7 +316,9 @@ struct GameConfiguration: Codable, Equatable {
          useTTSFallback: Bool = true, 
          ttsRate: Float = 0.5, 
          ttsVoiceGender: String = "female",
-         linkerTargetMode: LinkerTargetMode = .english) {
+         linkerTargetMode: LinkerTargetMode = .english,
+         wordCrushGridSize: WordCrushGridSize = .medium,
+         wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -295,6 +332,8 @@ struct GameConfiguration: Codable, Equatable {
         self.ttsRate = ttsRate
         self.ttsVoiceGender = ttsVoiceGender
         self.linkerTargetMode = linkerTargetMode
+        self.wordCrushGridSize = wordCrushGridSize
+        self.wordCrushDisplayMode = wordCrushDisplayMode
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -324,6 +363,8 @@ struct GameConfiguration: Codable, Equatable {
         autoNextDelay = try container.decodeIfPresent(TimeInterval.self, forKey: .autoNextDelay) ?? 2.0
         confirmation = try container.decodeIfPresent(ConfirmationStyle.self, forKey: .confirmation) ?? .quiz
         linkerTargetMode = try container.decodeIfPresent(LinkerTargetMode.self, forKey: .linkerTargetMode) ?? .english
+        wordCrushGridSize = try container.decodeIfPresent(WordCrushGridSize.self, forKey: .wordCrushGridSize) ?? .medium
+        wordCrushDisplayMode = try container.decodeIfPresent(WordCrushDisplayMode.self, forKey: .wordCrushDisplayMode) ?? .wordToWord
     }
     
     
@@ -342,7 +383,9 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(ttsRate, forKey: .ttsRate)
         try container.encode(ttsVoiceGender, forKey: .ttsVoiceGender)
         try container.encode(linkerTargetMode, forKey: .linkerTargetMode)
-        
+        try container.encode(wordCrushGridSize, forKey: .wordCrushGridSize)
+        try container.encode(wordCrushDisplayMode, forKey: .wordCrushDisplayMode)
+
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)
     }

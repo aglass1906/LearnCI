@@ -1,6 +1,18 @@
 import Foundation
 import SwiftData
 
+struct ComprehensionQuestion: Codable, Identifiable {
+    var id: UUID = UUID()
+    let question: String   // In target language
+    let choices: [String]  // Exactly 4 choices, in target language
+    let correctIndex: Int  // 0–3
+
+    // Exclude `id` so GPT responses (which don't include it) decode cleanly
+    enum CodingKeys: String, CodingKey {
+        case question, choices, correctIndex
+    }
+}
+
 @Model
 final class Story: Identifiable {
     @Attribute(.unique) var id: UUID
@@ -21,11 +33,17 @@ final class Story: Identifiable {
     var textGenPrompt: String? // The exact prompt used for text generation
     var imageGenPrompt: String? // The exact prompt used for image generation
     var wordTimingsJSON: String? // JSON string of [WordTiming]
+    var comprehensionQuestionsJSON: String? // JSON string of [ComprehensionQuestion]
     
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
         guard let json = wordTimingsJSON, let data = json.data(using: .utf8) else { return [] }
         return (try? JSONDecoder().decode([WordTiming].self, from: data)) ?? []
+    }
+
+    @Transient var comprehensionQuestions: [ComprehensionQuestion] {
+        guard let json = comprehensionQuestionsJSON, let data = json.data(using: .utf8) else { return [] }
+        return (try? JSONDecoder().decode([ComprehensionQuestion].self, from: data)) ?? []
     }
     // Computed properties for type safety, matching existing app patterns
     var language: Language {

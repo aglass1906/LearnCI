@@ -28,6 +28,7 @@ struct StoryDTO: Codable {
     let image_gen_prompt: String?
     let preferences_json: String?
     let word_timings_json: String?
+    let comprehension_questions_json: String?
     let language: String
     let level: Int
     let remote_audio_path: String?
@@ -751,6 +752,7 @@ struct CoachingCheckInDTO: Codable {
                 image_gen_prompt: story.imageGenPrompt,
                 preferences_json: story.preferencesJSON,
                 word_timings_json: story.wordTimingsJSON,
+                comprehension_questions_json: story.comprehensionQuestionsJSON,
                 language: story.languageRaw,
                 level: Int(story.levelRaw) ?? 1,
                 remote_audio_path: story.remoteAudioPath,
@@ -815,6 +817,9 @@ struct CoachingCheckInDTO: Codable {
                 if let timings = dto.word_timings_json {
                     existing.wordTimingsJSON = timings
                 }
+                if let questions = dto.comprehension_questions_json {
+                    existing.comprehensionQuestionsJSON = questions
+                }
             } else {
                 // Insert New
                 let newStory = Story(
@@ -836,6 +841,7 @@ struct CoachingCheckInDTO: Codable {
                     createdAt: dto.created_at
                 )
                 newStory.isFavorite = dto.is_favorite
+                newStory.comprehensionQuestionsJSON = dto.comprehension_questions_json
                 context.insert(newStory)
                 
                 // Trigger Download if needed

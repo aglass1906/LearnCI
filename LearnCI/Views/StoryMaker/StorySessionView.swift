@@ -30,6 +30,12 @@ struct StorySessionView: View {
     @State private var startTime: Date?
     @State private var didPlayAudio: Bool = false
 
+    // Comprehension Quiz
+    @State private var showQuizBanner: Bool = false
+    @State private var showComprehensionQuiz: Bool = false
+    @State private var isGeneratingQuiz: Bool = false
+    @State private var quizQuestions: [ComprehensionQuestion] = []
+
     // Word Lookup
     @State private var selectedWord: String? = nil
     @State private var selectedWordTime: Double? = nil
@@ -127,20 +133,36 @@ struct StorySessionView: View {
             .ignoresSafeArea(edges: .top)
             } // Close ScrollViewReader
             
-            // Sticky Audio Player
-            if story.audioFilename != nil || story.remoteAudioPath != nil {
-                AudioPlayerBar(
-                    isPlaying: $isPlaying,
-                    sliderValue: $sliderValue,
-                    duration: duration,
-                    playbackRate: $playbackRate,
-                    onPlayPause: togglePlay,
-                    onSkipForward: skipForward,
-                    onSkipBackward: skipBackward,
-                    onSeek: seekTo,
-                    onChangeRate: setRate
-                )
+            // Quiz Completion Banner (sits above audio bar)
+            VStack(spacing: 0) {
+                Spacer()
+                if showQuizBanner {
+                    QuizBannerView(
+                        onTakeQuiz: {
+                            showQuizBanner = false
+                            openQuiz()
+                        },
+                        onDismiss: { showQuizBanner = false }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+
+                // Sticky Audio Player
+                if story.audioFilename != nil || story.remoteAudioPath != nil {
+                    AudioPlayerBar(
+                        isPlaying: $isPlaying,
+                        sliderValue: $sliderValue,
+                        duration: duration,
+                        playbackRate: $playbackRate,
+                        onPlayPause: togglePlay,
+                        onSkipForward: skipForward,
+                        onSkipBackward: skipBackward,
+                        onSeek: seekTo,
+                        onChangeRate: setRate
+                    )
+                }
             }
+            .animation(.spring(duration: 0.4), value: showQuizBanner)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -160,6 +182,18 @@ struct StorySessionView: View {
 
                     Button(action: { showPromptDetails = true }) {
                         Label("View Prompts", systemImage: "text.viewfinder")
+                    }
+
+                    Divider()
+
+                    Button(action: openQuiz) {
+                        Label("Comprehension Quiz", systemImage: "checkmark.circle")
+                    }
+
+                    if story.comprehensionQuestionsJSON != nil {
+                        Button(action: regenerateQuiz) {
+                            Label("Regenerate Quiz", systemImage: "arrow.clockwise")
+                        }
                     }
 
                     Divider()
@@ -191,6 +225,19 @@ struct StorySessionView: View {
             StoryPromptsSheet(story: story)
                 .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: $showComprehensionQuiz) {
+            ComprehensionQuizSheet(
+                questions: quizQuestions,
+                isLoading: isGeneratingQuiz,
+                language: story.language,
+                onRetry: {
+                    story.comprehensionQuestionsJSON = nil
+                    quizQuestions = []
+                    openQuiz()
+                }
+            )
+            .presentationDetents([.large])
+        }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
                 word: selectedWord ?? "",
@@ -220,7 +267,12 @@ struct StorySessionView: View {
                     playbackRate = player.rate
                 }
             } else {
+                let justStopped = isPlaying
                 isPlaying = false
+                if justStopped && duration > 0 && sliderValue >= duration - 1.5 && !showQuizBanner {
+                    showQuizBanner = true
+                    preGenerateQuizIfNeeded()
+                }
             }
         }
         .onChange(of: heroImage) { _, newImage in
@@ -372,6 +424,62 @@ struct StorySessionView: View {
         let text = story.targetLanguageText
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
+    }
+
+    // MARK: - Comprehension Quiz
+
+    private func preGenerateQuizIfNeeded() {
+        guard story.comprehensionQuestionsJSON == nil && !isGeneratingQuiz else { return }
+        isGeneratingQuiz = true
+        Task {
+            let level = LevelManager.shared.description(for: story.level)
+            let questions = try? await OpenAIService().generateComprehensionQuestions(
+                storyText: story.targetLanguageText,
+                language: story.language.displayName,
+                level: level
+            )
+            await MainActor.run {
+                if let qs = questions, let data = try? JSONEncoder().encode(qs) {
+                    story.comprehensionQuestionsJSON = String(data: data, encoding: .utf8)
+                    try? modelContext.save()
+                    quizQuestions = qs
+                }
+                isGeneratingQuiz = false
+            }
+        }
+    }
+
+    private func openQuiz() {
+        if !story.comprehensionQuestions.isEmpty {
+            quizQuestions = story.comprehensionQuestions
+            showComprehensionQuiz = true
+        } else {
+            isGeneratingQuiz = true
+            showComprehensionQuiz = true
+            Task {
+                let level = LevelManager.shared.description(for: story.level)
+                let questions = try? await OpenAIService().generateComprehensionQuestions(
+                    storyText: story.targetLanguageText,
+                    language: story.language.displayName,
+                    level: level
+                )
+                await MainActor.run {
+                    if let qs = questions, let data = try? JSONEncoder().encode(qs) {
+                        story.comprehensionQuestionsJSON = String(data: data, encoding: .utf8)
+                        try? modelContext.save()
+                        quizQuestions = qs
+                    }
+                    isGeneratingQuiz = false
+                }
+            }
+        }
+    }
+
+    private func regenerateQuiz() {
+        story.comprehensionQuestionsJSON = nil
+        quizQuestions = []
+        try? modelContext.save()
+        openQuiz()
     }
 
     // MARK: - Text Chunking & Auto-Scroll
@@ -756,6 +864,254 @@ struct StoryInfoSheet: View {
                 .font(.body)
                 .textSelection(.enabled)
         }
+    }
+}
+
+// MARK: - Quiz Banner
+
+struct QuizBannerView: View {
+    let onTakeQuiz: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Story complete!")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text("Test your comprehension")
+                    .font(.subheadline.bold())
+            }
+            Spacer()
+            Button(action: onTakeQuiz) {
+                Text("Take Quiz →")
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Color.blue)
+                    .clipShape(Capsule())
+            }
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.caption.bold())
+                    .foregroundColor(.secondary)
+                    .padding(6)
+                    .background(Color.secondary.opacity(0.1))
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.thinMaterial)
+        .cornerRadius(16, corners: [.topLeft, .topRight])
+        .shadow(radius: 4, y: -2)
+    }
+}
+
+// MARK: - Comprehension Quiz Sheet
+
+struct ComprehensionQuizSheet: View {
+    let questions: [ComprehensionQuestion]
+    let isLoading: Bool
+    let language: Language
+    var onRetry: (() -> Void)? = nil
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var currentIndex: Int = 0
+    @State private var selectedAnswer: Int? = nil
+    @State private var score: Int = 0
+    @State private var isComplete: Bool = false
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if isLoading && questions.isEmpty {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.3)
+                        Text("Generating questions…")
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if isComplete {
+                    quizResultsView
+                } else if !questions.isEmpty {
+                    questionView
+                } else {
+                    // Generation failed or returned empty
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        Text("Couldn't load questions")
+                            .font(.headline)
+                        Text("Check your connection and try again.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button("Try Again") { onRetry?() }
+                            .buttonStyle(.borderedProminent)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+            .navigationTitle("Comprehension Quiz")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private var questionView: some View {
+        let question = questions[currentIndex]
+        return VStack(alignment: .leading, spacing: 0) {
+            // Progress bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.secondary.opacity(0.15))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.blue)
+                        .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(questions.count))
+                        .animation(.easeInOut, value: currentIndex)
+                }
+            }
+            .frame(height: 4)
+            .padding(.horizontal)
+            .padding(.bottom, 12)
+
+            Text("Question \(currentIndex + 1) of \(questions.count)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(question.question)
+                        .font(.system(size: 20, weight: .regular, design: .serif))
+                        .lineSpacing(6)
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+
+                    VStack(spacing: 10) {
+                        ForEach(question.choices.indices, id: \.self) { idx in
+                            Button {
+                                guard selectedAnswer == nil else { return }
+                                selectedAnswer = idx
+                                if idx == question.correctIndex { score += 1 }
+                            } label: {
+                                HStack {
+                                    Text(["A", "B", "C", "D"][idx])
+                                        .font(.caption.bold())
+                                        .frame(width: 24, height: 24)
+                                        .background(choiceBadgeColor(idx: idx, correctIndex: question.correctIndex))
+                                        .clipShape(Circle())
+                                        .foregroundColor(.white)
+                                    Text(question.choices[idx])
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+                                        .multilineTextAlignment(.leading)
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(choiceBackground(idx: idx, correctIndex: question.correctIndex))
+                                .cornerRadius(12)
+                            }
+                            .disabled(selectedAnswer != nil)
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    if selectedAnswer != nil {
+                        Button {
+                            if currentIndex + 1 < questions.count {
+                                currentIndex += 1
+                                selectedAnswer = nil
+                            } else {
+                                isComplete = true
+                            }
+                        } label: {
+                            Text(currentIndex + 1 < questions.count ? "Next →" : "See Results")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: selectedAnswer)
+                .padding(.bottom, 30)
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    private var quizResultsView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            ZStack {
+                Circle()
+                    .stroke(Color.secondary.opacity(0.15), lineWidth: 12)
+                    .frame(width: 120, height: 120)
+                Circle()
+                    .trim(from: 0, to: CGFloat(score) / CGFloat(questions.count))
+                    .stroke(score >= (questions.count * 3 / 4) ? Color.green : Color.orange, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 120, height: 120)
+                    .animation(.easeOut(duration: 0.8), value: score)
+                VStack(spacing: 2) {
+                    Text("\(score)")
+                        .font(.system(size: 40, weight: .bold))
+                    Text("of \(questions.count)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            VStack(spacing: 8) {
+                Text(score >= (questions.count * 3 / 4) ? "Great job!" : "Keep practicing!")
+                    .font(.title2.bold())
+                Text(score >= (questions.count * 3 / 4)
+                    ? "You understood the story well."
+                    : "Try re-reading the story and take the quiz again.")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+            Spacer()
+            Button("Done") { dismiss() }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(12)
+                .padding(.horizontal)
+                .padding(.bottom, 20)
+        }
+    }
+
+    private func choiceBackground(idx: Int, correctIndex: Int) -> Color {
+        guard let selected = selectedAnswer else { return Color(.secondarySystemBackground) }
+        if idx == correctIndex { return Color.green.opacity(0.15) }
+        if idx == selected { return Color.red.opacity(0.15) }
+        return Color(.secondarySystemBackground)
+    }
+
+    private func choiceBadgeColor(idx: Int, correctIndex: Int) -> Color {
+        guard let selected = selectedAnswer else { return Color.secondary.opacity(0.4) }
+        if idx == correctIndex { return Color.green }
+        if idx == selected { return Color.red }
+        return Color.secondary.opacity(0.3)
     }
 }
 

@@ -367,6 +367,78 @@ actor OpenAIService {
         return whisperWords.map { WordTiming(word: $0.word, start: $0.start, end: $0.end) }
     }
     
+    func generateComprehensionQuestions(
+        storyText: String, language: String, level: String, count: Int = 4
+    ) async throws -> [ComprehensionQuestion] {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let prompt = """
+        Generate \(count) multiple choice comprehension questions about the following \(language) story, for a \(level) level learner.
+        Write ALL questions and answer choices in \(language) (not English).
+        Test understanding of plot, characters, setting, and key events.
+        Each question must have exactly 4 answer choices with one correct answer.
+        Return a JSON object with a "questions" array. Each item has:
+          "question" (string), "choices" (array of 4 strings), "correctIndex" (integer 0–3).
+
+        Story:
+        \(storyText)
+        """
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a language learning assistant. Respond strictly in JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let contentString = result.choices.first?.message.content,
+              let contentData = contentString.data(using: .utf8) else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        struct QuestionsWrapper: Decodable {
+            let questions: [ComprehensionQuestion]
+        }
+
+        let wrapper = try JSONDecoder().decode(QuestionsWrapper.self, from: contentData)
+        return wrapper.questions
+    }
+
     func translateWord(_ word: String, language: String, context: String?) async throws -> (translation: String, partOfSpeech: String) {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey

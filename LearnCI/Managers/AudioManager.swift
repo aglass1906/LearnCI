@@ -45,8 +45,47 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         } catch {
             print("Failed to setup audio session: \(error)")
         }
-        
+
         setupRemoteTransportControls()
+        setupInterruptionObserver()
+    }
+
+    private func setupInterruptionObserver() {
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioInterruption(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+    }
+
+    @objc private func handleAudioInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+
+        switch type {
+        case .began:
+            // Phone call, Siri, alarm, etc. — pause but keep the player alive
+            if isStreaming {
+                streamPlayer?.pause()
+                isStreaming = false
+            }
+
+        case .ended:
+            guard let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+            if options.contains(.shouldResume), streamPlayer != nil {
+                try? AVAudioSession.sharedInstance().setActive(true)
+                streamPlayer?.play()
+                if streamPlaybackRate != 1.0 { streamPlayer?.rate = streamPlaybackRate }
+                isStreaming = true
+            }
+
+        @unknown default:
+            break
+        }
     }
     
     // MARK: - Remote Command Center (Lock Screen)
@@ -498,7 +537,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     func playStream() {
-        streamPlayer?.rate = streamPlaybackRate
+        streamPlayer?.play()
+        // Apply custom rate if set (no-op if 1.0)
+        if streamPlaybackRate != 1.0 {
+            streamPlayer?.rate = streamPlaybackRate
+        }
         isStreaming = true
     }
 

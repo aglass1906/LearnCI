@@ -24,6 +24,7 @@ struct PodcastSessionView: View {
     @State private var sessionComplete = false
     @State private var manuallyPaused = false
     @State private var toastMessage: String?
+    @State private var completedMinutes: Int? = nil  // non-nil triggers completion alert
 
     let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
@@ -107,13 +108,30 @@ struct PodcastSessionView: View {
         .onDisappear {
             saveCurrentEpisodeProgress()
             saveSessionState()
-            audioManager.stopStream()
-            logSessionActivity()
+            // Don't stop audio if the app is just going to the background (phone lock, etc.)
+            // Only stop if the user actually navigated away from the session.
+            if scenePhase != .background {
+                audioManager.stopStream()
+                logSessionActivity()
+            }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 saveCurrentEpisodeProgress()
                 saveSessionState()
+            }
+        }
+        .alert("Session Complete 🎉", isPresented: Binding(
+            get: { completedMinutes != nil },
+            set: { if !$0 { completedMinutes = nil } }
+        )) {
+            Button("Done") {
+                completedMinutes = nil
+                dismiss()
+            }
+        } message: {
+            if let mins = completedMinutes {
+                Text("You listened for \(mins) minute\(mins == 1 ? "" : "s").\nActivity has been saved.")
             }
         }
         .onReceive(timer) { _ in
@@ -312,11 +330,13 @@ struct PodcastSessionView: View {
             duration = 0
             playCurrentEpisode()
         } else {
-            // Session done
+            // Session done - all episodes played through
             isPlaying = false
             audioManager.stopStream()
             clearSessionState()
-            showToast("Session complete!")
+            logSessionActivity()
+            let mins = sessionStartTime.map { Int(Date().timeIntervalSince($0) / 60) } ?? 0
+            completedMinutes = mins
         }
 
         try? modelContext.save()
@@ -341,7 +361,8 @@ struct PodcastSessionView: View {
         clearSessionState()
         audioManager.stopStream()
         logSessionActivity()
-        dismiss()
+        let mins = sessionStartTime.map { Int(Date().timeIntervalSince($0) / 60) } ?? 0
+        completedMinutes = mins
     }
 
     private func logSessionActivity() {

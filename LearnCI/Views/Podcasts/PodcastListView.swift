@@ -18,6 +18,8 @@ struct PodcastListView: View {
     @State private var showSessionSetup = false
     @State private var sessionEpisodes: [PodcastEpisode]?
     @State private var sessionMinutes: Int = 30
+    @State private var sessionResumeIndex: Int = 0
+    @State private var resumableSession: (episodeIDs: [String], currentIndex: Int, minutes: Int)? = nil
     @State private var selectedTab: PodcastTab = .newEpisodes
 
     var body: some View {
@@ -75,6 +77,7 @@ struct PodcastListView: View {
                 onStart: { episodes, minutes in
                     showSessionSetup = false
                     sessionMinutes = minutes
+                    sessionResumeIndex = 0
                     sessionEpisodes = episodes
                 },
                 onDismiss: { showSessionSetup = false }
@@ -87,9 +90,13 @@ struct PodcastListView: View {
             if let episodes = sessionEpisodes {
                 PodcastSessionView(
                     initialEpisodes: episodes,
-                    sessionMinutes: sessionMinutes
+                    sessionMinutes: sessionMinutes,
+                    resumingFromIndex: sessionResumeIndex
                 )
             }
+        }
+        .onAppear {
+            checkForResumableSession()
         }
     }
 
@@ -105,6 +112,44 @@ struct PodcastListView: View {
                 }
             } else {
                 List {
+                    // Resume Session Banner
+                    if let saved = resumableSession {
+                        Section {
+                            HStack(spacing: 12) {
+                                Button { resumeSession() } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 36))
+                                            .foregroundColor(.green)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Resume Session")
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Text("Episode \(saved.currentIndex + 1) of \(saved.episodeIDs.count) · \(saved.minutes) min goal")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                                .buttonStyle(.plain)
+
+                                Button {
+                                    discardSavedSession()
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                        .font(.title3)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
                     // Start Session Card
                     Section {
                         Button {
@@ -158,6 +203,44 @@ struct PodcastListView: View {
             .onDelete(perform: deleteShows)
         }
         .listStyle(.plain)
+    }
+
+    private func checkForResumableSession() {
+        guard let ids = UserDefaults.standard.stringArray(forKey: "podcastSession.episodeIDs"),
+              !ids.isEmpty else {
+            resumableSession = nil
+            return
+        }
+        let index = UserDefaults.standard.integer(forKey: "podcastSession.currentIndex")
+        let minutes = UserDefaults.standard.integer(forKey: "podcastSession.minutes")
+        resumableSession = (episodeIDs: ids, currentIndex: index, minutes: minutes > 0 ? minutes : 30)
+    }
+
+    private func resumeSession() {
+        guard let saved = resumableSession else { return }
+        let idSet = Set(saved.episodeIDs)
+        let episodeMap = Dictionary(
+            uniqueKeysWithValues: allEpisodes
+                .filter { idSet.contains($0.id.uuidString) }
+                .map { ($0.id.uuidString, $0) }
+        )
+        let orderedEpisodes = saved.episodeIDs.compactMap { episodeMap[$0] }
+        guard !orderedEpisodes.isEmpty else {
+            discardSavedSession()
+            return
+        }
+        resumableSession = nil
+        sessionMinutes = saved.minutes
+        sessionResumeIndex = min(saved.currentIndex, orderedEpisodes.count - 1)
+        sessionEpisodes = orderedEpisodes
+    }
+
+    private func discardSavedSession() {
+        ["podcastSession.episodeIDs", "podcastSession.currentIndex",
+         "podcastSession.minutes", "podcastSession.startTime"].forEach {
+            UserDefaults.standard.removeObject(forKey: $0)
+        }
+        resumableSession = nil
     }
 
     private func deleteShows(at offsets: IndexSet) {

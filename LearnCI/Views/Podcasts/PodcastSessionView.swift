@@ -5,11 +5,13 @@ import Combine
 struct PodcastSessionView: View {
     let initialEpisodes: [PodcastEpisode]
     let sessionMinutes: Int
+    var resumingFromIndex: Int = 0
 
     @Environment(AudioManager.self) private var audioManager
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var currentIndex: Int = 0
@@ -98,13 +100,21 @@ struct PodcastSessionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             episodes = initialEpisodes
+            currentIndex = resumingFromIndex
             sessionStartTime = Date()
             playCurrentEpisode()
         }
         .onDisappear {
             saveCurrentEpisodeProgress()
+            saveSessionState()
             audioManager.stopStream()
             logSessionActivity()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                saveCurrentEpisodeProgress()
+                saveSessionState()
+            }
         }
         .onReceive(timer) { _ in
             guard audioManager.streamPlayer != nil else { return }
@@ -305,6 +315,7 @@ struct PodcastSessionView: View {
             // Session done
             isPlaying = false
             audioManager.stopStream()
+            clearSessionState()
             showToast("Session complete!")
         }
 
@@ -327,6 +338,7 @@ struct PodcastSessionView: View {
 
     private func endSession() {
         saveCurrentEpisodeProgress()
+        clearSessionState()
         audioManager.stopStream()
         logSessionActivity()
         dismiss()
@@ -337,9 +349,12 @@ struct PodcastSessionView: View {
         let minutes = Int(Date().timeIntervalSince(start) / 60)
         guard minutes > 0 else { return }
 
-        // Build comment with show names listened to
-        let showNames = Set(episodes.prefix(currentIndex + 1).compactMap { $0.show?.title })
-        let comment = "Session: \(showNames.joined(separator: ", "))"
+        // Build comment with each episode listened to
+        let episodeLines = episodes.prefix(currentIndex + 1).map { episode -> String in
+            let show = episode.show?.title ?? "Unknown Show"
+            return "\(show) · \(episode.title)"
+        }
+        let comment = episodeLines.joined(separator: "\n")
 
         let language = currentEpisode?.show?.language ?? .spanish
 
@@ -416,5 +431,25 @@ struct PodcastSessionView: View {
             return "\(h)h \(m)m"
         }
         return "\(m) min"
+    }
+
+    // MARK: - Session State Persistence
+
+    private func saveSessionState() {
+        guard !episodes.isEmpty else { return }
+        let ids = episodes.map { $0.id.uuidString }
+        UserDefaults.standard.set(ids, forKey: "podcastSession.episodeIDs")
+        UserDefaults.standard.set(currentIndex, forKey: "podcastSession.currentIndex")
+        UserDefaults.standard.set(sessionMinutes, forKey: "podcastSession.minutes")
+        if let start = sessionStartTime {
+            UserDefaults.standard.set(start, forKey: "podcastSession.startTime")
+        }
+    }
+
+    private func clearSessionState() {
+        ["podcastSession.episodeIDs", "podcastSession.currentIndex",
+         "podcastSession.minutes", "podcastSession.startTime"].forEach {
+            UserDefaults.standard.removeObject(forKey: $0)
+        }
     }
 }

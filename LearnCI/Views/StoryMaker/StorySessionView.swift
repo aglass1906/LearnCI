@@ -29,6 +29,15 @@ struct StorySessionView: View {
     // Analytics
     @State private var startTime: Date?
     @State private var didPlayAudio: Bool = false
+
+    // Word Lookup
+    @State private var selectedWord: String? = nil
+    @State private var selectedWordTime: Double? = nil
+    @State private var wordTranslation: String? = nil
+    @State private var wordPartOfSpeech: String? = nil
+    @State private var isTranslatingWord: Bool = false
+    @State private var showWordLookup: Bool = false
+    @State private var wordTranslationCache: [String: (translation: String, pos: String)] = [:]
     
     enum DisplayLanguage: String, CaseIterable {
         case target = "Target Language"
@@ -83,7 +92,8 @@ struct StorySessionView: View {
                                         activeWordIndex: activeWordIndex,
                                         timings: story.wordTimings,
                                         wordMatches: wordMatches,
-                                        onSeek: seekTo
+                                        onSeek: seekTo,
+                                        onWordTap: lookupWord
                                     )
                                     .id(chunk.id)
                                 }
@@ -180,6 +190,21 @@ struct StorySessionView: View {
         .sheet(isPresented: $showPromptDetails) {
             StoryPromptsSheet(story: story)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showWordLookup) {
+            WordLookupSheet(
+                word: selectedWord ?? "",
+                language: story.language,
+                translation: wordTranslation,
+                partOfSpeech: wordPartOfSpeech,
+                isLoading: isTranslatingWord,
+                seekTime: selectedWordTime,
+                onSeek: { time in
+                    seekTo(time)
+                }
+            )
+            .presentationDetents([.fraction(0.4)])
+            .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
             guard let player = audioManager.player else { return }
@@ -306,6 +331,49 @@ struct StorySessionView: View {
         }
     }
     
+    // MARK: - Word Lookup
+
+    private func lookupWord(_ word: String, time: Double) {
+        selectedWord = word
+        selectedWordTime = time
+        wordTranslation = nil
+        wordPartOfSpeech = nil
+        showWordLookup = true
+
+        let cacheKey = "\(word.lowercased())_\(story.language.rawValue)"
+        if let cached = wordTranslationCache[cacheKey] {
+            wordTranslation = cached.translation
+            wordPartOfSpeech = cached.pos
+            return
+        }
+
+        isTranslatingWord = true
+        let context = sentenceContaining(word: word)
+        Task {
+            do {
+                let result = try await OpenAIService().translateWord(word, language: story.language.displayName, context: context)
+                await MainActor.run {
+                    wordTranslation = result.translation
+                    wordPartOfSpeech = result.partOfSpeech
+                    wordTranslationCache[cacheKey] = (result.translation, result.partOfSpeech)
+                    isTranslatingWord = false
+                }
+            } catch {
+                await MainActor.run {
+                    wordTranslation = "Translation unavailable"
+                    wordPartOfSpeech = ""
+                    isTranslatingWord = false
+                }
+            }
+        }
+    }
+
+    private func sentenceContaining(word: String) -> String? {
+        let text = story.targetLanguageText
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
+        return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
+    }
+
     // MARK: - Text Chunking & Auto-Scroll
     
     struct ParagraphChunk: Identifiable, Equatable {
@@ -369,13 +437,22 @@ struct ParagraphView: View {
     let timings: [WordTiming]
     let wordMatches: [NSTextCheckingResult]
     let onSeek: (Double) -> Void
-    
+    let onWordTap: (String, Double) -> Void
+
     var body: some View {
         Text(attributedParagraph)
             .font(.system(size: 18, weight: .regular, design: .serif))
             .lineSpacing(10)
             .tint(.primary)
             .environment(\.openURL, OpenURLAction { url in
+                if url.scheme == "x-learnci-word",
+                   let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                   let word = components.queryItems?.first(where: { $0.name == "word" })?.value,
+                   let tStr = components.queryItems?.first(where: { $0.name == "t" })?.value,
+                   let targetTime = Double(tStr) {
+                    onWordTap(word, targetTime)
+                    return .handled
+                }
                 if url.scheme == "x-learnci-seek",
                    let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let tStr = components.queryItems?.first(where: { $0.name == "t" })?.value,
@@ -386,31 +463,32 @@ struct ParagraphView: View {
                 return .systemAction
             })
     }
-    
+
     private var attributedParagraph: AttributedString {
         var attrString = AttributedString(chunk.text)
-        
+
         if timings.isEmpty || chunk.text.isEmpty {
             return attrString
         }
-        
+
         for (i, match) in wordMatches.enumerated() {
             guard i < timings.count else { break }
             let timing = timings[i]
-            
+
             // Focus only on matches inside this chunk
             if NSLocationInRange(match.range.location, chunk.range) {
                 let localRange = NSRange(location: match.range.location - chunk.range.location, length: match.range.length)
-                
+
                 if let swiftRange = Range(localRange, in: chunk.text),
                    let lowerBound = AttributedString.Index(swiftRange.lowerBound, within: attrString),
                    let upperBound = AttributedString.Index(swiftRange.upperBound, within: attrString) {
-                    
+
                     let attrRange = lowerBound..<upperBound
-                    
-                    // Add jump link
-                    attrString[attrRange].link = URL(string: "x-learnci-seek://?t=\(timing.start)")
-                    
+
+                    // Word lookup link (includes word text + timestamp)
+                    let encoded = timing.word.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? timing.word
+                    attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&t=\(timing.start)")
+
                     // Highlight active
                     if i == activeWordIndex {
                         attrString[attrRange].foregroundColor = .blue
@@ -677,6 +755,94 @@ struct StoryInfoSheet: View {
             Text(value)
                 .font(.body)
                 .textSelection(.enabled)
+        }
+    }
+}
+
+// MARK: - Word Lookup Sheet
+
+struct WordLookupSheet: View {
+    let word: String
+    let language: Language
+    let translation: String?
+    let partOfSpeech: String?
+    let isLoading: Bool
+    let seekTime: Double?
+    let onSeek: (Double) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    // Word + language badge
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(word)
+                            .font(.system(size: 32, weight: .bold, design: .serif))
+                        Text(language.displayName)
+                            .font(.caption.bold())
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
+
+                    // Part of speech
+                    if let pos = partOfSpeech, !pos.isEmpty {
+                        Text(pos)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+
+                Divider()
+                    .padding(.vertical, 16)
+
+                // Translation
+                Group {
+                    if isLoading {
+                        HStack(spacing: 10) {
+                            ProgressView()
+                            Text("Translating…")
+                                .foregroundColor(.secondary)
+                        }
+                    } else if let t = translation {
+                        Text(t)
+                            .font(.system(size: 22, weight: .regular))
+                    }
+                }
+                .padding(.horizontal)
+
+                Spacer()
+
+                // Seek button
+                if let time = seekTime {
+                    Button {
+                        onSeek(time)
+                        dismiss()
+                    } label: {
+                        Label("Jump to this word in audio", systemImage: "arrow.right.circle")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .foregroundColor(.blue)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 20)
+                }
+            }
+            .navigationTitle("Word Lookup")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
     }
 }

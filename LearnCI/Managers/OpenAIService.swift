@@ -367,6 +367,66 @@ actor OpenAIService {
         return whisperWords.map { WordTiming(word: $0.word, start: $0.start, end: $0.end) }
     }
     
+    func translateWord(_ word: String, language: String, context: String?) async throws -> (translation: String, partOfSpeech: String) {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        var prompt = "Translate the word '\(word)' from \(language) to English. Return JSON with keys 'translation' (concise, 1-5 words) and 'partOfSpeech' (e.g. noun, verb, adjective, adverb, pronoun, preposition)."
+        if let ctx = context, !ctx.isEmpty {
+            prompt += " Context sentence: '\(ctx)'"
+        }
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a language translator. Respond strictly in JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let contentString = result.choices.first?.message.content,
+              let contentData = contentString.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: contentData) as? [String: String],
+              let translation = json["translation"] else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        return (translation, json["partOfSpeech"] ?? "")
+    }
+
     // Check if key exists
     func hasKey() -> Bool {
         return apiKey != nil && !apiKey!.isEmpty

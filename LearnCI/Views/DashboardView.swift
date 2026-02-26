@@ -32,13 +32,12 @@ struct DashboardView: View {
         profiles.first
     }
     
+    var learningStats: StatsManager.LearningStats {
+        StatsManager.shared.calculateStats(activities: activities, profile: userProfile)
+    }
+    
     var totalMinutes: Int {
-        // Use Synced Profile Total (Source of Truth) + Pending (Unsynced)
-        let baseMinutes = userProfile?.totalMinutes ?? 0
-        let pendingMinutes = activities.filter { !$0.isSynced }.reduce(0) { $0 + $1.minutes }
-        let startingMinutes = (userProfile?.startingHours ?? 0) * 60
-        
-        return baseMinutes + pendingMinutes + startingMinutes
+        Int(learningStats.totalHours * 60)
     }
     
     var todayActivities: [UserActivity] {
@@ -81,6 +80,9 @@ struct DashboardView: View {
                             .padding(.horizontal)
                             .padding(.top, 10)
                         }
+                        
+                        // 0. Learning Stats
+                        LearningStatsCard(stats: learningStats)
                         
                         // 1. About CI
                         aboutCISection

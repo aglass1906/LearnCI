@@ -10,6 +10,7 @@ struct ProfileLanguageSettingsView: View {
     @State private var selectedScale: ProficiencyScale = .simple
     @State private var dailyGoal: Double = 30
     @State private var startingHours: Int = 0
+    @State private var originalStartDate: Date = Date()
     @State private var isEditing: Bool = false
     
     var body: some View {
@@ -38,18 +39,10 @@ struct ProfileLanguageSettingsView: View {
                     VStack(alignment: .leading) {
                         Text("Daily Time Goal: \(Int(dailyGoal)) minutes")
                         Slider(value: $dailyGoal, in: 10...120, step: 5)
-                            .tint(.blue)
-                    }
-                    
-                    HStack {
-                        Text("Starting Hours")
-                        Spacer()
-                        TextField("Hours", value: $startingHours, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 100)
                             .textFieldStyle(.roundedBorder)
                     }
+                    
+                    DatePicker("Original Start Date", selection: $originalStartDate, in: ...Date(), displayedComponents: .date)
                 } else {
                     LabeledContent("Target Language", value: "\(selectedLanguage.flag) \(selectedLanguage.rawValue)")
                     LabeledContent("Level System", value: selectedScale.rawValue)
@@ -57,6 +50,7 @@ struct ProfileLanguageSettingsView: View {
                     LabeledContent("Current Level", value: levelLabel)
                     LabeledContent("Daily Goal", value: "\(Int(dailyGoal)) minutes")
                     LabeledContent("Starting Hours", value: "\(startingHours) hours")
+                    LabeledContent("Started Learning", value: originalStartDate.formatted(date: .abbreviated, time: .omitted))
                 }
                 
                 if isEditing {
@@ -103,6 +97,7 @@ struct ProfileLanguageSettingsView: View {
         selectedScale = profile.preferredScale
         dailyGoal = Double(profile.dailyGoalMinutes)
         startingHours = profile.startingHours
+        originalStartDate = profile.originalStartDate ?? Date()
     }
     
     private func saveData() {
@@ -111,6 +106,7 @@ struct ProfileLanguageSettingsView: View {
         profile.preferredScale = selectedScale
         profile.dailyGoalMinutes = Int(dailyGoal)
         profile.startingHours = startingHours
+        profile.originalStartDate = originalStartDate
         profile.updatedAt = Date()
     }
 }

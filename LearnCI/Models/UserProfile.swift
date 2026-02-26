@@ -23,6 +23,11 @@ final class UserProfile {
     var location: String?
     var avatarUrl: String?
     
+    // Streak & Stats Persistence
+    var originalStartDate: Date?
+    var longestActivityStreak: Int = 0
+    var longestGoalStreak: Int = 0
+    
     // Preferences
     var defaultGamePresetRaw: String = GameConfiguration.Preset.inputFocus.rawValue
     var lastGameTypeRaw: String = GameConfiguration.GameType.flashcards.rawValue // Added persistence
@@ -127,6 +132,11 @@ final class UserProfile {
         self.startingHours = startingHours
         self.ttsRateRaw = ttsRate
         self.ttsVoiceGenderRaw = ttsVoiceGender
+        
+        // Initialize new fields with safe defaults if needed
+        self.originalStartDate = Date()
+        self.longestActivityStreak = 0
+        self.longestGoalStreak = 0
     }
     
     private func languageRawUpdate(_ newValue: Language) {

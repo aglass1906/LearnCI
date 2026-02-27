@@ -20,8 +20,44 @@ struct ActiveSessionView: View {
     let onPrev: () -> Void
     let onGrade: ((SmartSessionManager.Grade) -> Void)?
     
+    // MARK: - Arcade Progress Strip
+
+    /// True for self-contained arcade games that show the shared progress strip.
+    /// Linker is excluded — it has its own round-based progress indicator built
+    /// into its header, and the generic word-count strip doesn't fit its
+    /// multi-round structure.
+    private var isArcadeGame: Bool {
+        [GameConfiguration.GameType.wordRain, .wordCrush, .memoryMatch]
+            .contains(sessionConfig.gameType)
+    }
+
+    private var arcadeProgressStrip: some View {
+        let remaining = max(0, sessionCardGoal - learnedCount)
+        return VStack(spacing: 2) {
+            ProgressView(value: Double(learnedCount), total: Double(max(1, sessionCardGoal)))
+                .tint(.teal)
+                .animation(.easeInOut(duration: 0.3), value: learnedCount)
+            HStack {
+                Text("\(learnedCount) / \(sessionCardGoal) words")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(remaining == 0 ? "Done!" : "\(remaining) left")
+                    .font(.caption2)
+                    .foregroundColor(remaining <= 3 ? .teal : .secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .padding(.bottom, 2)
+    }
+
     var body: some View {
         VStack {
+            if isArcadeGame {
+                arcadeProgressStrip
+            }
+
             if let error = errorMessage {
                 VStack {
                     Image(systemName: "exclamationmark.triangle.fill")

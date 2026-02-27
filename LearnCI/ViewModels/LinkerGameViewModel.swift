@@ -221,19 +221,12 @@ class LinkerGameViewModel {
         }
 
         // GRADING & PROGRESS
-        // Only grade and count progress if this is the FINAL round type (Audio)
-        // or if we only have 1 round type configured.
-        // Assuming [.word, .image, .audio] order.
+        // Only grade and report progress on the final round — the full
+        // word → image → audio cycle is the true assessment of a learned card.
         if currentRound == rounds.last {
-            // Find the card object
             if let card = sessionCards.first(where: { $0.id == rightItem.cardId }) {
-                // Determine grade
                 let grade: SmartSessionManager.Grade = batchErrors[card.id] == true ? .hard : .good
-                
-                // Report to SmartSessionManager
                 SmartSessionManager.shared.completeBatch(cards: [card], grade: grade)
-                
-                // Notify UI (increments learned count)
                 onMatchFound?()
             }
         }

@@ -53,6 +53,7 @@ class WordCrushGameViewModel {
     // Callbacks
     var onGrade: ((SmartSessionManager.Grade) -> Void)?
     var onMatchFound: (() -> Void)?
+    var onFinish: (() -> Void)?
 
     init(deck: CardDeck, sessionCards: [LearningCard], config: GameConfiguration, sessionCardGoal: Int, onGrade: ((SmartSessionManager.Grade) -> Void)? = nil) {
         self.deck = deck
@@ -192,6 +193,14 @@ class WordCrushGameViewModel {
             SmartSessionManager.shared.completeBatch(cards: [card], grade: grade)
         }
         onMatchFound?()
+
+        // End session when card goal is reached
+        if matchesFound >= sessionCardGoal {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.onFinish?()
+            }
+            return
+        }
 
         // Apply gravity + refill after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {

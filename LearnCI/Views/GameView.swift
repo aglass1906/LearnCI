@@ -263,7 +263,8 @@ struct GameView: View {
                 // session end via onFinish. They must NOT trigger endSession() via
                 // onLearned/onGrade or the session ends prematurely before the
                 // game's own end animation completes.
-                let isSelfContained = vm.sessionConfig.gameType == .wordRain
+                let isSelfContained = [GameConfiguration.GameType.wordRain, .wordCrush, .linker, .memoryMatch]
+                    .contains(vm.sessionConfig.gameType)
                 ActiveSessionView(
                     errorMessage: dataManager.errorMessage,
                     deck: vm.deck,

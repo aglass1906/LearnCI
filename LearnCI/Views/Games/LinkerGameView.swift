@@ -29,8 +29,13 @@ struct LinkerGameView: View {
                         .foregroundColor(.primary)
                 }
                 Spacer()
-                Text(viewModel.currentRound.title)
-                    .font(.headline)
+                VStack(spacing: 2) {
+                    Text(viewModel.currentRound.title)
+                        .font(.headline)
+                    Text("Round \(viewModel.currentRoundIndex + 1) of \(viewModel.rounds.count)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
                 Spacer()
                 Text("Score: \(viewModel.score)")
                     .font(.subheadline)

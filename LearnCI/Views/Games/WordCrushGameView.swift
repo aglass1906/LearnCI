@@ -63,6 +63,7 @@ struct WordCrushGameView: View {
         .onAppear {
             viewModel.audioManager = audioManager
             viewModel.onMatchFound = onMatchFound
+            viewModel.onFinish = onFinish
         }
     }
 

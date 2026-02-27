@@ -253,6 +253,9 @@ class GameSessionViewModel {
             incrementLearned()
         }
 
+        // If incrementLearned() triggered endSession(), don't advance the UI.
+        guard !isGameOver else { return }
+
         // Check for completion
         if sessionCards.isEmpty {
             endSession()

@@ -123,6 +123,7 @@ class GameSessionViewModel {
         config.wordCrushDisplayMode = customConfig.wordCrushDisplayMode
         config.wordRainSpeed = customConfig.wordRainSpeed
         config.wordRainWordCount = customConfig.wordRainWordCount
+        config.wordRainDifficulty = customConfig.wordRainDifficulty
 
         // Timer/scoring reset
         self.duration = TimeInterval(sessionDuration * 60)
@@ -189,6 +190,14 @@ class GameSessionViewModel {
         if learnedCount >= sessionCardGoal {
             endSession()
         }
+    }
+
+    /// Increments learnedCount for display/stats only.
+    /// Used by self-contained games (Word Rain, etc.) that manage their own
+    /// session end via onFinish — calling endSession() here would race with
+    /// the game's own end animation.
+    func recordWordLearned() {
+        learnedCount += 1
     }
 
     // MARK: - Card Navigation

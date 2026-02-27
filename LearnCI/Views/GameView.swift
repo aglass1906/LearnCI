@@ -259,6 +259,11 @@ struct GameView: View {
         case .playing:
             let _ = print("DEBUG: Showing ActiveSessionView for playing stage")
             if let vm = viewModel {
+                // Self-contained arcade games (Word Rain, etc.) drive their own
+                // session end via onFinish. They must NOT trigger endSession() via
+                // onLearned/onGrade or the session ends prematurely before the
+                // game's own end animation completes.
+                let isSelfContained = vm.sessionConfig.gameType == .wordRain
                 ActiveSessionView(
                     errorMessage: dataManager.errorMessage,
                     deck: vm.deck,
@@ -273,11 +278,11 @@ struct GameView: View {
                     ),
                     matchMode: memoryMatchMode,
                     onRelearn: { vm.relearnCard() },
-                    onLearned: { vm.learnedCard() },
+                    onLearned: isSelfContained ? { vm.recordWordLearned() } : { vm.learnedCard() },
                     onFinish: { vm.endSession() },
                     onNext: { vm.nextCard() },
                     onPrev: { vm.prevCard() },
-                    onGrade: { vm.handleGrade($0) }
+                    onGrade: isSelfContained ? nil : { vm.handleGrade($0) }
                 )
             }
         case .finished:

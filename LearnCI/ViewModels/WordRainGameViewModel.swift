@@ -4,10 +4,20 @@ struct FallingWord: Identifiable, Equatable {
     let id: UUID
     let card: LearningCard
     let text: String
-    var xFraction: CGFloat    // 0..1 fraction of screen width
-    var yPosition: CGFloat    // current y in points
+    var xFraction: CGFloat       // 0..1 fraction of screen width (updated each frame in Hard mode)
+    var yPosition: CGFloat       // current y in points
     var isCorrect: Bool
     var state: FallingWordState
+
+    // Difficulty: Medium + Hard
+    var individualSpeedMultiplier: CGFloat = 1.0  // per-word speed factor relative to base
+
+    // Difficulty: Hard only — horizontal sine drift
+    var xBasePosition: CGFloat = 0        // center x fraction to oscillate around
+    var xDriftAmplitude: CGFloat = 0      // max drift in x-fraction units (e.g. 0.06 = 6% of width)
+    var xDriftFrequency: Double = 0       // oscillations per second (e.g. 0.5)
+    var xDriftPhaseOffset: Double = 0     // per-word phase so they don't move in sync
+    var timeElapsed: Double = 0           // accumulated time used for sin() calculation
 
     enum FallingWordState {
         case falling, matched, missed
@@ -128,6 +138,7 @@ class WordRainGameViewModel {
 
         // Assign evenly-spaced x fractions with slight jitter so words don't overlap
         let count = allWords.count
+        let difficulty = config.wordRainDifficulty
         var words: [FallingWord] = []
         for (i, item) in allWords.enumerated() {
             let base = CGFloat(i + 1) / CGFloat(count + 1)
@@ -135,7 +146,7 @@ class WordRainGameViewModel {
             let xFrac = min(max(base + jitter, 0.08), 0.92)
             let startY = CGFloat.random(in: (-wordDropHeight * 3.0)...(-wordDropHeight))
 
-            words.append(FallingWord(
+            var word = FallingWord(
                 id: UUID(),
                 card: item.card,
                 text: item.card.wordTarget,
@@ -143,7 +154,22 @@ class WordRainGameViewModel {
                 yPosition: startY,
                 isCorrect: item.isCorrect,
                 state: .falling
-            ))
+            )
+
+            switch difficulty {
+            case .easy:
+                break // uniform speed, no drift — defaults are already 1.0 / zeroes
+            case .medium:
+                word.individualSpeedMultiplier = CGFloat.random(in: 0.5...1.6)
+            case .hard:
+                word.individualSpeedMultiplier = CGFloat.random(in: 0.6...1.7)
+                word.xBasePosition     = xFrac
+                word.xDriftAmplitude   = CGFloat.random(in: 0.04...0.08)
+                word.xDriftFrequency   = Double.random(in: 0.3...0.7)
+                word.xDriftPhaseOffset = Double.random(in: 0...(2 * .pi))
+            }
+
+            words.append(word)
         }
 
         fallingWords = words
@@ -162,13 +188,26 @@ class WordRainGameViewModel {
 
         // Clamp to avoid large jumps when app resumes from background
         let clampedDelta = min(deltaTime, 0.1)
-        let movePx = CGFloat(clampedDelta) * speed
+        let baseMovePx = CGFloat(clampedDelta) * speed
+        let difficulty = config.wordRainDifficulty
 
         var escapedCorrectIdx: Int? = nil
 
         for i in fallingWords.indices {
             guard fallingWords[i].state == .falling else { continue }
-            fallingWords[i].yPosition += movePx
+
+            // Per-word speed (Medium + Hard); Easy uses multiplier 1.0
+            let wordMove = baseMovePx * fallingWords[i].individualSpeedMultiplier
+            fallingWords[i].yPosition += wordMove
+
+            // Hard: apply horizontal sine drift
+            if difficulty == .hard {
+                fallingWords[i].timeElapsed += clampedDelta
+                let drift = fallingWords[i].xDriftAmplitude
+                    * CGFloat(sin(fallingWords[i].timeElapsed * fallingWords[i].xDriftFrequency * 2 * .pi
+                                  + fallingWords[i].xDriftPhaseOffset))
+                fallingWords[i].xFraction = min(max(fallingWords[i].xBasePosition + drift, 0.05), 0.95)
+            }
 
             if fallingWords[i].isCorrect && fallingWords[i].yPosition > escapeBoundary {
                 escapedCorrectIdx = i

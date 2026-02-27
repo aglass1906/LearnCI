@@ -284,6 +284,22 @@ struct GameConfiguration: Codable, Equatable {
         var id: String { rawValue }
     }
 
+    enum WordRainDifficulty: String, Codable, CaseIterable, Identifiable {
+        case easy = "Easy"
+        case medium = "Medium"
+        case hard = "Hard"
+
+        var id: String { rawValue }
+
+        var description: String {
+            switch self {
+            case .easy:   return "All words fall at the same speed"
+            case .medium: return "Each word falls at its own random speed"
+            case .hard:   return "Different speeds and words drift sideways"
+            }
+        }
+    }
+
     enum WordCrushDisplayMode: String, Codable, CaseIterable, Identifiable {
         case wordToWord = "Word \u{2194} Word"
         case wordToSentence = "Word \u{2194} Sentence"
@@ -313,12 +329,13 @@ struct GameConfiguration: Codable, Equatable {
     var wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord
     var wordRainSpeed: WordRainSpeed = .normal
     var wordRainWordCount: Int = 3
+    var wordRainDifficulty: WordRainDifficulty = .easy
 
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
         case navigation, autoNextDelay, confirmation, linkerTargetMode
         case wordCrushGridSize, wordCrushDisplayMode
-        case wordRainSpeed, wordRainWordCount
+        case wordRainSpeed, wordRainWordCount, wordRainDifficulty
     }
     
     init(gameType: GameType = .flashcards, 
@@ -337,7 +354,8 @@ struct GameConfiguration: Codable, Equatable {
          wordCrushGridSize: WordCrushGridSize = .small,
          wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord,
          wordRainSpeed: WordRainSpeed = .normal,
-         wordRainWordCount: Int = 3) {
+         wordRainWordCount: Int = 3,
+         wordRainDifficulty: WordRainDifficulty = .easy) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -355,6 +373,7 @@ struct GameConfiguration: Codable, Equatable {
         self.wordCrushDisplayMode = wordCrushDisplayMode
         self.wordRainSpeed = wordRainSpeed
         self.wordRainWordCount = wordRainWordCount
+        self.wordRainDifficulty = wordRainDifficulty
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -388,6 +407,7 @@ struct GameConfiguration: Codable, Equatable {
         wordCrushDisplayMode = try container.decodeIfPresent(WordCrushDisplayMode.self, forKey: .wordCrushDisplayMode) ?? .wordToWord
         wordRainSpeed = try container.decodeIfPresent(WordRainSpeed.self, forKey: .wordRainSpeed) ?? .normal
         wordRainWordCount = try container.decodeIfPresent(Int.self, forKey: .wordRainWordCount) ?? 3
+        wordRainDifficulty = try container.decodeIfPresent(WordRainDifficulty.self, forKey: .wordRainDifficulty) ?? .easy
     }
     
     
@@ -410,6 +430,7 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(wordCrushDisplayMode, forKey: .wordCrushDisplayMode)
         try container.encode(wordRainSpeed, forKey: .wordRainSpeed)
         try container.encode(wordRainWordCount, forKey: .wordRainWordCount)
+        try container.encode(wordRainDifficulty, forKey: .wordRainDifficulty)
 
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)

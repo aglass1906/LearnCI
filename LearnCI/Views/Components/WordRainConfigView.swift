@@ -29,14 +29,30 @@ struct WordRainConfigView: View {
 
             // Settings Form
             Form {
-                Section(header: Text("Game Settings")) {
+                Section(header: Text("Fall Speed")) {
                     Picker("Fall Speed", selection: $customConfig.wordRainSpeed) {
                         ForEach(GameConfiguration.WordRainSpeed.allCases) { speed in
                             Text(speed.rawValue).tag(speed)
                         }
                     }
                     .pickerStyle(.segmented)
+                }
 
+                Section(header: Text("Difficulty")) {
+                    Picker("Difficulty", selection: $customConfig.wordRainDifficulty) {
+                        ForEach(GameConfiguration.WordRainDifficulty.allCases) { level in
+                            Text(level.rawValue).tag(level)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(customConfig.wordRainDifficulty.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .animation(.easeInOut, value: customConfig.wordRainDifficulty)
+                }
+
+                Section(header: Text("Words on Screen")) {
                     Stepper(value: $customConfig.wordRainWordCount, in: 2...5) {
                         HStack {
                             Text("Words on Screen")

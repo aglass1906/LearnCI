@@ -46,11 +46,14 @@ struct WordRainGameView: View {
                         .transition(.opacity)
                 }
 
-                // HUD + streak banner + target word
+                // HUD + progress + streak banner + target word
                 VStack(spacing: 0) {
                     hudView
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
+
+                    progressView
+                        .padding(.top, 6)
 
                     if let banner = viewModel.streakBannerText {
                         streakBanner(text: banner)
@@ -86,6 +89,7 @@ struct WordRainGameView: View {
         .animation(.easeInOut(duration: 0.15), value: viewModel.streakBannerText != nil)
         .animation(.easeInOut(duration: 0.1), value: viewModel.screenFlashing)
         .animation(.easeInOut(duration: 0.2), value: viewModel.streak)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.wordsCompleted)
     }
 
     // MARK: - Falling Words
@@ -150,6 +154,29 @@ struct WordRainGameView: View {
                     .font(.title2.bold())
             }
         }
+    }
+
+    // MARK: - Progress Bar
+
+    private var progressView: some View {
+        let completed = viewModel.wordsCompleted
+        let goal = max(1, viewModel.sessionCardGoal)
+        let remaining = max(0, goal - completed)
+        return VStack(spacing: 4) {
+            ProgressView(value: Double(completed), total: Double(goal))
+                .tint(.teal)
+                .animation(.easeInOut(duration: 0.3), value: completed)
+            HStack {
+                Text("\(completed) / \(goal) words")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(remaining == 0 ? "Done!" : "\(remaining) left")
+                    .font(.caption2)
+                    .foregroundColor(remaining <= 3 ? .teal : .secondary)
+            }
+        }
+        .padding(.horizontal, 20)
     }
 
     // MARK: - Streak Banner

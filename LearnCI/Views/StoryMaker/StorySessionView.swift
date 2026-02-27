@@ -32,8 +32,7 @@ struct StorySessionView: View {
     @State private var didPlayAudio: Bool = false
 
     // Comprehension Quiz
-    @State private var showQuizBanner: Bool = false
-    @State private var showComprehensionQuiz: Bool = false
+    @State private var navigateToQuiz: Bool = false
     @State private var isGeneratingQuiz: Bool = false
     @State private var quizQuestions: [ComprehensionQuestion] = []
 
@@ -149,21 +148,9 @@ struct StorySessionView: View {
             .ignoresSafeArea(edges: .top)
             } // Close ScrollViewReader
             
-            // Quiz Completion Banner (sits above audio bar)
+            // Sticky Audio Player
             VStack(spacing: 0) {
                 Spacer()
-                if showQuizBanner {
-                    QuizBannerView(
-                        onTakeQuiz: {
-                            showQuizBanner = false
-                            openQuiz()
-                        },
-                        onDismiss: { showQuizBanner = false }
-                    )
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-
-                // Sticky Audio Player
                 if story.audioFilename != nil || story.remoteAudioPath != nil {
                     AudioPlayerBar(
                         isPlaying: $isPlaying,
@@ -178,10 +165,13 @@ struct StorySessionView: View {
                     )
                 }
             }
-            .animation(.spring(duration: 0.4), value: showQuizBanner)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+        // Programmatic navigation to quiz on audio completion or overflow menu tap
+        .navigationDestination(isPresented: $navigateToQuiz) {
+            StoryQuizView(story: story, preloadedQuestions: quizQuestions.isEmpty ? nil : quizQuestions)
+        }
         .onAppear {
             startTime = Date()
             setupAudio()
@@ -255,19 +245,6 @@ struct StorySessionView: View {
             StoryPromptsSheet(story: story)
                 .presentationDetents([.medium, .large])
         }
-        .sheet(isPresented: $showComprehensionQuiz) {
-            ComprehensionQuizSheet(
-                questions: quizQuestions,
-                isLoading: isGeneratingQuiz,
-                language: story.language,
-                onRetry: {
-                    story.comprehensionQuestionsJSON = nil
-                    quizQuestions = []
-                    openQuiz()
-                }
-            )
-            .presentationDetents([.large])
-        }
         .sheet(isPresented: $showVideoGenerator) {
             VideoGeneratorSheet(story: story) { style in
                 Task { await generateSceneVideo(style: style) }
@@ -304,9 +281,8 @@ struct StorySessionView: View {
             } else {
                 let justStopped = isPlaying
                 isPlaying = false
-                if justStopped && duration > 0 && sliderValue >= duration - 1.5 && !showQuizBanner {
-                    showQuizBanner = true
-                    preGenerateQuizIfNeeded()
+                if justStopped && duration > 0 && sliderValue >= duration - 1.5 && !navigateToQuiz {
+                    navigateToQuiz = true
                 }
             }
         }
@@ -485,29 +461,11 @@ struct StorySessionView: View {
     }
 
     private func openQuiz() {
+        // Load any pre-cached questions then navigate to the full-screen quiz
         if !story.comprehensionQuestions.isEmpty {
             quizQuestions = story.comprehensionQuestions
-            showComprehensionQuiz = true
-        } else {
-            isGeneratingQuiz = true
-            showComprehensionQuiz = true
-            Task {
-                let level = LevelManager.shared.description(for: story.level)
-                let questions = try? await OpenAIService().generateComprehensionQuestions(
-                    storyText: story.targetLanguageText,
-                    language: story.language.displayName,
-                    level: level
-                )
-                await MainActor.run {
-                    if let qs = questions, let data = try? JSONEncoder().encode(qs) {
-                        story.comprehensionQuestionsJSON = String(data: data, encoding: .utf8)
-                        try? modelContext.save()
-                        quizQuestions = qs
-                    }
-                    isGeneratingQuiz = false
-                }
-            }
         }
+        navigateToQuiz = true
     }
 
     private func regenerateQuiz() {

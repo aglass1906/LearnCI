@@ -102,7 +102,7 @@ struct StoryListView: View {
                 }
                 
                 ForEach(stories) { story in
-                    NavigationLink(destination: StorySessionView(story: story)) {
+                    NavigationLink(destination: StoryAboutView(story: story)) {
                         HStack(spacing: 12) {
                             // Cover Image Thumbnail - prefer local file, fall back to remote
                             StoryThumbnailView(story: story)

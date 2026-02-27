@@ -42,6 +42,33 @@ struct StoryDTO: Codable {
     let is_public: Bool
 }
 
+/// Push-only DTO: omits remote_video_path so the upsert never overwrites it.
+/// The server is the source of truth for video paths — only pull, never push.
+struct PushStoryDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let title: String
+    let target_text: String
+    let native_text: String?
+    let prompt: String?
+    let text_gen_prompt: String?
+    let image_gen_prompt: String?
+    let video_style: String?
+    let video_gen_prompt: String?
+    // remote_video_path intentionally excluded — server is source of truth
+    let preferences_json: String?
+    let word_timings_json: String?
+    let comprehension_questions_json: String?
+    let language: String
+    let level: Int
+    let remote_audio_path: String?
+    let remote_cover_path: String?
+    let cover_art: String?
+    let created_at: Date
+    let is_favorite: Bool
+    let is_public: Bool
+}
+
 
 
 // MARK: - Coaching DTOs
@@ -777,7 +804,7 @@ struct CoachingCheckInDTO: Codable {
             }
 
             // 4. Push Metadata
-            let dto = StoryDTO(
+            let dto = PushStoryDTO(
                 id: story.id,
                 user_id: uid,
                 title: story.title,
@@ -788,7 +815,6 @@ struct CoachingCheckInDTO: Codable {
                 image_gen_prompt: story.imageGenPrompt,
                 video_style: story.videoStyle,
                 video_gen_prompt: story.videoGenPrompt,
-                remote_video_path: story.remoteVideoPath,
                 preferences_json: story.preferencesJSON,
                 word_timings_json: story.wordTimingsJSON,
                 comprehension_questions_json: story.comprehensionQuestionsJSON,

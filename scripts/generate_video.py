@@ -187,18 +187,18 @@ def main():
         
     print(f"\nSelected Story: {selected_story['title']}")
     action = input("\n[1] Generate new video\n[2] Resume/retrieve existing video by Job ID\nSelect action (1/2): ")
-    
-    import unicodedata
-    normalized_title = unicodedata.normalize('NFKD', selected_story['title']).encode('ascii', 'ignore').decode('utf-8')
-    safe_title = "".join([c if c.isalnum() else "_" for c in normalized_title]).strip("_").lower()
-    filename = f"story_{safe_title}_{int(time.time())}.mp4"
-    output_path = os.path.join(VIDEO_DIR, filename)
 
     if action == "2":
         job_id = input("Enter Job ID (Operation Name): ").strip()
         if not job_id:
             print("Job ID cannot be empty.")
             exit(1)
+        # For resumed jobs we don't know the style up front, use a generic path
+        import unicodedata
+        timestamp = int(time.time())
+        filename = f"{timestamp}_resumed.mp4"
+        storage_path = f"{story_id}/{filename}"
+        output_path = os.path.join(VIDEO_DIR, filename)
         success = generate_veo_video(gemini_client, "", output_path, operation_name=job_id)
     else:
         # 2. Select Style
@@ -206,17 +206,27 @@ def main():
         for key, val in STYLES.items():
             print(f"[{key}] {val[0]}")
         style_choice = input("Select a visual style number: ")
-        
+
         if style_choice not in STYLES:
             print("Invalid style choice.")
             exit(1)
-            
+
         style_name, style_desc = STYLES[style_choice]
         print(f"Selected Style: {style_name}")
-        
+
+        # Derive standard storage path now that style is known
+        import unicodedata
+        normalized_style = unicodedata.normalize('NFKD', style_name).encode('ascii', 'ignore').decode('utf-8')
+        safe_style = "_".join(normalized_style.lower().split())
+        timestamp = int(time.time())
+        filename = f"{timestamp}_{safe_style}.mp4"
+        # Standard path: {storyID}/{timestamp}_{style_slug}.mp4
+        storage_path = f"{story_id}/{filename}"
+        output_path = os.path.join(VIDEO_DIR, filename)
+
         # 3. Generate Prompt using LLM
         veo_prompt = generate_prompt(gemini_client, selected_story['title'], story_text, style_desc)
-        
+
         # Save the prompt & style to database immediately
         try:
             supabase.table("stories").update({
@@ -226,38 +236,38 @@ def main():
             print("Saved generated prompt and style to the database.")
         except Exception as e:
             print(f"Warning: Failed to save prompt to database. Make sure you ran the schema migration! ({e})")
-        
+
         # 4. Generate Video
         proceed = input("\nProceed with video generation? This consumes API credits. (y/n): ")
         if proceed.lower() != 'y':
             print("Aborted.")
             exit(0)
-            
+
         success = generate_veo_video(gemini_client, veo_prompt, output_path)
-    
+
     # 5. Upload to Supabase Storage
     if success:
         upload_choice = input("\nUpload video to Supabase Storage ('story_videos' bucket)? (y/n): ")
         if upload_choice.lower() == 'y':
             try:
-                print(f"Uploading {filename} to Supabase...")
+                print(f"Uploading to story_videos/{storage_path}...")
                 with open(output_path, 'rb') as f:
                     supabase.storage.from_("story_videos").upload(
                         file=f,
-                        path=filename,
+                        path=storage_path,
                         file_options={"content-type": "video/mp4", "x-upsert": "true"}
                     )
-                
-                # Get public URL
-                public_url = supabase.storage.from_("story_videos").get_public_url(filename)
-                
-                # Update database record
-                print("Updating database with video URL...")
+
+                # Store the storage PATH (not the public URL) in the DB
+                print("Updating database with video storage path...")
                 supabase.table("stories").update({
-                    "remote_video_path": public_url
+                    "remote_video_path": storage_path
                 }).eq("id", story_id).execute()
-                
-                print("Upload and database update successful! 🎉")
+
+                # Print public URL for convenience (not stored)
+                public_url = supabase.storage.from_("story_videos").get_public_url(storage_path)
+                print(f"Upload successful! 🎉")
+                print(f"Public URL: {public_url}")
             except Exception as e:
                 print(f"Failed to upload or update database: {e}")
 

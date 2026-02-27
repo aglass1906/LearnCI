@@ -752,10 +752,16 @@ struct CoachingCheckInDTO: Codable {
                story.remoteVideoPath == nil {
                 do {
                     let videoData = try Data(contentsOf: videoFileURL)
-                    let remotePath = "\(userID)/videos/\(videoFilename)"
+                    // Standard path: {storyID}/{timestamp}_{style}.mp4
+                    let styleSlug = (story.videoStyle ?? "unknown")
+                        .lowercased()
+                        .components(separatedBy: .whitespaces)
+                        .joined(separator: "_")
+                    let timestamp = Int(Date().timeIntervalSince1970)
+                    let remotePath = "\(story.id.uuidString)/\(timestamp)_\(styleSlug).mp4"
 
                     try await authManager.supabase.storage
-                        .from("audio-stories")
+                        .from("story_videos")  // Fixed: was "audio-stories"
                         .upload(
                             path: remotePath,
                             file: videoData,
@@ -764,7 +770,7 @@ struct CoachingCheckInDTO: Codable {
 
                     story.remoteVideoPath = remotePath
                     try context.save()
-                    print("Sync: Uploaded video for story '\(story.title)'")
+                    print("Sync: Uploaded video for story '\(story.title)' to story_videos/\(remotePath)")
                 } catch {
                     print("Sync: Failed to upload video for '\(story.title)': \(error)")
                 }
@@ -846,9 +852,17 @@ struct CoachingCheckInDTO: Codable {
                 if existing.remoteCoverPath == nil && dto.remote_cover_path != nil {
                     existing.remoteCoverPath = dto.remote_cover_path
                 }
-                if existing.remoteVideoPath == nil && dto.remote_video_path != nil {
-                    existing.remoteVideoPath = dto.remote_video_path
+                // Video path: always accept the server value (server is source of truth).
+                // If the path changed, delete the local remote cache so the new video downloads fresh.
+                if let serverPath = dto.remote_video_path,
+                   serverPath != existing.remoteVideoPath {
+                    existing.remoteVideoPath = serverPath
+                    // Delete stale remote cache so loadMedia() re-downloads the new video
+                    let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    let staleCache = docs.appendingPathComponent("video_\(existing.id.uuidString)_remote.mp4")
+                    try? FileManager.default.removeItem(at: staleCache)
                 }
+
                 if let pref = dto.preferences_json {
                     existing.preferencesJSON = pref
                 }

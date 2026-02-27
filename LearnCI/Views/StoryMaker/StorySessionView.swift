@@ -714,6 +714,7 @@ struct HeroMediaView: View {
     @State private var localVideoURL: URL? = nil
 
     private let supabaseBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
+    private let supabaseVideoBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/story_videos"
 
     var body: some View {
         GeometryReader { geo in
@@ -821,30 +822,55 @@ struct HeroMediaView: View {
     // MARK: Media loading
 
     private func loadMedia() {
-        let filename = "video_\(story.id.uuidString).mp4"
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let localURL = docs.appendingPathComponent(filename)
+        // Generated video: written by VeoService, uploaded by SyncManager
+        let generatedURL = docs.appendingPathComponent("video_\(story.id.uuidString).mp4")
+        // Remote cache: downloaded copy of the current remote version (always refreshed when remoteVideoPath is set)
+        let remoteCacheURL = docs.appendingPathComponent("video_\(story.id.uuidString)_remote.mp4")
 
-        // 1. Local file exists — show it immediately (covers both: just-generated and previously downloaded)
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            self.localVideoURL = localURL
-            return
+        // 1. Remote path is set → remote is the source of truth.
+        //    Use the cached download if it exists; otherwise download fresh.
+        //    This ensures a newly uploaded video (via script or web admin) is always shown.
+        if let remotePath = story.remoteVideoPath {
+            if FileManager.default.fileExists(atPath: remoteCacheURL.path) {
+                self.localVideoURL = remoteCacheURL
+                return
+            }
+            // Build the remote URL (handle legacy full URL or new relative path)
+            let remoteURL: URL?
+            if remotePath.hasPrefix("https://") {
+                remoteURL = URL(string: remotePath)
+            } else {
+                remoteURL = URL(string: "\(supabaseVideoBase)/\(remotePath)")
+            }
+            if let url = remoteURL {
+                Task {
+                    if let (data, _) = try? await URLSession.shared.data(from: url) {
+                        try? data.write(to: remoteCacheURL)
+                        await MainActor.run { self.localVideoURL = remoteCacheURL }
+                    }
+                }
+                return
+            }
         }
 
-        // 2. No local file but remote path exists — download and cache it
-        if let remotePath = story.remoteVideoPath,
-           let remoteURL = URL(string: "\(supabaseBase)/\(remotePath)") {
-            Task {
-                if let (data, _) = try? await URLSession.shared.data(from: remoteURL) {
-                    try? data.write(to: localURL)
-                    await MainActor.run { self.localVideoURL = localURL }
-                }
-            }
+        // 2. No remote path yet — show the locally generated file while sync is pending
+        if FileManager.default.fileExists(atPath: generatedURL.path) {
+            self.localVideoURL = generatedURL
             return
         }
 
         // 3. No video at all — fall back to cover image
         loadCoverImage()
+    }
+
+    /// Call this to force a fresh download of the remote video (e.g. after user uploads a new one).
+    func invalidateRemoteVideoCache() {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let remoteCacheURL = docs.appendingPathComponent("video_\(story.id.uuidString)_remote.mp4")
+        try? FileManager.default.removeItem(at: remoteCacheURL)
+        localVideoURL = nil
+        loadMedia()
     }
 
     private func loadCoverImage() {

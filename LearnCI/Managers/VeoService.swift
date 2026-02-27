@@ -4,9 +4,14 @@ import Foundation
 
 enum VideoStyle: String, CaseIterable, Identifiable, Codable {
     case photorealistic = "Photorealistic Cinematic"
-    case pixar          = "Pixar 3D Animation"
-    case ghibli         = "Studio Ghibli Anime"
+    case pixar          = "Pixar 3D"
+    case ghibli         = "Studio Ghibli 2D Anime"
     case timBurton      = "Tim Burton Stop-Motion"
+    case watercolor     = "Watercolor Storybook"
+    case claymation     = "Claymation"
+    case cartoon1930s   = "Vintage 1930s Cartoon"
+    case oilPainting    = "Living Oil Painting"
+    case lineDrawing    = "Simple Line Drawing"
 
     var id: String { rawValue }
 
@@ -16,16 +21,26 @@ enum VideoStyle: String, CaseIterable, Identifiable, Codable {
         case .pixar:          return "sparkles"
         case .ghibli:         return "leaf"
         case .timBurton:      return "moon.stars"
+        case .watercolor:     return "paintbrush"
+        case .claymation:     return "cube"
+        case .cartoon1930s:   return "film"
+        case .oilPainting:    return "paintpalette"
+        case .lineDrawing:    return "pencil"
         }
     }
 
     /// Injected into the cinematic prompt sent to Veo
     var promptStyle: String {
         switch self {
-        case .photorealistic: return "hyper-realistic cinematic 4K film, shot on 35mm lens, natural lighting"
-        case .pixar:          return "Pixar 3D animated film, vibrant colors, expressive characters, warm studio lighting"
-        case .ghibli:         return "Studio Ghibli 2D anime, soft watercolor backgrounds, gentle motion, lush scenery"
-        case .timBurton:      return "Tim Burton dark stop-motion, gothic textures, desaturated palette, whimsical shadows"
+        case .photorealistic: return "hyper-detailed, photorealistic cinematic grade shot on a 35mm lens"
+        case .pixar:          return "highly detailed, expressive, and colorful Pixar 3D animation aesthetic"
+        case .ghibli:         return "highly atmospheric, hand-drawn 2D Studio Ghibli anime aesthetic"
+        case .timBurton:      return "moody, atmospheric, stylized, highly detailed Tim Burton stop-motion aesthetic"
+        case .watercolor:     return "soft, gentle, hand-painted watercolor illustration aesthetic, like a classic children's book brought to life"
+        case .claymation:     return "highly tactile, physical claymation stop-motion aesthetic, with visible textures, fingerprints, and studio lighting"
+        case .cartoon1930s:   return "classic 1930s rubber-hose cartoon animation aesthetic, expressive bouncy movements, vintage film grain"
+        case .oilPainting:    return "living, breathing oil painting aesthetic, thick textured brushstrokes, vibrant colors, classical art style"
+        case .lineDrawing:    return "minimalist hand-drawn aesthetic, caricature style with simple distinct black lines drawn on a piece of textured white paper, with simple child-like shapes in the background"
         }
     }
 

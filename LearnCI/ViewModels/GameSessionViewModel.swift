@@ -121,6 +121,8 @@ class GameSessionViewModel {
         config.linkerTargetMode = linkerTargetMode
         config.wordCrushGridSize = customConfig.wordCrushGridSize
         config.wordCrushDisplayMode = customConfig.wordCrushDisplayMode
+        config.wordRainSpeed = customConfig.wordRainSpeed
+        config.wordRainWordCount = customConfig.wordRainWordCount
 
         // Timer/scoring reset
         self.duration = TimeInterval(sessionDuration * 60)

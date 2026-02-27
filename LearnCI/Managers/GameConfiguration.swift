@@ -138,6 +138,7 @@ struct GameConfiguration: Codable, Equatable {
         case audioCloze = "Listening Challenge"
         case linker = "Column Connect"
         case story = "Story Mode"
+        case wordRain = "Word Rain"
 
         var id: String { rawValue }
 
@@ -150,6 +151,7 @@ struct GameConfiguration: Codable, Equatable {
             case .audioCloze: return "headphones"
             case .linker: return "link"
             case .story: return "book.fill"
+            case .wordRain: return "cloud.rain.fill"
             }
         }
 
@@ -162,6 +164,7 @@ struct GameConfiguration: Codable, Equatable {
             case .audioCloze: return "Listen and fill in the missing word."
             case .linker: return "Connect matching items between two columns."
             case .story: return "Read and listen to immersive stories."
+            case .wordRain: return "Tap the falling word that matches the translation."
             }
         }
 
@@ -174,6 +177,7 @@ struct GameConfiguration: Codable, Equatable {
             case .audioCloze: return "game_audio_cloze"
             case .linker: return "game_linker"
             case .story: return "game_story"
+            case .wordRain: return "game_word_crush"
             }
         }
 
@@ -186,6 +190,7 @@ struct GameConfiguration: Codable, Equatable {
             case .audioCloze: return .pink
             case .linker: return .cyan
             case .story: return .orange
+            case .wordRain: return .teal
             }
         }
 
@@ -217,6 +222,7 @@ struct GameConfiguration: Codable, Equatable {
             case "story": self = .story
             case "multiplechoice": self = .multipleChoice
             case "wordcrush", "word crush", "word_crush": self = .wordCrush
+            case "wordrain", "word rain", "word_rain": self = .wordRain
             default:
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid GameType: \(rawString)")
             }
@@ -270,6 +276,14 @@ struct GameConfiguration: Codable, Equatable {
         }
     }
 
+    enum WordRainSpeed: String, Codable, CaseIterable, Identifiable {
+        case slow = "Slow"
+        case normal = "Normal"
+        case fast = "Fast"
+
+        var id: String { rawValue }
+    }
+
     enum WordCrushDisplayMode: String, Codable, CaseIterable, Identifiable {
         case wordToWord = "Word \u{2194} Word"
         case wordToSentence = "Word \u{2194} Sentence"
@@ -297,11 +311,14 @@ struct GameConfiguration: Codable, Equatable {
     var linkerTargetMode: LinkerTargetMode = .english
     var wordCrushGridSize: WordCrushGridSize = .small
     var wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord
+    var wordRainSpeed: WordRainSpeed = .normal
+    var wordRainWordCount: Int = 3
 
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
         case navigation, autoNextDelay, confirmation, linkerTargetMode
         case wordCrushGridSize, wordCrushDisplayMode
+        case wordRainSpeed, wordRainWordCount
     }
     
     init(gameType: GameType = .flashcards, 
@@ -318,7 +335,9 @@ struct GameConfiguration: Codable, Equatable {
          ttsVoiceGender: String = "female",
          linkerTargetMode: LinkerTargetMode = .english,
          wordCrushGridSize: WordCrushGridSize = .small,
-         wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord) {
+         wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord,
+         wordRainSpeed: WordRainSpeed = .normal,
+         wordRainWordCount: Int = 3) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -334,6 +353,8 @@ struct GameConfiguration: Codable, Equatable {
         self.linkerTargetMode = linkerTargetMode
         self.wordCrushGridSize = wordCrushGridSize
         self.wordCrushDisplayMode = wordCrushDisplayMode
+        self.wordRainSpeed = wordRainSpeed
+        self.wordRainWordCount = wordRainWordCount
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -365,6 +386,8 @@ struct GameConfiguration: Codable, Equatable {
         linkerTargetMode = try container.decodeIfPresent(LinkerTargetMode.self, forKey: .linkerTargetMode) ?? .english
         wordCrushGridSize = try container.decodeIfPresent(WordCrushGridSize.self, forKey: .wordCrushGridSize) ?? .small
         wordCrushDisplayMode = try container.decodeIfPresent(WordCrushDisplayMode.self, forKey: .wordCrushDisplayMode) ?? .wordToWord
+        wordRainSpeed = try container.decodeIfPresent(WordRainSpeed.self, forKey: .wordRainSpeed) ?? .normal
+        wordRainWordCount = try container.decodeIfPresent(Int.self, forKey: .wordRainWordCount) ?? 3
     }
     
     
@@ -385,6 +408,8 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(linkerTargetMode, forKey: .linkerTargetMode)
         try container.encode(wordCrushGridSize, forKey: .wordCrushGridSize)
         try container.encode(wordCrushDisplayMode, forKey: .wordCrushDisplayMode)
+        try container.encode(wordRainSpeed, forKey: .wordRainSpeed)
+        try container.encode(wordRainWordCount, forKey: .wordRainWordCount)
 
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)

@@ -76,6 +76,8 @@ struct PlaceholderConfigView: View {
             return "Read through stories in your target language with audio support. Immerse yourself in contextual learning."
         case .wordCrush:
             return "Match word pairs in a cascading grid. Tap matching target and native language tiles to clear them and earn streak bonuses."
+        case .wordRain:
+            return "Words fall from the top of the screen. Tap the falling word that matches the translation shown at the bottom before it escapes."
         }
     }
 }

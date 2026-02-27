@@ -128,6 +128,16 @@ struct ActiveSessionView: View {
                         onGrade: onGrade,
                         onMatchFound: onLearned
                     )
+                case .wordRain:
+                    WordRainGameView(
+                        deck: deck,
+                        sessionCards: sessionCards,
+                        sessionConfig: sessionConfig,
+                        sessionCardGoal: sessionCardGoal,
+                        onFinish: onFinish,
+                        onGrade: onGrade,
+                        onWordLearned: onLearned
+                    )
                 }
             } else {
                 ProgressView("Loading Deck...")

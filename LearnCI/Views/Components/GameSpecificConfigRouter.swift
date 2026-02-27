@@ -51,6 +51,14 @@ struct GameSpecificConfigRouter: View {
                     onBack: onBack,
                     onSkipToSummary: onSkipToSummary
                 )
+            case .wordRain:
+                WordRainConfigView(
+                    deck: deck,
+                    customConfig: $customConfig,
+                    onNext: onNext,
+                    onBack: onBack,
+                    onSkipToSummary: onSkipToSummary
+                )
             case .multipleChoice, .audioCloze:
                 // Games without specific configuration use placeholder
                 PlaceholderConfigView(

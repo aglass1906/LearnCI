@@ -104,19 +104,37 @@ struct AudioClozeGameView: View {
                 .padding()
             }
             
-            // 4. Continue Button (appears after correct answer)
+            // 4. Translation + Continue (appears after correct answer)
             if hasAnswered && isCorrect {
-                Button(action: handleContinue) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green)
-                        .cornerRadius(15)
+                VStack(spacing: 12) {
+                    if sessionConfig.audioClozeShowTranslation,
+                       let challenge = challenge,
+                       !challenge.card.sentenceNative.isEmpty {
+                        Text(challenge.card.sentenceNative)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+
+                    Button(action: handleContinue) {
+                        Text("Continue")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.green)
+                            .cornerRadius(15)
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
                 .padding(.bottom)
+                .animation(.easeOut(duration: 0.3), value: hasAnswered)
             }
         }
         .onAppear(perform: loadChallenge)
@@ -172,10 +190,13 @@ struct AudioClozeGameView: View {
 
         // Generate new challenge
         let card = currentCard
-        // Get all other cards for distractors
         let others = deck.cards.filter { $0.id != card.id }
-        
-        self.challenge = ClozeManager.shared.generateChallenge(for: card, distractors: others)
+
+        self.challenge = ClozeManager.shared.generateChallenge(
+            for: card,
+            distractors: others,
+            optionCount: sessionConfig.audioClozeOptionCount
+        )
         
         // Auto-play audio after slight delay
         let expectedCardId = card.id

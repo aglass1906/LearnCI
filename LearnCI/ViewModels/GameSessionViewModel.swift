@@ -124,6 +124,10 @@ class GameSessionViewModel {
         config.wordRainSpeed = customConfig.wordRainSpeed
         config.wordRainWordCount = customConfig.wordRainWordCount
         config.wordRainDifficulty = customConfig.wordRainDifficulty
+        config.multipleChoiceOptionCount = customConfig.multipleChoiceOptionCount
+        config.multipleChoiceShowTranslation = customConfig.multipleChoiceShowTranslation
+        config.audioClozeOptionCount = customConfig.audioClozeOptionCount
+        config.audioClozeShowTranslation = customConfig.audioClozeShowTranslation
 
         // Timer/scoring reset
         self.duration = TimeInterval(sessionDuration * 60)

@@ -145,6 +145,16 @@ struct PreGameSummaryView: View {
             return [
                 ConfigItem(icon: "text.alignleft", label: "Right Column", value: config.linkerTargetMode.rawValue, color: .cyan),
             ]
+        case .multipleChoice:
+            return [
+                ConfigItem(icon: "list.number", label: "Options", value: "\(config.multipleChoiceOptionCount)", color: .green),
+                ConfigItem(icon: "text.bubble", label: "Show Translation", value: config.multipleChoiceShowTranslation ? "On" : "Off", color: .teal),
+            ]
+        case .audioCloze:
+            return [
+                ConfigItem(icon: "list.number", label: "Options", value: "\(config.audioClozeOptionCount)", color: .pink),
+                ConfigItem(icon: "text.bubble", label: "Show Translation", value: config.audioClozeShowTranslation ? "On" : "Off", color: .teal),
+            ]
         case .flashcards:
             return [
                 ConfigItem(icon: "rectangle.stack.fill", label: "Preset", value: preset.rawValue, color: .blue),

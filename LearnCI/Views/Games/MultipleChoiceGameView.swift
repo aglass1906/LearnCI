@@ -25,6 +25,7 @@ struct MultipleChoiceGameView: View {
     
     // Animation
     @State private var shakeTrigger: Int = 0
+    @State private var showTranslation: Bool = false
     
     /// Stable identifier for the card currently at `currentCardIndex`.
     private var currentCardId: String {
@@ -41,24 +42,36 @@ struct MultipleChoiceGameView: View {
             
             if let challenge = challenge {
                 // Stimulus (Audio + Text)
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     Button(action: { playAudio() }) {
                         Image(systemName: "speaker.wave.2.circle.fill")
                             .font(.system(size: 80))
-                            .foregroundColor(.blue)
+                            .foregroundColor(.green)
                             .shadow(radius: 5)
                             .scaleEffect(audioManager.isPlaying ? 1.1 : 1.0)
                             .animation(.spring(response: 0.3), value: audioManager.isPlaying)
                     }
-                    
+
                     Text(challenge.correctCard.sentenceTarget)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                         .foregroundColor(.primary)
+
+                    if showTranslation, !challenge.correctCard.sentenceNative.isEmpty {
+                        Text(challenge.correctCard.sentenceNative)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(10)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
-                .padding(.vertical, 30)
+                .padding(.vertical, 20)
                 
                 Spacer()
                 
@@ -131,10 +144,16 @@ struct MultipleChoiceGameView: View {
         isAnswered = false
         showFeedback = false
         isCorrect = false
-        
+        showTranslation = false
+
         // Generate
         withAnimation {
-            challenge = MultipleChoiceManager.shared.generateChallenge(for: card, deck: deck, sessionCards: sessionCards)
+            challenge = MultipleChoiceManager.shared.generateChallenge(
+                for: card,
+                deck: deck,
+                sessionCards: sessionCards,
+                optionCount: sessionConfig.multipleChoiceOptionCount
+            )
         }
         
         // Auto Play
@@ -180,8 +199,13 @@ struct MultipleChoiceGameView: View {
             // Correct
             isCorrect = true
             SoundManager.shared.play(.win)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+
+            if sessionConfig.multipleChoiceShowTranslation && !challenge.correctCard.sentenceNative.isEmpty {
+                withAnimation { showTranslation = true }
+            }
+
+            let delay: TimeInterval = sessionConfig.multipleChoiceShowTranslation ? 2.5 : 1.5
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 if let onGrade = onGrade {
                     onGrade(.good)
                 } else {

@@ -331,12 +331,18 @@ struct GameConfiguration: Codable, Equatable {
     var wordRainSpeed: WordRainSpeed = .normal
     var wordRainWordCount: Int = 3
     var wordRainDifficulty: WordRainDifficulty = .easy
+    var multipleChoiceOptionCount: Int = 4
+    var multipleChoiceShowTranslation: Bool = false
+    var audioClozeOptionCount: Int = 4
+    var audioClozeShowTranslation: Bool = false
 
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
         case navigation, autoNextDelay, confirmation, linkerTargetMode, memoryMatchMode
         case wordCrushGridSize, wordCrushDisplayMode
         case wordRainSpeed, wordRainWordCount, wordRainDifficulty
+        case multipleChoiceOptionCount, multipleChoiceShowTranslation
+        case audioClozeOptionCount, audioClozeShowTranslation
     }
     
     init(gameType: GameType = .flashcards, 
@@ -357,7 +363,11 @@ struct GameConfiguration: Codable, Equatable {
          wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord,
          wordRainSpeed: WordRainSpeed = .normal,
          wordRainWordCount: Int = 3,
-         wordRainDifficulty: WordRainDifficulty = .easy) {
+         wordRainDifficulty: WordRainDifficulty = .easy,
+         multipleChoiceOptionCount: Int = 4,
+         multipleChoiceShowTranslation: Bool = false,
+         audioClozeOptionCount: Int = 4,
+         audioClozeShowTranslation: Bool = false) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -377,6 +387,10 @@ struct GameConfiguration: Codable, Equatable {
         self.wordRainSpeed = wordRainSpeed
         self.wordRainWordCount = wordRainWordCount
         self.wordRainDifficulty = wordRainDifficulty
+        self.multipleChoiceOptionCount = multipleChoiceOptionCount
+        self.multipleChoiceShowTranslation = multipleChoiceShowTranslation
+        self.audioClozeOptionCount = audioClozeOptionCount
+        self.audioClozeShowTranslation = audioClozeShowTranslation
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -412,6 +426,10 @@ struct GameConfiguration: Codable, Equatable {
         wordRainSpeed = try container.decodeIfPresent(WordRainSpeed.self, forKey: .wordRainSpeed) ?? .normal
         wordRainWordCount = try container.decodeIfPresent(Int.self, forKey: .wordRainWordCount) ?? 3
         wordRainDifficulty = try container.decodeIfPresent(WordRainDifficulty.self, forKey: .wordRainDifficulty) ?? .easy
+        multipleChoiceOptionCount = try container.decodeIfPresent(Int.self, forKey: .multipleChoiceOptionCount) ?? 4
+        multipleChoiceShowTranslation = try container.decodeIfPresent(Bool.self, forKey: .multipleChoiceShowTranslation) ?? false
+        audioClozeOptionCount = try container.decodeIfPresent(Int.self, forKey: .audioClozeOptionCount) ?? 4
+        audioClozeShowTranslation = try container.decodeIfPresent(Bool.self, forKey: .audioClozeShowTranslation) ?? false
     }
     
     
@@ -436,6 +454,10 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(wordRainSpeed, forKey: .wordRainSpeed)
         try container.encode(wordRainWordCount, forKey: .wordRainWordCount)
         try container.encode(wordRainDifficulty, forKey: .wordRainDifficulty)
+        try container.encode(multipleChoiceOptionCount, forKey: .multipleChoiceOptionCount)
+        try container.encode(multipleChoiceShowTranslation, forKey: .multipleChoiceShowTranslation)
+        try container.encode(audioClozeOptionCount, forKey: .audioClozeOptionCount)
+        try container.encode(audioClozeShowTranslation, forKey: .audioClozeShowTranslation)
 
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)

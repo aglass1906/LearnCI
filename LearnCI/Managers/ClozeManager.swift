@@ -13,7 +13,9 @@ class ClozeManager {
     
     private init() {}
     
-    func generateChallenge(for card: LearningCard, distractors: [LearningCard]) -> ClozeChallenge {
+    func generateChallenge(for card: LearningCard, distractors: [LearningCard], optionCount: Int = 4) -> ClozeChallenge {
+        let targetCount = max(2, optionCount)
+
         // 1. Choose the missing word, preferring the card's target word
         let sentence = card.sentenceTarget
         let missingWord = selectMissingWord(from: sentence, preferring: card.wordTarget)
@@ -24,10 +26,9 @@ class ClozeManager {
         // 3. Generate Options
         var options: [String] = [missingWord]
 
-        // Pick 3 random distractors from other cards' target words
         let shuffledDistractors = distractors.shuffled()
         for distractor in shuffledDistractors {
-            if options.count >= 4 { break }
+            if options.count >= targetCount { break }
             let word = distractor.wordTarget
             if !options.contains(word) && !word.isEmpty {
                 options.append(word)
@@ -38,13 +39,12 @@ class ClozeManager {
         let sentenceWords = sentence.components(separatedBy: CharacterSet.punctuationCharacters.union(.whitespaces))
             .filter { !$0.isEmpty && $0 != missingWord }
         for word in sentenceWords.shuffled() {
-            if options.count >= 4 { break }
+            if options.count >= targetCount { break }
             if !options.contains(word) {
                 options.append(word)
             }
         }
 
-        // Ensure we always have at least 2 options (correct + 1 distractor)
         if options.count < 2 {
             options.append("...")
         }

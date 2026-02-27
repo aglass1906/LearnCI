@@ -88,7 +88,6 @@ class GameSessionViewModel {
         autoNextDelay: TimeInterval,
         ttsRate: Float,
         useTTSFallback: Bool,
-        linkerTargetMode: GameConfiguration.LinkerTargetMode,
         sessionDuration: Int,
         sessionCardGoal: Int
     ) {
@@ -118,7 +117,7 @@ class GameSessionViewModel {
         config.useTTSFallback = useTTSFallback
         config.navigation = navigationStyle
         config.autoNextDelay = autoNextDelay
-        config.linkerTargetMode = linkerTargetMode
+        config.linkerTargetMode = customConfig.linkerTargetMode
         config.memoryMatchMode = customConfig.memoryMatchMode
         config.wordCrushGridSize = customConfig.wordCrushGridSize
         config.wordCrushDisplayMode = customConfig.wordCrushDisplayMode

@@ -9,8 +9,7 @@ struct SessionOptionsView: View {
     @Binding var useTTSFallback: Bool
     @Binding var ttsRate: Float
     @Binding var order: GameConfiguration.OrderStrategy
-    @Binding var linkerTargetMode: GameConfiguration.LinkerTargetMode
-    
+
     let gameType: GameConfiguration.GameType
     let maxCards: Int?
     let onNext: () -> Void

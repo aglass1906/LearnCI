@@ -48,7 +48,6 @@ struct GameView: View {
     @State private var navigationStyle: NavigationStyle = .swipe
     @State private var autoNextDelay: TimeInterval = 2.0
     @State private var confirmationStyle: ConfirmationStyle = .quiz
-    @State private var linkerTargetMode: GameConfiguration.LinkerTargetMode = .english
 
     // ViewModel (owns all runtime game state)
     @State private var viewModel: GameSessionViewModel?
@@ -205,7 +204,6 @@ struct GameView: View {
                 useTTSFallback: $useTTSFallback,
                 ttsRate: $ttsRate,
                 order: $order,
-                linkerTargetMode: $linkerTargetMode,
                 gameType: selectedGameType,
                 maxCards: deck?.cards.count,
                 onNext: { setupStage = .gameSpecificConfig },
@@ -581,7 +579,6 @@ struct GameView: View {
             autoNextDelay: autoNextDelay,
             ttsRate: ttsRate,
             useTTSFallback: useTTSFallback,
-            linkerTargetMode: linkerTargetMode,
             sessionDuration: sessionDuration,
             sessionCardGoal: sessionCardGoal
         )

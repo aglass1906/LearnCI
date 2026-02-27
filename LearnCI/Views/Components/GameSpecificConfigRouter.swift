@@ -6,8 +6,7 @@ struct GameSpecificConfigRouter: View {
     let deck: DeckMetadata
     @Binding var selectedPreset: GameConfiguration.Preset
     @Binding var customConfig: GameConfiguration
-    @Binding var memoryMatchMode: GameConfiguration.MemoryMatchMode
-    
+
     let onNext: () -> Void
     let onBack: () -> Void
     let onSkipToSummary: () -> Void
@@ -27,10 +26,9 @@ struct GameSpecificConfigRouter: View {
                     onSkipToSummary: onSkipToSummary
                 )
             case .memoryMatch:
-                // Memory Match Mode Selection
                 MemoryConfigView(
                     deck: deck,
-                    selectedMode: $memoryMatchMode,
+                    customConfig: $customConfig,
                     onNext: onNext,
                     onBack: onBack,
                     onSkipToSummary: onSkipToSummary

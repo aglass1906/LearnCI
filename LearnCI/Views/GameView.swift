@@ -44,8 +44,6 @@ struct GameView: View {
     @State private var hasInitialized: Bool = false
     @State private var useTTSFallback: Bool = true
     @State private var ttsRate: Float = 0.5
-    @State private var memoryMatchMode: GameConfiguration.MemoryMatchMode = .pictureToWord
-
     // UI Customization State
     @State private var navigationStyle: NavigationStyle = .swipe
     @State private var autoNextDelay: TimeInterval = 2.0
@@ -222,7 +220,6 @@ struct GameView: View {
                     deck: deckMeta,
                     selectedPreset: $selectedPreset,
                     customConfig: $customConfig,
-                    memoryMatchMode: $memoryMatchMode,
                     onNext: { setupStage = .sessionSummary },
                     onBack: { setupStage = .sessionConfiguration },
                     onSkipToSummary: { setupStage = .sessionSummary }
@@ -232,7 +229,9 @@ struct GameView: View {
             }
         case .sessionSummary:
             PreGameSummaryView(
-                deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
+                deckTitle: (selectedDeck?.folderName == "Virtual"
+                    ? (selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") ?? "Custom Deck")
+                    : (selectedDeck?.title ?? "Unknown Deck")),
                 coverImage: selectedDeck?.coverImage,
                 folderName: selectedDeck?.folderName,
                 language: sessionLanguage,
@@ -242,7 +241,7 @@ struct GameView: View {
                 duration: sessionDuration,
                 cardGoal: sessionCardGoal,
                 order: order,
-                filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
+                customConfig: customConfig,
                 onStartGame: startActiveSession,
                 onBack: { setupStage = .gameSpecificConfig }
             )
@@ -277,7 +276,7 @@ struct GameView: View {
                         get: { vm.isFlipped },
                         set: { vm.isFlipped = $0 }
                     ),
-                    matchMode: memoryMatchMode,
+                    matchMode: vm.sessionConfig.memoryMatchMode,
                     onRelearn: { vm.relearnCard() },
                     onLearned: isSelfContained ? { vm.recordWordLearned() } : { vm.learnedCard() },
                     onFinish: { vm.endSession() },
@@ -292,7 +291,9 @@ struct GameView: View {
                     learnedCount: vm.learnedCount,
                     elapsedSeconds: vm.elapsedSeconds,
                     setupStage: $setupStage,
-                    deckTitle: (selectedDeck?.folderName == "Virtual" ? "Custom Deck" : (selectedDeck?.title ?? "Unknown Deck")),
+                    deckTitle: (selectedDeck?.folderName == "Virtual"
+                        ? (selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") ?? "Custom Deck")
+                        : (selectedDeck?.title ?? "Unknown Deck")),
                     coverImage: selectedDeck?.coverImage,
                     folderName: selectedDeck?.folderName,
                     language: sessionLanguage,
@@ -302,7 +303,6 @@ struct GameView: View {
                     duration: sessionDuration,
                     cardGoal: sessionCardGoal,
                     order: vm.sessionConfig.order,
-                    filterText: (selectedDeck?.folderName == "Virtual" ? selectedDeck?.title.replacingOccurrences(of: "Focus: ", with: "") : nil),
                     onPlayAgain: startActiveSession
                 )
             }

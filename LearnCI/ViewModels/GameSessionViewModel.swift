@@ -119,6 +119,7 @@ class GameSessionViewModel {
         config.navigation = navigationStyle
         config.autoNextDelay = autoNextDelay
         config.linkerTargetMode = linkerTargetMode
+        config.memoryMatchMode = customConfig.memoryMatchMode
         config.wordCrushGridSize = customConfig.wordCrushGridSize
         config.wordCrushDisplayMode = customConfig.wordCrushDisplayMode
         config.wordRainSpeed = customConfig.wordRainSpeed

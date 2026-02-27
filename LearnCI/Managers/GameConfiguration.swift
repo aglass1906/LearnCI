@@ -325,6 +325,7 @@ struct GameConfiguration: Codable, Equatable {
     var ttsVoiceGender: String = "female"
     
     var linkerTargetMode: LinkerTargetMode = .english
+    var memoryMatchMode: MemoryMatchMode = .pictureToWord
     var wordCrushGridSize: WordCrushGridSize = .small
     var wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord
     var wordRainSpeed: WordRainSpeed = .normal
@@ -333,7 +334,7 @@ struct GameConfiguration: Codable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
-        case navigation, autoNextDelay, confirmation, linkerTargetMode
+        case navigation, autoNextDelay, confirmation, linkerTargetMode, memoryMatchMode
         case wordCrushGridSize, wordCrushDisplayMode
         case wordRainSpeed, wordRainWordCount, wordRainDifficulty
     }
@@ -351,6 +352,7 @@ struct GameConfiguration: Codable, Equatable {
          ttsRate: Float = 0.5, 
          ttsVoiceGender: String = "female",
          linkerTargetMode: LinkerTargetMode = .english,
+         memoryMatchMode: MemoryMatchMode = .pictureToWord,
          wordCrushGridSize: WordCrushGridSize = .small,
          wordCrushDisplayMode: WordCrushDisplayMode = .wordToWord,
          wordRainSpeed: WordRainSpeed = .normal,
@@ -369,6 +371,7 @@ struct GameConfiguration: Codable, Equatable {
         self.ttsRate = ttsRate
         self.ttsVoiceGender = ttsVoiceGender
         self.linkerTargetMode = linkerTargetMode
+        self.memoryMatchMode = memoryMatchMode
         self.wordCrushGridSize = wordCrushGridSize
         self.wordCrushDisplayMode = wordCrushDisplayMode
         self.wordRainSpeed = wordRainSpeed
@@ -403,6 +406,7 @@ struct GameConfiguration: Codable, Equatable {
         autoNextDelay = try container.decodeIfPresent(TimeInterval.self, forKey: .autoNextDelay) ?? 2.0
         confirmation = try container.decodeIfPresent(ConfirmationStyle.self, forKey: .confirmation) ?? .quiz
         linkerTargetMode = try container.decodeIfPresent(LinkerTargetMode.self, forKey: .linkerTargetMode) ?? .english
+        memoryMatchMode = try container.decodeIfPresent(MemoryMatchMode.self, forKey: .memoryMatchMode) ?? .pictureToWord
         wordCrushGridSize = try container.decodeIfPresent(WordCrushGridSize.self, forKey: .wordCrushGridSize) ?? .small
         wordCrushDisplayMode = try container.decodeIfPresent(WordCrushDisplayMode.self, forKey: .wordCrushDisplayMode) ?? .wordToWord
         wordRainSpeed = try container.decodeIfPresent(WordRainSpeed.self, forKey: .wordRainSpeed) ?? .normal
@@ -426,6 +430,7 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(ttsRate, forKey: .ttsRate)
         try container.encode(ttsVoiceGender, forKey: .ttsVoiceGender)
         try container.encode(linkerTargetMode, forKey: .linkerTargetMode)
+        try container.encode(memoryMatchMode, forKey: .memoryMatchMode)
         try container.encode(wordCrushGridSize, forKey: .wordCrushGridSize)
         try container.encode(wordCrushDisplayMode, forKey: .wordCrushDisplayMode)
         try container.encode(wordRainSpeed, forKey: .wordRainSpeed)

@@ -11,18 +11,18 @@ import SwiftUI
 
 struct MemoryConfigView: View {
     let deck: DeckMetadata
-    @Binding var selectedMode: GameConfiguration.MemoryMatchMode
-    
+    @Binding var customConfig: GameConfiguration
+
     let onNext: () -> Void
     let onBack: () -> Void
     let onSkipToSummary: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 24) {
             // Settings Form
             Form {
                 Section(header: Text("Game Settings")) {
-                    Picker("Match Mode", selection: $selectedMode) {
+                    Picker("Match Mode", selection: $customConfig.memoryMatchMode) {
                         ForEach(GameConfiguration.MemoryMatchMode.allCases) { mode in
                             Text(mode.rawValue).tag(mode)
                         }

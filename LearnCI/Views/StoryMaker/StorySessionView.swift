@@ -19,7 +19,6 @@ struct StorySessionView: View {
     
     // UI State
     @State private var showStoryInfo = false
-    @State private var showPromptDetails = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     
@@ -36,12 +35,7 @@ struct StorySessionView: View {
     @State private var isGeneratingQuiz: Bool = false
     @State private var quizQuestions: [ComprehensionQuestion] = []
 
-    // Scene Video Generation
-    @State private var showVideoGenerator: Bool = false
-    @State private var isGeneratingVideo: Bool = false
-    @State private var videoGenerationError: String? = nil
-    @State private var videoStatusMessage: String? = nil
-    private let veoService = VeoService()
+    // Word Lookup (openAIService also used for word translation)
     private let openAIService = OpenAIService()
 
     // Word Lookup
@@ -70,10 +64,10 @@ struct StorySessionView: View {
                     HeroMediaView(
                         story: story,
                         image: $heroImage,
-                        isGeneratingVideo: isGeneratingVideo,
-                        videoStatus: videoStatusMessage,
-                        videoError: videoGenerationError,
-                        onGenerateVideo: { showVideoGenerator = true }
+                        isGeneratingVideo: false,
+                        videoStatus: nil,
+                        videoError: nil,
+                        onGenerateVideo: {}
                     )
                     .frame(height: 300)
                     .clipped()
@@ -186,34 +180,10 @@ struct StorySessionView: View {
                         Label("Story Info", systemImage: "info.circle")
                     }
 
-                    Button(action: { showPromptDetails = true }) {
-                        Label("View Prompts", systemImage: "text.viewfinder")
-                    }
-
                     Divider()
 
                     Button(action: openQuiz) {
                         Label("Comprehension Quiz", systemImage: "checkmark.circle")
-                    }
-
-                    if story.comprehensionQuestionsJSON != nil {
-                        Button(action: regenerateQuiz) {
-                            Label("Regenerate Quiz", systemImage: "arrow.clockwise")
-                        }
-                    }
-
-                    Divider()
-
-                    if story.remoteVideoPath == nil && !isGeneratingVideo {
-                        Button(action: { showVideoGenerator = true }) {
-                            Label("Generate Scene Video", systemImage: "video.badge.plus")
-                        }
-                    }
-
-                    if story.remoteVideoPath != nil && !isGeneratingVideo {
-                        Button(action: { showVideoGenerator = true }) {
-                            Label("Regenerate Scene Video", systemImage: "arrow.clockwise.circle")
-                        }
                     }
 
                     Divider()
@@ -240,15 +210,6 @@ struct StorySessionView: View {
         .sheet(isPresented: $showStoryInfo) {
             StoryInfoSheet(story: story)
                 .presentationDetents([.medium, .large])
-        }
-        .sheet(isPresented: $showPromptDetails) {
-            StoryPromptsSheet(story: story)
-                .presentationDetents([.medium, .large])
-        }
-        .sheet(isPresented: $showVideoGenerator) {
-            VideoGeneratorSheet(story: story) { style in
-                Task { await generateSceneVideo(style: style) }
-            }
         }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
@@ -475,59 +436,6 @@ struct StorySessionView: View {
         openQuiz()
     }
 
-    // MARK: - Scene Video Generation
-
-    @MainActor
-    private func generateSceneVideo(style: VideoStyle) async {
-        isGeneratingVideo = true
-        videoGenerationError = nil
-        videoStatusMessage = "Writing cinematic prompt…"
-
-        do {
-            // 1. Generate cinematic Veo prompt — model chosen in Profile → AI Settings
-            let veoPrompt: String
-            if VideoPromptModel.saved == .gemini {
-                veoPrompt = try await veoService.generateVeoPrompt(
-                    storyText: story.targetLanguageText,
-                    style: style.promptStyle
-                )
-            } else {
-                veoPrompt = try await openAIService.generateVeoPrompt(
-                    storyText: story.targetLanguageText,
-                    style: style.promptStyle
-                )
-            }
-
-            // 2. Save prompt + style immediately so they sync even if video generation fails
-            story.videoStyle = style.rawValue
-            story.videoGenPrompt = veoPrompt
-            try? modelContext.save()
-
-            // 3. Call Veo API — polls until done (up to 6 mins)
-            let videoData = try await veoService.generateVideo(prompt: veoPrompt) { status in
-                Task { @MainActor in self.videoStatusMessage = status }
-            }
-
-            // 4. Save video file locally — SyncManager will upload on the next sync cycle
-            //    and set story.remoteVideoPath once the upload succeeds.
-            videoStatusMessage = "Saving video…"
-            let filename = "video_\(story.id.uuidString).mp4"
-            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let localURL = docs.appendingPathComponent(filename)
-            try videoData.write(to: localURL)
-
-            try? modelContext.save()
-            print("[VideoGen] Scene video saved locally, pending sync: \(localURL.lastPathComponent)")
-
-        } catch {
-            videoGenerationError = error.localizedDescription
-            print("[VideoGen] Error: \(error.localizedDescription)")
-        }
-
-        videoStatusMessage = nil
-        isGeneratingVideo = false
-    }
-
     // MARK: - Text Chunking & Auto-Scroll
     
     struct ParagraphChunk: Identifiable, Equatable {
@@ -668,6 +576,9 @@ struct HeroMediaView: View {
     let videoStatus: String?
     let videoError: String?
     var onGenerateVideo: () -> Void
+    /// Set to false to hide the "Generate Video" overlay badge (e.g. when the action
+    /// is surfaced via a menu instead). The generating progress overlay still shows.
+    var showGenerateButton: Bool = true
 
     @State private var localVideoURL: URL? = nil
 
@@ -716,7 +627,7 @@ struct HeroMediaView: View {
                 } else if let err = videoError {
                     errorBadge(err)
                         .padding(12)
-                } else if localVideoURL == nil {
+                } else if localVideoURL == nil && showGenerateButton {
                     generateButton
                         .padding(12)
                 }

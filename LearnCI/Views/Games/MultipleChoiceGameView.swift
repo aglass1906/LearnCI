@@ -52,12 +52,27 @@ struct MultipleChoiceGameView: View {
                             .animation(.spring(response: 0.3), value: audioManager.isPlaying)
                     }
 
-                    Text(challenge.correctCard.sentenceTarget)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .foregroundColor(.primary)
+                    switch sessionConfig.multipleChoiceStimulusMode {
+                    case .sentenceAndAudio:
+                        Text(challenge.correctCard.sentenceTarget)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .foregroundColor(.primary)
+                    case .wordAndAudio:
+                        Text(challenge.correctCard.wordTarget)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .foregroundColor(.primary)
+                    case .audioOnly:
+                        Text("Listen and choose")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
 
                     if showTranslation, !challenge.correctCard.sentenceNative.isEmpty {
                         Text(challenge.correctCard.sentenceNative)
@@ -172,16 +187,22 @@ struct MultipleChoiceGameView: View {
         let card = challenge.correctCard
         
         var sequence: [AudioManager.AudioItem] = []
-        
-        // Play text audio first? Or just sentence?
-        // Usually target sentence is best context.
-        if let audio = card.audioSentenceFile {
-             sequence.append(AudioManager.AudioItem(filename: audio, text: card.sentenceTarget, language: deck.language))
-        } else if let audio = card.audioWordFile {
-             sequence.append(AudioManager.AudioItem(filename: audio, text: card.wordTarget, language: deck.language))
-        } else {
-            // Fallback (TTS)
-            sequence.append(AudioManager.AudioItem(filename: "", text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+
+        switch sessionConfig.multipleChoiceStimulusMode {
+        case .wordAndAudio:
+            if let audio = card.audioWordFile {
+                sequence.append(AudioManager.AudioItem(filename: audio, text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            } else {
+                sequence.append(AudioManager.AudioItem(filename: "", text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            }
+        case .sentenceAndAudio, .audioOnly:
+            if let audio = card.audioSentenceFile {
+                sequence.append(AudioManager.AudioItem(filename: audio, text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            } else if let audio = card.audioWordFile {
+                sequence.append(AudioManager.AudioItem(filename: audio, text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            } else {
+                sequence.append(AudioManager.AudioItem(filename: "", text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            }
         }
         
         if !sequence.isEmpty {

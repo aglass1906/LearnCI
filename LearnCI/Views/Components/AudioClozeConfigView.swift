@@ -11,6 +11,31 @@ struct AudioClozeConfigView: View {
     var body: some View {
         VStack(spacing: 24) {
             Form {
+                Section(header: Text("Sentence Display")) {
+                    Toggle("Show Sentence", isOn: $customConfig.audioClozeShowSentence)
+
+                    Text(customConfig.audioClozeShowSentence
+                         ? "The blanked sentence is shown — see and fill in the gap."
+                         : "Audio only — identify the missing word by ear alone.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .animation(.easeInOut, value: customConfig.audioClozeShowSentence)
+                }
+
+                Section(header: Text("Audio")) {
+                    Picker("Audio Sequence", selection: $customConfig.audioClozeAudioSequence) {
+                        ForEach(GameConfiguration.AudioClozeAudioSequence.allCases) { seq in
+                            Text(seq.rawValue).tag(seq)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(customConfig.audioClozeAudioSequence.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .animation(.easeInOut, value: customConfig.audioClozeAudioSequence)
+                }
+
                 Section(header: Text("Answer Options")) {
                     Picker("Number of Options", selection: $customConfig.audioClozeOptionCount) {
                         Text("2 Options").tag(2)
@@ -35,7 +60,7 @@ struct AudioClozeConfigView: View {
                 }
 
                 Section(header: Text("About")) {
-                    Text("Listen to a sentence and fill in the missing word from the options. The word and sentence audio play automatically.")
+                    Text("Listen to a sentence and fill in the missing word from the options.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

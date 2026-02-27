@@ -62,14 +62,21 @@ struct AudioClozeGameView: View {
                 
                 // Cloze Sentence
                 if let challenge = challenge {
-                    Text(challenge.sentenceWithBlank)
-                        .font(.title2)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                    if sessionConfig.audioClozeShowSentence {
+                        Text(challenge.sentenceWithBlank)
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                    } else {
+                        Text("Fill in the missing word")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
                 } else {
                     ProgressView()
                 }
@@ -213,20 +220,21 @@ struct AudioClozeGameView: View {
 
         var sequence: [AudioManager.AudioItem] = []
 
-        // Word audio
-        if let wordFile = card.audioWordFile {
-            sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        // Word audio (only when sequence includes word)
+        if sessionConfig.audioClozeAudioSequence == .wordThenSentence {
+            if let wordFile = card.audioWordFile {
+                sequence.append(AudioManager.AudioItem(filename: wordFile, text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+            }
         }
 
         // Sentence audio
         if let sentenceFile = card.audioSentenceFile {
             sequence.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
         } else if !card.sentenceTarget.isEmpty {
-            // TTS fallback for sentence
             sequence.append(AudioManager.AudioItem(filename: "", text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
         }
 
-        // If no audio files at all, at least TTS the word
+        // Fallback: TTS word if nothing else available
         if sequence.isEmpty && !card.wordTarget.isEmpty {
             sequence.append(AudioManager.AudioItem(filename: "", text: card.wordTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
         }

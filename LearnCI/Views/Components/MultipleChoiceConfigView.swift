@@ -11,6 +11,20 @@ struct MultipleChoiceConfigView: View {
     var body: some View {
         VStack(spacing: 24) {
             Form {
+                Section(header: Text("Stimulus")) {
+                    Picker("Stimulus", selection: $customConfig.multipleChoiceStimulusMode) {
+                        ForEach(GameConfiguration.MultipleChoiceStimulusMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(customConfig.multipleChoiceStimulusMode.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .animation(.easeInOut, value: customConfig.multipleChoiceStimulusMode)
+                }
+
                 Section(header: Text("Answer Options")) {
                     Picker("Number of Options", selection: $customConfig.multipleChoiceOptionCount) {
                         Text("2 Options").tag(2)

@@ -10,23 +10,6 @@ struct WordCrushConfigView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            // Title
-            VStack(spacing: 8) {
-                Image(systemName: "square.grid.3x3.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.indigo)
-                    .padding(.bottom, 8)
-
-                Text("Word Crush")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Customize your game")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top)
-
             // Settings Form
             Form {
                 Section(header: Text("Game Settings")) {

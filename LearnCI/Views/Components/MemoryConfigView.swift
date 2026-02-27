@@ -19,23 +19,6 @@ struct MemoryConfigView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            // Title
-            VStack(spacing: 8) {
-                Image(systemName: "square.grid.2x2.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.blue)
-                    .padding(.bottom, 8)
-                    
-                Text("Memory Match")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("Customize your game")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top)
-            
             // Settings Form
             Form {
                 Section(header: Text("Game Settings")) {

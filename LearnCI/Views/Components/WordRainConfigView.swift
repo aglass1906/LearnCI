@@ -10,23 +10,6 @@ struct WordRainConfigView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            // Title
-            VStack(spacing: 8) {
-                Image(systemName: "cloud.rain.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.teal)
-                    .padding(.bottom, 8)
-
-                Text("Word Rain")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Customize your game")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top)
-
             // Settings Form
             Form {
                 Section(header: Text("Fall Speed")) {

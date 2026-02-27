@@ -21,23 +21,6 @@ struct FlashcardConfigView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            // Title
-            VStack(spacing: 8) {
-                Image(systemName: gameType.icon)
-                    .font(.system(size: 60))
-                    .foregroundColor(gameType == .story ? .brown : .purple)
-                    .padding(.bottom, 8)
-                    
-                Text(gameType.rawValue)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("Customize your game")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top)
-            
             // Settings Form
             Form {
                 Section(header: Text("Game Settings")) {

@@ -6,11 +6,12 @@
     "description": "Common verb conjugations for A1 and A2 levels, focusing on regular and irregular patterns.",
     "supportedModes": [
         "flashcards",
+        "memoryMatch",
         "multipleChoice",
         "audioCloze",
-        "memoryMatch",
         "linker",
-        "wordCrush"
+        "wordCrush",
+        "wordRain"
     ],
     "gameConfiguration": {
         "flashcards": {

@@ -822,17 +822,33 @@ struct HeroMediaView: View {
     // MARK: Media loading
 
     private func loadMedia() {
+        let storyLabel = "\(story.title) (\(story.id.uuidString.prefix(8))…)"
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         // Generated video: written by VeoService, uploaded by SyncManager
         let generatedURL = docs.appendingPathComponent("video_\(story.id.uuidString).mp4")
-        // Remote cache: downloaded copy of the current remote version (always refreshed when remoteVideoPath is set)
+        // Remote cache: downloaded copy of the current remote version (always refreshed when remoteVideoPath changes)
         let remoteCacheURL = docs.appendingPathComponent("video_\(story.id.uuidString)_remote.mp4")
 
-        // 1. Remote path is set → remote is the source of truth.
+        let hasLocalGenerated = FileManager.default.fileExists(atPath: generatedURL.path)
+        let remoteCacheSize   = (try? FileManager.default.attributesOfItem(atPath: remoteCacheURL.path)[.size] as? Int) ?? 0
+        let hasValidRemoteCache = remoteCacheSize > 10_000  // treat < 10KB as a corrupt/empty download
+
+        print("[HeroMedia] \(storyLabel)")
+        print("[HeroMedia]   remoteVideoPath : \(story.remoteVideoPath ?? "nil")")
+        print("[HeroMedia]   local generated : \(hasLocalGenerated ? "✅ exists" : "❌ none")")
+        print("[HeroMedia]   remote cache    : \(remoteCacheSize > 0 ? "✅ \(remoteCacheSize / 1024)KB" : "❌ none") \(hasValidRemoteCache ? "" : remoteCacheSize > 0 ? "(⚠️ too small — discarding)" : "")")
+
+        // Discard corrupt/empty remote cache so we re-download
+        if remoteCacheSize > 0 && !hasValidRemoteCache {
+            print("[HeroMedia]   ⚠️ Deleting corrupt remote cache and re-downloading…")
+            try? FileManager.default.removeItem(at: remoteCacheURL)
+        }
+
+        // 1. Remote path is set → remote (DB) is the source of truth.
         //    Use the cached download if it exists; otherwise download fresh.
-        //    This ensures a newly uploaded video (via script or web admin) is always shown.
         if let remotePath = story.remoteVideoPath {
-            if FileManager.default.fileExists(atPath: remoteCacheURL.path) {
+            if hasValidRemoteCache {
+                print("[HeroMedia]   → showing remote cache (DB is source of truth)")
                 self.localVideoURL = remoteCacheURL
                 return
             }
@@ -844,10 +860,24 @@ struct HeroMediaView: View {
                 remoteURL = URL(string: "\(supabaseVideoBase)/\(remotePath)")
             }
             if let url = remoteURL {
+                // Show local generated file immediately as fallback while download is in flight
+                if hasLocalGenerated {
+                    print("[HeroMedia]   → showing local fallback while remote downloads…")
+                    self.localVideoURL = generatedURL
+                } else {
+                    print("[HeroMedia]   → no local fallback, waiting for remote download…")
+                }
+                print("[HeroMedia]   → downloading: \(url.absoluteString.prefix(80))…")
                 Task {
                     if let (data, _) = try? await URLSession.shared.data(from: url) {
                         try? data.write(to: remoteCacheURL)
+                        print("[HeroMedia]   ✅ remote download succeeded — switching to remote cache")
                         await MainActor.run { self.localVideoURL = remoteCacheURL }
+                    } else {
+                        print("[HeroMedia]   ❌ remote download FAILED — \(hasLocalGenerated ? "keeping local fallback" : "falling through to cover image")")
+                        if !hasLocalGenerated {
+                            await MainActor.run { self.loadCoverImage() }
+                        }
                     }
                 }
                 return
@@ -855,12 +885,14 @@ struct HeroMediaView: View {
         }
 
         // 2. No remote path yet — show the locally generated file while sync is pending
-        if FileManager.default.fileExists(atPath: generatedURL.path) {
+        if hasLocalGenerated {
+            print("[HeroMedia]   → no remote path, showing local generated (pending sync)")
             self.localVideoURL = generatedURL
             return
         }
 
         // 3. No video at all — fall back to cover image
+        print("[HeroMedia]   → no video, loading cover image")
         loadCoverImage()
     }
 

@@ -32,6 +32,9 @@ final class Story: Identifiable {
     var coverArt: String? // URL or path to cover image
     var textGenPrompt: String? // The exact prompt used for text generation
     var imageGenPrompt: String? // The exact prompt used for image generation
+    var videoStyle: String? // Visual style chosen by user (e.g. "Pixar 3D Animation")
+    var videoGenPrompt: String? // The cinematic prompt sent to Veo
+    var remoteVideoPath: String? // Path to generated video in Supabase Storage
     var wordTimingsJSON: String? // JSON string of [WordTiming]
     var comprehensionQuestionsJSON: String? // JSON string of [ComprehensionQuestion]
     
@@ -67,10 +70,13 @@ final class Story: Identifiable {
          imageGenPrompt: String? = nil,
          preferencesJSON: String? = nil,
          wordTimingsJSON: String? = nil,
-         audioFilename: String? = nil, 
+         audioFilename: String? = nil,
          remoteAudioPath: String? = nil,
          remoteCoverPath: String? = nil,
          coverArt: String? = nil,
+         videoStyle: String? = nil,
+         videoGenPrompt: String? = nil,
+         remoteVideoPath: String? = nil,
          language: Language, 
          level: Int,
          createdAt: Date = Date()) {
@@ -88,6 +94,9 @@ final class Story: Identifiable {
         self.remoteAudioPath = remoteAudioPath
         self.remoteCoverPath = remoteCoverPath
         self.coverArt = coverArt
+        self.videoStyle = videoStyle
+        self.videoGenPrompt = videoGenPrompt
+        self.remoteVideoPath = remoteVideoPath
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

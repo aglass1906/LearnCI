@@ -503,4 +503,66 @@ actor OpenAIService {
     func hasKey() -> Bool {
         return apiKey != nil && !apiKey!.isEmpty
     }
+
+    // MARK: - Veo Prompt Generation
+
+    /// Uses GPT-4o-mini to convert a story excerpt into a cinematic Veo prompt.
+    func generateVeoPrompt(storyText: String, style: String) async throws -> String {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+
+        // Use the first ~500 characters of the story as the scene source
+        let excerpt = String(storyText.prefix(500))
+
+        let systemPrompt = "You are an expert film director and cinematographer. Your only job is to write short, vivid visual prompts for an AI video generator. Never include dialogue, character names, or abstract concepts. Focus purely on what the camera sees: setting, lighting, movement, atmosphere."
+
+        let userPrompt = """
+        Read this story excerpt and write a single cinematic scene prompt (1-2 sentences) for an AI video generator.
+        The visual style must be: \(style).
+        Describe: setting, lighting, camera angle/movement, atmosphere. No dialogue. No text on screen.
+
+        Story excerpt:
+        \(excerpt)
+        """
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": userPrompt]
+            ],
+            "max_tokens": 150
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw OpenAIServiceError.invalidResponse
+        }
+
+        struct Response: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable { let content: String }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        let result = try JSONDecoder().decode(Response.self, from: data)
+        guard let content = result.choices.first?.message.content else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        let prompt = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("[OpenAI] Generated Veo prompt: \(prompt)")
+        return prompt
+    }
 }

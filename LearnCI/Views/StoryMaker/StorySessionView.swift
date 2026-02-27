@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AVKit
 import Combine
 import SwiftData
 import MediaPlayer
@@ -36,6 +37,14 @@ struct StorySessionView: View {
     @State private var isGeneratingQuiz: Bool = false
     @State private var quizQuestions: [ComprehensionQuestion] = []
 
+    // Scene Video Generation
+    @State private var showVideoGenerator: Bool = false
+    @State private var isGeneratingVideo: Bool = false
+    @State private var videoGenerationError: String? = nil
+    @State private var videoStatusMessage: String? = nil
+    private let veoService = VeoService()
+    private let openAIService = OpenAIService()
+
     // Word Lookup
     @State private var selectedWord: String? = nil
     @State private var selectedWordTime: Double? = nil
@@ -58,10 +67,17 @@ struct StorySessionView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        // Hero Cover Art
-                    HeroCoverView(story: story, image: $heroImage)
-                        .frame(height: 300)
-                        .clipped()
+                        // Hero Media (video if available, cover image otherwise)
+                    HeroMediaView(
+                        story: story,
+                        image: $heroImage,
+                        isGeneratingVideo: isGeneratingVideo,
+                        videoStatus: videoStatusMessage,
+                        videoError: videoGenerationError,
+                        onGenerateVideo: { showVideoGenerator = true }
+                    )
+                    .frame(height: 300)
+                    .clipped()
                     
                     VStack(alignment: .leading, spacing: 20) {
                         Text(story.title)
@@ -198,6 +214,20 @@ struct StorySessionView: View {
 
                     Divider()
 
+                    if story.remoteVideoPath == nil && !isGeneratingVideo {
+                        Button(action: { showVideoGenerator = true }) {
+                            Label("Generate Scene Video", systemImage: "video.badge.plus")
+                        }
+                    }
+
+                    if story.remoteVideoPath != nil && !isGeneratingVideo {
+                        Button(action: { showVideoGenerator = true }) {
+                            Label("Regenerate Scene Video", systemImage: "arrow.clockwise.circle")
+                        }
+                    }
+
+                    Divider()
+
                     Button(action: {
                         if selectedLanguage == .target {
                             UIPasteboard.general.string = story.targetLanguageText
@@ -237,6 +267,11 @@ struct StorySessionView: View {
                 }
             )
             .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showVideoGenerator) {
+            VideoGeneratorSheet(story: story) { style in
+                Task { await generateSceneVideo(style: style) }
+            }
         }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
@@ -482,6 +517,59 @@ struct StorySessionView: View {
         openQuiz()
     }
 
+    // MARK: - Scene Video Generation
+
+    @MainActor
+    private func generateSceneVideo(style: VideoStyle) async {
+        isGeneratingVideo = true
+        videoGenerationError = nil
+        videoStatusMessage = "Writing cinematic prompt…"
+
+        do {
+            // 1. Generate cinematic Veo prompt — model chosen in Profile → AI Settings
+            let veoPrompt: String
+            if VideoPromptModel.saved == .gemini {
+                veoPrompt = try await veoService.generateVeoPrompt(
+                    storyText: story.targetLanguageText,
+                    style: style.promptStyle
+                )
+            } else {
+                veoPrompt = try await openAIService.generateVeoPrompt(
+                    storyText: story.targetLanguageText,
+                    style: style.promptStyle
+                )
+            }
+
+            // 2. Save prompt + style immediately so they sync even if video generation fails
+            story.videoStyle = style.rawValue
+            story.videoGenPrompt = veoPrompt
+            try? modelContext.save()
+
+            // 3. Call Veo API — polls until done (up to 6 mins)
+            let videoData = try await veoService.generateVideo(prompt: veoPrompt) { status in
+                Task { @MainActor in self.videoStatusMessage = status }
+            }
+
+            // 4. Save video file locally — SyncManager will upload on the next sync cycle
+            //    and set story.remoteVideoPath once the upload succeeds.
+            videoStatusMessage = "Saving video…"
+            let filename = "video_\(story.id.uuidString).mp4"
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let localURL = docs.appendingPathComponent(filename)
+            try videoData.write(to: localURL)
+
+            try? modelContext.save()
+            print("[VideoGen] Scene video saved locally, pending sync: \(localURL.lastPathComponent)")
+
+        } catch {
+            videoGenerationError = error.localizedDescription
+            print("[VideoGen] Error: \(error.localizedDescription)")
+        }
+
+        videoStatusMessage = nil
+        isGeneratingVideo = false
+    }
+
     // MARK: - Text Chunking & Auto-Scroll
     
     struct ParagraphChunk: Identifiable, Equatable {
@@ -611,59 +699,170 @@ struct ParagraphView: View {
 
 // MARK: - Subviews
 
-struct HeroCoverView: View {
+// MARK: - HeroMediaView
+// Shows looping video if available, static cover image otherwise.
+// Overlays a "Generate Video" button when neither exists yet.
+
+struct HeroMediaView: View {
     let story: Story
     @Binding var image: UIImage?
-    
+    let isGeneratingVideo: Bool
+    let videoStatus: String?
+    let videoError: String?
+    var onGenerateVideo: () -> Void
+
+    @State private var localVideoURL: URL? = nil
+
+    private let supabaseBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
+
     var body: some View {
         GeometryReader { geo in
             let minY = geo.frame(in: .global).minY
-            
-            ZStack {
-                if let validImage = image {
+
+            ZStack(alignment: .bottomTrailing) {
+                // 1. Video layer (priority)
+                if let videoURL = localVideoURL {
+                    LoopingVideoPlayerView(url: videoURL)
+                        .frame(width: geo.size.width, height: geo.size.height + (minY > 0 ? minY : 0))
+                        .clipped()
+                        .offset(y: minY > 0 ? -minY : 0)
+
+                // 2. Static cover image fallback
+                } else if let validImage = image {
                     Image(uiImage: validImage)
                         .resizable()
                         .scaledToFill()
                         .frame(width: geo.size.width, height: geo.size.height + (minY > 0 ? minY : 0))
                         .clipped()
                         .offset(y: minY > 0 ? -minY : 0)
-                        
-                    // Gradient Overlay for text readability
-                    LinearGradient(
-                        colors: [.black.opacity(0.6), .clear, .black.opacity(0.2)],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
+
+                // 3. Placeholder while loading
                 } else {
-                    // Placeholder / Loading
                     Rectangle()
                         .fill(Color.gray.opacity(0.2))
                         .overlay(ProgressView())
                 }
+
+                // Gradient for text readability
+                LinearGradient(
+                    colors: [.black.opacity(0.55), .clear, .black.opacity(0.15)],
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
+
+                // Video generation overlay
+                if isGeneratingVideo {
+                    generatingOverlay
+                        .padding(12)
+                } else if let err = videoError {
+                    errorBadge(err)
+                        .padding(12)
+                } else if localVideoURL == nil {
+                    generateButton
+                        .padding(12)
+                }
             }
-            .onAppear { loadCover() }
+            .onAppear { loadMedia() }
+            .onChange(of: isGeneratingVideo) { _, generating in
+                // When generation finishes, the file now exists on disk — reload.
+                if !generating { loadMedia() }
+            }
         }
     }
-    
-    private func loadCover() {
-        // 1. Try Remote
+
+    // MARK: Overlay badges
+
+    private var generateButton: some View {
+        Button(action: onGenerateVideo) {
+            Label("Generate Video", systemImage: "video.badge.plus")
+                .font(.caption)
+                .fontWeight(.medium)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial)
+                .clipShape(Capsule())
+        }
+        .foregroundStyle(.white)
+    }
+
+    private var generatingOverlay: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                ProgressView().tint(.white).scaleEffect(0.8)
+                Text(videoStatus ?? "Starting…")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+            }
+            Text("Keep the app open · up to 6 min")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.7))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func errorBadge(_ message: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+            Text("Video failed")
+                .font(.caption)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .foregroundStyle(.white)
+    }
+
+    // MARK: Media loading
+
+    private func loadMedia() {
+        let filename = "video_\(story.id.uuidString).mp4"
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let localURL = docs.appendingPathComponent(filename)
+
+        // 1. Local file exists — show it immediately (covers both: just-generated and previously downloaded)
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            self.localVideoURL = localURL
+            return
+        }
+
+        // 2. No local file but remote path exists — download and cache it
+        if let remotePath = story.remoteVideoPath,
+           let remoteURL = URL(string: "\(supabaseBase)/\(remotePath)") {
+            Task {
+                if let (data, _) = try? await URLSession.shared.data(from: remoteURL) {
+                    try? data.write(to: localURL)
+                    await MainActor.run { self.localVideoURL = localURL }
+                }
+            }
+            return
+        }
+
+        // 3. No video at all — fall back to cover image
+        loadCoverImage()
+    }
+
+    private func loadCoverImage() {
         if let remotePath = story.remoteCoverPath,
-           let url = URL(string: "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories/\(remotePath)") {
-            
-            // Simple async load (in real app, use Kingfisher or nicer cache)
+           let url = URL(string: "\(supabaseBase)/\(remotePath)") {
             URLSession.shared.dataTask(with: url) { data, _, _ in
                 if let data = data, let uiImage = UIImage(data: data) {
                     DispatchQueue.main.async { self.image = uiImage }
                 } else {
-                    loadLocalFallback()
+                    loadLocalCoverFallback()
                 }
             }.resume()
         } else {
-            loadLocalFallback()
+            loadLocalCoverFallback()
         }
     }
-    
-    private func loadLocalFallback() {
+
+    private func loadLocalCoverFallback() {
         if let filename = story.coverArt {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
             if let data = try? Data(contentsOf: url), let uiImage = UIImage(data: data) {

@@ -220,7 +220,7 @@ def main():
         # Save the prompt & style to database immediately
         try:
             supabase.table("stories").update({
-                "video_prompt": veo_prompt,
+                "video_gen_prompt": veo_prompt,
                 "video_style": style_name
             }).eq("id", story_id).execute()
             print("Saved generated prompt and style to the database.")
@@ -254,7 +254,7 @@ def main():
                 # Update database record
                 print("Updating database with video URL...")
                 supabase.table("stories").update({
-                    "video_url": public_url
+                    "remote_video_path": public_url
                 }).eq("id", story_id).execute()
                 
                 print("Upload and database update successful! 🎉")

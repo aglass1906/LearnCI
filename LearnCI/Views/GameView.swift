@@ -323,8 +323,14 @@ struct GameView: View {
                 }
             }
         }
-        if setupStage == .gameSelection {
+        
+        // Initial setup and discovery
+        if !hasInitialized {
             setupConfiguration()
+        }
+        
+        // Only trigger discovery if availableDecks is empty or context changed
+        if dataManager.availableDecks.isEmpty {
             dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
     }

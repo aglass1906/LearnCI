@@ -26,6 +26,9 @@ struct StoryDTO: Codable {
     let prompt: String?
     let text_gen_prompt: String?
     let image_gen_prompt: String?
+    let video_style: String?
+    let video_gen_prompt: String?
+    let remote_video_path: String?
     let preferences_json: String?
     let word_timings_json: String?
     let comprehension_questions_json: String?
@@ -740,7 +743,34 @@ struct CoachingCheckInDTO: Codable {
                 }
             }
             
-            // 3. Push Metadata
+            // 3. Upload Video if generated locally but not yet on remote
+            let videoFilename = "video_\(story.id.uuidString).mp4"
+            let videoFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(videoFilename)
+
+            if FileManager.default.fileExists(atPath: videoFileURL.path),
+               story.remoteVideoPath == nil {
+                do {
+                    let videoData = try Data(contentsOf: videoFileURL)
+                    let remotePath = "\(userID)/videos/\(videoFilename)"
+
+                    try await authManager.supabase.storage
+                        .from("audio-stories")
+                        .upload(
+                            path: remotePath,
+                            file: videoData,
+                            options: FileOptions(contentType: "video/mp4")
+                        )
+
+                    story.remoteVideoPath = remotePath
+                    try context.save()
+                    print("Sync: Uploaded video for story '\(story.title)'")
+                } catch {
+                    print("Sync: Failed to upload video for '\(story.title)': \(error)")
+                }
+            }
+
+            // 4. Push Metadata
             let dto = StoryDTO(
                 id: story.id,
                 user_id: uid,
@@ -750,6 +780,9 @@ struct CoachingCheckInDTO: Codable {
                 prompt: story.prompt,
                 text_gen_prompt: story.textGenPrompt,
                 image_gen_prompt: story.imageGenPrompt,
+                video_style: story.videoStyle,
+                video_gen_prompt: story.videoGenPrompt,
+                remote_video_path: story.remoteVideoPath,
                 preferences_json: story.preferencesJSON,
                 word_timings_json: story.wordTimingsJSON,
                 comprehension_questions_json: story.comprehensionQuestionsJSON,
@@ -803,13 +836,18 @@ struct CoachingCheckInDTO: Codable {
                 existing.isFavorite = dto.is_favorite
                 existing.textGenPrompt = dto.text_gen_prompt
                 existing.imageGenPrompt = dto.image_gen_prompt
-                
-                // Only overwrite if remote has path and local doesn't? Or always?
+                if let style = dto.video_style { existing.videoStyle = style }
+                if let vPrompt = dto.video_gen_prompt { existing.videoGenPrompt = vPrompt }
+
+                // Only overwrite remote paths if remote has one and local doesn't
                 if existing.remoteAudioPath == nil && dto.remote_audio_path != nil {
                     existing.remoteAudioPath = dto.remote_audio_path
                 }
                 if existing.remoteCoverPath == nil && dto.remote_cover_path != nil {
                     existing.remoteCoverPath = dto.remote_cover_path
+                }
+                if existing.remoteVideoPath == nil && dto.remote_video_path != nil {
+                    existing.remoteVideoPath = dto.remote_video_path
                 }
                 if let pref = dto.preferences_json {
                     existing.preferencesJSON = pref
@@ -836,6 +874,9 @@ struct CoachingCheckInDTO: Codable {
                     remoteAudioPath: dto.remote_audio_path,
                     remoteCoverPath: dto.remote_cover_path,
                     coverArt: dto.cover_art,
+                    videoStyle: dto.video_style,
+                    videoGenPrompt: dto.video_gen_prompt,
+                    remoteVideoPath: dto.remote_video_path,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
                     createdAt: dto.created_at

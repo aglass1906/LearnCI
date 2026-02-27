@@ -46,6 +46,19 @@ struct TagWithCount: Identifiable, Hashable {
     let count: Int
 }
 
+// Lightweight version of CardDeck for fast discovery
+struct DeckMetadataSkeleton: Codable {
+    let id: String
+    let language: Language
+    let level: LearningLevel?
+    let title: String
+    let description: String?
+    let proficiencyLevel: Int?
+    let supportedModes: Set<GameConfiguration.GameType>?
+    let gameConfiguration: [String: DeckDefaults]?
+    let coverImage: String?
+}
+
 @Observable
 class DataManager {
     var loadedDeck: CardDeck?
@@ -66,9 +79,30 @@ class DataManager {
     // Cache for resource URLs to avoid repeated recursive searches
     private var resourceURLCache: [String: URL] = [:]
     
+    // Cache for discovered decks to avoid repeated filesystem scans
+    private var discoveryCache: [DiscoveryKey: [DeckMetadata]] = [:]
+    
+    struct DiscoveryKey: Hashable {
+        let language: Language
+        let level: LearningLevel?
+        let proficiency: Int?
+    }
+    
     // Discover decks and return them
     @discardableResult
     func discoverDecks(language: Language, level: LearningLevel? = nil, proficiency: Int? = nil) -> [DeckMetadata] {
+        let key = DiscoveryKey(language: language, level: level, proficiency: proficiency)
+        
+        // 1. Check discovery cache
+        if let cached = discoveryCache[key] {
+            // Update the observable property on the main thread for the UI
+            DispatchQueue.main.async {
+                self.availableDecks = cached
+            }
+            return cached
+        }
+        
+        // 2. Perform discovery
         let discovered = internalDiscover(language: language, level: level, proficiency: proficiency)
         
         // Deduplicate
@@ -78,12 +112,21 @@ class DataManager {
             }
         }
         
-        // Update the observable property on the main thread for the UI
+        // 3. Update caches and observable property
+        discoveryCache[key] = uniqueDecks
+        
         DispatchQueue.main.async {
             self.availableDecks = uniqueDecks
         }
         
         return uniqueDecks
+    }
+    
+    func refreshDecks() {
+        discoveryCache.removeAll()
+        resourceURLCache.removeAll()
+        // Re-discover currently selected context if possible, or just clear.
+        // Let GameView or other callers trigger re-discovery.
     }
         
     // Register a virtual deck (in-memory only)
@@ -301,51 +344,34 @@ class DataManager {
         let fm = FileManager.default
         
         // 1. Check local resources directory first (development)
-        let localDataPath = "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI/Resources/Data"
-        if fm.fileExists(atPath: localDataPath), let enumerator = fm.enumerator(atPath: localDataPath) {
-            while let path = enumerator.nextObject() as? String {
-                if path.hasSuffix(".json") {
-                    let fullPath = (localDataPath as NSString).appendingPathComponent(path)
-                    let fileURL = URL(fileURLWithPath: fullPath)
-                    let folderName = fileURL.deletingLastPathComponent().lastPathComponent
-                    
-                    if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
-                        let langMatch = language == nil || metadata.language == language!
+        // Use a more robust way to find the local data path during development
+        #if DEBUG
+        // This is a convenience for local dev, we try a few relative paths
+        let processInfo = ProcessInfo.processInfo
+        let envPath = processInfo.environment["PROJECT_DIR"]
+        let basePaths = [
+            envPath,
+            "/Users/alanglass/_dev_local/Learn Comp Input/LearnCI/LearnCI",
+            "/Users/alanglass/Documents/dev/_AI/LearnCI/LearnCI"
+        ].compactMap { $0 }
+        
+        for base in basePaths {
+            let localDataPath = (base as NSString).appendingPathComponent("Resources/Data")
+            if fm.fileExists(atPath: localDataPath), let enumerator = fm.enumerator(atPath: localDataPath) {
+                while let path = enumerator.nextObject() as? String {
+                    if path.hasSuffix(".json") {
+                        let fullPath = (localDataPath as NSString).appendingPathComponent(path)
+                        let fileURL = URL(fileURLWithPath: fullPath)
+                        let folderName = fileURL.deletingLastPathComponent().lastPathComponent
                         
-                        // Level Match Logic: Check Proficiency (Int) OR LearningLevel (Enum)
-                        // Fallback: If level matches legacy filter OR if proficiency matches new filter
-                        
-                        // Normalize: Use level if present, else try to derive from proficiency (reverse mapping?) 
-                        // Actually, mapping Int -> Enum is lossy. 
-                        // Better: Normalize Enum -> Int. If Enum is missing, we rely on proficiencyLevel directly.
-                        
-                        let deckProficiency = metadata.proficiencyLevel ?? LevelManager.shared.normalize(metadata.level)
-                        
-                        let levelMatch: Bool
-                        if let targetProf = proficiency {
-                            // If deck has 0 proficiency (unmappable), it fails unless target is 0? 
-                            // 0 means invalid/unknown.
-                             levelMatch = (deckProficiency == targetProf)
-                        } else if let targetLevel = level {
-                            // Legacy filter: deck must have matching level enum
-                            if let deckLevel = metadata.level {
-                                levelMatch = deckLevel == targetLevel
-                            } else {
-                                // Fallback: Check if deck proficiency matches the normalized target level?
-                                let targetProf = LevelManager.shared.normalize(targetLevel)
-                                levelMatch = deckProficiency == targetProf
-                            }
-                        } else {
-                            levelMatch = true // No filter
-                        }
-                        
-                        if langMatch && levelMatch {
-                            discoveredDecks.append(metadata)
+                        if let metadata = peekDeckMetadata(at: fileURL, folderName: folderName) {
+                            processMetadata(metadata, language: language, level: level, proficiency: proficiency, into: &discoveredDecks)
                         }
                     }
                 }
             }
         }
+        #endif
         
         // 2. Check Bundle robustly (Fallback/Production)
         let bundleURL = Bundle.main.bundleURL
@@ -395,26 +421,49 @@ class DataManager {
         do {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
-            // We only need the basic info. If it's not a valid CardDeck JSON, it will fail here.
-            let deck = try decoder.decode(CardDeck.self, from: data)
+            // USE SKELETON: We only need the top-level info, omitting the potentially massive 'cards' array.
+            let skeleton = try decoder.decode(DeckMetadataSkeleton.self, from: data)
             let metadata = DeckMetadata(
-                id: deck.id,
-                title: deck.title,
-                description: deck.description,
-                language: deck.language,
-                level: deck.level,
-                proficiencyLevel: deck.proficiencyLevel,
+                id: skeleton.id,
+                title: skeleton.title,
+                description: skeleton.description,
+                language: skeleton.language,
+                level: skeleton.level,
+                proficiencyLevel: skeleton.proficiencyLevel,
                 folderName: folderName,
                 filename: url.lastPathComponent,
-                supportedModes: deck.supportedModes ?? [.flashcards], // Default to flashcards
-                gameConfiguration: deck.gameConfiguration,
-                coverImage: deck.coverImage
+                supportedModes: skeleton.supportedModes ?? [.flashcards], // Default to flashcards
+                gameConfiguration: skeleton.gameConfiguration,
+                coverImage: skeleton.coverImage
             )
-            // print("DEBUG: Loaded deck \(deck.id) from \(url.lastPathComponent) with modes: \(deck.supportedModes ?? [])")
             return metadata
         } catch {
-            // Ignore files that are not CardDecks
             return nil
+        }
+    }
+    
+    private func processMetadata(_ metadata: DeckMetadata, language: Language?, level: LearningLevel?, proficiency: Int?, into discoveredDecks: inout [DeckMetadata]) {
+        let langMatch = language == nil || metadata.language == language!
+        let deckProficiency = metadata.proficiencyLevel ?? LevelManager.shared.normalize(metadata.level)
+        
+        let levelMatch: Bool
+        if let targetProf = proficiency {
+             levelMatch = (deckProficiency == targetProf)
+        } else if let targetLevel = level {
+            if let deckLevel = metadata.level {
+                levelMatch = deckLevel == targetLevel
+            } else {
+                let targetProf = LevelManager.shared.normalize(targetLevel)
+                levelMatch = deckProficiency == targetProf
+            }
+        } else {
+            levelMatch = true // No filter
+        }
+        
+        if langMatch && levelMatch {
+            if !discoveredDecks.contains(where: { $0.id == metadata.id }) {
+                discoveredDecks.append(metadata)
+            }
         }
     }
     

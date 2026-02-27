@@ -244,16 +244,36 @@ struct AudioClozeGameView: View {
         }
     }
     
+    func playSentenceAudio() {
+        guard let challenge = challenge else { return }
+        let card = challenge.card
+        var items: [AudioManager.AudioItem] = []
+        if let sentenceFile = card.audioSentenceFile {
+            items.append(AudioManager.AudioItem(filename: sentenceFile, text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        } else if !card.sentenceTarget.isEmpty {
+            items.append(AudioManager.AudioItem(filename: "", text: card.sentenceTarget, language: deck.language, voiceGender: sessionConfig.ttsVoiceGender))
+        }
+        if !items.isEmpty {
+            audioManager.playSequence(items: items, folderName: deck.baseFolderName, useFallback: sessionConfig.useTTSFallback, ttsRate: sessionConfig.ttsRate)
+        }
+    }
+
     func handleSelection(_ option: String) {
         guard let challenge = challenge, !hasAnswered else { return }
-        
+
         selectedOption = option
-        
+
         if option == challenge.missingWord {
             // Correct
             isCorrect = true
             hasAnswered = true
             playSuccessSound()
+
+            if sessionConfig.audioClozeReplayAfterCorrect {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    playSentenceAudio()
+                }
+            }
         } else {
             // Incorrect
             hadWrongAttempt = true

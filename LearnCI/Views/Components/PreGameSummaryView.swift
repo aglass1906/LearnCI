@@ -156,6 +156,7 @@ struct PreGameSummaryView: View {
                 ConfigItem(icon: "doc.text", label: "Sentence", value: config.audioClozeShowSentence ? "Visible" : "Hidden", color: .pink),
                 ConfigItem(icon: "music.note.list", label: "Audio", value: config.audioClozeAudioSequence.rawValue, color: .pink),
                 ConfigItem(icon: "list.number", label: "Options", value: "\(config.audioClozeOptionCount)", color: .pink),
+                ConfigItem(icon: "arrow.counterclockwise", label: "Replay", value: config.audioClozeReplayAfterCorrect ? "On" : "Off", color: .teal),
                 ConfigItem(icon: "text.bubble", label: "Show Translation", value: config.audioClozeShowTranslation ? "On" : "Off", color: .teal),
             ]
         case .flashcards:

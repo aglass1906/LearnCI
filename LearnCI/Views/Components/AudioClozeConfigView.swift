@@ -50,6 +50,14 @@ struct AudioClozeConfigView: View {
                 }
 
                 Section(header: Text("After Correct Answer")) {
+                    Toggle("Replay Sentence", isOn: $customConfig.audioClozeReplayAfterCorrect)
+
+                    if customConfig.audioClozeReplayAfterCorrect {
+                        Text("The full sentence plays again after a correct answer — hear it cleanly with the word in context.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
                     Toggle("Show Translation", isOn: $customConfig.audioClozeShowTranslation)
 
                     if customConfig.audioClozeShowTranslation {

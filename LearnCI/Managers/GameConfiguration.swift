@@ -368,6 +368,7 @@ struct GameConfiguration: Codable, Equatable {
     var audioClozeShowTranslation: Bool = false
     var audioClozeShowSentence: Bool = true
     var audioClozeAudioSequence: AudioClozeAudioSequence = .wordThenSentence
+    var audioClozeReplayAfterCorrect: Bool = false
 
     enum CodingKeys: String, CodingKey {
         case gameType, word, sentence, image, back, isRandomOrder, order, useTTSFallback, ttsRate, ttsVoiceGender
@@ -375,7 +376,7 @@ struct GameConfiguration: Codable, Equatable {
         case wordCrushGridSize, wordCrushDisplayMode
         case wordRainSpeed, wordRainWordCount, wordRainDifficulty
         case multipleChoiceOptionCount, multipleChoiceShowTranslation, multipleChoiceStimulusMode
-        case audioClozeOptionCount, audioClozeShowTranslation, audioClozeShowSentence, audioClozeAudioSequence
+        case audioClozeOptionCount, audioClozeShowTranslation, audioClozeShowSentence, audioClozeAudioSequence, audioClozeReplayAfterCorrect
     }
     
     init(gameType: GameType = .flashcards, 
@@ -403,7 +404,8 @@ struct GameConfiguration: Codable, Equatable {
          audioClozeOptionCount: Int = 4,
          audioClozeShowTranslation: Bool = false,
          audioClozeShowSentence: Bool = true,
-         audioClozeAudioSequence: AudioClozeAudioSequence = .wordThenSentence) {
+         audioClozeAudioSequence: AudioClozeAudioSequence = .wordThenSentence,
+         audioClozeReplayAfterCorrect: Bool = false) {
         self.gameType = gameType
         self.word = word
         self.sentence = sentence
@@ -430,6 +432,7 @@ struct GameConfiguration: Codable, Equatable {
         self.audioClozeShowTranslation = audioClozeShowTranslation
         self.audioClozeShowSentence = audioClozeShowSentence
         self.audioClozeAudioSequence = audioClozeAudioSequence
+        self.audioClozeReplayAfterCorrect = audioClozeReplayAfterCorrect
     }
     
     // Custom decoding to handle defaults for existing JSONs
@@ -472,6 +475,7 @@ struct GameConfiguration: Codable, Equatable {
         audioClozeShowTranslation = try container.decodeIfPresent(Bool.self, forKey: .audioClozeShowTranslation) ?? false
         audioClozeShowSentence = try container.decodeIfPresent(Bool.self, forKey: .audioClozeShowSentence) ?? true
         audioClozeAudioSequence = try container.decodeIfPresent(AudioClozeAudioSequence.self, forKey: .audioClozeAudioSequence) ?? .wordThenSentence
+        audioClozeReplayAfterCorrect = try container.decodeIfPresent(Bool.self, forKey: .audioClozeReplayAfterCorrect) ?? false
     }
     
     
@@ -503,6 +507,7 @@ struct GameConfiguration: Codable, Equatable {
         try container.encode(audioClozeShowTranslation, forKey: .audioClozeShowTranslation)
         try container.encode(audioClozeShowSentence, forKey: .audioClozeShowSentence)
         try container.encode(audioClozeAudioSequence, forKey: .audioClozeAudioSequence)
+        try container.encode(audioClozeReplayAfterCorrect, forKey: .audioClozeReplayAfterCorrect)
 
         // Backward Compatibility
         try container.encode(order == .random, forKey: .isRandomOrder)

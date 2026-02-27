@@ -131,6 +131,7 @@ class GameSessionViewModel {
         config.audioClozeShowTranslation = customConfig.audioClozeShowTranslation
         config.audioClozeShowSentence = customConfig.audioClozeShowSentence
         config.audioClozeAudioSequence = customConfig.audioClozeAudioSequence
+        config.audioClozeReplayAfterCorrect = customConfig.audioClozeReplayAfterCorrect
 
         // Timer/scoring reset
         self.duration = TimeInterval(sessionDuration * 60)

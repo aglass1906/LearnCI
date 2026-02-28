@@ -69,6 +69,7 @@ struct CommonHeroView: View {
                         .foregroundColor(.white.opacity(0.9))
                 }
             }
+            .padding(.horizontal, 24)
         }
         .frame(height: 200)
         .frame(maxWidth: .infinity)

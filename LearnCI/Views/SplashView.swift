@@ -14,7 +14,7 @@ struct SplashView: View {
             VStack {
                 VStack(spacing: 25) {
                     CommonHeroView()
-                        .frame(width: 300)
+                        .frame(width: 340)
                         .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
                     
                     Text("Language Learning\nwith\nComprehensible Input")

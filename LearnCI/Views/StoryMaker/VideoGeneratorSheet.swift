@@ -1,5 +1,6 @@
 import SwiftUI
 import AVKit
+import Combine
 
 // MARK: - VideoGeneratorSheet
 // Presented from StorySessionView when the user taps "Generate Scene Video".
@@ -166,40 +167,67 @@ struct VideoGeneratorSheet: View {
 }
 
 // MARK: - VideoPlayerView
-// Wraps AVPlayer for looping, muted, ambient video playback in the hero area.
+// Wraps AVQueuePlayer + AVPlayerLooper for gapless looping, muted ambient video playback.
+// Audio session is set to .ambient so it mixes with the story audio player on real devices.
 
 struct LoopingVideoPlayerView: View {
     let url: URL
 
-    @State private var player: AVPlayer?
+    @State private var player: AVQueuePlayer?
+    @State private var looper: AVPlayerLooper?
 
     var body: some View {
         VideoPlayerLayer(player: player)
             .onAppear { setupPlayer() }
-            .onDisappear { player?.pause() }
+            .onDisappear { tearDown() }
     }
 
     private func setupPlayer() {
-        let item = AVPlayerItem(url: url)
-        let avPlayer = AVPlayer(playerItem: item)
-        avPlayer.isMuted = true
-        avPlayer.actionAtItemEnd = .none
+        // Configure audio session for ambient (mixes with other audio, works on device)
+        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: .mixWithOthers)
+        try? AVAudioSession.sharedInstance().setActive(true)
 
-        // Loop indefinitely
-        NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: item,
-            queue: .main
-        ) { _ in avPlayer.seek(to: .zero); avPlayer.play() }
+        let item = AVPlayerItem(url: url)
+        let avPlayer = AVQueuePlayer()
+        avPlayer.isMuted = true
+
+        // AVPlayerLooper handles seamless looping — no notification observer needed
+        let playerLooper = AVPlayerLooper(player: avPlayer, templateItem: item)
 
         avPlayer.play()
+
+        print("[LoopingVideo] Starting playback: \(url.lastPathComponent)")
+
+        // Observe for errors
+        Task { @MainActor in
+            for await status in item.publisher(for: \.status).values {
+                switch status {
+                case .failed:
+                    print("[LoopingVideo] ❌ Playback failed: \(item.error?.localizedDescription ?? "unknown")")
+                case .readyToPlay:
+                    print("[LoopingVideo] ✅ Ready to play")
+                default:
+                    break
+                }
+                // Only care about first non-unknown status
+                if status != .unknown { break }
+            }
+        }
+
+        self.looper = playerLooper
         self.player = avPlayer
+    }
+
+    private func tearDown() {
+        player?.pause()
+        looper = nil
+        player = nil
     }
 }
 
 // UIViewRepresentable wrapper for AVPlayerLayer
 private struct VideoPlayerLayer: UIViewRepresentable {
-    let player: AVPlayer?
+    let player: AVQueuePlayer?
 
     func makeUIView(context: Context) -> PlayerUIView { PlayerUIView() }
 
@@ -224,7 +252,7 @@ private class PlayerUIView: UIView {
         playerLayer.frame = bounds
     }
 
-    func setPlayer(_ player: AVPlayer?) {
+    func setPlayer(_ player: AVQueuePlayer?) {
         playerLayer.player = player
     }
 }

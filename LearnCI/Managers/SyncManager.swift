@@ -55,7 +55,7 @@ struct PushStoryDTO: Codable {
     let image_gen_prompt: String?
     let video_style: String?
     let video_gen_prompt: String?
-    // remote_video_path intentionally excluded — server is source of truth
+    let remote_video_path: String?
     let preferences_json: String?
     let word_timings_json: String?
     let comprehension_questions_json: String?
@@ -97,7 +97,7 @@ struct CoachingCheckInDTO: Codable {
     @MainActor
     func syncNow(modelContext: ModelContext) async {
         guard let userID = authManager.currentUser else { 
-            print("Sync skipped: No user logged in")
+            print("[Sync] Skipped: No user logged in")
             return 
         }
         guard !isSyncing else { return }
@@ -105,9 +105,12 @@ struct CoachingCheckInDTO: Codable {
         isSyncing = true
         errorMessage = nil
         
+        print("\n--- 🔄 Sync Started ---")
+        
         defer { 
             isSyncing = false
             hasInitialSyncCompleted = true
+            print("--- ✅ Sync Finished ---\n")
         }
         
         do {
@@ -117,32 +120,33 @@ struct CoachingCheckInDTO: Codable {
             // 1. Sync Profile (Upsert)
             try await syncProfile(context: modelContext, userID: userID)
             
-            // NEW: Push Favorites
-            try await syncFavorites(context: modelContext, userID: userID)
-            
-            // NEW: Push Stories (and upload audio)
-            try await syncStories(context: modelContext, userID: userID)
-            
-            // 2. Sync Activities (Push new)
-            try await syncActivities(context: modelContext, userID: userID)
-            
-            // 3. Sync Daily Feedback (Push new)
-            try await syncDailyFeedback(context: modelContext, userID: userID)
-            
-            // 0. Pull Latest Data (Server Wins)
-            try await pullProfile(context: modelContext, userID: userID) // Initial pull to get baseline
+            // 3. Pull Latest Data (Server Wins)
+            try await pullProfile(context: modelContext, userID: userID)
             try await pullActivities(context: modelContext, userID: userID)
             try await pullDailyFeedback(context: modelContext, userID: userID)
             try await pullCheckIns(context: modelContext, userID: userID)
             
-            // 4. Sync Coaching Check-ins (Push new)
+            // NEW: Pull Stories (and download audio)
+            try await pullStories(context: modelContext, userID: userID)
+            
+            // 4. Push Metadata (Local -> Server)
+            // Push Stories AFTER Pulling to ensure we adopt server path repairs first
+            try await syncStories(context: modelContext, userID: userID)
+            
+            // Push Favorites
+            try await syncFavorites(context: modelContext, userID: userID)
+            
+            // Sync Activities (Push new)
+            try await syncActivities(context: modelContext, userID: userID)
+            
+            // Sync Daily Feedback (Push new)
+            try await syncDailyFeedback(context: modelContext, userID: userID)
+            
+            // Sync Coaching Check-ins (Push new)
             try await syncCheckIns(context: modelContext, userID: userID)
             
             // NEW: Pull Favorites (Server Wins & Deletions)
             try await pullFavorites(context: modelContext, userID: userID)
-            
-            // NEW: Pull Stories (and download audio)
-            try await pullStories(context: modelContext, userID: userID)
 
             // Podcasts
             try await syncPodcasts(context: modelContext, userID: userID)
@@ -407,15 +411,15 @@ struct CoachingCheckInDTO: Codable {
             // Compare Timestamps (with small buffer for clock skew, e.g. 1 second)
             // If Local is OLDER or EQUAL, do not push.
             if profile.updatedAt <= serverTimestamp.updated_at {
-                print("Smart Sync: Server is newer or equal (\(serverTimestamp.updated_at) vs local \(profile.updatedAt)). Skipping Push.")
+                print("[Sync] Profile: Server is newer or equal (\(serverTimestamp.updated_at)). Skipping Push.")
                 return
             }
-             
-            print("Smart Sync: Local is newer (\(profile.updatedAt) vs server \(serverTimestamp.updated_at)). Pushing...")
+            
+            print("[Sync] Profile: Local is newer (\(profile.updatedAt)). Pushing...")
             
         } catch {
             // If fetch fails (e.g. no profile on server), we assume we should PUSH our local data.
-            print("Smart Sync: Could not fetch server timestamp (Profile might be new). Proceeding with Push.")
+            print("[Sync] Profile: New user or fetch error. Proceeding with Push.")
         }
         
         // Create DTO
@@ -703,11 +707,11 @@ struct CoachingCheckInDTO: Codable {
         let allLocalStories = try context.fetch(descriptor)
         
         guard !allLocalStories.isEmpty else { 
-            print("Sync Stories: No local stories found for user \(userID)")
+            print("[Sync] Stories: No local stories found.")
             return 
         }
         
-        print("Sync Stories: Found \(allLocalStories.count) stories to sync for user \(userID)")
+        print("[Sync] Stories: Checking \(allLocalStories.count) local stories for user \(userID)...")
         
         for story in allLocalStories {
             guard let uid = UUID(uuidString: userID) else { continue }
@@ -775,7 +779,9 @@ struct CoachingCheckInDTO: Codable {
             let videoFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(videoFilename)
 
-            if FileManager.default.fileExists(atPath: videoFileURL.path),
+            let hasLocalFile = FileManager.default.fileExists(atPath: videoFileURL.path)
+
+            if hasLocalFile,
                story.remoteVideoPath == nil {
                 do {
                     let videoData = try Data(contentsOf: videoFileURL)
@@ -815,6 +821,7 @@ struct CoachingCheckInDTO: Codable {
                 image_gen_prompt: story.imageGenPrompt,
                 video_style: story.videoStyle,
                 video_gen_prompt: story.videoGenPrompt,
+                remote_video_path: story.remoteVideoPath,
                 preferences_json: story.preferencesJSON,
                 word_timings_json: story.wordTimingsJSON,
                 comprehension_questions_json: story.comprehensionQuestionsJSON,
@@ -827,10 +834,13 @@ struct CoachingCheckInDTO: Codable {
                 is_favorite: story.isFavorite,
                 is_public: true
             )
+            print("[Sync] Stories: Final state for '\(story.title)' - remote_video_path: \(story.remoteVideoPath ?? "nil")")
             
             try await authManager.supabase.from("stories")
                 .upsert(dto, onConflict: "id")
                 .execute()
+            
+            // print("[Sync] Stories: Pushed metadata for '\(story.title)'") // Optional: maybe too much? Let's leave it commented for now or remove if it works.
         }
     }
     
@@ -857,6 +867,7 @@ struct CoachingCheckInDTO: Codable {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
         let dtos = try decoder.decode([StoryDTO].self, from: response.data)
+        print("[Sync] Stories: Pulling \(dtos.count) entries from server...")
         
         let descriptor = FetchDescriptor<Story>()
         let localStories = try context.fetch(descriptor)
@@ -879,10 +890,10 @@ struct CoachingCheckInDTO: Codable {
                     existing.remoteCoverPath = dto.remote_cover_path
                 }
                 // Video path: always accept the server value (server is source of truth).
-                // If the path changed, delete the local remote cache so the new video downloads fresh.
-                if let serverPath = dto.remote_video_path,
-                   serverPath != existing.remoteVideoPath {
-                    existing.remoteVideoPath = serverPath
+                // If the path changed (including being nulled), delete the local remote cache so we re-download/re-upload.
+                if dto.remote_video_path != existing.remoteVideoPath {
+                    print("[Sync] Stories: Updated video path for '\(existing.title)' from server (to \(dto.remote_video_path ?? "nil"))")
+                    existing.remoteVideoPath = dto.remote_video_path
                     // Delete stale remote cache so loadMedia() re-downloads the new video
                     let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                     let staleCache = docs.appendingPathComponent("video_\(existing.id.uuidString)_remote.mp4")

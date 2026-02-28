@@ -738,17 +738,28 @@ struct HeroMediaView: View {
                 }
                 print("[HeroMedia]   → downloading: \(url.absoluteString.prefix(80))…")
                 Task {
-                    if let (data, _) = try? await URLSession.shared.data(from: url) {
-                        try? data.write(to: remoteCacheURL)
-                        print("[HeroMedia]   ✅ remote download succeeded — switching to remote cache")
-                        await MainActor.run { self.localVideoURL = remoteCacheURL }
-                    } else {
-                        print("[HeroMedia]   ❌ remote download FAILED — \(hasLocalGenerated ? "keeping local fallback" : "falling through to cover image")")
-                        if !hasLocalGenerated {
-                            await MainActor.run { self.loadCoverImage() }
+                    do {
+                        let (data, response) = try await URLSession.shared.data(from: url)
+                        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                        guard statusCode == 200 else {
+                            print("[HeroMedia]   ❌ HTTP \(statusCode) — not a valid video response")
+                            if !hasLocalGenerated { await MainActor.run { self.loadCoverImage() } }
+                            return
                         }
+                        guard data.count > 10_000 else {
+                            print("[HeroMedia]   ❌ downloaded only \(data.count) bytes — not a valid video")
+                            if !hasLocalGenerated { await MainActor.run { self.loadCoverImage() } }
+                            return
+                        }
+                        try data.write(to: remoteCacheURL)
+                        print("[HeroMedia]   ✅ remote download succeeded (\(data.count / 1024)KB) — switching to remote cache")
+                        await MainActor.run { self.localVideoURL = remoteCacheURL }
+                    } catch {
+                        print("[HeroMedia]   ❌ download error: \(error.localizedDescription)")
+                        if !hasLocalGenerated { await MainActor.run { self.loadCoverImage() } }
                     }
                 }
+
                 return
             }
         }

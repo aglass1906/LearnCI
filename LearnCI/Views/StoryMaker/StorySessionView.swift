@@ -18,7 +18,8 @@ struct StorySessionView: View {
     @State private var duration: Double = 0
     @State private var playbackRate: Float = 1.0
     @State private var ambientVolume: Float = 0.15
-    
+    @State private var isDownloadingAudio = false
+
     // UI State
     @State private var showStoryInfo = false
     @State private var selectedLanguage: DisplayLanguage = .target
@@ -147,7 +148,20 @@ struct StorySessionView: View {
             // Sticky Audio Player
             VStack(spacing: 0) {
                 Spacer()
-                if story.audioFilename != nil || story.remoteAudioPath != nil {
+                if isDownloadingAudio {
+                    HStack(spacing: 10) {
+                        ProgressView().tint(.white)
+                        Text("Downloading audio…")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Color.blue)
+                    .cornerRadius(24, corners: [.topLeft, .topRight])
+                    .shadow(radius: 10, y: -5)
+                } else if story.audioFilename != nil || story.remoteAudioPath != nil {
                     AudioPlayerBar(
                         isPlaying: $isPlaying,
                         sliderValue: $sliderValue,
@@ -269,30 +283,70 @@ struct StorySessionView: View {
     private func setupAudio() {
         guard let filename = story.audioFilename else { return }
 
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let fileURL = paths[0].appendingPathComponent(filename)
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = docs.appendingPathComponent(filename)
 
         if FileManager.default.fileExists(atPath: fileURL.path) {
-            do {
-                try audioManager.playAudio(url: fileURL)
-                audioManager.player?.enableRate = true
-                audioManager.player?.rate = playbackRate
-                duration = audioManager.player?.duration ?? 0
+            playLocalAudio(url: fileURL)
+            startAmbient()
+        } else if let remotePath = story.remoteAudioPath {
+            // File not on this device — download from Supabase then play
+            isDownloadingAudio = true
+            Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
+        }
+    }
 
-                // Set Initial Lock Screen Info
-                audioManager.updateNowPlayingInfo(
-                    title: story.title,
-                    artist: "LearnCI Story",
-                    artworkImage: heroImage
-                )
+    /// Plays an already-local audio file and sets up lock screen info.
+    private func playLocalAudio(url: URL) {
+        do {
+            try audioManager.playAudio(url: url)
+            audioManager.player?.enableRate = true
+            audioManager.player?.rate = playbackRate
+            duration = audioManager.player?.duration ?? 0
+            audioManager.updateNowPlayingInfo(
+                title: story.title,
+                artist: "LearnCI Story",
+                artworkImage: heroImage
+            )
+        } catch {
+            print("Audio setup failed: \(error)")
+        }
+    }
 
-            } catch {
-                print("Audio setup failed: \(error)")
-            }
+    /// Downloads audio from Supabase Storage, saves it locally, then plays it.
+    private func downloadAndPlayAudio(remotePath: String, localURL: URL) async {
+        let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
+        let remoteURL: URL?
+        if remotePath.hasPrefix("https://") {
+            remoteURL = URL(string: remotePath)
+        } else {
+            remoteURL = URL(string: "\(supabaseAudioBase)/\(remotePath)")
         }
 
-        // Start ambient sound if one is assigned
-        startAmbient()
+        guard let url = remoteURL else {
+            await MainActor.run { isDownloadingAudio = false }
+            return
+        }
+
+        do {
+            print("[StorySession] Downloading audio from \(url.absoluteString.prefix(80))…")
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200, data.count > 1000 else {
+                print("[StorySession] Audio download failed — HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0), \(data.count) bytes")
+                await MainActor.run { isDownloadingAudio = false }
+                return
+            }
+            try data.write(to: localURL)
+            print("[StorySession] Audio downloaded (\(data.count / 1024)KB) — playing")
+            await MainActor.run {
+                isDownloadingAudio = false
+                playLocalAudio(url: localURL)
+                startAmbient()
+            }
+        } catch {
+            print("[StorySession] Audio download error: \(error)")
+            await MainActor.run { isDownloadingAudio = false }
+        }
     }
 
     private func startAmbient() {

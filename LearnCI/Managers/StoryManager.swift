@@ -2,6 +2,22 @@ import Foundation
 import SwiftData
 import AVFoundation
 
+// MARK: - Regenerate Options
+
+/// Describes which parts of a story to regenerate.
+/// Dependency rule (enforced by the UI): if `targetText` is true,
+/// `translation` and `audio` must also be true since they depend on the new text.
+struct RegenerateOptions {
+    var targetText: Bool = false
+    var translation: Bool = false
+    var coverArt: Bool = false
+    var audio: Bool = false
+
+    var hasSelection: Bool {
+        targetText || translation || coverArt || audio
+    }
+}
+
 @Observable
 class StoryManager {
     private let openAIService = OpenAIService()
@@ -40,10 +56,15 @@ class StoryManager {
                 preferences: preferences
             )
             
-            // 2. Generate English Translation
+            // 2. Strip speaker tags for clean display and translation
+            let cleanContent = preferences.audioStyle == .dramatized
+                ? openAIService.cleanTaggedText(content)
+                : content
+
+            // 3. Generate English Translation
             print("Generating English translation...")
             let englishTranslation = try await openAIService.generateTranslation(
-                text: content,
+                text: cleanContent,
                 sourceLanguage: language.displayName
             )
             
@@ -65,7 +86,6 @@ class StoryManager {
             print("Generating audio — style: \(preferences.audioStyle.rawValue), content length: \(content.count)")
 
             var speakerVoicesJSON: String? = nil
-            var cleanContent = content  // tags stripped for display/translation
 
             let filename = "story_\(UUID().uuidString).wav"
             let audioURL = getDocumentsDirectory().appendingPathComponent(filename)
@@ -90,8 +110,6 @@ class StoryManager {
                     speakerVoicesJSON = String(data: mapData, encoding: .utf8)
                 }
 
-                // Strip tags so the display text is clean
-                cleanContent = openAIService.cleanTaggedText(content)
             } else {
                 let audioData = try await openAIService.generateAudio(
                     text: content,
@@ -206,10 +224,15 @@ class StoryManager {
                 level: levelString, preferences: preferences
             )
 
-            // 2. Translation
+            // 2. Strip speaker tags for clean display and translation
+            let cleanContent = preferences.audioStyle == .dramatized
+                ? openAIService.cleanTaggedText(content)
+                : content
+
+            // 3. Translation
             statusMessage = "Translating…"
             let translation = try await openAIService.generateTranslation(
-                text: content, sourceLanguage: story.language.displayName
+                text: cleanContent, sourceLanguage: story.language.displayName
             )
 
             // 3. Cover art
@@ -226,7 +249,6 @@ class StoryManager {
             // 4. Audio
             statusMessage = "Generating audio…"
             var speakerVoicesJSON: String? = nil
-            var cleanContent = content
             let rawFilename = "story_\(UUID().uuidString).wav"
             let rawURL = getDocumentsDirectory().appendingPathComponent(rawFilename)
 
@@ -244,7 +266,6 @@ class StoryManager {
                 if let mapData = try? JSONEncoder().encode(voiceMap) {
                     speakerVoicesJSON = String(data: mapData, encoding: .utf8)
                 }
-                cleanContent = openAIService.cleanTaggedText(content)
             } else {
                 let audioData = try await openAIService.generateAudio(
                     text: content, voice: preferences.voice.rawValue
@@ -378,6 +399,161 @@ class StoryManager {
 
         } catch {
             print("Regenerate Audio Error: \(error)")
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Regenerates only the pipeline steps selected by the user.
+    /// If `options.targetText` is true, the caller must also set `translation` and `audio` to true.
+    @MainActor
+    func regenerateSelected(_ options: RegenerateOptions, for story: Story, context: ModelContext) async {
+        guard options.hasSelection else { return }
+        guard let prefJSON = story.preferencesJSON,
+              let prefData = prefJSON.data(using: .utf8),
+              let preferences = try? JSONDecoder().decode(StoryPreferences.self, from: prefData) else {
+            errorMessage = "Could not read story preferences."
+            return
+        }
+
+        isGenerating = true
+        errorMessage = nil
+        defer { isGenerating = false; statusMessage = nil }
+
+        do {
+            let levelString = describeLevel(story.level)
+
+            // Local working copies: updated if target text is regenerated in this same call.
+            var newRawContent: String? = nil       // tagged (may contain speaker tags)
+            var newCleanContent: String? = nil     // stripped, used for display & translation
+
+            // ── 1. Target Language Text ───────────────────────────────────
+            if options.targetText {
+                guard let topic = story.prompt, !topic.isEmpty else {
+                    errorMessage = "No original prompt found — cannot regenerate story text."
+                    return
+                }
+                statusMessage = "Writing story…"
+                let textGenPrompt = await openAIService.constructStoryPrompt(
+                    topic: topic, language: story.language.displayName,
+                    level: levelString, preferences: preferences
+                )
+                let (title, content) = try await openAIService.generateStory(
+                    topic: topic, language: story.language.displayName,
+                    level: levelString, preferences: preferences
+                )
+                let cleanContent = preferences.audioStyle == .dramatized
+                    ? openAIService.cleanTaggedText(content)
+                    : content
+
+                newRawContent   = content
+                newCleanContent = cleanContent
+
+                story.title = title
+                story.targetLanguageText = cleanContent
+                story.taggedTargetText = preferences.audioStyle == .dramatized ? content : nil
+                story.textGenPrompt = textGenPrompt
+                story.comprehensionQuestionsJSON = nil   // invalidated by new text
+            }
+
+            // ── 2. English Translation ────────────────────────────────────
+            if options.translation {
+                statusMessage = "Translating…"
+                let sourceText = newCleanContent ?? story.targetLanguageText
+                let translation = try await openAIService.generateTranslation(
+                    text: sourceText, sourceLanguage: story.language.displayName
+                )
+                story.nativeLanguageText = translation
+            }
+
+            // ── 3. Cover Art ──────────────────────────────────────────────
+            if options.coverArt {
+                statusMessage = "Generating cover art…"
+                let topic = story.prompt ?? story.title
+                let (coverData, imageGenPrompt) = try await openAIService.generateCoverArt(
+                    title: story.title, topic: topic, style: preferences.coverArtStyle
+                )
+                if let oldCover = story.coverArt {
+                    try? fileManager.removeItem(
+                        at: getDocumentsDirectory().appendingPathComponent(oldCover))
+                }
+                let coverFilename = "cover_\(UUID().uuidString).png"
+                try coverData.write(to: getDocumentsDirectory().appendingPathComponent(coverFilename))
+                story.coverArt = coverFilename
+                story.imageGenPrompt = imageGenPrompt
+                story.remoteCoverPath = nil
+            }
+
+            // ── 4. Story Audio + Word Timings ─────────────────────────────
+            if options.audio {
+                statusMessage = "Generating audio…"
+
+                // Use freshly generated text if available, otherwise reuse stored versions.
+                let taggedForAudio: String? = newRawContent ?? story.taggedTargetText
+                let plainForAudio: String   = newCleanContent ?? story.targetLanguageText
+
+                var newSpeakerVoicesJSON: String? = story.speakerVoicesJSON
+                let rawFilename = "story_\(UUID().uuidString).wav"
+                let rawURL = getDocumentsDirectory().appendingPathComponent(rawFilename)
+                var audioFilename: String
+
+                if preferences.audioStyle == .dramatized, let tagged = taggedForAudio {
+                    // Reuse existing voice mapping only when text was NOT regenerated —
+                    // new text may introduce new characters, so fresh assignment is safer.
+                    var existingMapping: [String: String] = [:]
+                    if !options.targetText,
+                       let mapJSON = story.speakerVoicesJSON,
+                       let mapData = mapJSON.data(using: .utf8),
+                       let map = try? JSONDecoder().decode([String: String].self, from: mapData) {
+                        existingMapping = map
+                    }
+                    let segments = openAIService.parseSegments(from: tagged)
+                    let voiceMap = openAIService.assignVoices(
+                        segments: segments, narratorVoice: preferences.voice.rawValue,
+                        protagonistName: preferences.protagonistName,
+                        protagonistGender: preferences.protagonistGender,
+                        existingMapping: existingMapping
+                    )
+                    let audioData = try await openAIService.generateDramatizedAudio(
+                        segments: segments, voiceMapping: voiceMap
+                    )
+                    try audioData.write(to: rawURL)
+                    audioFilename = rawFilename
+                    if let mapData = try? JSONEncoder().encode(voiceMap) {
+                        newSpeakerVoicesJSON = String(data: mapData, encoding: .utf8)
+                    }
+                } else {
+                    let audioData = try await openAIService.generateAudio(
+                        text: plainForAudio, voice: preferences.voice.rawValue
+                    )
+                    let mp3URL = rawURL.deletingPathExtension().appendingPathExtension("mp3")
+                    try audioData.write(to: mp3URL)
+                    audioFilename = mp3URL.lastPathComponent
+                }
+
+                if let oldAudio = story.audioFilename {
+                    try? fileManager.removeItem(
+                        at: getDocumentsDirectory().appendingPathComponent(oldAudio))
+                }
+
+                statusMessage = "Generating word timings…"
+                let resolvedURL = getDocumentsDirectory().appendingPathComponent(audioFilename)
+                var timingsJSON: String? = nil
+                if let timings = try? await openAIService.generateWordTimings(for: resolvedURL),
+                   !timings.isEmpty,
+                   let data = try? JSONEncoder().encode(timings) {
+                    timingsJSON = String(data: data, encoding: .utf8)
+                }
+
+                story.audioFilename = audioFilename
+                story.wordTimingsJSON = timingsJSON
+                story.speakerVoicesJSON = newSpeakerVoicesJSON
+                story.remoteAudioPath = nil
+            }
+
+            try context.save()
+
+        } catch {
+            print("Regenerate Selected Error: \(error)")
             errorMessage = error.localizedDescription
         }
     }

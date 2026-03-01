@@ -25,6 +25,7 @@ struct StoryAboutView: View {
     @State private var showPromptDetails = false
     @State private var showVideoGenerator = false
     @State private var showAmbientPicker = false
+    @State private var showRegenerateOptions = false
 
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
@@ -165,14 +166,9 @@ struct StoryAboutView: View {
 
                     if !storyManager.isGenerating {
                         Button {
-                            Task { await storyManager.regenerateStory(for: story, context: modelContext) }
+                            showRegenerateOptions = true
                         } label: {
-                            Label("Regenerate Story", systemImage: "arrow.clockwise.circle.fill")
-                        }
-                        Button {
-                            Task { await storyManager.regenerateAudio(for: story, context: modelContext) }
-                        } label: {
-                            Label("Regenerate Audio", systemImage: "waveform.badge.plus")
+                            Label("Regenerate…", systemImage: "arrow.clockwise.circle")
                         }
                     } else {
                         Label(storyManager.statusMessage ?? "Working…", systemImage: "ellipsis")
@@ -195,7 +191,7 @@ struct StoryAboutView: View {
 
                     Divider()
 
-                    if !isGeneratingVideo {
+                    if !isGeneratingVideo && !storyManager.isGenerating {
                         Button { showVideoGenerator = true } label: {
                             Label(
                                 story.remoteVideoPath == nil ? "Generate Scene Video" : "Regenerate Scene Video",
@@ -234,6 +230,12 @@ struct StoryAboutView: View {
         .sheet(isPresented: $showAmbientPicker) {
             AmbientSoundPickerSheet(story: story)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showRegenerateOptions) {
+            RegenerateOptionsSheet(story: story, storyManager: storyManager) { options in
+                Task { await storyManager.regenerateSelected(options, for: story, context: modelContext) }
+            }
+            .presentationDetents([.medium, .large])
         }
         .alert("Regeneration Failed", isPresented: Binding(
             get: { storyManager.errorMessage != nil },
@@ -436,5 +438,131 @@ private struct AmbientSoundPickerRow: View {
             }
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Regenerate Options Sheet
+
+private struct RegenerateOptionsSheet: View {
+    let story: Story
+    let storyManager: StoryManager
+    var onRegenerate: (RegenerateOptions) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var options = RegenerateOptions()
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                // ── Story Text ────────────────────────────────────────────
+                Section {
+                    optionRow(
+                        icon: "doc.text.fill", color: .blue,
+                        title: "Target Language Text",
+                        subtitle: "Rewrites the full \(story.language.displayName) story",
+                        isOn: $options.targetText
+                    )
+                    .onChange(of: options.targetText) { _, isOn in
+                        if isOn {
+                            // Translation and audio must follow new text
+                            options.translation = true
+                            options.audio = true
+                        }
+                    }
+
+                    optionRow(
+                        icon: "globe", color: .green,
+                        title: "English Translation",
+                        subtitle: options.targetText
+                            ? "Updated automatically with new text"
+                            : "Re-translates the existing \(story.language.displayName) text",
+                        isOn: $options.translation
+                    )
+                    .disabled(options.targetText)
+                } header: {
+                    Text("Story Text")
+                } footer: {
+                    if options.targetText {
+                        Label(
+                            "Translation and audio are required when regenerating story text.",
+                            systemImage: "info.circle"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+
+                // ── Visuals ───────────────────────────────────────────────
+                Section("Visuals") {
+                    optionRow(
+                        icon: "photo.fill", color: .orange,
+                        title: "Cover Art",
+                        subtitle: "Generates a new AI illustration",
+                        isOn: $options.coverArt
+                    )
+                }
+
+                // ── Audio ─────────────────────────────────────────────────
+                Section {
+                    optionRow(
+                        icon: "waveform", color: .purple,
+                        title: "Story Audio",
+                        subtitle: options.targetText
+                            ? "Updated automatically with new text"
+                            : "Re-voices the story with new audio",
+                        isOn: $options.audio
+                    )
+                    .disabled(options.targetText)
+                } header: {
+                    Text("Audio")
+                }
+
+                // ── Action ────────────────────────────────────────────────
+                Section {
+                    Button {
+                        dismiss()
+                        onRegenerate(options)
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Label("Regenerate Selected", systemImage: "arrow.clockwise")
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                    }
+                    .disabled(!options.hasSelection)
+                }
+                .listRowBackground(options.hasSelection ? Color.blue : Color.blue.opacity(0.35))
+                .foregroundStyle(.white)
+            }
+            .navigationTitle("Regenerate")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func optionRow(
+        icon: String, color: Color,
+        title: String, subtitle: String,
+        isOn: Binding<Bool>
+    ) -> some View {
+        Toggle(isOn: isOn) {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } icon: {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+            }
+        }
     }
 }

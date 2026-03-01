@@ -146,8 +146,10 @@ actor OpenAIService {
             - SPEAKER TAGS: This story will be voiced by multiple speakers. \
             Prefix every line of the story with a speaker tag in the format [SPEAKER_NAME] where:
               • Narrator lines use [NARRATOR]
-              • Each character's dialogue uses [CHARACTERNAME] (uppercase, no spaces, e.g. [ELENA] or [BARISTA])
+              • Each character's dialogue uses [CHARACTERNAME] (ALL UPPERCASE, no spaces, e.g. [ELENA], [BARISTA], [DRAGON])
               • Every single line must have a tag — do not leave any line untagged.
+              • Tags must be EXACTLY in the format [NAME] — no colons, extra words, or punctuation inside the brackets.
+              • Do NOT include stage directions or parenthetical notes anywhere (e.g. do NOT write "(whispering)", "(softly)", or "(points at door)").
             """)
         }
 
@@ -208,7 +210,7 @@ actor OpenAIService {
         var currentLines: [String] = []
 
         let lines = taggedText.components(separatedBy: "\n")
-        let tagPattern = try? NSRegularExpression(pattern: #"^\[([A-Z][A-Z0-9_ ]*)\]\s*"#)
+        let tagPattern = try? NSRegularExpression(pattern: #"^\[([A-Za-z][A-Za-z0-9_ ]*)\]\s*"#)
 
         func flush() {
             let text = currentLines.joined(separator: " ").trimmingCharacters(in: .whitespaces)
@@ -370,7 +372,7 @@ actor OpenAIService {
 
     /// Strips speaker tags from tagged story text so the clean version can be stored/displayed.
     nonisolated func cleanTaggedText(_ taggedText: String) -> String {
-        let tagPattern = try? NSRegularExpression(pattern: #"^\[[A-Z][A-Z0-9_ ]*\]\s*"#, options: .anchorsMatchLines)
+        let tagPattern = try? NSRegularExpression(pattern: #"^\[[A-Za-z][A-Za-z0-9_ ]*\]\s*"#, options: .anchorsMatchLines)
         let range = NSRange(taggedText.startIndex..., in: taggedText)
         return tagPattern?.stringByReplacingMatches(in: taggedText, range: range, withTemplate: "") ?? taggedText
     }

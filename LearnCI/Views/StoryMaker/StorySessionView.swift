@@ -281,18 +281,32 @@ struct StorySessionView: View {
     // MARK: - Audio Logic
     
     private func setupAudio() {
-        guard let filename = story.audioFilename else { return }
-
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = docs.appendingPathComponent(filename)
 
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            playLocalAudio(url: fileURL)
-            startAmbient()
-        } else if let remotePath = story.remoteAudioPath {
-            // File not on this device — download from Supabase then play
+        // If we have a local filename, check whether the file actually exists
+        if let filename = story.audioFilename {
+            let fileURL = docs.appendingPathComponent(filename)
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                print("[StorySession] Playing local audio: \(filename)")
+                playLocalAudio(url: fileURL)
+                startAmbient()
+                return
+            }
+            print("[StorySession] Local audio file missing on this device: \(filename)")
+        } else {
+            print("[StorySession] story.audioFilename is nil — will try remoteAudioPath")
+        }
+
+        // Local file missing (or audioFilename nil) — fall back to Supabase download
+        if let remotePath = story.remoteAudioPath {
+            // Derive a stable local filename so we cache the file for future plays
+            let filename = story.audioFilename ?? "story_\(story.id.uuidString).mp3"
+            let fileURL = docs.appendingPathComponent(filename)
+            print("[StorySession] Downloading audio from remote: \(remotePath)")
             isDownloadingAudio = true
-            Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
+            Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL, derivedFilename: story.audioFilename == nil ? filename : nil) }
+        } else {
+            print("[StorySession] No audio available — audioFilename: \(story.audioFilename ?? "nil"), remoteAudioPath: \(story.remoteAudioPath ?? "nil")")
         }
     }
 
@@ -314,7 +328,12 @@ struct StorySessionView: View {
     }
 
     /// Downloads audio from Supabase Storage, saves it locally, then plays it.
-    private func downloadAndPlayAudio(remotePath: String, localURL: URL) async {
+    /// - Parameters:
+    ///   - remotePath: Path in Supabase Storage (or full https URL).
+    ///   - localURL: Destination URL to write the downloaded file.
+    ///   - derivedFilename: If non-nil, saves this filename back to `story.audioFilename`
+    ///     so that future opens use the cached local file (avoids re-downloading).
+    private func downloadAndPlayAudio(remotePath: String, localURL: URL, derivedFilename: String? = nil) async {
         let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
         let remoteURL: URL?
         if remotePath.hasPrefix("https://") {
@@ -340,6 +359,11 @@ struct StorySessionView: View {
             print("[StorySession] Audio downloaded (\(data.count / 1024)KB) — playing")
             await MainActor.run {
                 isDownloadingAudio = false
+                // Cache filename on the story so next open plays locally
+                if let name = derivedFilename {
+                    story.audioFilename = name
+                    try? modelContext.save()
+                }
                 playLocalAudio(url: localURL)
                 startAmbient()
             }

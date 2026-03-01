@@ -82,14 +82,22 @@ actor OpenAIService {
             throw OpenAIServiceError.decodingError
         }
         
-        // Parse the inner JSON content
-        guard let data = contentString.data(using: .utf8),
-              let json = try JSONSerialization.jsonObject(with: data) as? [String: String],
-              let title = json["title"],
-              let content = json["content"] else {
+        // Parse the inner JSON content — content may be a String or [String]
+        guard let innerData = contentString.data(using: .utf8),
+              let json = try JSONSerialization.jsonObject(with: innerData) as? [String: Any],
+              let title = json["title"] as? String else {
             throw OpenAIServiceError.decodingError
         }
-        
+
+        let content: String
+        if let str = json["content"] as? String {
+            content = str
+        } else if let arr = json["content"] as? [String] {
+            content = arr.joined(separator: "\n")
+        } else {
+            throw OpenAIServiceError.decodingError
+        }
+
         return (title, content)
     }
     
@@ -132,8 +140,19 @@ actor OpenAIService {
             promptComponents.append("- GRAMMAR FOCUS: Prioritize using \(preferences.grammarFocus) where appropriate.")
         }
         
+        // Dramatized mode: ask GPT to tag each line with a speaker label
+        if preferences.audioStyle == .dramatized {
+            promptComponents.append("""
+            - SPEAKER TAGS: This story will be voiced by multiple speakers. \
+            Prefix every line of the story with a speaker tag in the format [SPEAKER_NAME] where:
+              • Narrator lines use [NARRATOR]
+              • Each character's dialogue uses [CHARACTERNAME] (uppercase, no spaces, e.g. [ELENA] or [BARISTA])
+              • Every single line must have a tag — do not leave any line untagged.
+            """)
+        }
+
         promptComponents.append("Return the result as JSON with keys \"title\" and \"content\".")
-        
+
         return promptComponents.joined(separator: "\n")
     }
     
@@ -141,23 +160,23 @@ actor OpenAIService {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
-        
+
         let url = URL(string: "\(baseURL)/audio/speech")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body: [String: Any] = [
             "model": "tts-1",
             "input": text,
             "voice": voice
         ]
-        
+
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        
+
         let (data, response) = try await URLSession.shared.data(for: request)
-        
+
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
             if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -167,8 +186,193 @@ actor OpenAIService {
             }
             throw OpenAIServiceError.apiError(errorMessage)
         }
-        
+
         return data
+    }
+
+    // MARK: - Dramatized Audio
+
+    /// Represents one tagged segment of a dramatized story.
+    struct StorySegment {
+        let speaker: String  // e.g. "NARRATOR", "ELENA", "BARISTA"
+        let text: String
+    }
+
+    /// Parses speaker-tagged story text into ordered segments.
+    /// Expected format per line: "[SPEAKER] text" or "[SPEAKER:Name] text"
+    /// Narrator lines without a tag are attributed to NARRATOR.
+    nonisolated func parseSegments(from taggedText: String) -> [StorySegment] {
+        var segments: [StorySegment] = []
+        // Accumulate consecutive lines from the same speaker
+        var currentSpeaker = "NARRATOR"
+        var currentLines: [String] = []
+
+        let lines = taggedText.components(separatedBy: "\n")
+        let tagPattern = try? NSRegularExpression(pattern: #"^\[([A-Z][A-Z0-9_ ]*)\]\s*"#)
+
+        func flush() {
+            let text = currentLines.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+            if !text.isEmpty {
+                segments.append(StorySegment(speaker: currentSpeaker, text: text))
+            }
+        }
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { continue }
+
+            if let match = tagPattern?.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+               let tagRange = Range(match.range(at: 1), in: trimmed),
+               let fullRange = Range(match.range, in: trimmed) {
+                let speaker = String(trimmed[tagRange]).uppercased()
+                let remainder = String(trimmed[fullRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+
+                if speaker != currentSpeaker {
+                    flush()
+                    currentSpeaker = speaker
+                    currentLines = []
+                }
+                if !remainder.isEmpty { currentLines.append(remainder) }
+            } else {
+                // Untagged line — keep current speaker
+                currentLines.append(trimmed)
+            }
+        }
+        flush()
+        return segments
+    }
+
+    /// Assigns an OpenAI voice to each unique speaker, preserving any existing mapping.
+    /// - narrator: user's chosen voice
+    /// - remaining speakers: assigned from the pool, respecting protagonist gender hint
+    nonisolated func assignVoices(
+        segments: [StorySegment],
+        narratorVoice: String,
+        protagonistName: String,
+        protagonistGender: StoryPreferences.Gender,
+        existingMapping: [String: String] = [:]
+    ) -> [String: String] {
+        var mapping = existingMapping
+        let allVoices = StoryPreferences.Voice.allCases.map { $0.rawValue }
+        let femaleVoices = ["nova", "shimmer"]
+        let maleVoices   = ["echo", "onyx", "fable"]
+
+        // Narrator is always the user's chosen voice
+        mapping["NARRATOR"] = narratorVoice
+
+        // Voices available for characters (exclude narrator's voice)
+        var pool = allVoices.filter { $0 != narratorVoice }
+
+        let speakers = Set(segments.map { $0.speaker }).subtracting(["NARRATOR"])
+        for speaker in speakers.sorted() {
+            guard mapping[speaker] == nil else { continue } // already assigned
+
+            // Use protagonist gender hint for the protagonist
+            let isProtagonist = !protagonistName.isEmpty &&
+                speaker.uppercased() == protagonistName.uppercased()
+            var preferred: String? = nil
+            if isProtagonist {
+                switch protagonistGender {
+                case .female: preferred = pool.first { femaleVoices.contains($0) }
+                case .male:   preferred = pool.first { maleVoices.contains($0) }
+                case .neutral: break
+                }
+            }
+
+            let chosen = preferred ?? pool.first ?? allVoices.first!
+            mapping[speaker] = chosen
+            pool.removeAll { $0 == chosen }
+            if pool.isEmpty { pool = allVoices.filter { $0 != narratorVoice } } // cycle if exhausted
+        }
+        return mapping
+    }
+
+    /// Generates PCM audio for each segment using its assigned voice, concatenates the
+    /// raw PCM bytes, wraps them in a WAV container, and returns the final Data.
+    /// OpenAI TTS PCM format: 24000 Hz, 16-bit signed little-endian, mono.
+    func generateDramatizedAudio(
+        segments: [StorySegment],
+        voiceMapping: [String: String]
+    ) async throws -> Data {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+
+        var allPCM = Data()
+
+        for segment in segments {
+            let voice = voiceMapping[segment.speaker] ?? voiceMapping["NARRATOR"] ?? "alloy"
+            print("[Dramatized] Generating PCM for \(segment.speaker) (\(voice)): \(segment.text.prefix(50))…")
+
+            let url = URL(string: "\(baseURL)/audio/speech")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            let body: [String: Any] = [
+                "model": "tts-1",
+                "input": segment.text,
+                "voice": voice,
+                "response_format": "pcm"  // raw 24kHz 16-bit mono signed LE
+            ]
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                var msg = "PCM TTS failed for \(segment.speaker)"
+                if let errJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let errObj = errJson["error"] as? [String: Any],
+                   let m = errObj["message"] as? String { msg = m }
+                throw OpenAIServiceError.apiError(msg)
+            }
+            allPCM.append(data)
+        }
+
+        return wrapPCMInWAV(pcmData: allPCM, sampleRate: 24000, channels: 1, bitsPerSample: 16)
+    }
+
+    /// Builds a valid WAV file from raw PCM bytes.
+    private func wrapPCMInWAV(pcmData: Data, sampleRate: UInt32, channels: UInt16, bitsPerSample: UInt16) -> Data {
+        var wav = Data()
+        let dataSize   = UInt32(pcmData.count)
+        let byteRate   = sampleRate * UInt32(channels) * UInt32(bitsPerSample) / 8
+        let blockAlign = channels * bitsPerSample / 8
+        let chunkSize  = 36 + dataSize  // 36 = rest of header after RIFF id + size field
+
+        func append<T: FixedWidthInteger>(_ value: T) {
+            var le = value.littleEndian
+            wav.append(contentsOf: withUnsafeBytes(of: &le) { Array($0) })
+        }
+
+        // RIFF chunk
+        wav.append(contentsOf: "RIFF".utf8)
+        append(chunkSize)
+        wav.append(contentsOf: "WAVE".utf8)
+
+        // fmt sub-chunk
+        wav.append(contentsOf: "fmt ".utf8)
+        append(UInt32(16))        // sub-chunk size for PCM
+        append(UInt16(1))         // PCM format
+        append(channels)
+        append(sampleRate)
+        append(byteRate)
+        append(blockAlign)
+        append(bitsPerSample)
+
+        // data sub-chunk
+        wav.append(contentsOf: "data".utf8)
+        append(dataSize)
+        wav.append(pcmData)
+
+        return wav
+    }
+
+    /// Strips speaker tags from tagged story text so the clean version can be stored/displayed.
+    nonisolated func cleanTaggedText(_ taggedText: String) -> String {
+        let tagPattern = try? NSRegularExpression(pattern: #"^\[[A-Z][A-Z0-9_ ]*\]\s*"#, options: .anchorsMatchLines)
+        let range = NSRange(taggedText.startIndex..., in: taggedText)
+        return tagPattern?.stringByReplacingMatches(in: taggedText, range: range, withTemplate: "") ?? taggedText
     }
     
     func generateTranslation(text: String, sourceLanguage: String) async throws -> String {

@@ -11,6 +11,13 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     /// Indicates whether audio is currently playing (file or TTS)
     var isPlaying: Bool = false
 
+    // MARK: - Ambient Audio
+    private var ambientPlayer: AVAudioPlayer?
+    var ambientVolume: Float = 0.15 {
+        didSet { ambientPlayer?.volume = ambientVolume }
+    }
+    var isAmbientPlaying: Bool = false
+
     // MARK: - AVPlayer Streaming
     var streamPlayer: AVPlayer?
     var isStreaming: Bool = false
@@ -603,6 +610,46 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     @objc private func streamDidFinish() {
         isStreaming = false
         streamFinished = true
+    }
+
+    // MARK: - Ambient Playback
+
+    func playAmbient(url: URL, volume: Float = 0.3) {
+        stopAmbient()
+        do {
+            // Allow ambient to mix with the main story player within this app.
+            // The .playback category already allows multiple AVAudioPlayers in the same session.
+            ambientPlayer = try AVAudioPlayer(contentsOf: url)
+            ambientPlayer?.numberOfLoops = -1 // infinite loop
+            ambientPlayer?.volume = volume
+            ambientVolume = volume
+            ambientPlayer?.prepareToPlay()
+            ambientPlayer?.play()
+            isAmbientPlaying = true
+        } catch {
+            print("[AudioManager] Failed to start ambient audio: \(error)")
+        }
+    }
+
+    func pauseAmbient() {
+        ambientPlayer?.pause()
+        isAmbientPlaying = false
+    }
+
+    func resumeAmbient() {
+        ambientPlayer?.play()
+        isAmbientPlaying = ambientPlayer != nil
+    }
+
+    func stopAmbient() {
+        ambientPlayer?.stop()
+        ambientPlayer = nil
+        isAmbientPlaying = false
+    }
+
+    func setAmbientVolume(_ volume: Float) {
+        ambientVolume = volume
+        ambientPlayer?.volume = volume
     }
 
     func stopAudio() {

@@ -20,7 +20,26 @@ struct StoryPreferences: Codable, Equatable {
     
     var audioSpeed: Double = 1.0
     var interactiveAudio: Bool = false
-    
+    var audioStyle: AudioStyle = .single
+
+    // Ambient sound — stored as the sound's id (e.g. "rain_night") or "none"
+    var ambientSoundId: String = "none"
+    var ambientVolume: Double = 0.3
+
+    enum AudioStyle: String, Codable, CaseIterable, Identifiable {
+        case single      = "Single Voice"
+        case dramatized  = "Dramatized"
+
+        var id: String { rawValue }
+
+        var description: String {
+            switch self {
+            case .single:     return "One narrator voice tells the whole story."
+            case .dramatized: return "Each character speaks in their own distinct voice."
+            }
+        }
+    }
+
     enum Genre: String, Codable, CaseIterable, Identifiable {
         case romance = "Romance"
         case action = "Action"

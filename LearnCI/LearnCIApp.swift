@@ -16,11 +16,13 @@ struct LearnCIApp: App {
     @State private var syncManager: SyncManager
     @State private var locationManager = LocationManager()
     @State private var audioManager = AudioManager()
-    
+    @State private var ambientSoundManager: AmbientSoundManager
+
     init() {
         let auth = AuthManager()
         _authManager = State(initialValue: auth)
         _syncManager = State(initialValue: SyncManager(authManager: auth))
+        _ambientSoundManager = State(initialValue: AmbientSoundManager(authManager: auth))
         print("Documents Directory: \(URL.documentsDirectory.path)")
     }
     
@@ -61,6 +63,7 @@ struct LearnCIApp: App {
                         .environment(syncManager)
                         .environment(locationManager)
                         .environment(audioManager)
+                        .environment(ambientSoundManager)
                         .onOpenURL { url in
                             print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
                             Task {

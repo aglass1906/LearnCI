@@ -37,6 +37,10 @@ final class Story: Identifiable {
     var remoteVideoPath: String? // Path to generated video in Supabase Storage
     var wordTimingsJSON: String? // JSON string of [WordTiming]
     var comprehensionQuestionsJSON: String? // JSON string of [ComprehensionQuestion]
+    var speakerVoicesJSON: String? // JSON dict of speaker name → OpenAI voice, e.g. {"NARRATOR":"onyx","ELENA":"nova"}
+    var taggedTargetText: String? // Original speaker-tagged text (dramatized mode); nil for single-voice stories
+    var ambientSoundId: String? // AmbientSound.id, e.g. "rain_night" or "none"
+    var ambientVolume: Float = 0.15 // 0.0–1.0 mix level for ambient audio
     
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
@@ -60,16 +64,18 @@ final class Story: Identifiable {
         set { levelRaw = String(newValue) }
     }
     
-    init(id: UUID = UUID(), 
+    init(id: UUID = UUID(),
          userID: String,
-         title: String, 
-         targetLanguageText: String, 
+         title: String,
+         targetLanguageText: String,
          nativeLanguageText: String? = nil,
          prompt: String? = nil,
          textGenPrompt: String? = nil,
          imageGenPrompt: String? = nil,
          preferencesJSON: String? = nil,
          wordTimingsJSON: String? = nil,
+         speakerVoicesJSON: String? = nil,
+         taggedTargetText: String? = nil,
          audioFilename: String? = nil,
          remoteAudioPath: String? = nil,
          remoteCoverPath: String? = nil,
@@ -77,7 +83,9 @@ final class Story: Identifiable {
          videoStyle: String? = nil,
          videoGenPrompt: String? = nil,
          remoteVideoPath: String? = nil,
-         language: Language, 
+         ambientSoundId: String? = nil,
+         ambientVolume: Float = 0.15,
+         language: Language,
          level: Int,
          createdAt: Date = Date()) {
         self.id = id
@@ -90,6 +98,8 @@ final class Story: Identifiable {
         self.imageGenPrompt = imageGenPrompt
         self.preferencesJSON = preferencesJSON
         self.wordTimingsJSON = wordTimingsJSON
+        self.speakerVoicesJSON = speakerVoicesJSON
+        self.taggedTargetText = taggedTargetText
         self.audioFilename = audioFilename
         self.remoteAudioPath = remoteAudioPath
         self.remoteCoverPath = remoteCoverPath
@@ -97,6 +107,8 @@ final class Story: Identifiable {
         self.videoStyle = videoStyle
         self.videoGenPrompt = videoGenPrompt
         self.remoteVideoPath = remoteVideoPath
+        self.ambientSoundId = ambientSoundId
+        self.ambientVolume = ambientVolume
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

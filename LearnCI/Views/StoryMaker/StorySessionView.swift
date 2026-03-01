@@ -8,6 +8,7 @@ import MediaPlayer
 struct StorySessionView: View {
     let story: Story
     @Environment(AudioManager.self) private var audioManager
+    @Environment(AmbientSoundManager.self) private var ambientSoundManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
@@ -16,6 +17,7 @@ struct StorySessionView: View {
     @State private var sliderValue: Double = 0
     @State private var duration: Double = 0
     @State private var playbackRate: Float = 1.0
+    @State private var ambientVolume: Float = 0.15
     
     // UI State
     @State private var showStoryInfo = false
@@ -151,6 +153,8 @@ struct StorySessionView: View {
                         sliderValue: $sliderValue,
                         duration: duration,
                         playbackRate: $playbackRate,
+                        ambientVolume: $ambientVolume,
+                        isAmbientPlaying: audioManager.isAmbientPlaying,
                         onPlayPause: togglePlay,
                         onSkipForward: skipForward,
                         onSkipBackward: skipBackward,
@@ -168,10 +172,16 @@ struct StorySessionView: View {
         }
         .onAppear {
             startTime = Date()
+            ambientVolume = story.ambientVolume
             setupAudio()
         }
         .onDisappear {
             cleanupSession()
+        }
+        .onChange(of: ambientVolume) { _, newValue in
+            audioManager.setAmbientVolume(newValue)
+            story.ambientVolume = newValue
+            try? modelContext.save()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -258,31 +268,52 @@ struct StorySessionView: View {
     
     private func setupAudio() {
         guard let filename = story.audioFilename else { return }
-        
+
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let fileURL = paths[0].appendingPathComponent(filename)
-        
+
         if FileManager.default.fileExists(atPath: fileURL.path) {
             do {
                 try audioManager.playAudio(url: fileURL)
                 audioManager.player?.enableRate = true
                 audioManager.player?.rate = playbackRate
                 duration = audioManager.player?.duration ?? 0
-                
+
                 // Set Initial Lock Screen Info
                 audioManager.updateNowPlayingInfo(
                     title: story.title,
                     artist: "LearnCI Story",
                     artworkImage: heroImage
                 )
-                
+
             } catch {
                 print("Audio setup failed: \(error)")
+            }
+        }
+
+        // Start ambient sound if one is assigned
+        startAmbient()
+    }
+
+    private func startAmbient() {
+        guard let soundId = story.ambientSoundId,
+              soundId != "none",
+              let sound = AmbientSound.catalog.first(where: { $0.id == soundId }) else { return }
+
+        Task {
+            do {
+                let url = try await ambientSoundManager.ensureDownloaded(sound)
+                await MainActor.run {
+                    audioManager.playAmbient(url: url, volume: story.ambientVolume)
+                }
+            } catch {
+                print("[StorySession] Ambient sound unavailable: \(error)")
             }
         }
     }
     
     private func cleanupSession() {
+        audioManager.stopAmbient()
         audioManager.stopAudio()
         
         // Analytics
@@ -309,13 +340,15 @@ struct StorySessionView: View {
     private func togglePlay() {
         didPlayAudio = true
         guard let player = audioManager.player else { return }
-        
+
         if player.isPlaying {
             player.pause()
             isPlaying = false
+            audioManager.pauseAmbient()
         } else {
             player.play()
             isPlaying = true
+            audioManager.resumeAmbient()
         }
         audioManager.updateNowPlayingInfo()
     }
@@ -815,15 +848,35 @@ struct AudioPlayerBar: View {
     @Binding var sliderValue: Double
     let duration: Double
     @Binding var playbackRate: Float
-    
+    @Binding var ambientVolume: Float
+    let isAmbientPlaying: Bool
+
     var onPlayPause: () -> Void
     var onSkipForward: () -> Void
     var onSkipBackward: () -> Void
     var onSeek: (Double) -> Void
     var onChangeRate: (Float) -> Void
-    
+
     var body: some View {
         VStack(spacing: 12) {
+            // Ambient volume row — only visible while ambient audio is active
+            if isAmbientPlaying {
+                HStack(spacing: 8) {
+                    Image(systemName: "music.note")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                    Slider(value: $ambientVolume, in: 0...1)
+                        .tint(.secondary)
+                    Image(systemName: "music.note.list")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                }
+                .padding(.horizontal)
+                .padding(.top, 4)
+            }
+
             // Scrubber
             HStack(spacing: 8) {
                 Text(formatTime(sliderValue))

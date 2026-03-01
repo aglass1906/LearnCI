@@ -123,17 +123,34 @@ struct StoryGeneratorView: View {
                     // Audio
                     Group {
                         Text("Audio Settings").font(.caption).foregroundStyle(.secondary)
-                        Picker("Voice", selection: $preferences.voice) {
+
+                        Picker("Audio Style", selection: $preferences.audioStyle) {
+                            ForEach(StoryPreferences.AudioStyle.allCases) { style in
+                                Text(style.rawValue).tag(style)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        if preferences.audioStyle == .dramatized {
+                            Label(
+                                "Each character speaks in their own voice. Narrator uses the voice selected below.",
+                                systemImage: "person.2.wave.2"
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+
+                        Picker("Narrator Voice", selection: $preferences.voice) {
                             ForEach(StoryPreferences.Voice.allCases) { voice in
                                 Text(voice.displayName).tag(voice)
                             }
                         }
-                        
+
                         VStack(alignment: .leading) {
                             Text("Audio Speed: \(String(format: "%.1fx", preferences.audioSpeed))")
                             Slider(value: $preferences.audioSpeed, in: 0.5...1.5, step: 0.1)
                         }
-                        
+
                         Toggle("Interactive Audio (Shadowing)", isOn: $preferences.interactiveAudio)
                     }
                 }

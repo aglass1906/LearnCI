@@ -32,6 +32,10 @@ struct StoryDTO: Codable {
     let preferences_json: String?
     let word_timings_json: String?
     let comprehension_questions_json: String?
+    let speaker_voices_json: String?
+    let tagged_target_text: String?
+    let ambient_sound_id: String?
+    let ambient_volume: Float?
     let language: String
     let level: Int
     let remote_audio_path: String?
@@ -59,6 +63,10 @@ struct PushStoryDTO: Codable {
     let preferences_json: String?
     let word_timings_json: String?
     let comprehension_questions_json: String?
+    let speaker_voices_json: String?
+    let tagged_target_text: String?
+    let ambient_sound_id: String?
+    let ambient_volume: Float?
     let language: String
     let level: Int
     let remote_audio_path: String?
@@ -825,6 +833,10 @@ struct CoachingCheckInDTO: Codable {
                 preferences_json: story.preferencesJSON,
                 word_timings_json: story.wordTimingsJSON,
                 comprehension_questions_json: story.comprehensionQuestionsJSON,
+                speaker_voices_json: story.speakerVoicesJSON,
+                tagged_target_text: story.taggedTargetText,
+                ambient_sound_id: story.ambientSoundId,
+                ambient_volume: story.ambientVolume,
                 language: story.languageRaw,
                 level: Int(story.levelRaw) ?? 1,
                 remote_audio_path: story.remoteAudioPath,
@@ -909,6 +921,18 @@ struct CoachingCheckInDTO: Codable {
                 if let questions = dto.comprehension_questions_json {
                     existing.comprehensionQuestionsJSON = questions
                 }
+                if let voices = dto.speaker_voices_json {
+                    existing.speakerVoicesJSON = voices
+                }
+                if let tagged = dto.tagged_target_text {
+                    existing.taggedTargetText = tagged
+                }
+                if let soundId = dto.ambient_sound_id {
+                    existing.ambientSoundId = soundId
+                }
+                if let vol = dto.ambient_volume {
+                    existing.ambientVolume = vol
+                }
             } else {
                 // Insert New
                 let newStory = Story(
@@ -922,12 +946,16 @@ struct CoachingCheckInDTO: Codable {
                     imageGenPrompt: dto.image_gen_prompt,
                     preferencesJSON: dto.preferences_json,
                     wordTimingsJSON: dto.word_timings_json,
+                    speakerVoicesJSON: dto.speaker_voices_json,
+                    taggedTargetText: dto.tagged_target_text,
                     remoteAudioPath: dto.remote_audio_path,
                     remoteCoverPath: dto.remote_cover_path,
                     coverArt: dto.cover_art,
                     videoStyle: dto.video_style,
                     videoGenPrompt: dto.video_gen_prompt,
                     remoteVideoPath: dto.remote_video_path,
+                    ambientSoundId: dto.ambient_sound_id,
+                    ambientVolume: dto.ambient_volume ?? 0.3,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
                     createdAt: dto.created_at

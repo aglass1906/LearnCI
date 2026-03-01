@@ -5,9 +5,13 @@ struct StoryAboutView: View {
     let story: Story
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(AmbientSoundManager.self) private var ambientSoundManager
 
     // Hero image state
     @State private var heroImage: UIImage? = nil
+
+    // Story / audio regeneration
+    @State private var storyManager = StoryManager()
 
     // Video generation
     @State private var isGeneratingVideo: Bool = false
@@ -20,6 +24,7 @@ struct StoryAboutView: View {
     @State private var showStoryInfo = false
     @State private var showPromptDetails = false
     @State private var showVideoGenerator = false
+    @State private var showAmbientPicker = false
 
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
@@ -47,6 +52,21 @@ struct StoryAboutView: View {
                 )
                 .frame(height: heroHeight)
                 .clipped()
+
+                // ── Regeneration Status Banner ────────────────────────────
+                if storyManager.isGenerating, let status = storyManager.statusMessage {
+                    HStack(spacing: 10) {
+                        ProgressView()
+                            .tint(.white)
+                        Text(status)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.blue)
+                }
 
                 // ── Story Details ─────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 20) {
@@ -77,6 +97,11 @@ struct StoryAboutView: View {
                             .foregroundColor(.secondary)
                             .lineSpacing(6)
                     }
+
+                    Divider()
+
+                    // ── Ambient Sound ─────────────────────────────────────
+                    AmbientSoundRow(story: story, onChangeTap: { showAmbientPicker = true })
 
                     Divider()
 
@@ -138,6 +163,24 @@ struct StoryAboutView: View {
 
                     Divider()
 
+                    if !storyManager.isGenerating {
+                        Button {
+                            Task { await storyManager.regenerateStory(for: story, context: modelContext) }
+                        } label: {
+                            Label("Regenerate Story", systemImage: "arrow.clockwise.circle.fill")
+                        }
+                        Button {
+                            Task { await storyManager.regenerateAudio(for: story, context: modelContext) }
+                        } label: {
+                            Label("Regenerate Audio", systemImage: "waveform.badge.plus")
+                        }
+                    } else {
+                        Label(storyManager.statusMessage ?? "Working…", systemImage: "ellipsis")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Divider()
+
                     NavigationLink(destination: StoryQuizView(story: story)) {
                         Label("Comprehension Quiz", systemImage: "checkmark.circle")
                     }
@@ -187,6 +230,18 @@ struct StoryAboutView: View {
             VideoGeneratorSheet(story: story) { style in
                 Task { await generateSceneVideo(style: style) }
             }
+        }
+        .sheet(isPresented: $showAmbientPicker) {
+            AmbientSoundPickerSheet(story: story)
+                .presentationDetents([.medium, .large])
+        }
+        .alert("Regeneration Failed", isPresented: Binding(
+            get: { storyManager.errorMessage != nil },
+            set: { if !$0 { storyManager.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { storyManager.errorMessage = nil }
+        } message: {
+            Text(storyManager.errorMessage ?? "")
         }
     }
 
@@ -269,5 +324,117 @@ private extension View {
             .padding(.vertical, 5)
             .background(Color(.secondarySystemBackground))
             .clipShape(Capsule())
+    }
+}
+
+// MARK: - Ambient Sound Row
+
+private struct AmbientSoundRow: View {
+    let story: Story
+    let onChangeTap: () -> Void
+
+    private var currentSound: AmbientSound {
+        AmbientSound.catalog.first { $0.id == story.ambientSoundId } ?? .none
+    }
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Label("Ambient Sound", systemImage: "waveform.and.music.mic")
+                    .font(.subheadline.bold())
+                Text(currentSound.isNone ? "None" : currentSound.displayName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button("Change", action: onChangeTap)
+                .font(.caption.bold())
+                .foregroundStyle(.blue)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Ambient Sound Picker Sheet
+
+private struct AmbientSoundPickerSheet: View {
+    let story: Story
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AmbientSoundManager.self) private var ambientSoundManager
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Volume Mix") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Image(systemName: "speaker.fill")
+                                .foregroundStyle(.secondary)
+                            Slider(value: Binding(
+                                get: { Double(story.ambientVolume) },
+                                set: { story.ambientVolume = Float($0); saveContext() }
+                            ), in: 0...1)
+                            Image(systemName: "speaker.wave.3.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                        Text("Ambient volume: \(Int(story.ambientVolume * 100))%")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                Section("Select Sound") {
+                    ForEach(AmbientSound.catalog) { sound in
+                        AmbientSoundPickerRow(sound: sound, isSelected: story.ambientSoundId == sound.id) {
+                            story.ambientSoundId = sound.id
+                            saveContext()
+                            if !sound.isNone {
+                                Task { try? await ambientSoundManager.ensureDownloaded(sound) }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Ambient Sound")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func saveContext() { try? modelContext.save() }
+}
+
+private struct AmbientSoundPickerRow: View {
+    let sound: AmbientSound
+    let isSelected: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(sound.displayName)
+                        .foregroundStyle(.primary)
+                    if !sound.isNone && !sound.genreIds.isEmpty {
+                        Text(sound.genreIds.prefix(3).joined(separator: ", "))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.blue)
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

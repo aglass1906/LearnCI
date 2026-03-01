@@ -80,6 +80,8 @@ struct PodcastPlayerView: View {
                     sliderValue: $sliderValue,
                     duration: duration,
                     playbackRate: $playbackRate,
+                    ambientVolume: .constant(0),
+                    isAmbientPlaying: false,
                     onPlayPause: togglePlay,
                     onSkipForward: skipForward,
                     onSkipBackward: skipBackward,

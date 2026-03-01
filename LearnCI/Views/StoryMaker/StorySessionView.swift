@@ -287,8 +287,17 @@ struct StorySessionView: View {
         if let filename = story.audioFilename {
             let fileURL = docs.appendingPathComponent(filename)
             if FileManager.default.fileExists(atPath: fileURL.path) {
-                print("[StorySession] Playing local audio: \(filename)")
-                playLocalAudio(url: fileURL)
+                // Guard against legacy bad cache: WAV content stored with .mp3 extension.
+                // AVAudioPlayer picks its parser from the extension, so this fix is critical.
+                if let corrected = correctAudioExtensionIfNeeded(url: fileURL) {
+                    print("[StorySession] Corrected audio extension: \(filename) → \(corrected.lastPathComponent)")
+                    story.audioFilename = corrected.lastPathComponent
+                    try? modelContext.save()
+                    playLocalAudio(url: corrected)
+                } else {
+                    print("[StorySession] Playing local audio: \(filename)")
+                    playLocalAudio(url: fileURL)
+                }
                 startAmbient()
                 return
             }
@@ -310,6 +319,26 @@ struct StorySessionView: View {
         }
     }
 
+    /// Checks the first 4 bytes of an audio file. If it contains a WAV (`RIFF`) header but
+    /// has a `.mp3` extension (a legacy upload bug), renames the file to `.wav` and returns
+    /// the new URL. Returns nil if no rename was needed.
+    private func correctAudioExtensionIfNeeded(url: URL) -> URL? {
+        guard url.pathExtension.lowercased() == "mp3",
+              let fh = try? FileHandle(forReadingFrom: url) else { return nil }
+        let magic = fh.readData(ofLength: 4)
+        fh.closeFile()
+        // WAV files start with "RIFF" (0x52 0x49 0x46 0x46)
+        guard magic == Data([0x52, 0x49, 0x46, 0x46]) else { return nil }
+        let wavURL = url.deletingPathExtension().appendingPathExtension("wav")
+        do {
+            try FileManager.default.moveItem(at: url, to: wavURL)
+            return wavURL
+        } catch {
+            print("[StorySession] Failed to rename audio file to .wav: \(error)")
+            return nil
+        }
+    }
+
     /// Plays an already-local audio file and sets up lock screen info.
     private func playLocalAudio(url: URL) {
         do {
@@ -327,12 +356,12 @@ struct StorySessionView: View {
         }
     }
 
-    /// Downloads audio from Supabase Storage, saves it locally, then plays it.
+    /// Downloads audio from Supabase Storage, saves it locally with the correct extension, then plays it.
     /// - Parameters:
     ///   - remotePath: Path in Supabase Storage (or full https URL).
-    ///   - localURL: Destination URL to write the downloaded file.
-    ///   - derivedFilename: If non-nil, saves this filename back to `story.audioFilename`
-    ///     so that future opens use the cached local file (avoids re-downloading).
+    ///   - localURL: Base destination URL (extension may be corrected after inspecting magic bytes).
+    ///   - derivedFilename: If non-nil and `story.audioFilename` is nil, saves detected filename back
+    ///     to `story.audioFilename` so future opens use the cached local file without re-downloading.
     private func downloadAndPlayAudio(remotePath: String, localURL: URL, derivedFilename: String? = nil) async {
         let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
         let remoteURL: URL?
@@ -355,16 +384,26 @@ struct StorySessionView: View {
                 await MainActor.run { isDownloadingAudio = false }
                 return
             }
-            try data.write(to: localURL)
-            print("[StorySession] Audio downloaded (\(data.count / 1024)KB) — playing")
+
+            // Detect actual format by magic bytes — legacy uploads stored WAV content with .mp3 path.
+            // AVAudioPlayer uses the file extension to choose its parser, so the extension MUST match.
+            let isWAV = data.prefix(4) == Data([0x52, 0x49, 0x46, 0x46]) // "RIFF"
+            let correctExt = isWAV ? "wav" : "mp3"
+            let correctURL = localURL.deletingPathExtension().appendingPathExtension(correctExt)
+
+            try data.write(to: correctURL)
+            print("[StorySession] Audio downloaded (\(data.count / 1024)KB, format=\(correctExt)) — playing")
+
             await MainActor.run {
                 isDownloadingAudio = false
-                // Cache filename on the story so next open plays locally
-                if let name = derivedFilename {
-                    story.audioFilename = name
+                // Cache the correct filename so future opens use the local file
+                if derivedFilename != nil {
+                    let correctFilename = correctURL.lastPathComponent
+                    story.audioFilename = correctFilename
                     try? modelContext.save()
+                    print("[StorySession] Cached audioFilename: \(correctFilename)")
                 }
-                playLocalAudio(url: localURL)
+                playLocalAudio(url: correctURL)
                 startAmbient()
             }
         } catch {

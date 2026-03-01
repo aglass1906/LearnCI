@@ -732,20 +732,24 @@ struct CoachingCheckInDTO: Codable {
                 if FileManager.default.fileExists(atPath: fileURL.path) {
                     do {
                         let audioData = try Data(contentsOf: fileURL)
-                        let remotePath = "\(userID)/\(UUID().uuidString).mp3"
-                        
+                        // Preserve the actual file extension (WAV dramatized vs MP3 single-voice)
+                        let srcExt = (localFilename as NSString).pathExtension.lowercased()
+                        let remoteExt = srcExt == "wav" ? "wav" : "mp3"
+                        let contentType = remoteExt == "wav" ? "audio/wav" : "audio/mpeg"
+                        let remotePath = "\(userID)/\(UUID().uuidString).\(remoteExt)"
+
                         try await authManager.supabase.storage
                             .from("audio-stories")
                             .upload(
                                 path: remotePath,
                                 file: audioData,
-                                options: FileOptions(contentType: "audio/mpeg")
+                                options: FileOptions(contentType: contentType)
                             )
-                        
+
                         // Update local model
                         story.remoteAudioPath = remotePath
                         try context.save()
-                        print("Sync: Uploaded audio for story '\(story.title)'")
+                        print("Sync: Uploaded audio for story '\(story.title)' (\(remoteExt))")
                     } catch {
                         print("Sync: Failed to upload audio for '\(story.title)': \(error)")
                         // Continue to push metadata, though audio might be missing remotely
@@ -971,28 +975,22 @@ struct CoachingCheckInDTO: Codable {
                             let data = try await authManager.supabase.storage
                                 .from("audio-stories")
                                 .download(path: remotePath)
-                            
-                            // Save locally
-                            let filename = "story_\(dto.id).mp3"
+
+                            // Detect actual audio format by magic bytes (handles legacy uploads
+                            // that were stored as WAV content but with a .mp3 remote path)
+                            let isWAV = data.prefix(4) == Data([0x52, 0x49, 0x46, 0x46]) // "RIFF"
+                            let ext = isWAV ? "wav" : "mp3"
+                            let filename = "story_\(dto.id).\(ext)"
                             let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                             let url = docs.appendingPathComponent(filename)
                             try data.write(to: url)
-                            
-                            // Update model asynchronously (careful with context)
-                            // Ideally we'd do this in the loop, but download is async.
-                            // For safety, we might skip this auto-download or handle it better.
-                            // Let's just set the filename, and let the view try to play/download on demand?
-                            // Or simpler: synchronous save here if possible? No, download is async.
-                            // We will save the filename, and the user can tap play. 
-                            // AudioManager checks file existence.
-                            // We need a way to mark "downloaded".
-                            // For now: set audioFilename only if file exists.
-                            // Actually, let's just write it.
-                             let mainContext = context // Capture context
-                             await MainActor.run {
-                                 newStory.audioFilename = filename
-                                 try? mainContext.save()
-                             }
+                            print("Sync: Downloaded audio for story '\(dto.title)' as \(ext) (\(data.count / 1024)KB)")
+
+                            let mainContext = context
+                            await MainActor.run {
+                                newStory.audioFilename = filename
+                                try? mainContext.save()
+                            }
                         } catch {
                             print("Sync: Failed to download audio for story \(dto.title): \(error)")
                         }

@@ -733,7 +733,7 @@ struct HeroMediaView: View {
     @State private var localVideoURL: URL? = nil
 
     private let supabaseBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
-    private let supabaseVideoBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/story_videos"
+    private let supabaseVideoBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
 
     var body: some View {
         GeometryReader { geo in

@@ -197,7 +197,8 @@ def main():
         import unicodedata
         timestamp = int(time.time())
         filename = f"{timestamp}_resumed.mp4"
-        storage_path = f"{story_id}/{filename}"
+        user_id = full_story.get('user_id', 'unknown')
+        storage_path = f"{user_id}/{story_id}/videos/{filename}"
         output_path = os.path.join(VIDEO_DIR, filename)
         success = generate_veo_video(gemini_client, "", output_path, operation_name=job_id)
     else:
@@ -220,8 +221,9 @@ def main():
         safe_style = "_".join(normalized_style.lower().split())
         timestamp = int(time.time())
         filename = f"{timestamp}_{safe_style}.mp4"
-        # Standard path: {storyID}/{timestamp}_{style_slug}.mp4
-        storage_path = f"{story_id}/{filename}"
+        user_id = full_story.get('user_id', 'unknown')
+        # Standard path: {userID}/{storyID}/videos/{timestamp}_{style_slug}.mp4
+        storage_path = f"{user_id}/{story_id}/videos/{filename}"
         output_path = os.path.join(VIDEO_DIR, filename)
 
         # 3. Generate Prompt using LLM

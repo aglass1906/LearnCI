@@ -736,7 +736,7 @@ struct CoachingCheckInDTO: Codable {
                         let srcExt = (localFilename as NSString).pathExtension.lowercased()
                         let remoteExt = srcExt == "wav" ? "wav" : "mp3"
                         let contentType = remoteExt == "wav" ? "audio/wav" : "audio/mpeg"
-                        let remotePath = "\(userID)/\(UUID().uuidString).\(remoteExt)"
+                        let remotePath = "\(userID)/\(story.id.uuidString)/audio/\(UUID().uuidString).\(remoteExt)"
 
                         try await authManager.supabase.storage
                             .from("audio-stories")
@@ -766,7 +766,7 @@ struct CoachingCheckInDTO: Codable {
                     do {
                         let imageData = try Data(contentsOf: fileURL)
                         let ownerID = userID.isEmpty ? "unknown" : userID
-                        let remotePath = "\(ownerID)/covers/\(UUID().uuidString).png"
+                        let remotePath = "\(ownerID)/\(story.id.uuidString)/covers/\(UUID().uuidString).png"
                         
                         try await authManager.supabase.storage
                             .from("audio-stories")
@@ -797,16 +797,16 @@ struct CoachingCheckInDTO: Codable {
                story.remoteVideoPath == nil {
                 do {
                     let videoData = try Data(contentsOf: videoFileURL)
-                    // Standard path: {storyID}/{timestamp}_{style}.mp4
+                    // Standard path: {userID}/{storyID}/videos/{timestamp}_{style}.mp4
                     let styleSlug = (story.videoStyle ?? "unknown")
                         .lowercased()
                         .components(separatedBy: .whitespaces)
                         .joined(separator: "_")
                     let timestamp = Int(Date().timeIntervalSince1970)
-                    let remotePath = "\(story.id.uuidString)/\(timestamp)_\(styleSlug).mp4"
+                    let remotePath = "\(userID)/\(story.id.uuidString)/videos/\(timestamp)_\(styleSlug).mp4"
 
                     try await authManager.supabase.storage
-                        .from("story_videos")  // Fixed: was "audio-stories"
+                        .from("audio-stories")
                         .upload(
                             path: remotePath,
                             file: videoData,
@@ -815,7 +815,7 @@ struct CoachingCheckInDTO: Codable {
 
                     story.remoteVideoPath = remotePath
                     try context.save()
-                    print("Sync: Uploaded video for story '\(story.title)' to story_videos/\(remotePath)")
+                    print("Sync: Uploaded video for story '\(story.title)' to audio-stories/\(remotePath)")
                 } catch {
                     print("Sync: Failed to upload video for '\(story.title)': \(error)")
                 }
@@ -898,11 +898,11 @@ struct CoachingCheckInDTO: Codable {
                 if let style = dto.video_style { existing.videoStyle = style }
                 if let vPrompt = dto.video_gen_prompt { existing.videoGenPrompt = vPrompt }
 
-                // Only overwrite remote paths if remote has one and local doesn't
-                if existing.remoteAudioPath == nil && dto.remote_audio_path != nil {
+                // Always accept server remote paths as the source of truth
+                if dto.remote_audio_path != existing.remoteAudioPath {
                     existing.remoteAudioPath = dto.remote_audio_path
                 }
-                if existing.remoteCoverPath == nil && dto.remote_cover_path != nil {
+                if dto.remote_cover_path != existing.remoteCoverPath {
                     existing.remoteCoverPath = dto.remote_cover_path
                 }
                 // Video path: always accept the server value (server is source of truth).

@@ -41,6 +41,7 @@ final class Story: Identifiable {
     var taggedTargetText: String? // Original speaker-tagged text (dramatized mode); nil for single-voice stories
     var ambientSoundId: String? // AmbientSound.id, e.g. "rain_night" or "none"
     var ambientVolume: Float = 0.15 // 0.0–1.0 mix level for ambient audio
+    var chaptersJSON: String? // JSON string of [StoryChapter]
     
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
@@ -51,6 +52,11 @@ final class Story: Identifiable {
     @Transient var comprehensionQuestions: [ComprehensionQuestion] {
         guard let json = comprehensionQuestionsJSON, let data = json.data(using: .utf8) else { return [] }
         return (try? JSONDecoder().decode([ComprehensionQuestion].self, from: data)) ?? []
+    }
+
+    @Transient var chapters: [StoryChapter] {
+        guard let json = chaptersJSON, let data = json.data(using: .utf8) else { return [] }
+        return (try? JSONDecoder().decode([StoryChapter].self, from: data)) ?? []
     }
     // Computed properties for type safety, matching existing app patterns
     var language: Language {
@@ -85,6 +91,7 @@ final class Story: Identifiable {
          remoteVideoPath: String? = nil,
          ambientSoundId: String? = nil,
          ambientVolume: Float = 0.15,
+         chaptersJSON: String? = nil,
          language: Language,
          level: Int,
          createdAt: Date = Date()) {
@@ -109,6 +116,7 @@ final class Story: Identifiable {
         self.remoteVideoPath = remoteVideoPath
         self.ambientSoundId = ambientSoundId
         self.ambientVolume = ambientVolume
+        self.chaptersJSON = chaptersJSON
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

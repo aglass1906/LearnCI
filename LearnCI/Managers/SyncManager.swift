@@ -44,6 +44,7 @@ struct StoryDTO: Codable {
     let created_at: Date
     let is_favorite: Bool
     let is_public: Bool
+    let chapters: [StoryChapter]?
 }
 
 /// Push-only DTO: omits remote_video_path so the upsert never overwrites it.
@@ -75,6 +76,7 @@ struct PushStoryDTO: Codable {
     let created_at: Date
     let is_favorite: Bool
     let is_public: Bool
+    let chapters: [StoryChapter]?
 }
 
 
@@ -848,7 +850,8 @@ struct CoachingCheckInDTO: Codable {
                 cover_art: story.coverArt,
                 created_at: story.createdAt,
                 is_favorite: story.isFavorite,
-                is_public: true
+                is_public: true,
+                chapters: story.chapters.isEmpty ? nil : story.chapters
             )
             print("[Sync] Stories: Final state for '\(story.title)' - remote_video_path: \(story.remoteVideoPath ?? "nil")")
             
@@ -937,8 +940,19 @@ struct CoachingCheckInDTO: Codable {
                 if let vol = dto.ambient_volume {
                     existing.ambientVolume = vol
                 }
+
+                if let chapters = dto.chapters, let data = try? JSONEncoder().encode(chapters) {
+                    existing.chaptersJSON = String(data: data, encoding: .utf8)
+                    // Trigger downloads for each chapter
+                    downloadChapterAudio(for: existing, context: context)
+                }
             } else {
                 // Insert New
+                var cJSON: String?
+                if let chapters = dto.chapters, let data = try? JSONEncoder().encode(chapters) {
+                    cJSON = String(data: data, encoding: .utf8)
+                }
+                
                 let newStory = Story(
                     id: dto.id,
                     userID: userID,
@@ -952,6 +966,7 @@ struct CoachingCheckInDTO: Codable {
                     wordTimingsJSON: dto.word_timings_json,
                     speakerVoicesJSON: dto.speaker_voices_json,
                     taggedTargetText: dto.tagged_target_text,
+                    audioFilename: nil,
                     remoteAudioPath: dto.remote_audio_path,
                     remoteCoverPath: dto.remote_cover_path,
                     coverArt: dto.cover_art,
@@ -960,6 +975,7 @@ struct CoachingCheckInDTO: Codable {
                     remoteVideoPath: dto.remote_video_path,
                     ambientSoundId: dto.ambient_sound_id,
                     ambientVolume: dto.ambient_volume ?? 0.3,
+                    chaptersJSON: cJSON,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
                     createdAt: dto.created_at
@@ -968,7 +984,12 @@ struct CoachingCheckInDTO: Codable {
                 newStory.comprehensionQuestionsJSON = dto.comprehension_questions_json
                 context.insert(newStory)
                 
-                // Trigger Download if needed
+                // Trigger Download for chapters if any
+                if !newStory.chapters.isEmpty {
+                    downloadChapterAudio(for: newStory, context: context)
+                }
+
+                // Trigger Download if needed (Legacy / Single Audio)
                 if let remotePath = dto.remote_audio_path {
                     Task {
                         do {
@@ -1023,6 +1044,38 @@ struct CoachingCheckInDTO: Codable {
             }
         }
         try context.save()
+    }
+
+    private func downloadChapterAudio(for story: Story, context: ModelContext) {
+        let storyID = story.id
+        let chapters = story.chapters
+        
+        for chapter in chapters {
+            guard let remotePath = chapter.remoteAudioPath else { continue }
+            
+            // Derive extension from remote path
+            let ext = (remotePath as NSString).pathExtension
+            let finalExt = ext.isEmpty ? "mp3" : ext
+            let filename = "story_\(storyID.uuidString)_chapter_\(chapter.id.uuidString).\(finalExt)"
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let url = docs.appendingPathComponent(filename)
+            
+            // Skip if already exists
+            if FileManager.default.fileExists(atPath: url.path) { continue }
+            
+            Task {
+                do {
+                    let data = try await authManager.supabase.storage
+                        .from("audio-stories")
+                        .download(path: remotePath)
+
+                    try data.write(to: url)
+                    print("[Sync] Downloaded chapter audio for \(story.title): \(filename)")
+                } catch {
+                    print("[Sync] Failed to download chapter audio (\(chapter.title)) for \(story.title): \(error)")
+                }
+            }
+        }
     }
 
     // MARK: - Podcast Sync

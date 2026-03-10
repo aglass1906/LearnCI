@@ -19,6 +19,7 @@ struct StorySessionView: View {
     @State private var playbackRate: Float = 1.0
     @State private var ambientVolume: Float = 0.15
     @State private var isDownloadingAudio = false
+    @State private var currentChapterIndex: Int = 0
 
     // UI State
     @State private var showStoryInfo = false
@@ -81,13 +82,26 @@ struct StorySessionView: View {
                             .padding(.top, 20)
                         
                         // Metadata Row
-                        HStack {
-                            Label(story.language.displayName, systemImage: "globe")
-                            Text("•")
-                            Text(LevelManager.shared.description(for: story.level))
-                        }
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        
+                        if !story.chapters.isEmpty {
+                            HStack {
+                                Text("Chapter \(currentChapterIndex + 1) of \(story.chapters.count)")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.accentColor.opacity(0.1))
+                                    .cornerRadius(4)
+                                if let title = currentChapter?.title, !title.isEmpty {
+                                    Text(title)
+                                        .font(.subheadline)
+                                        .italic()
+                                }
+                            }
+                            .padding(.top, 4)
+                        }
                         
                         Divider()
                         
@@ -108,7 +122,7 @@ struct StorySessionView: View {
                                     ParagraphView(
                                         chunk: chunk,
                                         activeWordIndex: activeWordIndex,
-                                        timings: story.wordTimings,
+                                        timings: currentChapter?.wordTimings ?? story.wordTimings,
                                         wordMatches: wordMatches,
                                         onSeek: seekTo,
                                         onWordTap: lookupWord
@@ -116,7 +130,7 @@ struct StorySessionView: View {
                                     .id(chunk.id)
                                 }
                             }
-                        } else if let native = story.nativeLanguageText {
+                        } else if let native = currentChapter?.nativeText ?? story.nativeLanguageText {
                             VStack(alignment: .leading, spacing: 20) {
                                 // Just simple padding for native text
                                 Text(native)
@@ -173,7 +187,23 @@ struct StorySessionView: View {
                         onSkipForward: skipForward,
                         onSkipBackward: skipBackward,
                         onSeek: seekTo,
-                        onChangeRate: setRate
+                        onChangeRate: setRate,
+                        onNextChapter: !story.chapters.isEmpty && currentChapterIndex < story.chapters.count - 1 ? {
+                            currentChapterIndex += 1
+                            activeWordIndex = nil
+                            activeParagraphId = nil
+                            sliderValue = 0
+                            setupAudio()
+                            if isPlaying { togglePlay() } // Restart playback for new chapter
+                        } : nil,
+                        onPreviousChapter: !story.chapters.isEmpty && currentChapterIndex > 0 ? {
+                            currentChapterIndex -= 1
+                            activeWordIndex = nil
+                            activeParagraphId = nil
+                            sliderValue = 0
+                            setupAudio()
+                            if isPlaying { togglePlay() } // Restart playback for new chapter
+                        } : nil
                     )
                 }
             }
@@ -214,9 +244,17 @@ struct StorySessionView: View {
 
                     Button(action: {
                         if selectedLanguage == .target {
-                            UIPasteboard.general.string = story.targetLanguageText
+                            if !story.chapters.isEmpty {
+                                UIPasteboard.general.string = story.chapters.map { $0.text }.joined(separator: "\n\n")
+                            } else {
+                                UIPasteboard.general.string = story.targetLanguageText
+                            }
                         } else {
-                            UIPasteboard.general.string = story.nativeLanguageText ?? story.targetLanguageText
+                            if !story.chapters.isEmpty {
+                                UIPasteboard.general.string = story.chapters.compactMap { $0.nativeText ?? $0.text }.joined(separator: "\n\n")
+                            } else {
+                                UIPasteboard.general.string = story.nativeLanguageText ?? story.targetLanguageText
+                            }
                         }
                     }) {
                         Label(
@@ -266,8 +304,19 @@ struct StorySessionView: View {
             } else {
                 let justStopped = isPlaying
                 isPlaying = false
-                if justStopped && duration > 0 && sliderValue >= duration - 1.5 && !navigateToQuiz {
-                    navigateToQuiz = true
+                if justStopped && duration > 0 && sliderValue >= duration - 1.5 {
+                    if !story.chapters.isEmpty && currentChapterIndex < story.chapters.count - 1 {
+                        // Advance to next chapter
+                        currentChapterIndex += 1
+                        activeWordIndex = nil
+                        activeParagraphId = nil
+                        sliderValue = 0
+                        setupAudio()
+                        // Automatically start next chapter
+                        togglePlay()
+                    } else if !navigateToQuiz {
+                        navigateToQuiz = true
+                    }
                 }
             }
         }
@@ -283,7 +332,30 @@ struct StorySessionView: View {
     private func setupAudio() {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 
-        // If we have a local filename, check whether the file actually exists
+        // 1. Chaptered Story support
+        if let chapter = currentChapter {
+            let remotePath = chapter.remoteAudioPath ?? ""
+            let ext = (remotePath as NSString).pathExtension
+            let finalExt = ext.isEmpty ? "mp3" : ext
+            let filename = "story_\(story.id.uuidString)_chapter_\(chapter.id.uuidString).\(finalExt)"
+            let fileURL = docs.appendingPathComponent(filename)
+            
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                print("[StorySession] Playing chapter audio: \(filename)")
+                playLocalAudio(url: fileURL)
+                startAmbient()
+                return
+            }
+            
+            if !remotePath.isEmpty {
+                print("[StorySession] Downloading chapter audio from remote: \(remotePath)")
+                isDownloadingAudio = true
+                Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
+                return
+            }
+        }
+
+        // 2. Legacy / Single Audio fallback
         if let filename = story.audioFilename {
             let fileURL = docs.appendingPathComponent(filename)
             if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -543,7 +615,7 @@ struct StorySessionView: View {
     }
 
     private func sentenceContaining(word: String) -> String? {
-        let text = story.targetLanguageText
+        let text = currentChapter?.text ?? story.targetLanguageText
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
     }
@@ -588,6 +660,12 @@ struct StorySessionView: View {
 
     // MARK: - Text Chunking & Auto-Scroll
     
+    private var currentChapter: StoryChapter? {
+        guard !story.chapters.isEmpty else { return nil }
+        guard currentChapterIndex < story.chapters.count else { return nil }
+        return story.chapters[currentChapterIndex]
+    }
+
     struct ParagraphChunk: Identifiable, Equatable {
         let id: Int
         let text: String
@@ -595,7 +673,7 @@ struct StorySessionView: View {
     }
     
     private var storyParagraphs: [ParagraphChunk] {
-        let text = story.targetLanguageText
+        let text = currentChapter?.text ?? story.targetLanguageText
         var chunks: [ParagraphChunk] = []
         var currentOffset = 0
         
@@ -615,12 +693,13 @@ struct StorySessionView: View {
     
     private var wordMatches: [NSTextCheckingResult] {
         let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
-        let nsString = story.targetLanguageText as NSString
-        return regex?.matches(in: story.targetLanguageText, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
+        let text = currentChapter?.text ?? story.targetLanguageText
+        let nsString = text as NSString
+        return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
     }
     
     private func updateScrollState(time: Double) {
-        let timings = story.wordTimings
+        let timings = currentChapter?.wordTimings ?? story.wordTimings
         
         if let idx = timings.firstIndex(where: { time >= $0.start && time <= $0.end }) {
             if activeWordIndex != idx {
@@ -973,6 +1052,9 @@ struct AudioPlayerBar: View {
     var onSkipBackward: () -> Void
     var onSeek: (Double) -> Void
     var onChangeRate: (Float) -> Void
+    
+    var onNextChapter: (() -> Void)? = nil
+    var onPreviousChapter: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
@@ -1015,7 +1097,7 @@ struct AudioPlayerBar: View {
             .padding(.horizontal)
             
             // Controls
-            HStack(spacing: 30) {
+            HStack(spacing: 20) {
                 // Speed Button
                 Menu {
                     Button("0.75x") { onChangeRate(0.75) }
@@ -1031,6 +1113,17 @@ struct AudioPlayerBar: View {
                         .cornerRadius(8)
                 }
                 .foregroundColor(.primary)
+                
+                Spacer()
+
+                // Previous Chapter
+                if let onPrev = onPreviousChapter {
+                    Button(action: onPrev) {
+                        Image(systemName: "backward.end.fill")
+                            .font(.title3)
+                    }
+                    .foregroundColor(.primary)
+                }
                 
                 // Skip Back
                 Button(action: onSkipBackward) {
@@ -1053,8 +1146,19 @@ struct AudioPlayerBar: View {
                         .font(.title2)
                 }
                 .foregroundColor(.primary)
+
+                // Next Chapter
+                if let onNext = onNextChapter {
+                    Button(action: onNext) {
+                        Image(systemName: "forward.end.fill")
+                            .font(.title3)
+                    }
+                    .foregroundColor(.primary)
+                }
+
+                Spacer()
                 
-                // Spacer to balance layout with Speed button
+                // Placeholder to balance the speed button
                 Color.clear.frame(width: 40)
             }
         }

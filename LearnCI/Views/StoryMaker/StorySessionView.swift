@@ -25,6 +25,7 @@ struct StorySessionView: View {
     @State private var showStoryInfo = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
+    @State private var chapterImage: UIImage? = nil
     
     // Auto-Scroll State
     @State private var activeWordIndex: Int? = nil
@@ -67,7 +68,7 @@ struct StorySessionView: View {
                         // Hero Media (video if available, cover image otherwise)
                     HeroMediaView(
                         story: story,
-                        image: $heroImage,
+                        image: Binding(get: { chapterImage ?? heroImage }, set: { heroImage = $0 }),
                         isGeneratingVideo: false,
                         videoStatus: nil,
                         videoError: nil,
@@ -325,10 +326,33 @@ struct StorySessionView: View {
                 audioManager.updateNowPlayingInfo(title: story.title, artist: "LearnCI Story", artworkImage: img)
             }
         }
+        .onChange(of: currentChapterIndex) { _, _ in
+            loadChapterImage()
+        }
+        .onAppear {
+            loadChapterImage()
+        }
     }
-    
+
+    // MARK: - Chapter Image
+
+    private func loadChapterImage() {
+        guard let remotePath = currentChapter?.remoteImagePath, !remotePath.isEmpty else {
+            chapterImage = nil
+            return
+        }
+        let base = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
+        let urlString = remotePath.hasPrefix("https://") ? remotePath : "\(base)/\(remotePath)"
+        guard let url = URL(string: urlString) else { chapterImage = nil; return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data, let uiImage = UIImage(data: data) {
+                DispatchQueue.main.async { chapterImage = uiImage }
+            }
+        }.resume()
+    }
+
     // MARK: - Audio Logic
-    
+
     private func setupAudio() {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 

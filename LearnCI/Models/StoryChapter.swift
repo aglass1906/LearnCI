@@ -9,18 +9,20 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var remoteAudioPath: String?
     var audioFilename: String?
     var wordTimings: [WordTiming]?
+    var remoteImagePath: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, text, nativeText, remoteAudioPath, audioFilename, wordTimings
+        case id, title, text, nativeText, remoteAudioPath, audioFilename, wordTimings, remoteImagePath
     }
-    
+
     init(id: UUID = UUID(),
          title: String,
          text: String,
          nativeText: String? = nil,
          remoteAudioPath: String? = nil,
          audioFilename: String? = nil,
-         wordTimings: [WordTiming]? = nil) {
+         wordTimings: [WordTiming]? = nil,
+         remoteImagePath: String? = nil) {
         self.id = id
         self.title = title
         self.text = text
@@ -28,5 +30,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         self.remoteAudioPath = remoteAudioPath
         self.audioFilename = audioFilename
         self.wordTimings = wordTimings
+        self.remoteImagePath = remoteImagePath
     }
 }

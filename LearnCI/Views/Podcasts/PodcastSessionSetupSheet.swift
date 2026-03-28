@@ -56,6 +56,23 @@ struct PodcastSessionSetupSheet: View {
                     }
                 }
 
+                // Queue preview
+                Section {
+                    let queue = buildQueue()
+                    if queue.isEmpty {
+                        Text("No unplayed episodes from selected shows")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        let totalDuration = queue.reduce(0) { $0 + $1.duration }
+                        Text("\(queue.count) episodes (\(formatDuration(totalDuration)))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } header: {
+                    Text("Queue Preview")
+                }
+
                 // Shows Section
                 Section("Which shows?") {
                     Button {
@@ -120,22 +137,6 @@ struct PodcastSessionSetupSheet: View {
                     }
                 }
 
-                // Queue preview
-                Section {
-                    let queue = buildQueue()
-                    if queue.isEmpty {
-                        Text("No unplayed episodes from selected shows")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    } else {
-                        let totalDuration = queue.reduce(0) { $0 + $1.duration }
-                        Text("\(queue.count) episodes (\(formatDuration(totalDuration)))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                } header: {
-                    Text("Queue Preview")
-                }
             }
             .navigationTitle("Listening Session")
             .navigationBarTitleDisplayMode(.inline)

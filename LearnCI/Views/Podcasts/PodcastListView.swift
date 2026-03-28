@@ -7,6 +7,25 @@ enum PodcastTab: String, CaseIterable {
     case shows = "Shows"
 }
 
+enum PodcastSortOption: String, CaseIterable, Identifiable {
+    case newest = "Newest First"
+    case oldest = "Oldest First"
+    case durationLongest = "Duration (Longest)"
+    case durationShortest = "Duration (Shortest)"
+    case showName = "Show Name"
+    
+    var id: String { rawValue }
+    var icon: String {
+        switch self {
+        case .newest: return "calendar.badge.clock"
+        case .oldest: return "calendar"
+        case .durationLongest: return "clock.arrow.2.circlepath"
+        case .durationShortest: return "clock"
+        case .showName: return "text.justify.left"
+        }
+    }
+}
+
 struct PodcastListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
@@ -21,6 +40,9 @@ struct PodcastListView: View {
     @State private var sessionResumeIndex: Int = 0
     @State private var resumableSession: (episodeIDs: [String], currentIndex: Int, minutes: Int)? = nil
     @State private var selectedTab: PodcastTab = .newEpisodes
+    @State private var isRefreshing = false
+    @State private var filterUnplayedOnly = false
+    @State private var sortOption: PodcastSortOption = .newest
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,8 +79,36 @@ struct PodcastListView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: { showAddSheet = true }) {
-                    Image(systemName: "plus")
+                HStack(spacing: 16) {
+                    if isRefreshing {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Button(action: { Task { await refreshAllPodcasts() } }) {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
+                    
+                    Menu {
+                        Section("Filter") {
+                            Toggle("Unplayed Only", isOn: $filterUnplayedOnly)
+                        }
+                        
+                        Section("Sort") {
+                            Picker("Sort Order", selection: $sortOption) {
+                                ForEach(PodcastSortOption.allCases) { option in
+                                    Label(option.rawValue, systemImage: option.icon).tag(option)
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .foregroundStyle(filterUnplayedOnly ? .blue : .primary)
+                    }
+                    
+                    Button(action: { showAddSheet = true }) {
+                        Image(systemName: "plus")
+                    }
                 }
             }
         }
@@ -97,6 +147,7 @@ struct PodcastListView: View {
         }
         .onAppear {
             checkForResumableSession()
+            Task { await refreshAllPodcasts() }
         }
     }
 
@@ -179,7 +230,7 @@ struct PodcastListView: View {
 
                     // Episodes
                     Section {
-                        ForEach(allEpisodes) { episode in
+                        ForEach(filteredEpisodes) { episode in
                             NavigationLink(destination: PodcastPlayerView(episode: episode)) {
                                 NewEpisodeRow(episode: episode)
                             }
@@ -193,6 +244,28 @@ struct PodcastListView: View {
 
     // MARK: - Shows Tab
 
+    private var filteredEpisodes: [PodcastEpisode] {
+        var result = allEpisodes
+        
+        // 1. Filter
+        if filterUnplayedOnly {
+            result = result.filter { !$0.isPlayed }
+        }
+        
+        // 2. Sort
+        result.sort { a, b in
+            switch sortOption {
+            case .newest:           return a.publishedDate > b.publishedDate
+            case .oldest:           return a.publishedDate < b.publishedDate
+            case .durationLongest:  return a.duration > b.duration
+            case .durationShortest: return a.duration < b.duration
+            case .showName:         return (a.show?.title ?? "") < (b.show?.title ?? "")
+            }
+        }
+        
+        return result
+    }
+
     private var showsView: some View {
         List {
             ForEach(shows) { show in
@@ -203,6 +276,21 @@ struct PodcastListView: View {
             .onDelete(perform: deleteShows)
         }
         .listStyle(.plain)
+    }
+
+    private func refreshAllPodcasts() async {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        // Refresh all shows in parallel
+        await withTaskGroup(of: Void.self) { group in
+            for show in shows {
+                group.addTask {
+                    await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
+                }
+            }
+        }
     }
 
     private func checkForResumableSession() {

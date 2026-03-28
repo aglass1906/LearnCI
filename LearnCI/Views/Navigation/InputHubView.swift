@@ -44,7 +44,7 @@ struct InputHubView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     
-                    NavigationLink(destination: StoryListView(userID: authManager.currentUser)) {
+                    NavigationLink(destination: StoryListView()) {
                         HubPanel(
                             title: "Stories",
                             subtitle: "Interactive reading",

@@ -4,12 +4,18 @@ import MediaPlayer
 
 @Observable
 class AudioManager: NSObject, AVAudioPlayerDelegate {
+    static let shared = AudioManager()
+    
     var player: AVAudioPlayer?
     private var onCompletion: (() -> Void)?
     private var sequenceWorkItem: DispatchWorkItem?
 
     /// Indicates whether audio is currently playing (file or TTS)
     var isPlaying: Bool = false
+    
+    var currentTime: Double? {
+        player?.currentTime
+    }
 
     // MARK: - Ambient Audio
     private var ambientPlayer: AVAudioPlayer?
@@ -414,13 +420,17 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         isPlaying = false
     }
 
-    private func play(url: URL) throws {
+    func play(url: URL) throws {
         configureAudioSession()
         player = try AVAudioPlayer(contentsOf: url)
         player?.delegate = self
         player?.prepareToPlay()
         player?.play()
         isPlaying = true
+    }
+    
+    func seek(to time: Double) {
+        player?.currentTime = time
     }
     
     func speak(text: String, language: Language, gender: String?, rate: Float) {
@@ -504,12 +514,16 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamPlayer = AVPlayer(playerItem: playerItem)
 
         // Observe when duration becomes available
-        playerItem.asset.loadValuesAsynchronously(forKeys: ["duration"]) { [weak self] in
-            DispatchQueue.main.async {
-                let duration = playerItem.asset.duration
-                if duration.isNumeric {
-                    self?.streamDuration = CMTimeGetSeconds(duration)
+        Task {
+            do {
+                let duration = try await playerItem.asset.load(.duration)
+                await MainActor.run {
+                    if duration.isNumeric {
+                        self.streamDuration = CMTimeGetSeconds(duration)
+                    }
                 }
+            } catch {
+                print("Failed to load duration: \(error)")
             }
         }
 

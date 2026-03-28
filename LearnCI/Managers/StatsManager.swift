@@ -84,16 +84,13 @@ class StatsManager {
         var bestActivity = profile.longestActivityStreak
         var bestGoal = profile.longestGoalStreak
         
-        var needsSave = false
         if activityStreak > bestActivity {
             bestActivity = activityStreak
             profile.longestActivityStreak = activityStreak
-            needsSave = true
         }
         if goalStreak > bestGoal {
             bestGoal = goalStreak
             profile.longestGoalStreak = goalStreak
-            needsSave = true
         }
         
         // Note: Caller is responsible for saving modelContext if needsSave is true

@@ -177,6 +177,7 @@ class StoryManager {
                 level: level
             )
             
+            story.updatedAt = Date()
             context.insert(story)
             try context.save()
             
@@ -311,6 +312,7 @@ class StoryManager {
             story.remoteAudioPath = nil
             story.remoteCoverPath = nil
 
+            story.updatedAt = Date()
             try context.save()
 
         } catch {
@@ -395,6 +397,7 @@ class StoryManager {
             story.speakerVoicesJSON = newSpeakerVoicesJSON
             story.remoteAudioPath = nil // so SyncManager re-uploads
 
+            story.updatedAt = Date()
             try context.save()
 
         } catch {
@@ -550,6 +553,7 @@ class StoryManager {
                 story.remoteAudioPath = nil
             }
 
+            story.updatedAt = Date()
             try context.save()
 
         } catch {

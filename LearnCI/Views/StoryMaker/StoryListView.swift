@@ -79,45 +79,110 @@ private struct StoryThumbnailView: View {
 struct StoryListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
-    @Query(sort: \Story.createdAt, order: .reverse) var stories: [Story]
+    @Environment(SyncManager.self) private var syncManager
+    @Query(sort: \Story.updatedAt, order: .reverse) var stories: [Story]
     
     @State private var showGenerator = false
     @State private var storyManager = StoryManager()
     @State private var hasKey = false
     @State private var showKeyAlert = false
     
-    init(userID: String? = nil) {
-        // No filtering - show all stories
+    // Filters & Sorting
+    @State private var sortOption: SortOption = .newest
+    @State private var selectedLanguage: String = "All"
+    
+    enum SortOption: String, CaseIterable {
+        case newest = "Newest First"
+        case oldest = "Oldest First"
+        case alphabetical = "A-Z"
+        
+        var id: String { rawValue }
+    }
+    
+    private var filteredStories: [Story] {
+        var result = stories
+        
+        // Filter by Language
+        if selectedLanguage != "All" {
+            result = result.filter { $0.language.displayName == selectedLanguage }
+        }
+        
+        // Sort
+        switch sortOption {
+        case .newest:
+            result.sort { ($0.updatedAt ?? $0.createdAt) > ($1.updatedAt ?? $1.createdAt) }
+        case .oldest:
+            result.sort { ($0.updatedAt ?? $0.createdAt) < ($1.updatedAt ?? $1.createdAt) }
+        case .alphabetical:
+            result.sort { $0.title < $1.title }
+        }
+        
+        return result
+    }
+    
+    private var availableLanguages: [String] {
+        let langs = Set(stories.map { $0.language.displayName })
+        return ["All"] + langs.sorted()
     }
     
     var body: some View {
         NavigationStack {
             List {
-                if stories.isEmpty {
+                if filteredStories.isEmpty {
                     ContentUnavailableView(
-                        "No Stories Yet",
+                        selectedLanguage == "All" ? "No Stories Yet" : "No \(selectedLanguage) Stories",
                         systemImage: "book",
-                        description: Text("Generate your first AI audio story to get started.")
+                        description: Text(selectedLanguage == "All" ? "Generate your first AI audio story to get started." : "Try clearing your filters.")
                     )
                 }
                 
-                ForEach(stories) { story in
+                ForEach(filteredStories) { story in
                     NavigationLink(destination: StoryAboutView(story: story)) {
                         HStack(spacing: 12) {
-                            // Cover Image Thumbnail - prefer local file, fall back to remote
+                            // Cover Image Thumbnail
                             StoryThumbnailView(story: story)
                             
                             // Story Info
-                            VStack(alignment: .leading) {
-                                Text(story.title)
-                                    .font(.headline)
+                            VStack(alignment: .leading, spacing: 4) {
                                 HStack {
+                                    Text(story.title)
+                                        .font(.headline)
+                                    if story.preferences.interactiveAudio {
+                                        Image(systemName: "sparkles")
+                                            .font(.caption)
+                                            .foregroundStyle(.purple)
+                                    }
+                                }
+                                HStack(spacing: 4) {
                                     Text(story.language.displayName)
-                                    Text("•")
+                                    Text("·")
                                     Text("Level \(story.level)")
+                                    Text("·")
+                                    Text(story.preferences.genre.rawValue)
                                 }
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                
+                                HStack(spacing: 8) {
+                                    if !story.chapters.isEmpty {
+                                        Label("\(story.chapters.count) ch", systemImage: "book.pages")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.blue.opacity(0.1))
+                                            .foregroundStyle(.blue)
+                                            .cornerRadius(4)
+                                    }
+                                    if story.preferences.interactiveAudio || (story.chapters.count > 1) {
+                                        Label("Interactive", systemImage: "headphones")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.purple.opacity(0.1))
+                                            .foregroundStyle(.purple)
+                                            .cornerRadius(4)
+                                    }
+                                }
                             }
                         }
                     }
@@ -126,6 +191,44 @@ struct StoryListView: View {
             }
             .navigationTitle("AI Stories")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Picker("Sort", selection: $sortOption) {
+                            ForEach(SortOption.allCases, id: \.self) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Picker("Language", selection: $selectedLanguage) {
+                            ForEach(availableLanguages, id: \.self) { lang in
+                                Text(lang).tag(lang)
+                            }
+                        }
+                    } label: {
+                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                            .symbolEffect(.bounce, value: selectedLanguage != "All")
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        Task {
+                            await syncManager.syncNow(modelContext: modelContext)
+                        }
+                    }) {
+                        if syncManager.isSyncing {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Label("Refresh", systemImage: "arrow.clockwise")
+                                .symbolEffect(.bounce, value: syncManager.isSyncing)
+                        }
+                    }
+                    .disabled(syncManager.isSyncing)
+                }
+
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { 
                         if hasKey {

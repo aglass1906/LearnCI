@@ -71,21 +71,69 @@ struct StoryAboutView: View {
 
                 // ── Story Details ─────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 20) {
+                    
+                    // Compact Header Layout
+                    HStack(alignment: .top, spacing: 20) {
+                        // thumbnail on the left
+                        HeroMediaView(
+                            story: story,
+                            image: $heroImage,
+                            isGeneratingVideo: isGeneratingVideo,
+                            videoStatus: videoStatusMessage,
+                            videoError: videoGenerationError,
+                            onGenerateVideo: { showVideoGenerator = true },
+                            showGenerateButton: false
+                        )
+                        .frame(width: 120, height: 160)
+                        .cornerRadius(12)
+                        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            // Title
+                            Text(story.title)
+                                .font(.system(size: 24, weight: .bold, design: .serif))
+                                .fixedSize(horizontal: false, vertical: true)
+                            
+                            // Character/Setting info if available
+                            if !story.preferences.protagonistName.isEmpty {
+                                Text("Starring \(story.preferences.protagonistName)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
 
-                    // Title
-                    Text(story.title)
-                        .font(.system(size: 30, weight: .bold, design: .serif))
-                        .padding(.top, 24)
+                            // Metadata badges
+                            FlowLayout(spacing: 8) {
+                                Label(story.preferences.genre.rawValue, systemImage: "theatermasks")
+                                    .badgeStyle()
+                                Label(story.language.displayName, systemImage: "globe")
+                                    .badgeStyle()
+                                Label(LevelManager.shared.description(for: story.level), systemImage: "chart.bar")
+                                    .badgeStyle()
+                            }
+                        }
+                    }
+                    .padding(.top, 24)
 
-                    // Metadata badges
-                    HStack(spacing: 8) {
-                        Label(story.language.displayName, systemImage: "globe")
-                            .badgeStyle()
-                        Label(LevelManager.shared.description(for: story.level), systemImage: "chart.bar")
-                            .badgeStyle()
+                    Divider()
+
+                    // Additional Metadata
+                    FlowLayout(spacing: 8) {
+                        if !story.chapters.isEmpty {
+                            Label("\(story.chapters.count) chapters", systemImage: "book.pages")
+                                .badgeStyle()
+                        }
+                        if story.isDramatized {
+                            Label("Dramatized", systemImage: "person.2.fill")
+                                .badgeStyle()
+                        }
                         if let wordCount = storyWordCount {
                             Label(wordCount, systemImage: "doc.text")
                                 .badgeStyle()
+                        }
+                        if story.preferences.interactiveAudio {
+                            Label("Interactive", systemImage: "sparkles")
+                                .badgeStyle()
+                                .foregroundStyle(.purple)
                         }
                     }
 
@@ -101,6 +149,12 @@ struct StoryAboutView: View {
 
                     Divider()
 
+                    // ── Chapters ──────────────────────────────────────────
+                    if !story.chapters.isEmpty {
+                        chapterListSection
+                        Divider()
+                    }
+
                     // ── Ambient Sound ─────────────────────────────────────
                     AmbientSoundRow(story: story, onChangeTap: { showAmbientPicker = true })
 
@@ -109,18 +163,32 @@ struct StoryAboutView: View {
                     // ── Call to action buttons ────────────────────────────
                     VStack(spacing: 12) {
                         // Start Listening
-                        NavigationLink(destination: StorySessionView(story: story)) {
-                            HStack {
-                                Image(systemName: "headphones")
-                                    .font(.title3)
-                                Text("Start Listening")
-                                    .font(.headline)
+                        if story.preferences.interactiveAudio || (story.chapters.count > 1) {
+                            NavigationLink(destination: InteractiveStorySessionView(story: story)) {
+                                HStack {
+                                    Image(systemName: "sparkles")
+                                    Text("Start Interactive Session")
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.purple)
+                                .cornerRadius(12)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(14)
+                        } else {
+                            NavigationLink(destination: StorySessionView(story: story)) {
+                                HStack {
+                                    Image(systemName: "headphones")
+                                    Text("Start Listening")
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.accentColor)
+                                .cornerRadius(12)
+                            }
                         }
 
                         // Take Quiz
@@ -249,18 +317,72 @@ struct StoryAboutView: View {
 
     // MARK: - Helpers
 
+    private var chapterListSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Chapters")
+                .font(.headline)
+            ForEach(Array(story.chapters.enumerated()), id: \.offset) { index, chapter in
+                HStack(alignment: .top, spacing: 12) {
+                    let label = chapter.isPrologue ? "P" : chapter.isEpilogue ? "E" : "\(index + 1)"
+                    let color = chapter.isPrologue ? Color.orange : (chapter.isEpilogue ? Color.purple : Color.accentColor)
+                    
+                    Text(label)
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                        .frame(width: 24, height: 24)
+                        .background(color)
+                        .clipShape(Circle())
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            Text(chapter.titleTargetLanguage)
+                                .font(.subheadline.bold())
+                            if chapter.isPrologue {
+                                Text("Prologue")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.orange)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange.opacity(0.1))
+                                    .cornerRadius(4)
+                            } else if chapter.isEpilogue {
+                                Text("Epilogue")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.purple)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.purple.opacity(0.1))
+                                    .cornerRadius(4)
+                            }
+                        }
+                        if let intro = chapter.chapterIntroText ?? chapter.chapterIntroTextEnglish {
+                            Text(intro)
+                                .font(.caption.italic())
+                                .foregroundStyle(.secondary)
+                                .padding(.bottom, 2)
+                        }
+                        if let summary = chapter.plotSummaryEnglish ?? chapter.plotSummaryTarget {
+                            Text(summary)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private var storyTeaser: String {
-        let text = story.targetLanguageText
+        let text = story.chapters.first?.textTargetLanguage ?? ""
         guard text.count > 200 else { return text }
         let index = text.index(text.startIndex, offsetBy: 200)
         return String(text[..<index]) + "…"
     }
 
     private var storyWordCount: String? {
-        let words = story.targetLanguageText
-            .components(separatedBy: .whitespacesAndNewlines)
-            .filter { !$0.isEmpty }
-        let count = words.count
+        let combined = story.chapters.map { $0.textTargetLanguage }.joined(separator: " ")
+        let count = combined.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.count
         guard count > 0 else { return nil }
         return "\(count) words"
     }

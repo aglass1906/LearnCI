@@ -22,20 +22,26 @@ struct StoryPreferences: Codable, Equatable {
     var interactiveAudio: Bool = false
     var audioStyle: AudioStyle = .single
 
+    var chapterQuote: Bool = false
+    var chapterIntroInstructions: String = ""
+
     // Ambient sound — stored as the sound's id (e.g. "rain_night") or "none"
     var ambientSoundId: String = "none"
     var ambientVolume: Double = 0.3
 
+    // No explicit CodingKeys needed. The property names match the Flutter JSON keys exactly (camelCase).
+    // This ensures interactiveAudio and other fields are correctly parsed from Supabase.
+
     enum AudioStyle: String, Codable, CaseIterable, Identifiable {
-        case single      = "Single Voice"
-        case dramatized  = "Dramatized"
+        case single      = "single"
+        case dramatized  = "dramatized"
 
         var id: String { rawValue }
 
-        var description: String {
+        var displayName: String {
             switch self {
-            case .single:     return "One narrator voice tells the whole story."
-            case .dramatized: return "Each character speaks in their own distinct voice."
+            case .single:     return "Single Voice"
+            case .dramatized: return "Dramatized"
             }
         }
     }
@@ -96,7 +102,7 @@ struct StoryPreferences: Codable, Equatable {
         
         var id: String { rawValue }
         
-        var promptDescription: String {
+        nonisolated var promptDescription: String {
             switch self {
             case .storybook: return "storybook illustration, vibrant, charming"
             case .realistic: return "photorealistic, high detail, cinematic lighting"
@@ -117,7 +123,7 @@ struct StoryPreferences: Codable, Equatable {
         
         var id: String { rawValue }
         
-        var promptInstruction: String {
+        nonisolated var promptInstruction: String {
             switch self {
             case .short: return "Keep it under 150 words."
             case .medium: return "Keep it around 300 words."

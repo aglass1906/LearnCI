@@ -85,61 +85,11 @@ struct StorySessionView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         
-                        if !story.chapters.isEmpty {
-                            HStack {
-                                Text("Chapter \(currentChapterIndex + 1) of \(story.chapters.count)")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.accentColor.opacity(0.1))
-                                    .cornerRadius(4)
-                                if let title = currentChapter?.title, !title.isEmpty {
-                                    Text(title)
-                                        .font(.subheadline)
-                                        .italic()
-                                }
-                            }
-                            .padding(.top, 4)
-                        }
+                        chapterHeaderView
                         
                         Divider()
                         
-                        // Language Toggle
-                        if story.nativeLanguageText != nil {
-                            Picker("Language", selection: $selectedLanguage) {
-                                ForEach(DisplayLanguage.allCases, id: \.self) { lang in
-                                    Text(lang.rawValue).tag(lang)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                        }
-                        
-                        // Story Text
-                        if selectedLanguage == .target {
-                            VStack(alignment: .leading, spacing: 20) {
-                                ForEach(storyParagraphs) { chunk in
-                                    ParagraphView(
-                                        chunk: chunk,
-                                        activeWordIndex: activeWordIndex,
-                                        timings: currentChapter?.wordTimings ?? story.wordTimings,
-                                        wordMatches: wordMatches,
-                                        onSeek: seekTo,
-                                        onWordTap: lookupWord
-                                    )
-                                    .id(chunk.id)
-                                }
-                            }
-                        } else if let native = currentChapter?.nativeText ?? story.nativeLanguageText {
-                            VStack(alignment: .leading, spacing: 20) {
-                                // Just simple padding for native text
-                                Text(native)
-                                    .font(.system(size: 18, weight: .regular, design: .serif))
-                                    .lineSpacing(10)
-                                    .foregroundColor(.secondary)
-                                    .textSelection(.enabled)
-                            }
-                        }
+                        storyTextView
                         
                         // Spacer for sticky bar
                         Color.clear.frame(height: 180)
@@ -159,54 +109,7 @@ struct StorySessionView: View {
             .ignoresSafeArea(edges: .top)
             } // Close ScrollViewReader
             
-            // Sticky Audio Player
-            VStack(spacing: 0) {
-                Spacer()
-                if isDownloadingAudio {
-                    HStack(spacing: 10) {
-                        ProgressView().tint(.white)
-                        Text("Downloading audio…")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.white)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(Color.blue)
-                    .cornerRadius(24, corners: [.topLeft, .topRight])
-                    .shadow(radius: 10, y: -5)
-                } else if story.audioFilename != nil || story.remoteAudioPath != nil {
-                    AudioPlayerBar(
-                        isPlaying: $isPlaying,
-                        sliderValue: $sliderValue,
-                        duration: duration,
-                        playbackRate: $playbackRate,
-                        ambientVolume: $ambientVolume,
-                        isAmbientPlaying: audioManager.isAmbientPlaying,
-                        onPlayPause: togglePlay,
-                        onSkipForward: skipForward,
-                        onSkipBackward: skipBackward,
-                        onSeek: seekTo,
-                        onChangeRate: setRate,
-                        onNextChapter: !story.chapters.isEmpty && currentChapterIndex < story.chapters.count - 1 ? {
-                            currentChapterIndex += 1
-                            activeWordIndex = nil
-                            activeParagraphId = nil
-                            sliderValue = 0
-                            setupAudio()
-                            if isPlaying { togglePlay() } // Restart playback for new chapter
-                        } : nil,
-                        onPreviousChapter: !story.chapters.isEmpty && currentChapterIndex > 0 ? {
-                            currentChapterIndex -= 1
-                            activeWordIndex = nil
-                            activeParagraphId = nil
-                            sliderValue = 0
-                            setupAudio()
-                            if isPlaying { togglePlay() } // Restart playback for new chapter
-                        } : nil
-                    )
-                }
-            }
+            stickyPlayerView
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -244,17 +147,9 @@ struct StorySessionView: View {
 
                     Button(action: {
                         if selectedLanguage == .target {
-                            if !story.chapters.isEmpty {
-                                UIPasteboard.general.string = story.chapters.map { $0.text }.joined(separator: "\n\n")
-                            } else {
-                                UIPasteboard.general.string = story.targetLanguageText
-                            }
+                            UIPasteboard.general.string = story.chapters.map { $0.textTargetLanguage }.joined(separator: "\n\n")
                         } else {
-                            if !story.chapters.isEmpty {
-                                UIPasteboard.general.string = story.chapters.compactMap { $0.nativeText ?? $0.text }.joined(separator: "\n\n")
-                            } else {
-                                UIPasteboard.general.string = story.nativeLanguageText ?? story.targetLanguageText
-                            }
+                            UIPasteboard.general.string = story.chapters.map { $0.textEnglish ?? $0.textTargetLanguage }.joined(separator: "\n\n")
                         }
                     }) {
                         Label(
@@ -334,7 +229,7 @@ struct StorySessionView: View {
 
         // 1. Chaptered Story support
         if let chapter = currentChapter {
-            let remotePath = chapter.remoteAudioPath ?? ""
+            let remotePath = chapter.audioUrl ?? ""
             let ext = (remotePath as NSString).pathExtension
             let finalExt = ext.isEmpty ? "mp3" : ext
             let filename = "story_\(story.id.uuidString)_chapter_\(chapter.id.uuidString).\(finalExt)"
@@ -355,60 +250,7 @@ struct StorySessionView: View {
             }
         }
 
-        // 2. Legacy / Single Audio fallback
-        if let filename = story.audioFilename {
-            let fileURL = docs.appendingPathComponent(filename)
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                // Guard against legacy bad cache: WAV content stored with .mp3 extension.
-                // AVAudioPlayer picks its parser from the extension, so this fix is critical.
-                if let corrected = correctAudioExtensionIfNeeded(url: fileURL) {
-                    print("[StorySession] Corrected audio extension: \(filename) → \(corrected.lastPathComponent)")
-                    story.audioFilename = corrected.lastPathComponent
-                    try? modelContext.save()
-                    playLocalAudio(url: corrected)
-                } else {
-                    print("[StorySession] Playing local audio: \(filename)")
-                    playLocalAudio(url: fileURL)
-                }
-                startAmbient()
-                return
-            }
-            print("[StorySession] Local audio file missing on this device: \(filename)")
-        } else {
-            print("[StorySession] story.audioFilename is nil — will try remoteAudioPath")
-        }
-
-        // Local file missing (or audioFilename nil) — fall back to Supabase download
-        if let remotePath = story.remoteAudioPath {
-            // Derive a stable local filename so we cache the file for future plays
-            let filename = story.audioFilename ?? "story_\(story.id.uuidString).mp3"
-            let fileURL = docs.appendingPathComponent(filename)
-            print("[StorySession] Downloading audio from remote: \(remotePath)")
-            isDownloadingAudio = true
-            Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL, derivedFilename: story.audioFilename == nil ? filename : nil) }
-        } else {
-            print("[StorySession] No audio available — audioFilename: \(story.audioFilename ?? "nil"), remoteAudioPath: \(story.remoteAudioPath ?? "nil")")
-        }
-    }
-
-    /// Checks the first 4 bytes of an audio file. If it contains a WAV (`RIFF`) header but
-    /// has a `.mp3` extension (a legacy upload bug), renames the file to `.wav` and returns
-    /// the new URL. Returns nil if no rename was needed.
-    private func correctAudioExtensionIfNeeded(url: URL) -> URL? {
-        guard url.pathExtension.lowercased() == "mp3",
-              let fh = try? FileHandle(forReadingFrom: url) else { return nil }
-        let magic = fh.readData(ofLength: 4)
-        fh.closeFile()
-        // WAV files start with "RIFF" (0x52 0x49 0x46 0x46)
-        guard magic == Data([0x52, 0x49, 0x46, 0x46]) else { return nil }
-        let wavURL = url.deletingPathExtension().appendingPathExtension("wav")
-        do {
-            try FileManager.default.moveItem(at: url, to: wavURL)
-            return wavURL
-        } catch {
-            print("[StorySession] Failed to rename audio file to .wav: \(error)")
-            return nil
-        }
+        print("[StorySession] No audio available for chapter \(currentChapterIndex)")
     }
 
     /// Plays an already-local audio file and sets up lock screen info.
@@ -434,7 +276,7 @@ struct StorySessionView: View {
     ///   - localURL: Base destination URL (extension may be corrected after inspecting magic bytes).
     ///   - derivedFilename: If non-nil and `story.audioFilename` is nil, saves detected filename back
     ///     to `story.audioFilename` so future opens use the cached local file without re-downloading.
-    private func downloadAndPlayAudio(remotePath: String, localURL: URL, derivedFilename: String? = nil) async {
+    private func downloadAndPlayAudio(remotePath: String, localURL: URL) async {
         let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
         let remoteURL: URL?
         if remotePath.hasPrefix("https://") {
@@ -468,13 +310,6 @@ struct StorySessionView: View {
 
             await MainActor.run {
                 isDownloadingAudio = false
-                // Cache the correct filename so future opens use the local file
-                if derivedFilename != nil {
-                    let correctFilename = correctURL.lastPathComponent
-                    story.audioFilename = correctFilename
-                    try? modelContext.save()
-                    print("[StorySession] Cached audioFilename: \(correctFilename)")
-                }
                 playLocalAudio(url: correctURL)
                 startAmbient()
             }
@@ -615,7 +450,7 @@ struct StorySessionView: View {
     }
 
     private func sentenceContaining(word: String) -> String? {
-        let text = currentChapter?.text ?? story.targetLanguageText
+        let text = currentChapter?.textTargetLanguage ?? ""
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
     }
@@ -628,7 +463,7 @@ struct StorySessionView: View {
         Task {
             let level = LevelManager.shared.description(for: story.level)
             let questions = try? await OpenAIService().generateComprehensionQuestions(
-                storyText: story.targetLanguageText,
+                storyText: story.chapters.map { $0.textTargetLanguage }.joined(separator: "\n\n"),
                 language: story.language.displayName,
                 level: level
             )
@@ -660,6 +495,112 @@ struct StorySessionView: View {
 
     // MARK: - Text Chunking & Auto-Scroll
     
+    @ViewBuilder
+    private var chapterHeaderView: some View {
+        if !story.chapters.isEmpty {
+            HStack {
+                Text("Chapter \(currentChapterIndex + 1) of \(story.chapters.count)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.1))
+                    .cornerRadius(4)
+                if let title = currentChapter?.titleTargetLanguage, !title.isEmpty {
+                    Text(title)
+                        .font(.subheadline)
+                        .italic()
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var storyTextView: some View {
+        if currentChapter?.textEnglish != nil {
+            Picker("Language", selection: $selectedLanguage) {
+                ForEach(DisplayLanguage.allCases, id: \.self) { lang in
+                    Text(lang.rawValue).tag(lang)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+        if selectedLanguage == .target {
+            VStack(alignment: .leading, spacing: 20) {
+                ForEach(storyParagraphs) { chunk in
+                    ParagraphView(
+                        chunk: chunk,
+                        activeWordIndex: activeWordIndex,
+                        timings: currentChapter?.wordTimings ?? [],
+                        wordMatches: wordMatches,
+                        onSeek: seekTo,
+                        onWordTap: lookupWord
+                    )
+                    .id(chunk.id)
+                }
+            }
+        } else if let nativeText = currentChapter?.textEnglish {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(nativeText)
+                    .font(.system(size: 18, weight: .regular, design: .serif))
+                    .lineSpacing(10)
+                    .foregroundColor(.secondary)
+                    .textSelection(.enabled)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var stickyPlayerView: some View {
+        if isDownloadingAudio {
+            HStack(spacing: 10) {
+                ProgressView().tint(.white)
+                Text("Downloading audio…")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.blue)
+            .cornerRadius(24, corners: [.topLeft, .topRight])
+            .shadow(radius: 10, y: -5)
+            .ignoresSafeArea(edges: .bottom)
+        } else if !story.chapters.isEmpty {
+            AudioPlayerBar(
+                isPlaying: $isPlaying,
+                sliderValue: $sliderValue,
+                duration: duration,
+                playbackRate: $playbackRate,
+                ambientVolume: $ambientVolume,
+                isAmbientPlaying: audioManager.isAmbientPlaying,
+                onPlayPause: togglePlay,
+                onSkipForward: skipForward,
+                onSkipBackward: skipBackward,
+                onSeek: seekTo,
+                onChangeRate: setRate,
+                onNextChapter: currentChapterIndex < story.chapters.count - 1 ? {
+                    currentChapterIndex += 1
+                    activeWordIndex = nil
+                    activeParagraphId = nil
+                    sliderValue = 0
+                    setupAudio()
+                    if isPlaying { togglePlay() }
+                } : nil,
+                onPreviousChapter: currentChapterIndex > 0 ? {
+                    currentChapterIndex -= 1
+                    activeWordIndex = nil
+                    activeParagraphId = nil
+                    sliderValue = 0
+                    setupAudio()
+                    if isPlaying { togglePlay() }
+                } : nil
+            )
+            .ignoresSafeArea(edges: .bottom)
+        }
+    }
+
     private var currentChapter: StoryChapter? {
         guard !story.chapters.isEmpty else { return nil }
         guard currentChapterIndex < story.chapters.count else { return nil }
@@ -673,7 +614,7 @@ struct StorySessionView: View {
     }
     
     private var storyParagraphs: [ParagraphChunk] {
-        let text = currentChapter?.text ?? story.targetLanguageText
+        let text = currentChapter?.textTargetLanguage ?? ""
         var chunks: [ParagraphChunk] = []
         var currentOffset = 0
         
@@ -693,13 +634,13 @@ struct StorySessionView: View {
     
     private var wordMatches: [NSTextCheckingResult] {
         let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
-        let text = currentChapter?.text ?? story.targetLanguageText
+        let text = currentChapter?.textTargetLanguage ?? ""
         let nsString = text as NSString
         return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
     }
     
     private func updateScrollState(time: Double) {
-        let timings = currentChapter?.wordTimings ?? story.wordTimings
+        let timings = currentChapter?.wordTimings ?? []
         
         if let idx = timings.firstIndex(where: { time >= $0.start && time <= $0.end }) {
             if activeWordIndex != idx {
@@ -1162,11 +1103,16 @@ struct AudioPlayerBar: View {
                 Color.clear.frame(width: 40)
             }
         }
-        .padding(.vertical, 20)
-        .background(.thinMaterial)
-        .cornerRadius(24, corners: [.topLeft, .topRight])
+        .padding(.top, 20)
+        .padding(.bottom, 20)
+        .background(
+            Rectangle()
+                .fill(.thinMaterial)
+                .cornerRadius(24, corners: [.topLeft, .topRight])
+                .ignoresSafeArea(edges: .bottom)
+        )
         .shadow(radius: 10, y: -5)
-        .fixedSize(horizontal: false, vertical: true) // Prevent vertical expansion
+        .fixedSize(horizontal: false, vertical: true)
     }
     
     private func formatTime(_ time: Double) -> String {

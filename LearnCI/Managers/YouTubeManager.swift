@@ -3,7 +3,7 @@ import Observation
 import GoogleSignIn
 import UIKit
 
-enum FetchTarget {
+enum FetchTarget: Sendable {
     case feed
     case feedAppend
     case singleChannel
@@ -125,8 +125,8 @@ class YouTubeManager {
                 if let error = error {
                     // Ignore "user cancelled" error to avoid noisy alerts
                     if (error as NSError).code == -5 {
-                         print("User cancelled sign in")
-                         return
+                        print("User cancelled sign in")
+                        return
                     }
                     
                     self?.errorMessage = "Sign in failed: \(error.localizedDescription)"

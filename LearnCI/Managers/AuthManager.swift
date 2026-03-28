@@ -301,7 +301,7 @@ class AuthManager {
             self.isPasswordResetRequired = true
         }
         
-        try await supabase.handle(url)
+        supabase.handle(url)
     }
 
     // MARK: - Crypto Helpers for Nonce

@@ -42,6 +42,7 @@ struct StoryDTO: Codable {
     let remote_cover_path: String?
     let cover_art: String?
     let created_at: Date
+    let updated_at: Date?
     let is_favorite: Bool
     let is_public: Bool
     let chapters: [StoryChapter]?
@@ -74,6 +75,7 @@ struct PushStoryDTO: Codable {
     let remote_cover_path: String?
     let cover_art: String?
     let created_at: Date
+    let updated_at: Date?
     let is_favorite: Bool
     let is_public: Bool
     let chapters: [StoryChapter]?
@@ -632,6 +634,10 @@ struct CoachingCheckInDTO: Codable {
             if let dgm = dto.default_game_mode { profile.defaultGamePresetRaw = dgm }
             if let lgt = dto.last_game_type { profile.lastGameTypeRaw = lgt }
             if let tvg = dto.tts_voice_gender { profile.ttsVoiceGender = tvg }
+            
+            // CRITICAL: Overwrite the 'bumped' updatedAt with the actual server timestamp 
+            // to avoid a push-loop on the next sync.
+            profile.updatedAt = dto.updated_at
         } else {
             // Insert new from Server
             print("Sync: Profile missing locally. Restoring from server.")
@@ -656,6 +662,7 @@ struct CoachingCheckInDTO: Codable {
             newProfile.fullName = dto.full_name
             newProfile.location = dto.location
             newProfile.avatarUrl = dto.avatar_url
+            newProfile.updatedAt = dto.updated_at
             newProfile.email = authManager.currentUserEmail
             
             context.insert(newProfile)
@@ -739,12 +746,11 @@ struct CoachingCheckInDTO: Codable {
                         let remoteExt = srcExt == "wav" ? "wav" : "mp3"
                         let contentType = remoteExt == "wav" ? "audio/wav" : "audio/mpeg"
                         let remotePath = "\(userID)/\(story.id.uuidString)/audio/\(UUID().uuidString).\(remoteExt)"
-
                         try await authManager.supabase.storage
                             .from("audio-stories")
                             .upload(
-                                path: remotePath,
-                                file: audioData,
+                                remotePath,
+                                data: audioData,
                                 options: FileOptions(contentType: contentType)
                             )
 
@@ -773,8 +779,8 @@ struct CoachingCheckInDTO: Codable {
                         try await authManager.supabase.storage
                             .from("audio-stories")
                             .upload(
-                                path: remotePath,
-                                file: imageData,
+                                remotePath,
+                                data: imageData,
                                 options: FileOptions(contentType: "image/png")
                             )
                         
@@ -810,8 +816,8 @@ struct CoachingCheckInDTO: Codable {
                     try await authManager.supabase.storage
                         .from("audio-stories")
                         .upload(
-                            path: remotePath,
-                            file: videoData,
+                            remotePath,
+                            data: videoData,
                             options: FileOptions(contentType: "video/mp4")
                         )
 
@@ -849,6 +855,7 @@ struct CoachingCheckInDTO: Codable {
                 remote_cover_path: story.remoteCoverPath,
                 cover_art: story.coverArt,
                 created_at: story.createdAt,
+                updated_at: story.updatedAt ?? Date(),
                 is_favorite: story.isFavorite,
                 is_public: true,
                 chapters: story.chapters.isEmpty ? nil : story.chapters
@@ -879,7 +886,7 @@ struct CoachingCheckInDTO: Codable {
         // Fetch ALL stories to allow global visibility
         let response = try await authManager.supabase.from("stories")
             .select()
-            .order("created_at", ascending: false)
+            .order("updated_at", ascending: false)
             .limit(100) // Safety limit
             .execute()
             
@@ -887,6 +894,9 @@ struct CoachingCheckInDTO: Codable {
         decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
         let dtos = try decoder.decode([StoryDTO].self, from: response.data)
         print("[Sync] Stories: Pulling \(dtos.count) entries from server...")
+        for dto in dtos {
+            print("[Sync] Story '\(dto.title)': chapters=\(dto.chapters?.count ?? -1) (nil=\(dto.chapters == nil))")
+        }
         
         let descriptor = FetchDescriptor<Story>()
         let localStories = try context.fetch(descriptor)
@@ -900,6 +910,7 @@ struct CoachingCheckInDTO: Codable {
                 existing.imageGenPrompt = dto.image_gen_prompt
                 if let style = dto.video_style { existing.videoStyle = style }
                 if let vPrompt = dto.video_gen_prompt { existing.videoGenPrompt = vPrompt }
+                if let updatedAt = dto.updated_at { existing.updatedAt = updatedAt }
 
                 // Always accept server remote paths as the source of truth
                 if dto.remote_audio_path != existing.remoteAudioPath {
@@ -1051,7 +1062,7 @@ struct CoachingCheckInDTO: Codable {
         let chapters = story.chapters
         
         for chapter in chapters {
-            guard let remotePath = chapter.remoteAudioPath else { continue }
+            guard let remotePath = chapter.audioUrl else { continue }
             
             // Derive extension from remote path
             let ext = (remotePath as NSString).pathExtension
@@ -1072,7 +1083,7 @@ struct CoachingCheckInDTO: Codable {
                     try data.write(to: url)
                     print("[Sync] Downloaded chapter audio for \(story.title): \(filename)")
                 } catch {
-                    print("[Sync] Failed to download chapter audio (\(chapter.title)) for \(story.title): \(error)")
+                    print("[Sync] Failed to download chapter audio (\(chapter.titleTargetLanguage)) for \(story.title): \(error)")
                 }
             }
         }

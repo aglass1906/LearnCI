@@ -24,6 +24,7 @@ final class Story: Identifiable {
     var languageRaw: String
     var levelRaw: String
     var createdAt: Date
+    var updatedAt: Date?
     var isFavorite: Bool
     var prompt: String? // New field for the user's topic/prompt
     var preferencesJSON: String? // JSON string of StoryPreferences
@@ -58,6 +59,13 @@ final class Story: Identifiable {
         guard let json = chaptersJSON, let data = json.data(using: .utf8) else { return [] }
         return (try? JSONDecoder().decode([StoryChapter].self, from: data)) ?? []
     }
+
+    @Transient var preferences: StoryPreferences {
+        guard let json = preferencesJSON, let data = json.data(using: .utf8) else { return StoryPreferences() }
+        return (try? JSONDecoder().decode(StoryPreferences.self, from: data)) ?? StoryPreferences()
+    }
+
+    var isDramatized: Bool { taggedTargetText != nil }
     // Computed properties for type safety, matching existing app patterns
     var language: Language {
         get { Language(rawValue: languageRaw) ?? .spanish }
@@ -94,7 +102,8 @@ final class Story: Identifiable {
          chaptersJSON: String? = nil,
          language: Language,
          level: Int,
-         createdAt: Date = Date()) {
+         createdAt: Date = Date(),
+         updatedAt: Date? = nil) {
         self.id = id
         self.userID = userID
         self.title = title
@@ -120,6 +129,7 @@ final class Story: Identifiable {
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt
+        self.updatedAt = updatedAt ?? createdAt
         self.isFavorite = false
     }
 }

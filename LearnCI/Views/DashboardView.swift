@@ -560,7 +560,7 @@ extension DashboardView {
             subTitle: "Generate, Read, & Listen",
             accentColor: .purple,
             icon: "sparkles.rectangle.stack.fill",
-            destination: StoryListView(userID: authManager.currentUser)
+            destination: StoryListView()
         ) {
              Text("Create custom stories with AI-generated audio.")
                 .font(.caption)

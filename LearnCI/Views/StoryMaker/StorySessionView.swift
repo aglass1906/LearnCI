@@ -184,17 +184,27 @@ struct StorySessionView: View {
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
-            guard let player = audioManager.player else { return }
-            if player.isPlaying {
-                sliderValue = player.currentTime
+            if audioManager.isStreaming {
+                let streamCurrent = audioManager.streamCurrentTime
+                let streamDur = audioManager.streamDuration
+
+                sliderValue = streamCurrent
+                
+                // Keep duration updated as AVPlayer loads the exact size asynchronously
+                if streamDur > 0 && abs(duration - streamDur) > 0.5 {
+                    duration = streamDur
+                }
+                
                 isPlaying = true
                 
                 // Update active word and paragraph
                 updateScrollState(time: sliderValue)
                 
                 // Sync rate if changed externally (e.g. lock screen)
-                if abs(player.rate - playbackRate) > 0.1 {
-                    playbackRate = player.rate
+                if let streamPlayer = audioManager.streamPlayer {
+                    if abs(streamPlayer.rate - playbackRate) > 0.1 && streamPlayer.rate != 0 {
+                        playbackRate = streamPlayer.rate
+                    }
                 }
             } else {
                 let justStopped = isPlaying
@@ -253,21 +263,16 @@ struct StorySessionView: View {
         print("[StorySession] No audio available for chapter \(currentChapterIndex)")
     }
 
-    /// Plays an already-local audio file and sets up lock screen info.
+    /// Plays an already-local audio file using the AVPlayer stream interface.
     private func playLocalAudio(url: URL) {
-        do {
-            try audioManager.playAudio(url: url)
-            audioManager.player?.enableRate = true
-            audioManager.player?.rate = playbackRate
-            duration = audioManager.player?.duration ?? 0
-            audioManager.updateNowPlayingInfo(
-                title: story.title,
-                artist: "LearnCI Story",
-                artworkImage: heroImage
-            )
-        } catch {
-            print("Audio setup failed: \(error)")
-        }
+        audioManager.streamAudio(url: url)
+        audioManager.setStreamRate(playbackRate)
+        duration = audioManager.streamDuration
+        audioManager.updateStreamNowPlayingInfo(
+            title: story.title,
+            artist: "LearnCI Story",
+            artworkImage: heroImage
+        )
     }
 
     /// Downloads audio from Supabase Storage, saves it locally with the correct extension, then plays it.
@@ -363,52 +368,48 @@ struct StorySessionView: View {
     
     private func togglePlay() {
         didPlayAudio = true
-        guard let player = audioManager.player else { return }
 
-        if player.isPlaying {
-            player.pause()
+        if audioManager.isStreaming {
+            audioManager.pauseStream()
             isPlaying = false
             audioManager.pauseAmbient()
         } else {
-            player.play()
+            audioManager.playStream()
             isPlaying = true
             audioManager.resumeAmbient()
         }
-        audioManager.updateNowPlayingInfo()
+        audioManager.updateStreamNowPlayingInfo()
     }
     
     private func skipForward() {
-        guard let player = audioManager.player else { return }
-        let newTime = player.currentTime + 10
-        player.currentTime = min(player.duration, newTime)
-        sliderValue = player.currentTime
-        audioManager.updateNowPlayingInfo()
+        let newTime = audioManager.streamCurrentTime + 10
+        let maxDur = max(audioManager.streamDuration, 10.0)
+        let safeTime = min(maxDur, newTime)
+        audioManager.seekStream(to: safeTime)
+        sliderValue = safeTime
+        audioManager.updateStreamNowPlayingInfo()
     }
     
     private func skipBackward() {
-        guard let player = audioManager.player else { return }
-        let newTime = player.currentTime - 10
-        player.currentTime = max(0, newTime)
-        sliderValue = player.currentTime
-        audioManager.updateNowPlayingInfo()
+        let newTime = audioManager.streamCurrentTime - 10
+        let safeTime = max(0, newTime)
+        audioManager.seekStream(to: safeTime)
+        sliderValue = safeTime
+        audioManager.updateStreamNowPlayingInfo()
     }
     
     private func seekTo(_ value: Double) {
-        guard let player = audioManager.player else { return }
-        player.currentTime = value
+        audioManager.seekStream(to: value)
         sliderValue = value
         updateScrollState(time: value)
-        audioManager.updateNowPlayingInfo()
+        audioManager.updateStreamNowPlayingInfo()
     }
     
     private func setRate(_ rate: Float) {
         playbackRate = rate
-        if let player = audioManager.player {
-            player.enableRate = true
-            player.rate = rate
-            if isPlaying {
-                audioManager.updateNowPlayingInfo()
-            }
+        audioManager.setStreamRate(rate)
+        if isPlaying {
+            audioManager.updateStreamNowPlayingInfo()
         }
     }
     

@@ -6,6 +6,12 @@ struct StoryAboutView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
+    @Environment(SyncManager.self) private var syncManager
+
+    // Pipeline pushing
+    @State private var isPushingToPipeline = false
+    @State private var pipelineStatusMessage: String? = nil
+    @State private var showPipelineSuccessAlert = false
 
     // Hero image state
     @State private var heroImage: UIImage? = nil
@@ -116,6 +122,72 @@ struct StoryAboutView: View {
 
                     Divider()
 
+                    // ── Play Options ──────────────────────────────────────
+                    VStack(spacing: 12) {
+                        // Read & Listen
+                        NavigationLink(destination: StorySessionView(story: story)) {
+                            HStack {
+                                Image(systemName: "headphones")
+                                Text("Read & Listen to the story")
+                            }
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.accentColor)
+                            .cornerRadius(12)
+                        }
+
+                        // Karaoke Mode
+                        NavigationLink(destination: KaraokeSessionView(story: story)) {
+                            HStack {
+                                Image(systemName: "mic.fill")
+                                Text("Karaoke Playback Mode")
+                            }
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.orange)
+                            .cornerRadius(12)
+                        }
+
+                        // Interactive Play
+                        NavigationLink(destination: InteractiveStorySessionView(story: story)) {
+                            HStack {
+                                Image(systemName: "sparkles")
+                                Text("Interactive Play the story")
+                            }
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.purple)
+                            .cornerRadius(12)
+                        }
+
+                        // Take Quiz
+                        NavigationLink(destination: StoryQuizView(story: story)) {
+                            HStack {
+                                Image(systemName: "checkmark.circle")
+                                    .font(.title3)
+                                Text("Take the Quiz")
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                            )
+                        }
+                    }
+
+                    Divider()
+
                     // Additional Metadata
                     FlowLayout(spacing: 8) {
                         if !story.chapters.isEmpty {
@@ -160,55 +232,29 @@ struct StoryAboutView: View {
 
                     Divider()
 
-                    // ── Call to action buttons ────────────────────────────
+                    // ── Administrative Actions ────────────────────────────
                     VStack(spacing: 12) {
-                        // Start Listening
-                        if story.preferences.interactiveAudio || (story.chapters.count > 1) {
-                            NavigationLink(destination: InteractiveStorySessionView(story: story)) {
-                                HStack {
-                                    Image(systemName: "sparkles")
-                                    Text("Start Interactive Session")
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.purple)
-                                .cornerRadius(12)
-                            }
-                        } else {
-                            NavigationLink(destination: StorySessionView(story: story)) {
-                                HStack {
-                                    Image(systemName: "headphones")
-                                    Text("Start Listening")
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.accentColor)
-                                .cornerRadius(12)
-                            }
-                        }
-
-                        // Take Quiz
-                        NavigationLink(destination: StoryQuizView(story: story)) {
+                        
+                        // Push to Pipeline
+                        Button(action: pushStoryToPipeline) {
                             HStack {
-                                Image(systemName: "checkmark.circle")
-                                    .font(.title3)
-                                Text("Take Quiz")
-                                    .font(.headline)
+                                if isPushingToPipeline {
+                                    ProgressView().tint(.white)
+                                        .padding(.trailing, 4)
+                                    Text("Saving...")
+                                } else {
+                                    Image(systemName: "icloud.and.arrow.up")
+                                    Text("Save to Pipeline")
+                                }
                             }
+                            .font(.headline)
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .foregroundColor(.primary)
-                            .cornerRadius(14)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                            )
+                            .padding(.vertical, 16)
+                            .background(Color.blue)
+                            .cornerRadius(12)
                         }
+                        .disabled(isPushingToPipeline)
                     }
                     .padding(.bottom, 40)
                 }
@@ -312,6 +358,11 @@ struct StoryAboutView: View {
             Button("OK", role: .cancel) { storyManager.errorMessage = nil }
         } message: {
             Text(storyManager.errorMessage ?? "")
+        }
+        .alert("Pipeline", isPresented: $showPipelineSuccessAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(pipelineStatusMessage ?? "")
         }
     }
 
@@ -434,6 +485,23 @@ struct StoryAboutView: View {
 
         videoStatusMessage = nil
         isGeneratingVideo = false
+    }
+
+    // MARK: - Pipeline Push Action
+    
+    @MainActor
+    private func pushStoryToPipeline() {
+        isPushingToPipeline = true
+        Task {
+            do {
+                try await syncManager.pushToPipeline(story: story, context: modelContext)
+                pipelineStatusMessage = "Successfully saved story to pipeline."
+            } catch {
+                pipelineStatusMessage = "Failed to save: \(error.localizedDescription)"
+            }
+            isPushingToPipeline = false
+            showPipelineSuccessAlert = true
+        }
     }
 }
 

@@ -147,6 +147,12 @@ struct StoryListView: View {
                                 HStack {
                                     Text(story.title)
                                         .font(.headline)
+                                        
+                                    let isCloud = (story.remoteAudioPath != nil || story.remoteCoverPath != nil || story.remoteVideoPath != nil)
+                                    Image(systemName: isCloud ? "cloud" : "iphone")
+                                        .font(.caption)
+                                        .foregroundStyle(isCloud ? .blue : .gray)
+                                        
                                     if story.preferences.interactiveAudio {
                                         Image(systemName: "sparkles")
                                             .font(.caption)

@@ -81,6 +81,38 @@ struct PushStoryDTO: Codable {
     let chapters: [StoryChapter]?
 }
 
+/// DTO for pushing to story_pipeline table
+struct PushStoryPipelineDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let title: String
+    let target_text: String
+    let native_text: String?
+    let prompt: String?
+    let text_gen_prompt: String?
+    let image_gen_prompt: String?
+    let video_style: String?
+    let video_gen_prompt: String?
+    let remote_video_path: String?
+    let preferences_json: String?
+    let word_timings_json: String?
+    let comprehension_questions_json: String?
+    let speaker_voices_json: String?
+    let tagged_target_text: String?
+    let ambient_sound_id: String?
+    let ambient_volume: Double?
+    let language: String
+    let level: Int
+    let remote_audio_path: String?
+    let remote_cover_path: String?
+    let created_at: Date
+    let updated_at: Date?
+    let is_favorite: Bool
+    let chapters: [StoryChapter]?
+    let pipeline_status: String?
+}
+
+
 
 
 // MARK: - Coaching DTOs
@@ -142,9 +174,10 @@ struct CoachingCheckInDTO: Codable {
             try await pullStories(context: modelContext, userID: userID)
             
             // 4. Push Metadata (Local -> Server)
-            // Push Stories AFTER Pulling to ensure we adopt server path repairs first
-            try await syncStories(context: modelContext, userID: userID)
+            // (We no longer push all local stories to the server automatically.
+            // Stories are optionally pushed to the pipeline manually via pushToPipeline.)
             
+
             // Push Favorites
             try await syncFavorites(context: modelContext, userID: userID)
             
@@ -716,190 +749,179 @@ struct CoachingCheckInDTO: Codable {
     }
     
     @MainActor
-    private func syncStories(context: ModelContext, userID: String) async throws {
-        // Fetch local stories that either have no remote path OR are not verified synced
-        // Since we don't have isSynced, we iterate all and check properties or naive upsert.
-        // Let's assume we want to push all stories for this user.
-        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
-        let allLocalStories = try context.fetch(descriptor)
-        
-        guard !allLocalStories.isEmpty else { 
-            print("[Sync] Stories: No local stories found.")
-            return 
+    func pushToPipeline(story: Story, context: ModelContext) async throws {
+        guard let userID = authManager.currentUser else {
+            print("[Sync] Cannot push to pipeline: No user logged in")
+            return
         }
-        
-        print("[Sync] Stories: Checking \(allLocalStories.count) local stories for user \(userID)...")
-        
-        for story in allLocalStories {
-            guard let uid = UUID(uuidString: userID) else { continue }
-            
-            // 1. Upload Audio if needed
-            if let localFilename = story.audioFilename, 
-               story.remoteAudioPath == nil {
-                
-                let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(localFilename)
-                if FileManager.default.fileExists(atPath: fileURL.path) {
-                    do {
-                        let audioData = try Data(contentsOf: fileURL)
-                        // Preserve the actual file extension (WAV dramatized vs MP3 single-voice)
-                        let srcExt = (localFilename as NSString).pathExtension.lowercased()
-                        let remoteExt = srcExt == "wav" ? "wav" : "mp3"
-                        let contentType = remoteExt == "wav" ? "audio/wav" : "audio/mpeg"
-                        let remotePath = "\(userID)/\(story.id.uuidString)/audio/\(UUID().uuidString).\(remoteExt)"
-                        try await authManager.supabase.storage
-                            .from("audio-stories")
-                            .upload(
-                                remotePath,
-                                data: audioData,
-                                options: FileOptions(contentType: contentType)
-                            )
+        guard let uid = UUID(uuidString: userID) else {
+            print("[Sync] Invalid user UUID")
+            return
+        }
 
-                        // Update local model
-                        story.remoteAudioPath = remotePath
-                        try context.save()
-                        print("Sync: Uploaded audio for story '\(story.title)' (\(remoteExt))")
-                    } catch {
-                        print("Sync: Failed to upload audio for '\(story.title)': \(error)")
-                        // Continue to push metadata, though audio might be missing remotely
-                    }
-                }
-            }
-            
-            // 2. Upload Cover Image if needed
-            if let coverFilename = story.coverArt,
-               story.remoteCoverPath == nil {
-                
-                let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(coverFilename)
-                if FileManager.default.fileExists(atPath: fileURL.path) {
-                    do {
-                        let imageData = try Data(contentsOf: fileURL)
-                        let ownerID = userID.isEmpty ? "unknown" : userID
-                        let remotePath = "\(ownerID)/\(story.id.uuidString)/covers/\(UUID().uuidString).png"
-                        
-                        try await authManager.supabase.storage
-                            .from("audio-stories")
-                            .upload(
-                                remotePath,
-                                data: imageData,
-                                options: FileOptions(contentType: "image/png")
-                            )
-                        
-                        // Update local model
-                        story.remoteCoverPath = remotePath
-                        try context.save()
-                        print("Sync: Uploaded cover for story '\(story.title)'")
-                    } catch {
-                        print("Sync: Failed to upload cover for '\(story.title)': \(error)")
-                    }
-                }
-            }
-            
-            // 3. Upload Video if generated locally but not yet on remote
-            let videoFilename = "video_\(story.id.uuidString).mp4"
-            let videoFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent(videoFilename)
+        print("[Sync] Pipeline: Pushing story '\(story.title)' for user \(userID)...")
 
-            let hasLocalFile = FileManager.default.fileExists(atPath: videoFileURL.path)
-
-            if hasLocalFile,
-               story.remoteVideoPath == nil {
+        // 1. Upload Audio if needed
+        if let localFilename = story.audioFilename, 
+           story.remoteAudioPath == nil {
+            
+            let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(localFilename)
+            if FileManager.default.fileExists(atPath: fileURL.path) {
                 do {
-                    let videoData = try Data(contentsOf: videoFileURL)
-                    // Standard path: {userID}/{storyID}/videos/{timestamp}_{style}.mp4
-                    let styleSlug = (story.videoStyle ?? "unknown")
-                        .lowercased()
-                        .components(separatedBy: .whitespaces)
-                        .joined(separator: "_")
-                    let timestamp = Int(Date().timeIntervalSince1970)
-                    let remotePath = "\(userID)/\(story.id.uuidString)/videos/\(timestamp)_\(styleSlug).mp4"
-
+                    let audioData = try Data(contentsOf: fileURL)
+                    // Preserve the actual file extension (WAV dramatized vs MP3 single-voice)
+                    let srcExt = (localFilename as NSString).pathExtension.lowercased()
+                    let remoteExt = srcExt == "wav" ? "wav" : "mp3"
+                    let contentType = remoteExt == "wav" ? "audio/wav" : "audio/mpeg"
+                    let remotePath = "\(userID)/\(story.id.uuidString)/audio/\(UUID().uuidString).\(remoteExt)"
                     try await authManager.supabase.storage
                         .from("audio-stories")
                         .upload(
                             remotePath,
-                            data: videoData,
-                            options: FileOptions(contentType: "video/mp4")
+                            data: audioData,
+                            options: FileOptions(contentType: contentType)
                         )
 
-                    story.remoteVideoPath = remotePath
+                    // Update local model
+                    story.remoteAudioPath = remotePath
                     try context.save()
-                    print("Sync: Uploaded video for story '\(story.title)' to audio-stories/\(remotePath)")
+                    print("Sync: Uploaded audio for story '\(story.title)' (\(remoteExt))")
                 } catch {
-                    print("Sync: Failed to upload video for '\(story.title)': \(error)")
+                    print("Sync: Failed to upload audio for '\(story.title)': \(error)")
                 }
             }
-
-            // 4. Push Metadata
-            let dto = PushStoryDTO(
-                id: story.id,
-                user_id: uid,
-                title: story.title,
-                target_text: story.targetLanguageText,
-                native_text: story.nativeLanguageText,
-                prompt: story.prompt,
-                text_gen_prompt: story.textGenPrompt,
-                image_gen_prompt: story.imageGenPrompt,
-                video_style: story.videoStyle,
-                video_gen_prompt: story.videoGenPrompt,
-                remote_video_path: story.remoteVideoPath,
-                preferences_json: story.preferencesJSON,
-                word_timings_json: story.wordTimingsJSON,
-                comprehension_questions_json: story.comprehensionQuestionsJSON,
-                speaker_voices_json: story.speakerVoicesJSON,
-                tagged_target_text: story.taggedTargetText,
-                ambient_sound_id: story.ambientSoundId,
-                ambient_volume: story.ambientVolume,
-                language: story.languageRaw,
-                level: Int(story.levelRaw) ?? 1,
-                remote_audio_path: story.remoteAudioPath,
-                remote_cover_path: story.remoteCoverPath,
-                cover_art: story.coverArt,
-                created_at: story.createdAt,
-                updated_at: story.updatedAt ?? Date(),
-                is_favorite: story.isFavorite,
-                is_public: true,
-                chapters: story.chapters.isEmpty ? nil : story.chapters
-            )
-            print("[Sync] Stories: Final state for '\(story.title)' - remote_video_path: \(story.remoteVideoPath ?? "nil")")
-            
-            try await authManager.supabase.from("stories")
-                .upsert(dto, onConflict: "id")
-                .execute()
-            
-            // print("[Sync] Stories: Pushed metadata for '\(story.title)'") // Optional: maybe too much? Let's leave it commented for now or remove if it works.
         }
+        
+        // 2. Upload Cover Image if needed
+        if let coverFilename = story.coverArt,
+           story.remoteCoverPath == nil {
+            
+            let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(coverFilename)
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                do {
+                    let imageData = try Data(contentsOf: fileURL)
+                    let remotePath = "\(userID)/\(story.id.uuidString)/covers/\(UUID().uuidString).png"
+                    
+                    try await authManager.supabase.storage
+                        .from("audio-stories")
+                        .upload(
+                            remotePath,
+                            data: imageData,
+                            options: FileOptions(contentType: "image/png")
+                        )
+                    
+                    // Update local model
+                    story.remoteCoverPath = remotePath
+                    try context.save()
+                    print("Sync: Uploaded cover for story '\(story.title)'")
+                } catch {
+                    print("Sync: Failed to upload cover for '\(story.title)': \(error)")
+                }
+            }
+        }
+        
+        // 3. Upload Video if generated locally but not yet on remote
+        let videoFilename = "video_\(story.id.uuidString).mp4"
+        let videoFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(videoFilename)
+
+        let hasLocalFile = FileManager.default.fileExists(atPath: videoFileURL.path)
+
+        if hasLocalFile,
+           story.remoteVideoPath == nil {
+            do {
+                let videoData = try Data(contentsOf: videoFileURL)
+                let styleSlug = (story.videoStyle ?? "unknown")
+                    .lowercased()
+                    .components(separatedBy: .whitespaces)
+                    .joined(separator: "_")
+                let timestamp = Int(Date().timeIntervalSince1970)
+                let remotePath = "\(userID)/\(story.id.uuidString)/videos/\(timestamp)_\(styleSlug).mp4"
+
+                try await authManager.supabase.storage
+                    .from("audio-stories")
+                    .upload(
+                        remotePath,
+                        data: videoData,
+                        options: FileOptions(contentType: "video/mp4")
+                    )
+
+                story.remoteVideoPath = remotePath
+                try context.save()
+                print("Sync: Uploaded video for story '\(story.title)' to audio-stories/\(remotePath)")
+            } catch {
+                print("Sync: Failed to upload video for '\(story.title)': \(error)")
+            }
+        }
+
+        // 4. Push Metadata to story_pipeline
+        let dto = PushStoryPipelineDTO(
+            id: story.id,
+            user_id: uid,
+            title: story.title,
+            target_text: story.targetLanguageText,
+            native_text: story.nativeLanguageText,
+            prompt: story.prompt,
+            text_gen_prompt: story.textGenPrompt,
+            image_gen_prompt: story.imageGenPrompt,
+            video_style: story.videoStyle,
+            video_gen_prompt: story.videoGenPrompt,
+            remote_video_path: story.remoteVideoPath,
+            preferences_json: story.preferencesJSON,
+            word_timings_json: story.wordTimingsJSON,
+            comprehension_questions_json: story.comprehensionQuestionsJSON,
+            speaker_voices_json: story.speakerVoicesJSON,
+            tagged_target_text: story.taggedTargetText,
+            ambient_sound_id: story.ambientSoundId,
+            ambient_volume: Double(story.ambientVolume),
+            language: story.languageRaw,
+            level: Int(story.levelRaw) ?? 1,
+            remote_audio_path: story.remoteAudioPath,
+            remote_cover_path: story.remoteCoverPath,
+            created_at: story.createdAt,
+            updated_at: Date(),
+            is_favorite: story.isFavorite,
+            chapters: story.chapters.isEmpty ? nil : story.chapters,
+            pipeline_status: "draft"
+        )
+        
+        try await authManager.supabase.from("story_pipeline")
+            .upsert(dto, onConflict: "id")
+            .execute()
+            
+        print("[Sync] Pipeline: Pushed metadata for '\(story.title)' successfully.")
     }
     
     @MainActor
     private func pullStories(context: ModelContext, userID: String) async throws {
         guard let uid = UUID(uuidString: userID) else { return }
         
-        // Fetch stories: My Own OR Public ones (if we want that). 
-        // For sync, we primarily want MY items on this device.
-        // But the user asked for "everyone can see". 
-        // Syncing *everyone's* stories to local device is expensive.
-        // Let's stick to syncing MY stories for now + maybe a separate "Explore" fetch.
-        // Implementation Plan said: "Users can see their own stories AND stories where is_public is true"
-        // But `pullStories` implies persistence. We probably only want to persist MY stories locally.
-        // Let's filter by user_id for the persistent sync.
-        
-        // Fetch ALL stories to allow global visibility
+        // Fetch MY stories to allow persistent sync.
+        // If we want global explore features, they should ideally be handled via a separate query
+        // or a different `ModelContext` / non-persistent cache.
         let response = try await authManager.supabase.from("stories")
             .select()
-            .order("updated_at", ascending: false)
-            .limit(100) // Safety limit
+            .eq("user_id", value: uid)
             .execute()
             
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
         let dtos = try decoder.decode([StoryDTO].self, from: response.data)
-        print("[Sync] Stories: Pulling \(dtos.count) entries from server...")
-        for dto in dtos {
-            print("[Sync] Story '\(dto.title)': chapters=\(dto.chapters?.count ?? -1) (nil=\(dto.chapters == nil))")
-        }
         
-        let descriptor = FetchDescriptor<Story>()
+        let serverIDs = Set(dtos.map { $0.id })
+        
+        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
         let localStories = try context.fetch(descriptor)
+        
+        // Handle Deletions: If a local story WAS synced to the server previously, but is now missing,
+        // it means the user deleted it from the server.
+        for local in localStories {
+            let wasSynced = (local.remoteAudioPath != nil || local.remoteCoverPath != nil || local.remoteVideoPath != nil)
+            if wasSynced && !serverIDs.contains(local.id) {
+                print("[Sync] Stories: Deleting local story '\(local.title)' as it is no longer on the server.")
+                context.delete(local)
+            }
+        }
         
         for dto in dtos {
             if let existing = localStories.first(where: { $0.id == dto.id }) {

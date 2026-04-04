@@ -32,6 +32,7 @@ struct StoryAboutView: View {
     @State private var showVideoGenerator = false
     @State private var showAmbientPicker = false
     @State private var showRegenerateOptions = false
+    @State private var showChapterJSON = false
 
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
@@ -275,6 +276,9 @@ struct StoryAboutView: View {
                     Button { showPromptDetails = true } label: {
                         Label("View Prompts", systemImage: "text.viewfinder")
                     }
+                    Button { showChapterJSON = true } label: {
+                        Label("View Chapter JSON", systemImage: "curlybraces")
+                    }
 
                     Divider()
 
@@ -351,6 +355,9 @@ struct StoryAboutView: View {
             }
             .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: $showChapterJSON) {
+            ChapterJSONSheet(chaptersJSON: story.chaptersJSON)
+        }
         .alert("Regeneration Failed", isPresented: Binding(
             get: { storyManager.errorMessage != nil },
             set: { if !$0 { storyManager.errorMessage = nil } }
@@ -376,14 +383,14 @@ struct StoryAboutView: View {
                 HStack(alignment: .top, spacing: 12) {
                     let label = chapter.isPrologue ? "P" : chapter.isEpilogue ? "E" : "\(index + 1)"
                     let color = chapter.isPrologue ? Color.orange : (chapter.isEpilogue ? Color.purple : Color.accentColor)
-                    
+
                     Text(label)
                         .font(.caption.bold())
                         .foregroundStyle(.white)
                         .frame(width: 24, height: 24)
                         .background(color)
                         .clipShape(Circle())
-                    
+
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
                             Text(chapter.titleTargetLanguage)
@@ -418,6 +425,20 @@ struct StoryAboutView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
                         }
+                    }
+
+                    if let urlString = chapter.coverUrl,
+                       let url = AppConfig.chapterCoverURL(urlString) {
+                        Spacer()
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } placeholder: {
+                            Color(.secondarySystemBackground)
+                        }
+                        .frame(width: 60, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                 }
             }
@@ -501,6 +522,65 @@ struct StoryAboutView: View {
             }
             isPushingToPipeline = false
             showPipelineSuccessAlert = true
+        }
+    }
+}
+
+// MARK: - Chapter JSON Sheet
+
+private struct ChapterJSONSheet: View {
+    let chaptersJSON: String?
+    @Environment(\.dismiss) private var dismiss
+    @State private var copied = false
+
+    /// Full raw JSON for copying
+    private var fullJSON: String {
+        chaptersJSON ?? "(no chaptersJSON stored)"
+    }
+
+    /// Pretty-printed JSON with word_timings stripped for readable display
+    private var displayJSON: String {
+        guard let raw = chaptersJSON, let data = raw.data(using: .utf8) else {
+            return "(no chaptersJSON stored)"
+        }
+        guard var arr = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] else {
+            return raw
+        }
+        let stripKeys = ["word_timings", "chapter_intro_word_timings", "chapterIntroWordTimings"]
+        arr = arr.map { chapter in
+            var c = chapter
+            stripKeys.forEach { c.removeValue(forKey: $0) }
+            return c
+        }
+        guard let pretty = try? JSONSerialization.data(withJSONObject: arr, options: [.prettyPrinted, .sortedKeys]),
+              let str = String(data: pretty, encoding: .utf8) else { return raw }
+        return str
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text(displayJSON)
+                    .font(.system(.caption2, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+            }
+            .navigationTitle("Chapter JSON")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(copied ? "Copied!" : "Copy Full JSON") {
+                        UIPasteboard.general.string = fullJSON
+                        copied = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { copied = false }
+                    }
+                    .foregroundStyle(copied ? .green : .blue)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
     }
 }

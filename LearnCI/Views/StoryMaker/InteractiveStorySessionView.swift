@@ -14,6 +14,7 @@ struct InteractiveStorySessionView: View {
     @State private var audioManager = AudioManager.shared
     @State private var isPlaying = false
     @State private var hasFinishedSegment = false
+    @State private var chapterUIImage: UIImage? = nil
     
     private let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
     
@@ -30,7 +31,7 @@ struct InteractiveStorySessionView: View {
         ZStack {
             // Background (Scene Image)
             GeometryReader { geo in
-                if let bgImage = chapterImage {
+                if let bgImage = chapterUIImage {
                     Image(uiImage: bgImage)
                         .resizable()
                         .scaledToFill()
@@ -167,10 +168,20 @@ struct InteractiveStorySessionView: View {
         // Prioritize the speaker-tagged script if available
         let script = currentChapter.scriptTargetLanguage ?? currentChapter.textTargetLanguage
         let timings: [WordTiming] = currentChapter.wordTimings ?? []
-        
+
         segments = ScriptParser.parseSegments(scriptText: script, globalTimings: timings)
         currentSegmentIndex = 0
         hasFinishedSegment = false
+
+        // Load chapter cover image
+        if let urlString = currentChapter.coverUrl,
+           let url = AppConfig.chapterCoverURL(urlString) {
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data, let uiImage = UIImage(data: data) {
+                    DispatchQueue.main.async { chapterUIImage = uiImage }
+                }
+            }.resume()
+        }
         
         // 2. Load Audio but don't play yet if it's the start
         if let url = audioURL {
@@ -255,11 +266,6 @@ struct InteractiveStorySessionView: View {
                 .clipShape(Circle())
                 .padding(.bottom, 20)
         }
-    }
-    
-    private var chapterImage: UIImage? {
-        // Resolve chapter image if available
-        return nil // Placeholder
     }
     
     private var audioURL: URL? {

@@ -41,7 +41,7 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case plotSummaryEnglish = "plot_summary_english"
         case plotSummaryLegacy = "plot_summary"  // legacy key
         case chapterImagePrompt = "chapter_image_prompt"
-        case coverUrl = "cover_url"
+        case coverUrl = "chapter_cover_url"
         case chapterIntroText = "chapter_intro_text"
         case chapterIntroTextEnglish = "chapter_intro_text_english"
         case chapterIntroAudioUrl = "chapter_intro_audio_url"

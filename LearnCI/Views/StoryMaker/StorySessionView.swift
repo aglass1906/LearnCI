@@ -142,9 +142,13 @@ struct StorySessionView: View {
             if currentChapter == nil {
                 setupAudio()
             }
+            loadChapterImage()
         }
         .onDisappear {
             cleanupSession()
+        }
+        .onChange(of: currentChapterIndex) { _, _ in
+            loadChapterImage()
         }
         .onChange(of: ambientVolume) { _, newValue in
             audioManager.setAmbientVolume(newValue)
@@ -632,6 +636,16 @@ struct StorySessionView: View {
         guard !story.chapters.isEmpty else { return nil }
         guard currentChapterIndex < story.chapters.count else { return nil }
         return story.chapters[currentChapterIndex]
+    }
+
+    private func loadChapterImage() {
+        guard let urlString = currentChapter?.coverUrl,
+              let url = AppConfig.chapterCoverURL(urlString) else { return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data, let uiImage = UIImage(data: data) {
+                DispatchQueue.main.async { heroImage = uiImage }
+            }
+        }.resume()
     }
 
     struct ParagraphChunk: Identifiable, Equatable {

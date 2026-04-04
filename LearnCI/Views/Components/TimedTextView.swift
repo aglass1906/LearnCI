@@ -1,70 +1,67 @@
 import SwiftUI
 
-/// A component that renders a single StorySegmentTiming,
-/// highlighting words dynamically based on the current playback time in seconds.
-struct KaraokeTextChunk: View {
+/// Renders a block of text with individual words highlighted in sync with audio playback.
+/// Pass the current stream time in seconds and word-level timings; the active word
+/// highlights blue while past words dim, creating a read-along effect.
+struct TimedTextView: View {
     let segment: StorySegmentTiming
     let currentTime: Double /// The current stream time in seconds
-    
-    // UI Theme Constants
-    let baseFontSize: CGFloat = 28
-    let highlightFontSize: CGFloat = 32
-    
+
     var body: some View {
         Text(attributedParagraph)
             .multilineTextAlignment(.leading)
-            .lineSpacing(12)
+            .lineSpacing(6)
+            .fixedSize(horizontal: false, vertical: true)
             .padding()
             .animation(.easeInOut(duration: 0.1), value: currentTime)
     }
-    
+
     // Computes the text styles based on the current time
     private var attributedParagraph: AttributedString {
         var attrString = AttributedString(segment.text)
-        attrString.font = .system(size: baseFontSize, weight: .regular, design: .serif)
+        attrString.font = .body
         attrString.foregroundColor = .primary.opacity(0.8)
-        
+
         guard !segment.timings.isEmpty else {
             return attrString
         }
 
-        // We use a regular expression to find word boundaries in the text,
+        // Use a regular expression to find word boundaries in the text,
         // then match them chronologically to the WordTiming objects.
         let textNSString = segment.text as NSString
         let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
         let matches = regex?.matches(in: segment.text, options: [], range: NSRange(location: 0, length: textNSString.length)) ?? []
-        
+
         for (i, match) in matches.enumerated() {
             guard i < segment.timings.count else { break }
             let timing = segment.timings[i]
-            
+
             if let swiftRange = Range(match.range, in: segment.text),
                let lowerBound = AttributedString.Index(swiftRange.lowerBound, within: attrString),
                let upperBound = AttributedString.Index(swiftRange.upperBound, within: attrString) {
-                
+
                 let attrRange = lowerBound..<upperBound
-                
-                // Highlight logic: apply slack for smoother transition (e.g. 150ms slack)
+
+                // 150ms slack for smoother word-to-word transitions
                 let slack: Double = 0.150
                 if currentTime >= (timing.start - slack) && currentTime <= (timing.end + slack) {
                     attrString[attrRange].foregroundColor = .blue
-                    attrString[attrRange].font = .system(size: highlightFontSize, weight: .bold, design: .serif)
+                    attrString[attrRange].font = .body.bold()
                 } else if currentTime > (timing.end + slack) {
-                    // Previously spoken words can have a different opacity if desired
                     attrString[attrRange].foregroundColor = .primary.opacity(0.4)
                 }
             }
         }
-        
+
         return attrString
     }
 }
 
 #Preview {
-    KaraokeTextChunk(
+    TimedTextView(
         segment: StorySegmentTiming(
             speaker: "NARRATOR",
-            text: "This is a test of the karaoke system.",
+            text: "This is a test of the synchronized text view.",
             startTime: 0,
             endTime: 5.0,
             timings: [

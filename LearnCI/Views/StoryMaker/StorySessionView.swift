@@ -34,6 +34,9 @@ struct StorySessionView: View {
     @State private var startTime: Date?
     @State private var didPlayAudio: Bool = false
 
+    // Chapter Intro Card
+    @State private var showingChapterCard: Bool = true
+
     // Comprehension Quiz
     @State private var navigateToQuiz: Bool = false
     @State private var isGeneratingQuiz: Bool = false
@@ -110,6 +113,20 @@ struct StorySessionView: View {
             } // Close ScrollViewReader
             
             stickyPlayerView
+
+            if showingChapterCard, let chapter = currentChapter {
+                ChapterInfoCardView(
+                    chapter: chapter,
+                    heroImage: heroImage,
+                    languageCode: story.languageRaw
+                ) {
+                    showingChapterCard = false
+                    setupAudio()
+                    if !isPlaying { togglePlay() }
+                }
+                .transition(.opacity)
+                .zIndex(10)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -120,7 +137,11 @@ struct StorySessionView: View {
         .onAppear {
             startTime = Date()
             ambientVolume = story.ambientVolume
-            setupAudio()
+            // When a chapter intro card will be shown, defer audio setup until Continue
+            // is tapped so AVSpeechSynthesizer can use the audio session uninterrupted.
+            if currentChapter == nil {
+                setupAudio()
+            }
         }
         .onDisappear {
             cleanupSession()
@@ -217,8 +238,7 @@ struct StorySessionView: View {
                         activeParagraphId = nil
                         sliderValue = 0
                         setupAudio()
-                        // Automatically start next chapter
-                        togglePlay()
+                        showingChapterCard = true
                     } else if !navigateToQuiz {
                         navigateToQuiz = true
                     }
@@ -317,6 +337,10 @@ struct StorySessionView: View {
                 isDownloadingAudio = false
                 playLocalAudio(url: correctURL)
                 startAmbient()
+                // Auto-play once the file is ready — the chapter card was already
+                // dismissed so the user is waiting for audio to start.
+                audioManager.playStream()
+                isPlaying = true
             }
         } catch {
             print("[StorySession] Audio download error: \(error)")
@@ -582,20 +606,22 @@ struct StorySessionView: View {
                 onSeek: seekTo,
                 onChangeRate: setRate,
                 onNextChapter: currentChapterIndex < story.chapters.count - 1 ? {
+                    if isPlaying { togglePlay() }
                     currentChapterIndex += 1
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
                     setupAudio()
-                    if isPlaying { togglePlay() }
+                    showingChapterCard = true
                 } : nil,
                 onPreviousChapter: currentChapterIndex > 0 ? {
+                    if isPlaying { togglePlay() }
                     currentChapterIndex -= 1
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
                     setupAudio()
-                    if isPlaying { togglePlay() }
+                    showingChapterCard = true
                 } : nil
             )
             .ignoresSafeArea(edges: .bottom)

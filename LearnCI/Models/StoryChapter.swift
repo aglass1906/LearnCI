@@ -19,6 +19,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var coverUrl: String?
     var chapterIntroText: String?
     var chapterIntroTextEnglish: String?
+    var chapterIntroAudioUrl: String?
+    var chapterIntroWordTimings: [WordTiming]?
 
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
@@ -42,6 +44,9 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case coverUrl = "cover_url"
         case chapterIntroText = "chapter_intro_text"
         case chapterIntroTextEnglish = "chapter_intro_text_english"
+        case chapterIntroAudioUrl = "chapter_intro_audio_url"
+        case chapterIntroWordTimings = "chapter_intro_word_timings"
+        case chapterIntroWordTimingsCamel = "chapterIntroWordTimings" // camelCase variant from pipeline
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +70,9 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         coverUrl = try? container.decode(String.self, forKey: .coverUrl)
         chapterIntroText = try? container.decode(String.self, forKey: .chapterIntroText)
         chapterIntroTextEnglish = try? container.decode(String.self, forKey: .chapterIntroTextEnglish)
+        chapterIntroAudioUrl = try? container.decode(String.self, forKey: .chapterIntroAudioUrl)
+        chapterIntroWordTimings = (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimings))
+            ?? (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimingsCamel))
     }
 
     func encode(to encoder: Encoder) throws {
@@ -86,6 +94,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(coverUrl, forKey: .coverUrl)
         try container.encodeIfPresent(chapterIntroText, forKey: .chapterIntroText)
         try container.encodeIfPresent(chapterIntroTextEnglish, forKey: .chapterIntroTextEnglish)
+        try container.encodeIfPresent(chapterIntroAudioUrl, forKey: .chapterIntroAudioUrl)
+        try container.encodeIfPresent(chapterIntroWordTimings, forKey: .chapterIntroWordTimings)
     }
 
     init(id: UUID = UUID(),
@@ -104,7 +114,9 @@ struct StoryChapter: Codable, Identifiable, Equatable {
          chapterImagePrompt: String? = nil,
          coverUrl: String? = nil,
          chapterIntroText: String? = nil,
-         chapterIntroTextEnglish: String? = nil) {
+         chapterIntroTextEnglish: String? = nil,
+         chapterIntroAudioUrl: String? = nil,
+         chapterIntroWordTimings: [WordTiming]? = nil) {
         self.id = id
         self.chapterNumber = chapterNumber
         self.chapterType = chapterType
@@ -122,6 +134,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         self.coverUrl = coverUrl
         self.chapterIntroText = chapterIntroText
         self.chapterIntroTextEnglish = chapterIntroTextEnglish
+        self.chapterIntroAudioUrl = chapterIntroAudioUrl
+        self.chapterIntroWordTimings = chapterIntroWordTimings
     }
 }
 

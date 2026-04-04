@@ -92,7 +92,7 @@ struct KaraokeSessionView: View {
                                 .padding(.top, 40)
                             
                             // Dialogue chunk with word-level highlights
-                            KaraokeTextChunk(segment: segment, currentTime: localTimeMs / 1000.0)
+                            TimedTextView(segment: segment, currentTime: localTimeMs / 1000.0)
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

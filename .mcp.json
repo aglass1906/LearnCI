@@ -6,6 +6,15 @@
       "headers": {
         "Authorization": "Bearer sbp_7e3b7c87b76e51d18df0def5e9d358b2cb661892"
       }
+    },
+    "xcode": {
+      "type": "stdio",
+      "command": "xcrun",
+      "args": [
+        "mcpbridge"
+      ],
+      "env": {},
+      "disabled": true
     }
   }
 }

@@ -169,6 +169,7 @@ struct StoryListView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 
+                                let isDramatized = story.preferences.audioStyle == .dramatized
                                 HStack(spacing: 8) {
                                     if !story.chapters.isEmpty {
                                         Label("\(story.chapters.count) ch", systemImage: "book.pages")
@@ -179,7 +180,19 @@ struct StoryListView: View {
                                             .foregroundStyle(.blue)
                                             .cornerRadius(4)
                                     }
-                                    if story.preferences.interactiveAudio || (story.chapters.count > 1) {
+                                    Label(
+                                        isDramatized ? "Dramatized" : "Single Voice",
+                                        systemImage: isDramatized ? "person.2.fill" : "person.fill"
+                                    )
+                                    .font(.system(size: 10, weight: .bold))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(isDramatized ? Color.orange.opacity(0.1) : Color.gray.opacity(0.1))
+                                    .foregroundStyle(isDramatized ? .orange : .secondary)
+                                    .cornerRadius(4)
+                                }
+                                if story.preferences.interactiveAudio || (story.chapters.count > 1) {
+                                    HStack(spacing: 8) {
                                         Label("Interactive", systemImage: "headphones")
                                             .font(.system(size: 10, weight: .bold))
                                             .padding(.horizontal, 6)

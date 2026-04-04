@@ -120,14 +120,16 @@ struct StoryPreferences: Codable, Equatable {
         case short = "Short"
         case medium = "Medium"
         case long = "Long"
-        
+        case extended = "Extended"  // web pipeline value
+
         var id: String { rawValue }
-        
+
         nonisolated var promptInstruction: String {
             switch self {
             case .short: return "Keep it under 150 words."
             case .medium: return "Keep it around 300 words."
             case .long: return "Keep it around 500 words."
+            case .extended: return "Keep it around 800 words."
             }
         }
     }
@@ -146,7 +148,46 @@ struct StoryPreferences: Codable, Equatable {
         case neutral = "Neutral"
         case male = "Male"
         case female = "Female"
-        
+
         var id: String { rawValue }
+    }
+
+    // MARK: - Default Init
+    init() {}
+
+    // MARK: - Lenient Decoder
+    // Decodes each enum field individually so an unknown value from the web
+    // pipeline only drops that field to its default — not the entire struct.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        humorLevel              = (try? c.decode(Double.self,          forKey: .humorLevel))              ?? 0.5
+        realismLevel            = (try? c.decode(Double.self,          forKey: .realismLevel))            ?? 0.5
+        genre                   = (try? c.decode(Genre.self,           forKey: .genre))                   ?? .mystery
+        dialogueAmount          = (try? c.decode(DialogueAmount.self,  forKey: .dialogueAmount))          ?? .medium
+        voice                   = (try? c.decode(Voice.self,           forKey: .voice))                   ?? .alloy
+        coverArtStyle           = (try? c.decode(CoverArtStyle.self,   forKey: .coverArtStyle))           ?? .storybook
+        storyLength             = (try? c.decode(StoryLength.self,     forKey: .storyLength))             ?? .medium
+        endingType              = (try? c.decode(EndingType.self,      forKey: .endingType))              ?? .happy
+        protagonistName         = (try? c.decode(String.self,          forKey: .protagonistName))         ?? ""
+        protagonistGender       = (try? c.decode(Gender.self,          forKey: .protagonistGender))       ?? .neutral
+        targetVocabulary        = (try? c.decode(String.self,          forKey: .targetVocabulary))        ?? ""
+        grammarFocus            = (try? c.decode(String.self,          forKey: .grammarFocus))            ?? ""
+        audioSpeed              = (try? c.decode(Double.self,          forKey: .audioSpeed))              ?? 1.0
+        interactiveAudio        = (try? c.decode(Bool.self,            forKey: .interactiveAudio))        ?? false
+        audioStyle              = (try? c.decode(AudioStyle.self,      forKey: .audioStyle))              ?? .single
+        chapterQuote            = (try? c.decode(Bool.self,            forKey: .chapterQuote))            ?? false
+        chapterIntroInstructions = (try? c.decode(String.self,         forKey: .chapterIntroInstructions)) ?? ""
+        ambientSoundId          = (try? c.decode(String.self,          forKey: .ambientSoundId))          ?? "none"
+        ambientVolume           = (try? c.decode(Double.self,          forKey: .ambientVolume))           ?? 0.3
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case humorLevel, realismLevel, genre, dialogueAmount, voice
+        case coverArtStyle, storyLength, endingType
+        case protagonistName, protagonistGender
+        case targetVocabulary, grammarFocus
+        case audioSpeed, interactiveAudio, audioStyle
+        case chapterQuote, chapterIntroInstructions
+        case ambientSoundId, ambientVolume
     }
 }

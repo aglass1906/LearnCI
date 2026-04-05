@@ -35,10 +35,21 @@ struct StoryPreferences: Codable, Equatable {
     // This ensures interactiveAudio and other fields are correctly parsed from Supabase.
 
     enum StoryType: String, Codable, CaseIterable, Identifiable {
-        case standard    = "Standard"
+        case storyBook   = "Story Book"
+        case audioBook   = "Audio Book"
         case interactive = "Interactive"
+        case standard    = "Standard"   // legacy default for existing stories
 
         var id: String { rawValue }
+
+        var icon: String {
+            switch self {
+            case .storyBook:   return "book.fill"
+            case .audioBook:   return "headphones"
+            case .interactive: return "sparkles"
+            case .standard:    return "book"
+            }
+        }
     }
 
     enum AudioStyle: String, Codable, CaseIterable, Identifiable {

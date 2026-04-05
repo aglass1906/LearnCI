@@ -90,6 +90,7 @@ struct StoryListView: View {
     // Filters & Sorting
     @State private var sortOption: SortOption = .newest
     @State private var selectedLanguage: String = "All"
+    @State private var selectedStoryType: String = "All"
     
     enum SortOption: String, CaseIterable {
         case newest = "Newest First"
@@ -101,12 +102,17 @@ struct StoryListView: View {
     
     private var filteredStories: [Story] {
         var result = stories
-        
+
         // Filter by Language
         if selectedLanguage != "All" {
             result = result.filter { $0.language.displayName == selectedLanguage }
         }
-        
+
+        // Filter by Story Type
+        if selectedStoryType != "All" {
+            result = result.filter { $0.preferences.storyType.rawValue == selectedStoryType }
+        }
+
         // Sort
         switch sortOption {
         case .newest:
@@ -116,10 +122,12 @@ struct StoryListView: View {
         case .alphabetical:
             result.sort { $0.title < $1.title }
         }
-        
+
         return result
     }
-    
+
+    private var isFiltered: Bool { selectedLanguage != "All" || selectedStoryType != "All" }
+
     private var availableLanguages: [String] {
         let langs = Set(stories.map { $0.language.displayName })
         return ["All"] + langs.sorted()
@@ -130,9 +138,9 @@ struct StoryListView: View {
             List {
                 if filteredStories.isEmpty {
                     ContentUnavailableView(
-                        selectedLanguage == "All" ? "No Stories Yet" : "No \(selectedLanguage) Stories",
+                        isFiltered ? "No Matching Stories" : "No Stories Yet",
                         systemImage: "book",
-                        description: Text(selectedLanguage == "All" ? "Generate your first AI audio story to get started." : "Try clearing your filters.")
+                        description: Text(isFiltered ? "Try clearing your filters." : "Generate your first AI audio story to get started.")
                     )
                 }
                 
@@ -191,17 +199,22 @@ struct StoryListView: View {
                                     .foregroundStyle(isDramatized ? .orange : .secondary)
                                     .cornerRadius(4)
                                 }
-                                if story.preferences.storyType == .interactive {
-                                    HStack(spacing: 8) {
-                                        Label("Interactive", systemImage: "sparkles")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.purple.opacity(0.1))
-                                            .foregroundStyle(.purple)
-                                            .cornerRadius(4)
+                                let storyType = story.preferences.storyType
+                                let typeColor: Color = {
+                                    switch storyType {
+                                    case .storyBook:   return .blue
+                                    case .audioBook:   return .teal
+                                    case .interactive: return .purple
+                                    case .standard:    return .gray
                                     }
-                                }
+                                }()
+                                Label(storyType.rawValue, systemImage: storyType.icon)
+                                    .font(.system(size: 10, weight: .bold))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(typeColor.opacity(0.1))
+                                    .foregroundStyle(typeColor)
+                                    .cornerRadius(4)
                             }
                         }
                     }
@@ -217,17 +230,26 @@ struct StoryListView: View {
                                 Text(option.rawValue).tag(option)
                             }
                         }
-                        
+
                         Divider()
-                        
+
                         Picker("Language", selection: $selectedLanguage) {
                             ForEach(availableLanguages, id: \.self) { lang in
                                 Text(lang).tag(lang)
                             }
                         }
+
+                        Divider()
+
+                        Picker("Story Type", selection: $selectedStoryType) {
+                            Text("All Types").tag("All")
+                            ForEach(StoryPreferences.StoryType.allCases) { type in
+                                Label(type.rawValue, systemImage: type.icon).tag(type.rawValue)
+                            }
+                        }
                     } label: {
                         Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                            .symbolEffect(.bounce, value: selectedLanguage != "All")
+                            .symbolEffect(.bounce, value: isFiltered)
                     }
                 }
 

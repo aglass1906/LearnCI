@@ -139,32 +139,34 @@ struct StoryAboutView: View {
                             .cornerRadius(12)
                         }
 
-                        // Karaoke Mode
-                        NavigationLink(destination: KaraokeSessionView(story: story)) {
-                            HStack {
-                                Image(systemName: "mic.fill")
-                                Text("Karaoke Playback Mode")
+                        if story.preferences.storyType == .interactive {
+                            // Karaoke Mode
+                            NavigationLink(destination: KaraokeSessionView(story: story)) {
+                                HStack {
+                                    Image(systemName: "mic.fill")
+                                    Text("Karaoke Playback Mode")
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.orange)
+                                .cornerRadius(12)
                             }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.orange)
-                            .cornerRadius(12)
-                        }
 
-                        // Interactive Play
-                        NavigationLink(destination: InteractiveStorySessionView(story: story)) {
-                            HStack {
-                                Image(systemName: "sparkles")
-                                Text("Interactive Play the story")
+                            // Interactive Play
+                            NavigationLink(destination: InteractiveStorySessionView(story: story)) {
+                                HStack {
+                                    Image(systemName: "sparkles")
+                                    Text("Interactive Play the story")
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.purple)
+                                .cornerRadius(12)
                             }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.purple)
-                            .cornerRadius(12)
                         }
 
                         // Take Quiz

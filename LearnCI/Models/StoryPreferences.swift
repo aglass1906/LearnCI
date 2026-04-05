@@ -26,11 +26,20 @@ struct StoryPreferences: Codable, Equatable {
     var chapterIntroInstructions: String = ""
 
     // Ambient sound — stored as the sound's id (e.g. "rain_night") or "none"
+    var storyType: StoryType = .standard
+
     var ambientSoundId: String = "none"
     var ambientVolume: Double = 0.3
 
     // No explicit CodingKeys needed. The property names match the Flutter JSON keys exactly (camelCase).
     // This ensures interactiveAudio and other fields are correctly parsed from Supabase.
+
+    enum StoryType: String, Codable, CaseIterable, Identifiable {
+        case standard    = "Standard"
+        case interactive = "Interactive"
+
+        var id: String { rawValue }
+    }
 
     enum AudioStyle: String, Codable, CaseIterable, Identifiable {
         case single      = "single"
@@ -179,6 +188,7 @@ struct StoryPreferences: Codable, Equatable {
         chapterIntroInstructions = (try? c.decode(String.self,         forKey: .chapterIntroInstructions)) ?? ""
         ambientSoundId          = (try? c.decode(String.self,          forKey: .ambientSoundId))          ?? "none"
         ambientVolume           = (try? c.decode(Double.self,          forKey: .ambientVolume))           ?? 0.3
+        storyType               = (try? c.decode(StoryType.self,       forKey: .storyType))               ?? .standard
     }
 
     enum CodingKeys: String, CodingKey {
@@ -189,5 +199,6 @@ struct StoryPreferences: Codable, Equatable {
         case audioSpeed, interactiveAudio, audioStyle
         case chapterQuote, chapterIntroInstructions
         case ambientSoundId, ambientVolume
+        case storyType
     }
 }

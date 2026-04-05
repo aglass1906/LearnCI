@@ -191,9 +191,9 @@ struct StoryListView: View {
                                     .foregroundStyle(isDramatized ? .orange : .secondary)
                                     .cornerRadius(4)
                                 }
-                                if story.preferences.interactiveAudio || (story.chapters.count > 1) {
+                                if story.preferences.storyType == .interactive {
                                     HStack(spacing: 8) {
-                                        Label("Interactive", systemImage: "headphones")
+                                        Label("Interactive", systemImage: "sparkles")
                                             .font(.system(size: 10, weight: .bold))
                                             .padding(.horizontal, 6)
                                             .padding(.vertical, 2)

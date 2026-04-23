@@ -10,7 +10,7 @@ struct VideoView: View {
     
     enum VideoTabMode: String, CaseIterable {
         case subscriptions = "New Videos"
-        case channels = "Channels"
+        case channels = "Subscriptions"
         case discovery = "Discovery"
     }
     
@@ -52,7 +52,7 @@ struct VideoView: View {
             // Count Header
             if selectedChannel == nil {
                 HStack {
-                    Text("\(countForMode(mode)) \(mode == .channels ? "Channels" : "Videos") Found")
+                    Text("\(countForMode(mode)) \(mode == .channels ? "Subscriptions" : "Videos") Found")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -103,18 +103,21 @@ struct VideoView: View {
             }
         }
         .onChange(of: mode) { _, _ in
-            selectedChannel = nil // Reset drill-down when switching modes
+            selectedChannel = nil
             if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
+            } else if mode == .subscriptions && youtubeManager.isAuthenticated {
+                youtubeManager.refreshVideos()
             }
         }
         .onChange(of: selectedCategory) { _, _ in
             refreshDiscovery()
         }
         .task {
-            // Initial load
             if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
+            } else if mode == .subscriptions && youtubeManager.isAuthenticated {
+                youtubeManager.refreshVideos()
             }
         }
         .onChange(of: userProfile?.currentLanguage) { _, _ in
@@ -129,7 +132,7 @@ struct VideoView: View {
                 refreshDiscovery()
             }
         }
-        .navigationTitle(selectedChannel?.title ?? "Videos")
+        .navigationTitle(selectedChannel?.title ?? "YouTube")
         .toolbar {
             if selectedChannel != nil {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -271,13 +274,23 @@ struct VideoView: View {
     
     var subscriptionContentView: some View {
         VStack(spacing: 0) {
-            // Filter Picker
-            Picker("Filter", selection: $shortsFilter) {
-                ForEach(VideoFilter.allCases) { filter in
-                    Text(filter.rawValue).tag(filter)
+            HStack {
+                Picker("Filter", selection: $shortsFilter) {
+                    ForEach(VideoFilter.allCases) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
                 }
+                .pickerStyle(.segmented)
+
+                Button(action: { youtubeManager.refreshVideos() }) {
+                    if youtubeManager.isLoading {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                .disabled(youtubeManager.isLoading)
             }
-            .pickerStyle(.segmented)
             .padding()
             
             // Filtered List

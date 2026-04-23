@@ -251,84 +251,86 @@ class YouTubeManager {
     }
     
     func fetchVideosForChannel(_ channelId: String) {
-        guard let token = accessToken else { return }
-        channelVideos = [] // Clear previous results
+        channelVideos = []
         isChannelLoading = true
-        fetchVideosFromChannels(token: token, channelIds: [channelId], target: .singleChannel)
+        if let token = accessToken {
+            fetchVideosFromChannels(token: token, channelIds: [channelId], target: .singleChannel)
+        } else if let apiKey = publicApiKey {
+            fetchVideosForChannelWithApiKey(channelId: channelId, apiKey: apiKey)
+        } else {
+            isChannelLoading = false
+        }
     }
-    
+
     func fetchVideosForPlaylist(_ playlistId: String) {
         Logger.debug("fetchVideosForPlaylist started for: \(playlistId)", category: .youtube)
-        guard let token = accessToken else {
-            Logger.error("No access token for playlist fetch", category: .youtube)
-            return
-        }
-        channelVideos = [] // Clear previous results
+        channelVideos = []
         isChannelLoading = true
-        
-        // We reuse the singleChannel target logic but skip the "Channel -> Uploads Playlist" lookup step.
-        // We directly trigger the playlist fetch.
-        
-        // Set state for pagination
         channelUploadsPlaylistId = playlistId
         channelNextPageToken = nil
-        
-        // Manually trigger the playlist fetch part of the workflow
-        let urlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(playlistId)&maxResults=50"
-        
-        guard let url = URL(string: urlString) else {
+        if let token = accessToken {
+            fetchPlaylistItems(playlistId: playlistId, token: token, apiKey: nil)
+        } else if let apiKey = publicApiKey {
+            fetchPlaylistItems(playlistId: playlistId, token: nil, apiKey: apiKey)
+        } else {
+            Logger.error("No access token or API key for playlist fetch", category: .youtube)
             isChannelLoading = false
-            return
         }
-        
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            guard let data = data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let items = json["items"] as? [[String: Any]] else {
-                DispatchQueue.main.async { self?.isChannelLoading = false }
-                return
-            }
-            
-            // Capture pagination
-            let nextPageToken = json["nextPageToken"] as? String
-            DispatchQueue.main.async {
-                self?.channelNextPageToken = nextPageToken
-            }
-            
-            let ids = items.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
-            
-            if ids.isEmpty {
-                DispatchQueue.main.async { self?.isChannelLoading = false }
-                return
-            }
-            
-            // Re-use fetchVideoDetails to get full info for these IDs
-            self?.fetchVideoDetails(token: token, videoIds: ids, target: .singleChannel)
-            
-        }.resume()
     }
-    
+
     func loadMoreChannelVideos() {
-        guard let token = accessToken,
-              let playlistId = channelUploadsPlaylistId,
+        guard let playlistId = channelUploadsPlaylistId,
               let pageToken = channelNextPageToken,
               !isChannelLoading else { return }
-        
         isChannelLoading = true
-        
-        let urlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(playlistId)&maxResults=50&pageToken=\(pageToken)"
-        
+        if let token = accessToken {
+            fetchPlaylistItems(playlistId: playlistId, token: token, apiKey: nil, pageToken: pageToken, isAppend: true)
+        } else if let apiKey = publicApiKey {
+            fetchPlaylistItems(playlistId: playlistId, token: nil, apiKey: apiKey, pageToken: pageToken, isAppend: true)
+        } else {
+            isChannelLoading = false
+        }
+    }
+
+    // Fetches a channel's uploads playlist ID then its videos using only a public API key.
+    private func fetchVideosForChannelWithApiKey(channelId: String, apiKey: String) {
+        let urlString = "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=\(channelId)&key=\(apiKey)"
         guard let url = URL(string: urlString) else {
             isChannelLoading = false
             return
         }
-        
+        URLSession.shared.dataTask(with: URLRequest(url: url)) { [weak self] data, response, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let items = json["items"] as? [[String: Any]],
+                  let firstChannel = items.first,
+                  let contentDetails = firstChannel["contentDetails"] as? [String: Any],
+                  let relatedPlaylists = contentDetails["relatedPlaylists"] as? [String: Any],
+                  let uploadsPlaylistId = relatedPlaylists["uploads"] as? String else {
+                DispatchQueue.main.async { self?.isChannelLoading = false }
+                return
+            }
+            DispatchQueue.main.async {
+                self?.channelUploadsPlaylistId = uploadsPlaylistId
+                self?.channelNextPageToken = nil
+            }
+            self?.fetchPlaylistItems(playlistId: uploadsPlaylistId, token: nil, apiKey: apiKey)
+        }.resume()
+    }
+
+    // Shared playlist item fetcher supporting both OAuth token and public API key.
+    private func fetchPlaylistItems(playlistId: String, token: String?, apiKey: String?, pageToken: String? = nil, isAppend: Bool = false) {
+        var urlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=\(playlistId)&maxResults=50"
+        if let pageToken = pageToken { urlString += "&pageToken=\(pageToken)" }
+        if token == nil, let apiKey = apiKey { urlString += "&key=\(apiKey)" }
+
+        guard let url = URL(string: urlString) else {
+            isChannelLoading = false
+            return
+        }
         var request = URLRequest(url: url)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+        if let token = token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
+
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -336,21 +338,16 @@ class YouTubeManager {
                 DispatchQueue.main.async { self?.isChannelLoading = false }
                 return
             }
-            
-            // Capture the NEXT page token
             DispatchQueue.main.async {
                 self?.channelNextPageToken = json["nextPageToken"] as? String
             }
-            
             let ids = items.compactMap { ($0["contentDetails"] as? [String: Any])?["videoId"] as? String }
-            
             if ids.isEmpty {
                 DispatchQueue.main.async { self?.isChannelLoading = false }
                 return
             }
-            
-            self?.fetchVideoDetails(token: token, videoIds: ids, target: .singleChannelAppend)
-            
+            let target: FetchTarget = isAppend ? .singleChannelAppend : .singleChannel
+            self?.fetchVideoDetails(token: token, apiKey: apiKey, videoIds: ids, target: target)
         }.resume()
     }
     
@@ -616,26 +613,27 @@ class YouTubeManager {
         }
     }
     
-    private func fetchVideoDetails(token: String, videoIds: [String], feedDates: [String: Date]? = nil, target: FetchTarget = .feed) {
+    private func fetchVideoDetails(token: String?, apiKey: String? = nil, videoIds: [String], feedDates: [String: Date]? = nil, target: FetchTarget = .feed) {
         // Chunk video IDs into groups of 50 to respect API limits
         let chunks = videoIds.chunked(into: 50)
         var allFetchedVideos: [YouTubeVideo] = []
         let dispatchGroup = DispatchGroup()
-        
+
         let lock = NSLock()
-        
+
         for chunk in chunks {
             dispatchGroup.enter()
-            
-            let urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(chunk.joined(separator: ","))"
-            
+
+            var urlString = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=\(chunk.joined(separator: ","))"
+            if token == nil, let apiKey = apiKey { urlString += "&key=\(apiKey)" }
+
             guard let url = URL(string: urlString) else {
                 dispatchGroup.leave()
                 continue
             }
-            
+
             var request = URLRequest(url: url)
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            if let token = token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
             
             URLSession.shared.dataTask(with: request) { data, response, error in
                 defer { dispatchGroup.leave() }

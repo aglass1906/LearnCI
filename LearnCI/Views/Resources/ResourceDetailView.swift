@@ -28,7 +28,6 @@ struct ResourceDetailView: View {
     @Environment(YouTubeManager.self) private var youtubeManager
     @State private var selectedYouTubeChannel: YouTubeChannel?
     @State private var isResolvingChannel = false
-    @State private var showYouTubeAuthAlert = false
     @Query private var allActivities: [UserActivity]
     
     func openUrl(_ url: URL) {
@@ -54,10 +53,6 @@ struct ResourceDetailView: View {
     }
     
     func openYouTubeChannel(url: String, title: String, thumbnail: String?) {
-        if !youtubeManager.isAuthenticated {
-            if let url = URL(string: url) { openUrl(url) }
-            return
-        }
         if let channelId = FavoritesManager.resolveChannelId(from: url) {
             selectedYouTubeChannel = YouTubeChannel(id: channelId, title: title, thumbnailURL: thumbnail ?? "")
         } else if let playlistId = FavoritesManager.resolvePlaylistId(from: url) {
@@ -439,11 +434,6 @@ extension ResourceDetailView {
         }
         .sheet(item: $browserUrl) { url in
             InAppBrowserView(url: url, onDismiss: handleBrowserDismiss)
-        }
-        .alert("YouTube Not Connected", isPresented: $showYouTubeAuthAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Connect your YouTube account in Settings to browse channels and videos natively.")
         }
     }
 }

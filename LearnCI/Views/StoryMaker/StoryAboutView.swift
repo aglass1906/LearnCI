@@ -139,7 +139,7 @@ struct StoryAboutView: View {
                             .cornerRadius(12)
                         }
 
-                        if story.preferences.storyType == .interactive {
+                        if story.preferences.storyType == .interactiveStory {
                             // Karaoke Mode
                             NavigationLink(destination: KaraokeSessionView(story: story)) {
                                 HStack {
@@ -318,6 +318,26 @@ struct StoryAboutView: View {
                                 systemImage: story.remoteVideoPath == nil ? "video.badge.plus" : "arrow.clockwise.circle"
                             )
                         }
+                    }
+
+                    Divider()
+
+                    Menu {
+                        ForEach(StoryPreferences.StoryType.allCases) { type in
+                            Button {
+                                var prefs = story.preferences
+                                prefs.storyType = type
+                                if let data = try? JSONEncoder().encode(prefs),
+                                   let json = String(data: data, encoding: .utf8) {
+                                    story.preferencesJSON = json
+                                    try? modelContext.save()
+                                }
+                            } label: {
+                                Label(type.displayName, systemImage: type.icon)
+                            }
+                        }
+                    } label: {
+                        Label("Set Story Type", systemImage: "tag")
                     }
 
                     Divider()

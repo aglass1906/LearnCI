@@ -1,18 +1,24 @@
 import SwiftUI
 import SwiftData
 
+private enum LibrarySection: String, CaseIterable {
+    case library = "Library"
+    case favorites = "Favorites"
+}
+
 struct ResourceLibraryView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
     @Query private var allProfiles: [UserProfile]
-    
+
     var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
     }
-    
+
+    @State private var selectedSection: LibrarySection = .library
     @State private var resourceManager = ResourceManager()
     @State private var selectedFilter: ResourceType? = nil // nil = All
-    
+
     // Convert to strict types for the Picker
     enum FilterOption: String, CaseIterable, Identifiable {
         case all = "All"
@@ -50,83 +56,57 @@ struct ResourceLibraryView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Filter Bar
-            Picker("Filter", selection: $uiFilter) {
-                ForEach(FilterOption.allCases) { option in
-                    Text(option.rawValue).tag(option)
+            // Top-level section picker
+            Picker("Section", selection: $selectedSection) {
+                ForEach(LibrarySection.allCases, id: \.self) { section in
+                    Text(section.rawValue).tag(section)
                 }
             }
             .pickerStyle(.segmented)
-            .padding()
-            
-            if resourceManager.isLoading {
-                ProgressView("Loading Library...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if filteredResources.isEmpty {
-                ContentUnavailableView(
-                    "No Resources Found",
-                    systemImage: "books.vertical",
-                    description: Text("Try changing the filter.")
-                )
-            } else {
-                ScrollView {
-                    if viewMode == .grid {
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(filteredResources) { resource in
-                                NavigationLink(destination: ResourceDetailView(resource: resource)) {
-                                    ResourceCard(resource: resource)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding()
-                    } else {
-                        LazyVStack(spacing: 12) {
-                            ForEach(filteredResources) { resource in
-                                NavigationLink(destination: ResourceDetailView(resource: resource)) {
-                                    ResourceRow(resource: resource)
-                                }
-                                .buttonStyle(.plain)
-                                
-                                Divider()
-                                    .padding(.leading, 80)
-                            }
-                        }
-                        .padding()
-                    }
-                }
-                .refreshable {
-                     await resourceManager.loadRemoteResources(
-                        client: authManager.supabase,
-                        language: userProfile?.currentLanguage.code
-                     )
-                }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+
+            switch selectedSection {
+            case .library:
+                libraryContent
+            case .favorites:
+                FavoritesView()
             }
         }
         .navigationTitle("Library")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            Button(action: { 
-                Task { 
-                    await resourceManager.loadRemoteResources(
-                        client: authManager.supabase,
-                        language: userProfile?.currentLanguage.code
-                    ) 
+            if selectedSection == .library {
+                Button(action: {
+                    Task {
+                        await resourceManager.loadRemoteResources(
+                            client: authManager.supabase,
+                            language: userProfile?.currentLanguage.code
+                        )
+                    }
+                }) {
+                    Image(systemName: "arrow.clockwise")
                 }
-            }) {
-                Image(systemName: "arrow.clockwise")
-            }
-            
-            Button(action: {
-                withAnimation {
-                    viewMode = (viewMode == .grid) ? .list : .grid
+
+                Button(action: {
+                    withAnimation {
+                        viewMode = (viewMode == .grid) ? .list : .grid
+                    }
+                }) {
+                    Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
                 }
-            }) {
-                Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
+
+                Button(action: { showAddResourceSheet = true }) {
+                    Image(systemName: "plus")
+                }
             }
-            
-            Button(action: { showAddResourceSheet = true }) {
-                Image(systemName: "plus")
-            }
+        }
+        .task {
+            await resourceManager.loadRemoteResources(
+                client: authManager.supabase,
+                language: userProfile?.currentLanguage.code
+            )
         }
         .onChange(of: userProfile?.currentLanguage) { _, newValue in
             if let newLang = newValue {
@@ -138,17 +118,67 @@ struct ResourceLibraryView: View {
                 }
             }
         }
-        .task {
-            await resourceManager.loadRemoteResources(
-                client: authManager.supabase,
-                language: userProfile?.currentLanguage.code
-            )
-        }
         .sheet(isPresented: $showAddResourceSheet) {
             AddResourceSheet(
                 resourceManager: resourceManager,
                 currentLanguage: userProfile?.currentLanguage.code
             )
+        }
+    }
+
+    @ViewBuilder
+    private var libraryContent: some View {
+        // Filter Bar
+        Picker("Filter", selection: $uiFilter) {
+            ForEach(FilterOption.allCases) { option in
+                Text(option.rawValue).tag(option)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding()
+
+        if resourceManager.isLoading {
+            ProgressView("Loading Library...")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if filteredResources.isEmpty {
+            ContentUnavailableView(
+                "No Resources Found",
+                systemImage: "books.vertical",
+                description: Text("Try changing the filter.")
+            )
+        } else {
+            ScrollView {
+                if viewMode == .grid {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(filteredResources) { resource in
+                            NavigationLink(destination: ResourceDetailView(resource: resource)) {
+                                ResourceCard(resource: resource)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding()
+                } else {
+                    LazyVStack(spacing: 12) {
+                        ForEach(filteredResources) { resource in
+                            NavigationLink(destination: ResourceDetailView(resource: resource)) {
+                                ResourceRow(resource: resource)
+                            }
+                            .buttonStyle(.plain)
+
+                            Divider()
+                                .padding(.leading, 80)
+                        }
+                    }
+                    .padding()
+                }
+            }
+            .refreshable {
+                await resourceManager.loadRemoteResources(
+                    client: authManager.supabase,
+                    language: userProfile?.currentLanguage.code
+                )
+            }
         }
     }
     

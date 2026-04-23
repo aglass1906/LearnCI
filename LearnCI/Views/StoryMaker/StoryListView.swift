@@ -74,6 +74,32 @@ private struct StoryThumbnailView: View {
     }
 }
 
+// MARK: - Story Type Badge
+
+private struct StoryTypeBadge: View {
+    let storyType: StoryPreferences.StoryType
+
+    private var color: Color {
+        switch storyType {
+        case .storyBook:         return .blue
+        case .audioStory:        return .teal
+        case .interactiveStory:  return .purple
+        case .vocabularyBuilder: return .green
+        case .standard:          return .gray
+        }
+    }
+
+    var body: some View {
+        Label(storyType.displayName, systemImage: storyType.icon)
+            .font(.system(size: 10, weight: .bold))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.1))
+            .foregroundStyle(color)
+            .cornerRadius(4)
+    }
+}
+
 // MARK: - Story List
 
 struct StoryListView: View {
@@ -110,7 +136,7 @@ struct StoryListView: View {
 
         // Filter by Story Type
         if selectedStoryType != "All" {
-            result = result.filter { $0.preferences.storyType.rawValue == selectedStoryType }
+            result = result.filter { $0.preferences.storyType.displayName == selectedStoryType }
         }
 
         // Sort
@@ -177,6 +203,7 @@ struct StoryListView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 
+                                StoryTypeBadge(storyType: story.preferences.storyType)
                                 let isDramatized = story.preferences.audioStyle == .dramatized
                                 HStack(spacing: 8) {
                                     if !story.chapters.isEmpty {
@@ -199,22 +226,6 @@ struct StoryListView: View {
                                     .foregroundStyle(isDramatized ? .orange : .secondary)
                                     .cornerRadius(4)
                                 }
-                                let storyType = story.preferences.storyType
-                                let typeColor: Color = {
-                                    switch storyType {
-                                    case .storyBook:   return .blue
-                                    case .audioBook:   return .teal
-                                    case .interactive: return .purple
-                                    case .standard:    return .gray
-                                    }
-                                }()
-                                Label(storyType.rawValue, systemImage: storyType.icon)
-                                    .font(.system(size: 10, weight: .bold))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(typeColor.opacity(0.1))
-                                    .foregroundStyle(typeColor)
-                                    .cornerRadius(4)
                             }
                         }
                     }
@@ -244,7 +255,7 @@ struct StoryListView: View {
                         Picker("Story Type", selection: $selectedStoryType) {
                             Text("All Types").tag("All")
                             ForEach(StoryPreferences.StoryType.allCases) { type in
-                                Label(type.rawValue, systemImage: type.icon).tag(type.rawValue)
+                                Label(type.displayName, systemImage: type.icon).tag(type.displayName)
                             }
                         }
                     } label: {

@@ -192,10 +192,6 @@ struct FavoritesView: View {
 
         // YouTube favorites → native channel/playlist browser (or fallback to browser)
         if fav.type == .youtube {
-            if !youtubeManager.isAuthenticated {
-                if let url = URL(string: fav.consumptionUrl) { openInBrowser(url) }
-                return
-            }
             let url = fav.consumptionUrl
             if let channelId = FavoritesManager.resolveChannelId(from: url) {
                 openChannel(id: channelId, title: fav.title, thumbnail: fav.imageUrl)

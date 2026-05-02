@@ -11,7 +11,10 @@ struct AppConfig {
 
     /// Builds a full public URL from a chapter_cover_url storage path
     static func chapterCoverURL(_ path: String) -> URL? {
-        URL(string: "\(audioStoragePublicBase)/\(path)")
+        if path.hasPrefix("http://") || path.hasPrefix("https://") {
+            return URL(string: path)
+        }
+        return URL(string: "\(audioStoragePublicBase)/\(path)")
     }
 
     /// The base URL for the Web Portal.

@@ -9,6 +9,8 @@ struct ProfileView: View {
     @Query private var allProfiles: [UserProfile]
     @State private var showDeleteConfirmation = false
     @State private var showClearFavoritesConfirmation = false
+    @State private var showClearStoriesConfirmation = false
+    @State private var isRefreshingStories = false
     
     var profiles: [UserProfile] {
         allProfiles.filter { $0.userID == authManager.currentUser }
@@ -58,6 +60,16 @@ struct ProfileView: View {
                     Button("Clear All Favorites", role: .destructive) {
                         showClearFavoritesConfirmation = true
                     }
+                    Button(role: .destructive) {
+                        showClearStoriesConfirmation = true
+                    } label: {
+                        if isRefreshingStories {
+                            Label("Refreshing Stories...", systemImage: "arrow.triangle.2.circlepath")
+                        } else {
+                            Label("Clear Local Stories & Refresh", systemImage: "book.closed")
+                        }
+                    }
+                    .disabled(isRefreshingStories || syncManager.isSyncing)
                 }
             }
             .navigationTitle("Profile")
@@ -92,6 +104,14 @@ struct ProfileView: View {
                 }
             } message: {
                 Text("This will verify the YouTube fix by resetting your database. All saved items will be removed.")
+            }
+            .alert("Refresh Stories From Database?", isPresented: $showClearStoriesConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear & Refresh", role: .destructive) {
+                    clearLocalStoriesAndRefresh()
+                }
+            } message: {
+                Text("This deletes only local story copies for your signed-in account, then pulls fresh stories from Supabase. Remote database rows are not deleted.")
             }
         }
     }
@@ -132,6 +152,33 @@ struct ProfileView: View {
              dismiss()
         } catch {
              print("Failed to delete favorites: \(error)")
+        }
+    }
+
+    private func clearLocalStoriesAndRefresh() {
+        guard let userID = authManager.currentUser else { return }
+
+        isRefreshingStories = true
+        do {
+            let descriptor = FetchDescriptor<Story>(
+                predicate: #Predicate { $0.userID == userID }
+            )
+            let localStories = try modelContext.fetch(descriptor)
+            for story in localStories {
+                modelContext.delete(story)
+            }
+            try modelContext.save()
+        } catch {
+            isRefreshingStories = false
+            print("Failed to clear local stories: \(error)")
+            return
+        }
+
+        Task {
+            await syncManager.syncNow(modelContext: modelContext)
+            await MainActor.run {
+                isRefreshingStories = false
+            }
         }
     }
 }

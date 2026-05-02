@@ -38,6 +38,8 @@ struct StoryPreferences: Codable, Equatable {
         case storyBook          = "storyBook"
         case audioStory         = "audioStory"
         case interactiveStory   = "interactiveStory"
+        case comicBook          = "comicBook"
+        case pictureBook        = "pictureBook"
         case vocabularyBuilder  = "vocabularyBuilder"
         case standard           = "Standard"   // legacy default for existing stories
 
@@ -47,7 +49,9 @@ struct StoryPreferences: Codable, Equatable {
             switch self {
             case .storyBook:         return "Story Book"
             case .audioStory:        return "Audio Story"
-            case .interactiveStory:  return "Interactive"
+            case .interactiveStory:  return "Dialog"
+            case .comicBook:         return "Comic Book"
+            case .pictureBook:       return "Picture Book"
             case .vocabularyBuilder: return "Vocabulary Builder"
             case .standard:          return "Standard"
             }
@@ -57,9 +61,25 @@ struct StoryPreferences: Codable, Equatable {
             switch self {
             case .storyBook:         return "book.fill"
             case .audioStory:        return "headphones"
-            case .interactiveStory:  return "sparkles"
+            case .interactiveStory:  return "text.bubble.fill"
+            case .comicBook:         return "rectangle.grid.2x2.fill"
+            case .pictureBook:       return "photo.on.rectangle.angled"
             case .vocabularyBuilder: return "text.book.closed.fill"
             case .standard:          return "book"
+            }
+        }
+
+        init(from decoder: Decoder) throws {
+            let rawValue = try decoder.singleValueContainer().decode(String.self)
+            switch rawValue {
+            case "comic", "comicBook":
+                self = .comicBook
+            case "picture", "pictureBook":
+                self = .pictureBook
+            case "dialog", "dialogStory", "dialogue", "dialogueStory", "interactiveStory":
+                self = .interactiveStory
+            default:
+                self = StoryType(rawValue: rawValue) ?? .standard
             }
         }
     }

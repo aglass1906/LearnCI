@@ -20,6 +20,7 @@ struct StorySessionView: View {
     @State private var ambientVolume: Float = 0.15
     @State private var isDownloadingAudio = false
     @State private var currentChapterIndex: Int = 0
+    @State private var currentSceneClipIndex: Int = 0
 
     // UI State
     @State private var showStoryInfo = false
@@ -62,7 +63,21 @@ struct StorySessionView: View {
     // Timer to update scrubber
     let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
+    private var adapter: StoryReaderDataAdapter {
+        StoryReaderDataAdapter(story: story)
+    }
+
     var body: some View {
+        Group {
+            if let issue = adapter.requirementIssue {
+                StoryReaderUnavailableView(title: issue.title, message: issue.message)
+            } else {
+                readerBody
+            }
+        }
+    }
+
+    private var readerBody: some View {
         ZStack(alignment: .bottom) {
             ScrollViewReader { scrollProxy in
                 ScrollView {
@@ -87,6 +102,8 @@ struct StorySessionView: View {
                         // Metadata Row
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+
+                        readingMatterSection
                         
                         chapterHeaderView
                         
@@ -121,8 +138,7 @@ struct StorySessionView: View {
                     languageCode: story.languageRaw
                 ) {
                     showingChapterCard = false
-                    setupAudio()
-                    if !isPlaying { togglePlay() }
+                    setupAudio(autoplay: true)
                 }
                 .transition(.opacity)
                 .zIndex(10)
@@ -172,9 +188,9 @@ struct StorySessionView: View {
 
                     Button(action: {
                         if selectedLanguage == .target {
-                            UIPasteboard.general.string = story.chapters.map { $0.textTargetLanguage }.joined(separator: "\n\n")
+                            UIPasteboard.general.string = story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: "\n\n")
                         } else {
-                            UIPasteboard.general.string = story.chapters.map { $0.textEnglish ?? $0.textTargetLanguage }.joined(separator: "\n\n")
+                            UIPasteboard.general.string = story.chapters.map { $0.bodyTextEnglishForReading }.joined(separator: "\n\n")
                         }
                     }) {
                         Label(
@@ -209,18 +225,25 @@ struct StorySessionView: View {
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
-            if audioManager.isStreaming {
+            if audioManager.streamFinished {
+                advanceAfterSceneClipFinished()
+                return
+            }
+
+            if audioManager.streamPlayer != nil {
                 let streamCurrent = audioManager.streamCurrentTime
                 let streamDur = audioManager.streamDuration
+                let localChapterTime = currentClipStartOffset + streamCurrent
 
-                sliderValue = streamCurrent
+                sliderValue = localChapterTime
                 
                 // Keep duration updated as AVPlayer loads the exact size asynchronously
-                if streamDur > 0 && abs(duration - streamDur) > 0.5 {
-                    duration = streamDur
+                let resolvedDuration = adapter.duration(forChapter: currentChapterIndex, fallback: streamDur)
+                if resolvedDuration > 0 && abs(duration - resolvedDuration) > 0.5 {
+                    duration = resolvedDuration
                 }
                 
-                isPlaying = true
+                isPlaying = audioManager.isStreaming
                 
                 // Update active word and paragraph
                 updateScrollState(time: sliderValue)
@@ -229,22 +252,6 @@ struct StorySessionView: View {
                 if let streamPlayer = audioManager.streamPlayer {
                     if abs(streamPlayer.rate - playbackRate) > 0.1 && streamPlayer.rate != 0 {
                         playbackRate = streamPlayer.rate
-                    }
-                }
-            } else {
-                let justStopped = isPlaying
-                isPlaying = false
-                if justStopped && duration > 0 && sliderValue >= duration - 1.5 {
-                    if !story.chapters.isEmpty && currentChapterIndex < story.chapters.count - 1 {
-                        // Advance to next chapter
-                        currentChapterIndex += 1
-                        activeWordIndex = nil
-                        activeParagraphId = nil
-                        sliderValue = 0
-                        setupAudio()
-                        showingChapterCard = true
-                    } else if !navigateToQuiz {
-                        navigateToQuiz = true
                     }
                 }
             }
@@ -258,45 +265,45 @@ struct StorySessionView: View {
     
     // MARK: - Audio Logic
     
-    private func setupAudio() {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-
-        // 1. Chaptered Story support
-        if let chapter = currentChapter {
-            let remotePath = chapter.audioUrl ?? ""
-            let ext = (remotePath as NSString).pathExtension
-            let finalExt = ext.isEmpty ? "mp3" : ext
-            let filename = "story_\(story.id.uuidString)_chapter_\(chapter.id.uuidString).\(finalExt)"
-            let fileURL = docs.appendingPathComponent(filename)
-            
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                print("[StorySession] Playing chapter audio: \(filename)")
-                playLocalAudio(url: fileURL)
-                startAmbient()
-                return
-            }
-            
-            if !remotePath.isEmpty {
-                print("[StorySession] Downloading chapter audio from remote: \(remotePath)")
-                isDownloadingAudio = true
-                Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
-                return
-            }
+    private func setupAudio(autoplay: Bool = false, sceneClipIndex: Int? = nil, startAt: Double = 0) {
+        guard adapter.requirementIssue == nil else { return }
+        let clips = currentChapterClips
+        guard !clips.isEmpty else {
+            print("[StorySession] No scene audio available for chapter \(currentChapterIndex)")
+            return
         }
 
-        print("[StorySession] No audio available for chapter \(currentChapterIndex)")
+        currentSceneClipIndex = min(max(sceneClipIndex ?? currentSceneClipIndex, 0), clips.count - 1)
+        let clip = clips[currentSceneClipIndex]
+        let localURL = StoryReaderDataAdapter.localAudioURL(storyID: story.id, clip: clip)
+
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            print("[StorySession] Playing scene audio: chapter \(clip.chapterIndex), scene \(clip.sceneIndex)")
+            playLocalAudio(url: localURL, clip: clip, startAt: startAt, autoplay: autoplay)
+            return
+        }
+
+        print("[StorySession] Downloading scene audio from remote: \(clip.urlString)")
+        isDownloadingAudio = true
+        Task { await downloadAndPlayAudio(clip: clip, localURL: localURL, startAt: startAt, autoplay: autoplay) }
     }
 
     /// Plays an already-local audio file using the AVPlayer stream interface.
-    private func playLocalAudio(url: URL) {
-        audioManager.streamAudio(url: url)
+    private func playLocalAudio(url: URL, clip: StorySceneAudioClip, startAt: Double = 0, autoplay: Bool = false) {
+        audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
-        duration = audioManager.streamDuration
+        duration = adapter.duration(forChapter: currentChapterIndex, fallback: audioManager.streamDuration)
+        sliderValue = clip.startOffset + startAt
         audioManager.updateStreamNowPlayingInfo(
-            title: story.title,
-            artist: "LearnCI Story",
+            title: clip.title,
+            artist: story.title,
             artworkImage: heroImage
         )
+        if autoplay {
+            startAmbient()
+            audioManager.playStream()
+            isPlaying = true
+        }
     }
 
     /// Downloads audio from Supabase Storage, saves it locally with the correct extension, then plays it.
@@ -305,16 +312,8 @@ struct StorySessionView: View {
     ///   - localURL: Base destination URL (extension may be corrected after inspecting magic bytes).
     ///   - derivedFilename: If non-nil and `story.audioFilename` is nil, saves detected filename back
     ///     to `story.audioFilename` so future opens use the cached local file without re-downloading.
-    private func downloadAndPlayAudio(remotePath: String, localURL: URL) async {
-        let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
-        let remoteURL: URL?
-        if remotePath.hasPrefix("https://") {
-            remoteURL = URL(string: remotePath)
-        } else {
-            remoteURL = URL(string: "\(supabaseAudioBase)/\(remotePath)")
-        }
-
-        guard let url = remoteURL else {
+    private func downloadAndPlayAudio(clip: StorySceneAudioClip, localURL: URL, startAt: Double = 0, autoplay: Bool = false) async {
+        guard let url = StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else {
             await MainActor.run { isDownloadingAudio = false }
             return
         }
@@ -339,12 +338,7 @@ struct StorySessionView: View {
 
             await MainActor.run {
                 isDownloadingAudio = false
-                playLocalAudio(url: correctURL)
-                startAmbient()
-                // Auto-play once the file is ready — the chapter card was already
-                // dismissed so the user is waiting for audio to start.
-                audioManager.playStream()
-                isPlaying = true
+                playLocalAudio(url: correctURL, clip: clip, startAt: startAt, autoplay: autoplay)
             }
         } catch {
             print("[StorySession] Audio download error: \(error)")
@@ -397,6 +391,11 @@ struct StorySessionView: View {
     private func togglePlay() {
         didPlayAudio = true
 
+        if audioManager.streamPlayer == nil {
+            setupAudio(autoplay: true)
+            return
+        }
+
         if audioManager.isStreaming {
             audioManager.pauseStream()
             isPlaying = false
@@ -410,26 +409,30 @@ struct StorySessionView: View {
     }
     
     private func skipForward() {
-        let newTime = audioManager.streamCurrentTime + 10
-        let maxDur = max(audioManager.streamDuration, 10.0)
+        let newTime = sliderValue + 10
+        let maxDur = max(duration, 10.0)
         let safeTime = min(maxDur, newTime)
-        audioManager.seekStream(to: safeTime)
-        sliderValue = safeTime
+        seekTo(safeTime)
         audioManager.updateStreamNowPlayingInfo()
     }
     
     private func skipBackward() {
-        let newTime = audioManager.streamCurrentTime - 10
+        let newTime = sliderValue - 10
         let safeTime = max(0, newTime)
-        audioManager.seekStream(to: safeTime)
-        sliderValue = safeTime
+        seekTo(safeTime)
         audioManager.updateStreamNowPlayingInfo()
     }
     
     private func seekTo(_ value: Double) {
-        audioManager.seekStream(to: value)
-        sliderValue = value
-        updateScrollState(time: value)
+        guard let target = adapter.clipIndex(forChapter: currentChapterIndex, localTime: value) else { return }
+        if target.index == currentSceneClipIndex {
+            audioManager.seekStream(to: target.offset)
+            sliderValue = value
+            updateScrollState(time: value)
+        } else {
+            let shouldResume = isPlaying
+            setupAudio(autoplay: shouldResume, sceneClipIndex: target.index, startAt: target.offset)
+        }
         audioManager.updateStreamNowPlayingInfo()
     }
     
@@ -479,7 +482,7 @@ struct StorySessionView: View {
     }
 
     private func sentenceContaining(word: String) -> String? {
-        let text = currentChapter?.textTargetLanguage ?? ""
+        let text = currentChapter?.bodyTextTargetForReading ?? ""
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
     }
@@ -492,7 +495,7 @@ struct StorySessionView: View {
         Task {
             let level = LevelManager.shared.description(for: story.level)
             let questions = try? await OpenAIService().generateComprehensionQuestions(
-                storyText: story.chapters.map { $0.textTargetLanguage }.joined(separator: "\n\n"),
+                storyText: story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: "\n\n"),
                 language: story.language.displayName,
                 level: level
             )
@@ -525,6 +528,37 @@ struct StorySessionView: View {
     // MARK: - Text Chunking & Auto-Scroll
     
     @ViewBuilder
+    private var readingMatterSection: some View {
+        if !story.readingMatterPages.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(story.readingMatterPages) { page in
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let title = readerMatterText(page.titleTarget) {
+                            Text(title)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        if let body = readerMatterText(page.bodyTarget) {
+                            Text(body)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(5)
+                        }
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+    }
+
+    private func readerMatterText(_ text: String?) -> String? {
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    @ViewBuilder
     private var chapterHeaderView: some View {
         if !story.chapters.isEmpty {
             HStack {
@@ -547,7 +581,7 @@ struct StorySessionView: View {
 
     @ViewBuilder
     private var storyTextView: some View {
-        if currentChapter?.textEnglish != nil {
+        if let currentChapter, !currentChapter.bodyTextEnglishForReading.isEmpty {
             Picker("Language", selection: $selectedLanguage) {
                 ForEach(DisplayLanguage.allCases, id: \.self) { lang in
                     Text(lang.rawValue).tag(lang)
@@ -561,7 +595,7 @@ struct StorySessionView: View {
                     ParagraphView(
                         chunk: chunk,
                         activeWordIndex: activeWordIndex,
-                        timings: currentChapter?.wordTimings ?? [],
+                        timings: currentChapter?.bodyWordTimingsForPlayback ?? [],
                         wordMatches: wordMatches,
                         onSeek: seekTo,
                         onWordTap: lookupWord
@@ -569,7 +603,8 @@ struct StorySessionView: View {
                     .id(chunk.id)
                 }
             }
-        } else if let nativeText = currentChapter?.textEnglish {
+        } else if let currentChapter {
+            let nativeText = currentChapter.bodyTextEnglishForReading
             VStack(alignment: .leading, spacing: 20) {
                 Text(nativeText)
                     .font(.system(size: 18, weight: .regular, design: .serif))
@@ -615,6 +650,7 @@ struct StorySessionView: View {
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
+                    currentSceneClipIndex = 0
                     setupAudio()
                     showingChapterCard = true
                 } : nil,
@@ -624,6 +660,7 @@ struct StorySessionView: View {
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
+                    currentSceneClipIndex = 0
                     setupAudio()
                     showingChapterCard = true
                 } : nil
@@ -636,6 +673,43 @@ struct StorySessionView: View {
         guard !story.chapters.isEmpty else { return nil }
         guard currentChapterIndex < story.chapters.count else { return nil }
         return story.chapters[currentChapterIndex]
+    }
+
+    private var currentChapterClips: [StorySceneAudioClip] {
+        adapter.audioClips(forChapter: currentChapterIndex)
+    }
+
+    private var currentClipStartOffset: Double {
+        let clips = currentChapterClips
+        guard clips.indices.contains(currentSceneClipIndex) else { return 0 }
+        return clips[currentSceneClipIndex].startOffset
+    }
+
+    private func advanceAfterSceneClipFinished() {
+        guard audioManager.streamFinished else { return }
+        audioManager.streamFinished = false
+
+        let clips = currentChapterClips
+        if currentSceneClipIndex < clips.count - 1 {
+            currentSceneClipIndex += 1
+            setupAudio(autoplay: true)
+            return
+        }
+
+        if currentChapterIndex < story.chapters.count - 1 {
+            currentChapterIndex += 1
+            currentSceneClipIndex = 0
+            activeWordIndex = nil
+            activeParagraphId = nil
+            sliderValue = 0
+            showingChapterCard = true
+            return
+        }
+
+        isPlaying = false
+        if !navigateToQuiz {
+            navigateToQuiz = true
+        }
     }
 
     private func loadChapterImage() {
@@ -655,7 +729,7 @@ struct StorySessionView: View {
     }
     
     private var storyParagraphs: [ParagraphChunk] {
-        let text = currentChapter?.textTargetLanguage ?? ""
+        let text = currentChapter?.bodyTextTargetForReading ?? ""
         var chunks: [ParagraphChunk] = []
         var currentOffset = 0
         
@@ -675,13 +749,13 @@ struct StorySessionView: View {
     
     private var wordMatches: [NSTextCheckingResult] {
         let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
-        let text = currentChapter?.textTargetLanguage ?? ""
+        let text = currentChapter?.bodyTextTargetForReading ?? ""
         let nsString = text as NSString
         return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
     }
     
     private func updateScrollState(time: Double) {
-        let timings = currentChapter?.wordTimings ?? []
+        let timings = currentChapter?.bodyWordTimingsForPlayback ?? []
         
         if let idx = timings.firstIndex(where: { time >= $0.start && time <= $0.end }) {
             if activeWordIndex != idx {
@@ -1722,6 +1796,3 @@ struct StoryPromptsSheet: View {
         }
     }
 }
-
-
-

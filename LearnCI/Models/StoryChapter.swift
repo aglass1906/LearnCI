@@ -21,9 +21,64 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var chapterIntroTextEnglish: String?
     var chapterIntroAudioUrl: String?
     var chapterIntroWordTimings: [WordTiming]?
+    var scenes: [StoryScene] = []
+    var nativeAudioUrl: String?
+    var nativeWordTimings: [WordTiming]?
 
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
+    var bodyTextTargetForReading: String {
+        if !textTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return textTargetLanguage
+        }
+        return scenes
+            .compactMap { $0.captionTarget }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .joined(separator: "\n\n")
+    }
+
+    var bodyTextEnglishForReading: String {
+        if !textEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return textEnglish
+        }
+        return scenes
+            .compactMap { $0.captionEnglish }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .joined(separator: "\n\n")
+    }
+
+    var bodyScriptOrNarrativeForAlignment: String {
+        let script = scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return script.isEmpty ? bodyTextTargetForReading : script
+    }
+
+    var bodyWordTimingsForPlayback: [WordTiming] {
+        guard !scenes.isEmpty else { return wordTimings ?? [] }
+        var offset = 0.0
+        var merged: [WordTiming] = []
+
+        for scene in scenes.sorted(by: { $0.sceneIndex < $1.sceneIndex }) {
+            merged.append(contentsOf: scene.wordTimings.map {
+                WordTiming(word: $0.word, start: $0.start + offset, end: $0.end + offset)
+            })
+
+            if let durationMs = scene.audioDurationMs {
+                offset += Double(durationMs) / 1000.0
+            } else if let last = scene.wordTimings.last {
+                offset += last.end
+            }
+        }
+
+        return merged
+    }
+
+    var hasAnyBodyNarrationAudio: Bool {
+        scenes.contains { !($0.audioUrl ?? "").isEmpty }
+    }
+
+    var bodyNarrationClipsCompleteForPlayback: Bool {
+        !scenes.isEmpty && scenes.allSatisfy { !($0.audioUrl ?? "").isEmpty }
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -47,6 +102,11 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case chapterIntroAudioUrl = "chapter_intro_audio_url"
         case chapterIntroWordTimings = "chapter_intro_word_timings"
         case chapterIntroWordTimingsCamel = "chapterIntroWordTimings" // camelCase variant from pipeline
+        case scenes
+        case nativeAudioUrl = "native_audio_url"
+        case nativeAudioUrlCamel = "nativeAudioUrl"
+        case nativeWordTimings = "native_word_timings"
+        case nativeWordTimingsCamel = "nativeWordTimings"
     }
 
     init(from decoder: Decoder) throws {
@@ -73,6 +133,11 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         chapterIntroAudioUrl = try? container.decode(String.self, forKey: .chapterIntroAudioUrl)
         chapterIntroWordTimings = (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimings))
             ?? (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimingsCamel))
+        scenes = (try? container.decode([StoryScene].self, forKey: .scenes)) ?? []
+        nativeAudioUrl = (try? container.decode(String.self, forKey: .nativeAudioUrl))
+            ?? (try? container.decode(String.self, forKey: .nativeAudioUrlCamel))
+        nativeWordTimings = (try? container.decode([WordTiming].self, forKey: .nativeWordTimings))
+            ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
     }
 
     func encode(to encoder: Encoder) throws {
@@ -96,6 +161,9 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(chapterIntroTextEnglish, forKey: .chapterIntroTextEnglish)
         try container.encodeIfPresent(chapterIntroAudioUrl, forKey: .chapterIntroAudioUrl)
         try container.encodeIfPresent(chapterIntroWordTimings, forKey: .chapterIntroWordTimings)
+        try container.encode(scenes, forKey: .scenes)
+        try container.encodeIfPresent(nativeAudioUrl, forKey: .nativeAudioUrl)
+        try container.encodeIfPresent(nativeWordTimings, forKey: .nativeWordTimings)
     }
 
     init(id: UUID = UUID(),
@@ -116,7 +184,10 @@ struct StoryChapter: Codable, Identifiable, Equatable {
          chapterIntroText: String? = nil,
          chapterIntroTextEnglish: String? = nil,
          chapterIntroAudioUrl: String? = nil,
-         chapterIntroWordTimings: [WordTiming]? = nil) {
+         chapterIntroWordTimings: [WordTiming]? = nil,
+         scenes: [StoryScene] = [],
+         nativeAudioUrl: String? = nil,
+         nativeWordTimings: [WordTiming]? = nil) {
         self.id = id
         self.chapterNumber = chapterNumber
         self.chapterType = chapterType
@@ -136,6 +207,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         self.chapterIntroTextEnglish = chapterIntroTextEnglish
         self.chapterIntroAudioUrl = chapterIntroAudioUrl
         self.chapterIntroWordTimings = chapterIntroWordTimings
+        self.scenes = scenes
+        self.nativeAudioUrl = nativeAudioUrl
+        self.nativeWordTimings = nativeWordTimings
     }
 }
-

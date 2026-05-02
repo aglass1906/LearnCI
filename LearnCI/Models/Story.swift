@@ -43,6 +43,9 @@ final class Story: Identifiable {
     var ambientSoundId: String? // AmbientSound.id, e.g. "rain_night" or "none"
     var ambientVolume: Float = 0.15 // 0.0–1.0 mix level for ambient audio
     var chaptersJSON: String? // JSON string of [StoryChapter]
+    var layoutJSON: String? // JSON string of StoryLayout
+    var readingMatterPagesJSON: String? // JSON string of [ReadingMatterPage]
+    var assetForgeJSON: String? // JSON string of visual asset registry
     
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
@@ -63,6 +66,16 @@ final class Story: Identifiable {
     @Transient var preferences: StoryPreferences {
         guard let json = preferencesJSON, let data = json.data(using: .utf8) else { return StoryPreferences() }
         return (try? JSONDecoder().decode(StoryPreferences.self, from: data)) ?? StoryPreferences()
+    }
+
+    @Transient var storyLayout: StoryLayout? {
+        guard let json = layoutJSON, let data = json.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(StoryLayout.self, from: data)
+    }
+
+    @Transient var readingMatterPages: [ReadingMatterPage] {
+        guard let json = readingMatterPagesJSON, let data = json.data(using: .utf8) else { return [] }
+        return (try? JSONDecoder().decode([ReadingMatterPage].self, from: data)) ?? []
     }
 
     var isDramatized: Bool { taggedTargetText != nil }
@@ -100,6 +113,9 @@ final class Story: Identifiable {
          ambientSoundId: String? = nil,
          ambientVolume: Float = 0.15,
          chaptersJSON: String? = nil,
+         layoutJSON: String? = nil,
+         readingMatterPagesJSON: String? = nil,
+         assetForgeJSON: String? = nil,
          language: Language,
          level: Int,
          createdAt: Date = Date(),
@@ -126,6 +142,9 @@ final class Story: Identifiable {
         self.ambientSoundId = ambientSoundId
         self.ambientVolume = ambientVolume
         self.chaptersJSON = chaptersJSON
+        self.layoutJSON = layoutJSON
+        self.readingMatterPagesJSON = readingMatterPagesJSON
+        self.assetForgeJSON = assetForgeJSON
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

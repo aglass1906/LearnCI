@@ -126,10 +126,10 @@ struct StoryAboutView: View {
                     // ── Play Options ──────────────────────────────────────
                     VStack(spacing: 12) {
                         // Read & Listen
-                        NavigationLink(destination: StorySessionView(story: story)) {
+                        NavigationLink(destination: StoryReaderFactoryView(story: story)) {
                             HStack {
-                                Image(systemName: "headphones")
-                                Text("Read & Listen to the story")
+                                Image(systemName: story.preferences.storyType.icon)
+                                Text(primaryReaderTitle)
                             }
                             .font(.headline)
                             .foregroundStyle(.white)
@@ -140,11 +140,11 @@ struct StoryAboutView: View {
                         }
 
                         if story.preferences.storyType == .interactiveStory {
-                            // Karaoke Mode
+                            // Dialog Mode
                             NavigationLink(destination: KaraokeSessionView(story: story)) {
                                 HStack {
                                     Image(systemName: "mic.fill")
-                                    Text("Karaoke Playback Mode")
+                                    Text("Dialog Playback Mode")
                                 }
                                 .font(.headline)
                                 .foregroundStyle(.white)
@@ -154,19 +154,6 @@ struct StoryAboutView: View {
                                 .cornerRadius(12)
                             }
 
-                            // Interactive Play
-                            NavigationLink(destination: InteractiveStorySessionView(story: story)) {
-                                HStack {
-                                    Image(systemName: "sparkles")
-                                    Text("Interactive Play the story")
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.purple)
-                                .cornerRadius(12)
-                            }
                         }
 
                         // Take Quiz
@@ -206,9 +193,9 @@ struct StoryAboutView: View {
                                 .badgeStyle()
                         }
                         if story.preferences.interactiveAudio {
-                            Label("Interactive", systemImage: "sparkles")
+                            Label("Dialog Audio", systemImage: "waveform.and.mic")
                                 .badgeStyle()
-                                .foregroundStyle(.purple)
+                                .foregroundStyle(.orange)
                         }
                     }
 
@@ -392,6 +379,23 @@ struct StoryAboutView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(pipelineStatusMessage ?? "")
+        }
+    }
+
+    private var primaryReaderTitle: String {
+        switch story.preferences.storyType {
+        case .comicBook:
+            return "Read Comic Book"
+        case .pictureBook:
+            return "Read Picture Book"
+        case .interactiveStory:
+            return "Read Dialog Story"
+        case .audioStory:
+            return "Listen to Audio Story"
+        case .storyBook:
+            return "Read & Listen to the story"
+        case .standard, .vocabularyBuilder:
+            return "Open Story Reader"
         }
     }
 

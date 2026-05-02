@@ -84,6 +84,8 @@ private struct StoryTypeBadge: View {
         case .storyBook:         return .blue
         case .audioStory:        return .teal
         case .interactiveStory:  return .purple
+        case .comicBook:         return .indigo
+        case .pictureBook:       return .pink
         case .vocabularyBuilder: return .green
         case .standard:          return .gray
         }
@@ -116,7 +118,7 @@ struct StoryListView: View {
     // Filters & Sorting
     @State private var sortOption: SortOption = .newest
     @State private var selectedLanguage: String = "All"
-    @State private var selectedStoryType: String = "All"
+    @State private var selectedStoryTypeID: String = "All"
     
     enum SortOption: String, CaseIterable {
         case newest = "Newest First"
@@ -135,8 +137,8 @@ struct StoryListView: View {
         }
 
         // Filter by Story Type
-        if selectedStoryType != "All" {
-            result = result.filter { $0.preferences.storyType.displayName == selectedStoryType }
+        if selectedStoryTypeID != "All" {
+            result = result.filter { $0.preferences.storyType.rawValue == selectedStoryTypeID }
         }
 
         // Sort
@@ -152,7 +154,7 @@ struct StoryListView: View {
         return result
     }
 
-    private var isFiltered: Bool { selectedLanguage != "All" || selectedStoryType != "All" }
+    private var isFiltered: Bool { selectedLanguage != "All" || selectedStoryTypeID != "All" }
 
     private var availableLanguages: [String] {
         let langs = Set(stories.map { $0.language.displayName })
@@ -188,9 +190,9 @@ struct StoryListView: View {
                                         .foregroundStyle(isCloud ? .blue : .gray)
                                         
                                     if story.preferences.interactiveAudio {
-                                        Image(systemName: "sparkles")
+                                        Image(systemName: "waveform.and.mic")
                                             .font(.caption)
-                                            .foregroundStyle(.purple)
+                                            .foregroundStyle(.orange)
                                     }
                                 }
                                 HStack(spacing: 4) {
@@ -252,10 +254,10 @@ struct StoryListView: View {
 
                         Divider()
 
-                        Picker("Story Type", selection: $selectedStoryType) {
+                        Picker("Story Type", selection: $selectedStoryTypeID) {
                             Text("All Types").tag("All")
                             ForEach(StoryPreferences.StoryType.allCases) { type in
-                                Label(type.displayName, systemImage: type.icon).tag(type.displayName)
+                                Label(type.displayName, systemImage: type.icon).tag(type.rawValue)
                             }
                         }
                     } label: {

@@ -46,6 +46,74 @@ struct StoryDTO: Codable {
     let is_favorite: Bool
     let is_public: Bool
     let chapters: [StoryChapter]?
+    let layout_json: JSONBlob?
+    let reading_matter_pages_json: JSONBlob?
+    let asset_forge_json: JSONBlob?
+}
+
+/// Supabase JSONB columns may arrive as already-parsed JSON objects/arrays or
+/// as strings depending on the selected column and client decoding path.
+/// Store them in SwiftData as JSON strings so the model layer can decode them
+/// consistently.
+enum JSONBlob: Codable, Equatable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case object([String: JSONBlob])
+    case array([JSONBlob])
+    case null
+
+    var jsonString: String? {
+        switch self {
+        case .null:
+            return nil
+        case .string(let value):
+            return value
+        case .number, .bool, .object, .array:
+            guard let data = try? JSONEncoder().encode(self) else { return nil }
+            return String(data: data, encoding: .utf8)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode([JSONBlob].self) {
+            self = .array(value)
+        } else if let value = try? container.decode([String: JSONBlob].self) {
+            self = .object(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                JSONBlob.self,
+                DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unsupported JSON value")
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .number(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        case .object(let value):
+            try container.encode(value)
+        case .array(let value):
+            try container.encode(value)
+        case .null:
+            try container.encodeNil()
+        }
+    }
 }
 
 /// Push-only DTO: omits remote_video_path so the upsert never overwrites it.
@@ -979,6 +1047,9 @@ struct CoachingCheckInDTO: Codable {
                     // Trigger downloads for each chapter
                     downloadChapterAudio(for: existing, context: context)
                 }
+                existing.layoutJSON = dto.layout_json?.jsonString
+                existing.readingMatterPagesJSON = dto.reading_matter_pages_json?.jsonString
+                existing.assetForgeJSON = dto.asset_forge_json?.jsonString
             } else {
                 // Insert New
                 var cJSON: String?
@@ -1009,6 +1080,9 @@ struct CoachingCheckInDTO: Codable {
                     ambientSoundId: dto.ambient_sound_id,
                     ambientVolume: dto.ambient_volume ?? 0.3,
                     chaptersJSON: cJSON,
+                    layoutJSON: dto.layout_json?.jsonString,
+                    readingMatterPagesJSON: dto.reading_matter_pages_json?.jsonString,
+                    assetForgeJSON: dto.asset_forge_json?.jsonString,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
                     createdAt: dto.created_at

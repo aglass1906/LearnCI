@@ -166,8 +166,8 @@ struct InteractiveStorySessionView: View {
     private func setupChapter() {
         // 1. Parse Script into character segments
         // Prioritize the speaker-tagged script if available
-        let script = currentChapter.scriptTargetLanguage ?? currentChapter.textTargetLanguage
-        let timings: [WordTiming] = currentChapter.wordTimings ?? []
+        let script = currentChapter.scriptTargetLanguage ?? currentChapter.bodyScriptOrNarrativeForAlignment
+        let timings = currentChapter.bodyWordTimingsForPlayback
 
         segments = ScriptParser.parseSegments(scriptText: script, globalTimings: timings)
         currentSegmentIndex = 0

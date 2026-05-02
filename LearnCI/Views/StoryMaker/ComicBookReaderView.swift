@@ -342,6 +342,10 @@ private extension CropRegion {
             return .bottomLeading
         case .bottomRight:
             return .bottomTrailing
+        case .topHalf:
+            return .top
+        case .bottomHalf:
+            return .bottom
         case .center, .centre, .full:
             return .center
         }
@@ -359,4 +363,3 @@ private extension String {
         isEmpty ? nil : self
     }
 }
-

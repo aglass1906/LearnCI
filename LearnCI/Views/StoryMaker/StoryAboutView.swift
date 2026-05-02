@@ -472,14 +472,14 @@ struct StoryAboutView: View {
     }
 
     private var storyTeaser: String {
-        let text = story.chapters.first?.textTargetLanguage ?? ""
+        let text = story.chapters.first?.bodyTextTargetForReading ?? ""
         guard text.count > 200 else { return text }
         let index = text.index(text.startIndex, offsetBy: 200)
         return String(text[..<index]) + "…"
     }
 
     private var storyWordCount: String? {
-        let combined = story.chapters.map { $0.textTargetLanguage }.joined(separator: " ")
+        let combined = story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: " ")
         let count = combined.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.count
         guard count > 0 else { return nil }
         return "\(count) words"

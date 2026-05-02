@@ -13,7 +13,7 @@ A story is rendered by one of five concrete **presenter** widgets, selected by `
 ```
 StoryViewFactory.build(story, layout)
   ├── StoryType.storyBook    → StoryBookPresenter     (prose scroll + word highlighting)
-  ├── StoryType.dialogStory → DialogBookPresenter   (dialog script bubbles)
+  ├── StoryType.dialogStory  → DialogBookPresenter      (dialog script bubbles)
   ├── StoryType.audioBook    → AudioBookPresenter     (podcast-style chapter playlist)
   ├── StoryType.comic        → ComicBookPresenter     (panel grid + auto page turns)
   └── StoryType.picture      → PictureBookPresenter   (full-screen swipe spreads)
@@ -21,10 +21,12 @@ StoryViewFactory.build(story, layout)
 
 Each presenter receives two inputs:
 
-| Argument | Type | Purpose |
-| --- | --- | --- |
-| `story` | `Story` | Content: text, audio URLs, word timings, images |
+
+| Argument | Type          | Purpose                                                |
+| -------- | ------------- | ------------------------------------------------------ |
+| `story`  | `Story`       | Content: text, audio URLs, word timings, images        |
 | `layout` | `StoryLayout` | Visual blueprint: panel positions, flat sequence index |
+
 
 `StoryLayout` is computed by `LayoutEngine` from the story data and stored in `story.layoutJson`. For prose and audiobook modes the layout is present but mostly unused; for comic and picture modes it is the authoritative rendering contract.
 
@@ -33,6 +35,8 @@ Each presenter receives two inputs:
 ## 2. Data model quick reference
 
 The presenter layer reads from these types. See [data_model.md](../pipeline/data_model.md) for the full DB column contract.
+
+**Chapter scenes:** Each chapter’s ordered `StoryScene` list is stored in JSON as `**scenes`**. The app model exposes this as `**StoryChapter.scenes**` after decode.
 
 ### Story
 
@@ -53,11 +57,11 @@ Story
 StoryChapter
   ├── id, chapterNumber, chapterType
   ├── titleTargetLanguage, titleEnglish
-  ├── scenes: List<StoryScene>          (parsed from textContentJson)
+  ├── scenes: List<StoryScene>          JSON key `scenes` on each chapter; typed field `StoryChapter.scenes`
   │
-  ├── — Text getters —
-  ├── bodyTextTargetForReading          merged narrative text (prefers textTargetLanguage, else joined scene captions)
-  ├── bodyTextEnglishForReading         same in English
+  ├── — Text getters (scene-backed) —
+  ├── bodyTextTargetForReading          joined scene captionTarget (narrative body)
+  ├── bodyTextEnglishForReading         joined scene captionNative (learner native language)
   ├── bodyScriptOrNarrativeForAlignment script if present, else narrative  ← used by interactive mode only
   │
   ├── — Audio getters —
@@ -72,16 +76,20 @@ StoryChapter
 
 ### StoryScene
 
+`StoryScene` is the unified scene/panel type for **all** story formats. The former `StoryPanel` and `PanelDialogue` classes have been removed; `SceneDialogue` serves both prose and comic modes. `contentMode` discriminates the two when the story type is ambiguous at the data layer.
+
 ```
 StoryScene
-  ├── sceneIndex                        zero-based within chapter
-  ├── captionTarget, captionEnglish
-  ├── dialogues: List<SceneDialogue>    [{ character, text }]
+  ├── sceneIndex                        zero-based within chapter (normalised from legacy panelIndex at ingest)
+  ├── captionTarget, captionNative       learner-facing captions (JSON keys `captionTarget`, `captionNative`)
+  ├── dialogues: List<SceneDialogue>    [{ character, text, textEnglish }]
   ├── imageUrl                          per-scene generated image (or null → crop chapter cover)
   ├── audioUrl                          scene-level audio clip (Supabase path or HTTP URL)
   ├── audioDurationMs
   ├── wordTimings: List<WordTiming>     relative to clip start (seconds)
-  └── scriptTargetLanguage?, scriptEnglish?
+  ├── scriptTargetLanguage?, scriptEnglish?
+  ├── contentMode?                      'prose' | 'panel' — discriminator when story type is ambiguous
+  └── cropRegion?                       which portion of chapter cover to show (comic panels only: topLeft / topRight / bottomLeft / bottomRight / topHalf / bottomHalf / full)
 ```
 
 ### StoryLayout (comic/picture modes)
@@ -133,12 +141,14 @@ AudioManagerState
 ### Loading audio
 
 **Prose / interactive / audiobook** — call `audioManager.loadStoryAudio(story)`:
+
 1. Iterates all `chapter.scenes` in order; collects every non-empty `audioUrl`
 2. Builds a `ConcatenatingAudioSource` (flat playlist)
 3. Maintains `_sequenceChapterIndices[i]` → which chapter owns clip `i`
 4. Sets `_chapterScopedUiPosition = true`; the UI progress bar shows chapter-local position
 
 **Comic / picture** — call `audioManager.loadPanelAudio(urls, {pauseBeforeSequenceIndices})`:
+
 1. Takes a pre-built ordered URL list (constructed by the presenter from `layout.flatSequence`)
 2. Inserts silence pauses before specified indices (e.g. between chapters)
 3. Sets `_chapterScopedUiPosition = false`; UI shows global progress
@@ -155,7 +165,7 @@ When `currentIndexStream` signals a clip transition that crosses a chapter bound
 
 ## 4. Word timing and highlighting
 
-Word highlighting is used by **StoryBook** (prose scroll) and **InteractiveBook** (dialog) only.
+Word highlighting is used by **StoryBook** (prose scroll) and **DialogBook** (active dialog line) only.
 
 ### How timings are structured
 
@@ -174,15 +184,16 @@ bodyWordTimingsForPlayback output:
 ### Highlighting in StoryBook
 
 On each `audioManagerProvider` update:
+
 ```dart
 final positionSec = state.currentPosition.inMilliseconds / 1000.0;
 final active = timings.indexWhere((wt) => positionSec >= wt.start && positionSec < wt.end);
 // Rebuild RichText with words[active] styled in cyan (#00E6B8)
 ```
 
-### Segment mapping in InteractiveBook
+### Segment mapping in DialogBook
 
-Interactive mode needs to highlight entire dialogue lines (not individual words). On init, `bodyScriptOrNarrativeForAlignment` is split into segments (one per speaker line). Each segment is assigned a `(start_sec, end_sec)` range by matching words to `bodyWordTimingsForPlayback`. The dialog display then finds the active segment each frame using a `Ticker` + `Stopwatch` (to avoid the iOS position freeze):
+Dialog mode needs to highlight entire dialogue lines (not individual words). On init, `bodyScriptOrNarrativeForAlignment` is split into segments (one per speaker line). Each segment is assigned a `(start_sec, end_sec)` range by matching words to `bodyWordTimingsForPlayback`. The dialog display then finds the active segment each frame using a `Ticker` + `Stopwatch` (to avoid the iOS position freeze):
 
 ```dart
 // Each frame:
@@ -201,13 +212,15 @@ final activeSegment = _segmentIndexAtLocalMs(localMs);
 
 **Data reads:**
 
-| Data | Getter / field | Used for |
-| --- | --- | --- |
-| Chapter text | `chapter.bodyTextTargetForReading` / `bodyTextEnglishForReading` | Scrollable body text |
-| Word timings | `chapter.bodyWordTimingsForPlayback` | Per-word highlight |
-| Intro clip | `chapter.chapterIntroAudioUrl` + `chapterIntroWordTimings` | Pre-chapter read-aloud |
-| Reading matter | `story.readingMatterPages` | About / Appendix spreads |
-| Cover image | `story.remoteCoverUrl` | Background |
+
+| Data           | Getter / field                                                   | Used for                 |
+| -------------- | ---------------------------------------------------------------- | ------------------------ |
+| Chapter text   | `chapter.bodyTextTargetForReading` / `bodyTextEnglishForReading` | Scrollable body text     |
+| Word timings   | `chapter.bodyWordTimingsForPlayback`                             | Per-word highlight       |
+| Intro clip     | `chapter.chapterIntroAudioUrl` + `chapterIntroWordTimings`       | Pre-chapter read-aloud   |
+| Reading matter | `story.readingMatterPages`                                       | About / Appendix spreads |
+| Cover image    | `story.remoteCoverUrl`                                           | Background               |
+
 
 **Rendering flow:**
 
@@ -220,18 +233,20 @@ final activeSegment = _segmentIndexAtLocalMs(localMs);
 
 ---
 
-### 5.2 InteractiveBook — dialog script bubbles
+### 5.2 DialogBook — dialog script bubbles
 
 **Story type:** `StoryType.dialogStory`
 
 **Data reads:**
 
-| Data | Getter / field | Used for |
-| --- | --- | --- |
-| Script text | `chapter.bodyScriptOrNarrativeForAlignment` | Segment parsing |
-| Word timings | `chapter.bodyWordTimingsForPlayback` | Segment time boundaries |
-| Scene audio | `chapter.scenes[*].audioUrl` | Flat clip playlist |
-| Portraits | `assetForgeData.characters[name].portraitUrl` | Full-screen character image |
+
+| Data         | Getter / field                                | Used for                    |
+| ------------ | --------------------------------------------- | --------------------------- |
+| Script text  | `chapter.bodyScriptOrNarrativeForAlignment`   | Segment parsing             |
+| Word timings | `chapter.bodyWordTimingsForPlayback`          | Segment time boundaries     |
+| Scene audio  | `chapter.scenes[*].audioUrl`                  | Flat clip playlist          |
+| Portraits    | `assetForgeData.characters[name].portraitUrl` | Full-screen character image |
+
 
 **Rendering flow:**
 
@@ -252,13 +267,15 @@ final activeSegment = _segmentIndexAtLocalMs(localMs);
 
 **Data reads:**
 
-| Data | Getter / field | Used for |
-| --- | --- | --- |
-| Chapter text | `chapter.bodyTextTargetForReading` | Playlist row description |
-| Scene audio | `chapter.scenes[*].audioUrl` | Concat playlist |
-| Scene images | `chapter.scenes[*].imageUrl` | Storyboard gallery |
-| Reading matter | `story.readingMatterPages` | Intro spreads |
-| Cover | `story.remoteCoverUrl` | Story cover page |
+
+| Data           | Getter / field                     | Used for                 |
+| -------------- | ---------------------------------- | ------------------------ |
+| Chapter text   | `chapter.bodyTextTargetForReading` | Playlist row description |
+| Scene audio    | `chapter.scenes[*].audioUrl`       | Concat playlist          |
+| Scene images   | `chapter.scenes[*].imageUrl`       | Storyboard gallery       |
+| Reading matter | `story.readingMatterPages`         | Intro spreads            |
+| Cover          | `story.remoteCoverUrl`             | Story cover page         |
+
 
 **Rendering flow:**
 
@@ -279,14 +296,16 @@ No word highlighting. Speed control available (1×, 1.25×, 1.5×, 2×).
 
 **Data reads:**
 
-| Data | Getter / field | Used for |
-| --- | --- | --- |
-| Panel geometry | `layout.pages[*].canvases[*].panels` | Grid layout |
-| Flat sequence | `layout.flatSequence` | Audio clip order |
-| Chapter offsets | `layout.chapterFlatOffsets` | Chapter → flat index lookup |
-| Scene image | `scene.imageUrl` (or null → crop chapter cover by `cropRegion`) | Panel image |
-| Caption / dialogues | `scene.captionTarget`, `scene.dialogues` | Panel text overlay |
-| Scene audio | `scene.audioUrl` | Per-panel clip |
+
+| Data                | Getter / field                                                  | Used for                    |
+| ------------------- | --------------------------------------------------------------- | --------------------------- |
+| Panel geometry      | `layout.pages[*].canvases[*].panels`                            | Grid layout                 |
+| Flat sequence       | `layout.flatSequence`                                           | Audio clip order            |
+| Chapter offsets     | `layout.chapterFlatOffsets`                                     | Chapter → flat index lookup |
+| Scene image         | `scene.imageUrl` (or null → crop chapter cover by `cropRegion`) | Panel image                 |
+| Caption / dialogues | `scene.captionTarget`, `scene.dialogues`                        | Panel text overlay          |
+| Scene audio         | `scene.audioUrl`                                                | Per-panel clip              |
+
 
 **Flat sequence and audio mapping:**
 
@@ -318,13 +337,15 @@ Calls `audioManager.loadPanelAudio(urls, pauseBeforeSequenceIndices: [3])` — s
 
 **Data reads:**
 
-| Data | Getter / field | Used for |
-| --- | --- | --- |
-| Reading matter | `story.readingMatterPages` | Front/back matter spreads |
-| Scene image | `scene.imageUrl` (fallback to chapter cover) | Full-screen image |
-| Caption / dialogues | `scene.captionTarget`, `scene.dialogues` | Spread text |
-| Scene audio | `scene.audioUrl` | Per-scene clip |
-| Layout pages | `layout.pages` | Map scene to spread index |
+
+| Data                | Getter / field                               | Used for                  |
+| ------------------- | -------------------------------------------- | ------------------------- |
+| Reading matter      | `story.readingMatterPages`                   | Front/back matter spreads |
+| Scene image         | `scene.imageUrl` (fallback to chapter cover) | Full-screen image         |
+| Caption / dialogues | `scene.captionTarget`, `scene.dialogues`     | Spread text               |
+| Scene audio         | `scene.audioUrl`                             | Per-scene clip            |
+| Layout pages        | `layout.pages`                               | Map scene to spread index |
+
 
 **Spine and clip mapping:**
 
@@ -358,40 +379,46 @@ All presenters support a per-chapter intro clip. The flow is identical across mo
 
 ## 7. Field usage by presenter type
 
-| Field | StoryBook | Interactive | AudioBook | Comic | Picture |
-| --- | :---: | :---: | :---: | :---: | :---: |
-| `chapter.bodyTextTargetForReading` | ✓ | | ✓ | | ✓ |
-| `chapter.bodyScriptOrNarrativeForAlignment` | | ✓ | | | |
-| `chapter.bodyWordTimingsForPlayback` | ✓ | ✓ | | | |
-| `chapter.chapterIntroAudioUrl` + timings | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `chapter.scenes[*].audioUrl` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `chapter.scenes[*].imageUrl` | | | ✓ | ✓ | ✓ |
-| `chapter.scenes[*].captionTarget` | | | | ✓ | ✓ |
-| `chapter.scenes[*].dialogues` | | | | ✓ | ✓ |
-| `story.readingMatterPages` | ✓ | | ✓ | | ✓ |
-| `story.remoteCoverUrl` | ✓ | | ✓ | | ✓ |
-| `story.assetForgeData` (portraits) | | ✓ | | | |
-| `layout.flatSequence` | | | | ✓ | ✓ |
-| `layout.pages[*].canvases[*].panels` | | | | ✓ | |
-| `layout.chapterFlatOffsets` | | | | ✓ | ✓ |
+
+| Field                                       | StoryBook | Interactive | AudioBook | Comic | Picture |
+| ------------------------------------------- | --------- | ----------- | --------- | ----- | ------- |
+| `chapter.bodyTextTargetForReading`          | ✓         |             | ✓         |       | ✓       |
+| `chapter.bodyTextEnglishForReading`         | ✓         |             |           |       |         |
+| `chapter.bodyScriptOrNarrativeForAlignment` |           | ✓           |           |       |         |
+| `chapter.bodyWordTimingsForPlayback`        | ✓         | ✓           |           |       |         |
+| `chapter.chapterIntroAudioUrl` + timings    | ✓         | ✓           | ✓         | ✓     | ✓       |
+| `chapter.scenes[*].audioUrl`                | ✓         | ✓           | ✓         | ✓     | ✓       |
+| `chapter.scenes[*].imageUrl`                |           |             | ✓         | ✓     | ✓       |
+| `chapter.scenes[*].captionTarget`           |           |             |           | ✓     | ✓       |
+| `chapter.scenes[*].captionNative`           |           |             |           | ✓     | ✓       |
+| `chapter.scenes[*].dialogues`               |           |             |           | ✓     | ✓       |
+| `story.readingMatterPages`                  | ✓         |             | ✓         |       | ✓       |
+| `story.remoteCoverUrl`                      | ✓         |             | ✓         |       | ✓       |
+| `story.assetForgeData` (portraits)          |           | ✓           |           |       |         |
+| `layout.flatSequence`                       |           |             |           | ✓     | ✓       |
+| `layout.pages[*].canvases[*].panels`        |           |             |           | ✓     |         |
+| `layout.chapterFlatOffsets`                 |           |             |           | ✓     | ✓       |
+
 
 ---
 
 ## 8. Key files
 
-| File | Role |
-| --- | --- |
-| `lib/presenters/story_presenter.dart` | Abstract base — `story`, `layout`, `onSeekToScene` |
-| `lib/presenters/story_view_factory.dart` | Selects concrete presenter from `storyType` |
-| `lib/presenters/story_book_presenter.dart` | Prose scroll + word highlight |
-| `lib/presenters/interactive_book_presenter.dart` | Dialog bubbles + character portraits |
-| `lib/presenters/audio_book_presenter.dart` | Podcast playlist |
-| `lib/presenters/comic_book_presenter.dart` | Panel grid + page turns |
-| `lib/presenters/picture_book_presenter.dart` | Full-screen swipe spreads |
-| `lib/services/audio_manager.dart` | Playback state, clip loading, position tracking |
-| `lib/layout/story_layout.dart` | Layout blueprint (`flatSequence`, `pages`) |
-| `lib/layout/story_reading_spine.dart` | Reading order segments (cover, matter, scenes, quiz) |
-| `lib/layout/layout_engine.dart` | Computes `StoryLayout` from `Story` |
-| `lib/models/story.dart` | `Story` + `StoryChapter` — all content fields and getters |
-| `lib/models/story_scene.dart` | `StoryScene` — per-panel/beat data |
-| `lib/models/word_timing.dart` | `WordTiming { word, start, end }` |
+
+| File                                             | Role                                                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `lib/presenters/story_presenter.dart`            | Abstract base — `story`, `layout`, `onSeekToScene`                                             |
+| `lib/presenters/story_view_factory.dart`         | Selects concrete presenter from `storyType`                                                    |
+| `lib/presenters/story_book_presenter.dart`       | Prose scroll + word highlight                                                                  |
+| `lib/presenters/dialog_book_presenter.dart`      | Dialog bubbles + character portraits                                                           |
+| `lib/presenters/audio_book_presenter.dart`       | Podcast playlist                                                                               |
+| `lib/presenters/comic_book_presenter.dart`       | Panel grid + page turns                                                                        |
+| `lib/presenters/picture_book_presenter.dart`     | Full-screen swipe spreads                                                                      |
+| `lib/services/audio_manager.dart`                | Playback state, clip loading, position tracking                                                |
+| `lib/layout/story_layout.dart`                   | Layout blueprint (`flatSequence`, `pages`)                                                     |
+| `lib/layout/story_reading_spine.dart`            | Reading order segments (cover, matter, scenes, quiz)                                           |
+| `lib/layout/layout_engine.dart`                  | Computes `StoryLayout` from `Story`                                                            |
+| `lib/models/story.dart`                          | `Story` + `StoryChapter` — all content fields and getters                                      |
+| `lib/models/story_scene.dart`                    | `StoryScene` + `SceneDialogue` + `CropRegion` — unified scene/panel data for all story formats |
+| `lib/models/word_timing.dart`                    | `WordTiming { word, start, end }`                                                              |
+

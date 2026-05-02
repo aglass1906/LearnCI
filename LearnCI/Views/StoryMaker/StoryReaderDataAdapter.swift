@@ -16,6 +16,7 @@ struct StorySceneAudioClip: Identifiable, Equatable {
 enum StoryReaderRequirementIssue: Equatable {
     case noChapters
     case noScenes
+    case incompleteSceneText
     case incompleteSceneAudio
 
     var title: String {
@@ -24,6 +25,8 @@ enum StoryReaderRequirementIssue: Equatable {
             return "Story Data Missing"
         case .noScenes:
             return "Scene Data Missing"
+        case .incompleteSceneText:
+            return "Scene Text Missing"
         case .incompleteSceneAudio:
             return "Scene Audio Missing"
         }
@@ -35,6 +38,8 @@ enum StoryReaderRequirementIssue: Equatable {
             return "This story does not have published chapter data yet."
         case .noScenes:
             return "This reader needs chapter scene data before it can render the story."
+        case .incompleteSceneText:
+            return "This reader needs scene target text before it can render the story."
         case .incompleteSceneAudio:
             return "This reader needs scene-level audio for every scene. Chapter-level audio is no longer used as a fallback."
         }
@@ -52,6 +57,7 @@ struct StoryReaderDataAdapter {
         let chapters = story.chapters
         guard !chapters.isEmpty else { return .noChapters }
         guard chapters.allSatisfy({ !$0.scenes.isEmpty }) else { return .noScenes }
+        guard chapters.allSatisfy({ !$0.bodyTextTargetForReading.isEmpty }) else { return .incompleteSceneText }
         guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
         return nil
     }

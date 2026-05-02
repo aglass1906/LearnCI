@@ -18,7 +18,7 @@ existing SwiftUI app.
   word timings.
 - Make the new reader depend on the published spine, layout, scene, and
   scene-audio contract instead of preserving chapter-audio-only behavior.
-- Rename the interactive reader concept from "dialog" to "dialog".
+- Use dialog terminology throughout the reader; iOS routes this mode as `.dialogStory`.
 
 ## Current iOS State
 
@@ -63,6 +63,20 @@ Extend `StoryChapter` with:
   - `hasAnyBodyNarrationAudio`
   - `bodyNarrationClipsCompleteForPlayback`
 
+Do not decode or support `text_content` in the iOS Swift model. `text_content`
+is legacy pipeline data and should not be used as a reader compatibility path.
+The published app contract for scene data is `chapters[].scenes`.
+
+Do not use chapter-level `text_target_language` or `text_english` as fallback
+reading body text. Story book reading text should be scene-backed:
+
+- target reading body = ordered join of `chapter.scenes[*].captionTarget`
+- native reading body = ordered join of `chapter.scenes[*].captionNative`
+
+Use `captionNative` for learner-native scene text. Do not add new reader logic
+around `captionEnglish`; any existing `captionEnglish` model usage should be
+renamed or removed as part of the scene text migration.
+
 Add Swift models for:
 
 - `StoryScene`
@@ -74,6 +88,26 @@ Add Swift models for:
 - `CropRegion`
 - `ReadingMatterPage`
 - `StoryReadingSpineItem`
+
+`StoryScene` is the unified scene/panel model for all story formats. Do not add
+separate iOS `StoryPanel` or `PanelDialogue` models. `SceneDialogue` should serve
+both prose/dialog and comic/picture rendering.
+
+The Swift `StoryScene` model should include the current rendering-contract
+fields:
+
+- `sceneIndex`
+- `captionTarget`
+- `captionNative`
+- `dialogues: [SceneDialogue]`
+- `imageUrl`
+- `audioUrl`
+- `audioDurationMs`
+- `wordTimings`
+- `scriptTargetLanguage`
+- `scriptEnglish`
+- optional `contentMode` (`prose` or `panel`)
+- optional `cropRegion`
 
 Reader data rule: the updated story reader should require scene data for
 playback and rendering. Do not synthesize scene data from legacy chapter-level
@@ -179,6 +213,9 @@ Availability behavior:
 
 Use dialog terminology throughout the iOS reader implementation.
 
+The rendering reference may still describe this presenter as `interactive`.
+In iOS, that mode should be modeled and routed as `.dialogStory`.
+
 Target direction:
 
 - `DialogSessionView` is the dialog reader entry point.
@@ -252,6 +289,8 @@ Rules:
 - No `layout_json` for comic book or picture book: show an incomplete layout
   state.
 - No `scenes`: show an incomplete story data state.
+- No scene caption target/native text: show an incomplete story text state for
+  story book and any mode that renders reading text.
 - No scene audio: show an incomplete audio state.
 - No word timings: disable highlighting but keep scene playback.
 - English display: disable target-language word highlighting.

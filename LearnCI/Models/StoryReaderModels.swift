@@ -4,7 +4,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
     var id: String { "\(sceneIndex)" }
     var sceneIndex: Int
     var captionTarget: String?
-    var captionEnglish: String?
+    var captionNative: String?
     var dialogues: [SceneDialogue]
     var imageUrl: String?
     var audioUrl: String?
@@ -12,14 +12,16 @@ struct StoryScene: Codable, Identifiable, Equatable {
     var wordTimings: [WordTiming]
     var scriptTargetLanguage: String?
     var scriptEnglish: String?
+    var contentMode: StorySceneContentMode?
+    var cropRegion: CropRegion?
 
     enum CodingKeys: String, CodingKey {
         case sceneIndex = "scene_index"
         case sceneIndexCamel = "sceneIndex"
         case captionTarget = "caption_target"
         case captionTargetCamel = "captionTarget"
-        case captionEnglish = "caption_english"
-        case captionEnglishCamel = "captionEnglish"
+        case captionNative = "caption_native"
+        case captionNativeCamel = "captionNative"
         case dialogues
         case imageUrl = "image_url"
         case imageUrlCamel = "imageUrl"
@@ -33,23 +35,29 @@ struct StoryScene: Codable, Identifiable, Equatable {
         case scriptTargetLanguageCamel = "scriptTargetLanguage"
         case scriptEnglish = "script_english"
         case scriptEnglishCamel = "scriptEnglish"
+        case contentMode = "content_mode"
+        case contentModeCamel = "contentMode"
+        case cropRegion = "crop_region"
+        case cropRegionCamel = "cropRegion"
     }
 
     init(
         sceneIndex: Int,
         captionTarget: String? = nil,
-        captionEnglish: String? = nil,
+        captionNative: String? = nil,
         dialogues: [SceneDialogue] = [],
         imageUrl: String? = nil,
         audioUrl: String? = nil,
         audioDurationMs: Int? = nil,
         wordTimings: [WordTiming] = [],
         scriptTargetLanguage: String? = nil,
-        scriptEnglish: String? = nil
+        scriptEnglish: String? = nil,
+        contentMode: StorySceneContentMode? = nil,
+        cropRegion: CropRegion? = nil
     ) {
         self.sceneIndex = sceneIndex
         self.captionTarget = captionTarget
-        self.captionEnglish = captionEnglish
+        self.captionNative = captionNative
         self.dialogues = dialogues
         self.imageUrl = imageUrl
         self.audioUrl = audioUrl
@@ -57,6 +65,8 @@ struct StoryScene: Codable, Identifiable, Equatable {
         self.wordTimings = wordTimings
         self.scriptTargetLanguage = scriptTargetLanguage
         self.scriptEnglish = scriptEnglish
+        self.contentMode = contentMode
+        self.cropRegion = cropRegion
     }
 
     init(from decoder: Decoder) throws {
@@ -66,8 +76,8 @@ struct StoryScene: Codable, Identifiable, Equatable {
             ?? 0
         captionTarget = (try? c.decode(String.self, forKey: .captionTarget))
             ?? (try? c.decode(String.self, forKey: .captionTargetCamel))
-        captionEnglish = (try? c.decode(String.self, forKey: .captionEnglish))
-            ?? (try? c.decode(String.self, forKey: .captionEnglishCamel))
+        captionNative = (try? c.decode(String.self, forKey: .captionNative))
+            ?? (try? c.decode(String.self, forKey: .captionNativeCamel))
         dialogues = (try? c.decode([SceneDialogue].self, forKey: .dialogues)) ?? []
         imageUrl = (try? c.decode(String.self, forKey: .imageUrl))
             ?? (try? c.decode(String.self, forKey: .imageUrlCamel))
@@ -82,13 +92,17 @@ struct StoryScene: Codable, Identifiable, Equatable {
             ?? (try? c.decode(String.self, forKey: .scriptTargetLanguageCamel))
         scriptEnglish = (try? c.decode(String.self, forKey: .scriptEnglish))
             ?? (try? c.decode(String.self, forKey: .scriptEnglishCamel))
+        contentMode = (try? c.decode(StorySceneContentMode.self, forKey: .contentMode))
+            ?? (try? c.decode(StorySceneContentMode.self, forKey: .contentModeCamel))
+        cropRegion = (try? c.decode(CropRegion.self, forKey: .cropRegion))
+            ?? (try? c.decode(CropRegion.self, forKey: .cropRegionCamel))
     }
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(sceneIndex, forKey: .sceneIndex)
         try c.encodeIfPresent(captionTarget, forKey: .captionTarget)
-        try c.encodeIfPresent(captionEnglish, forKey: .captionEnglish)
+        try c.encodeIfPresent(captionNative, forKey: .captionNative)
         try c.encode(dialogues, forKey: .dialogues)
         try c.encodeIfPresent(imageUrl, forKey: .imageUrl)
         try c.encodeIfPresent(audioUrl, forKey: .audioUrl)
@@ -96,7 +110,14 @@ struct StoryScene: Codable, Identifiable, Equatable {
         try c.encode(wordTimings, forKey: .wordTimings)
         try c.encodeIfPresent(scriptTargetLanguage, forKey: .scriptTargetLanguage)
         try c.encodeIfPresent(scriptEnglish, forKey: .scriptEnglish)
+        try c.encodeIfPresent(contentMode, forKey: .contentMode)
+        try c.encodeIfPresent(cropRegion, forKey: .cropRegion)
     }
+}
+
+enum StorySceneContentMode: String, Codable, Equatable {
+    case prose
+    case panel
 }
 
 struct SceneDialogue: Codable, Identifiable, Equatable {
@@ -292,6 +313,8 @@ enum CropRegion: String, Codable, Equatable {
     case topRight
     case bottomLeft
     case bottomRight
+    case topHalf
+    case bottomHalf
 }
 
 struct ReadingMatterPage: Codable, Identifiable, Equatable {

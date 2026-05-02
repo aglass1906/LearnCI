@@ -7,8 +7,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var chapterType: String = "chapter"
     var titleTargetLanguage: String
     var titleEnglish: String
-    var textTargetLanguage: String
-    var textEnglish: String
     var scriptTargetLanguage: String?
     var scriptEnglish: String?
     var audioUrl: String?
@@ -28,21 +26,17 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
     var bodyTextTargetForReading: String {
-        if !textTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return textTargetLanguage
-        }
         return scenes
+            .sorted { $0.sceneIndex < $1.sceneIndex }
             .compactMap { $0.captionTarget }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .joined(separator: "\n\n")
     }
 
     var bodyTextEnglishForReading: String {
-        if !textEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return textEnglish
-        }
         return scenes
-            .compactMap { $0.captionEnglish }
+            .sorted { $0.sceneIndex < $1.sceneIndex }
+            .compactMap { $0.captionNative }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .joined(separator: "\n\n")
     }
@@ -86,8 +80,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case chapterType = "chapter_type"
         case titleTargetLanguage = "title_target_language"
         case titleEnglish = "title_english"
-        case textTargetLanguage = "text_target_language"
-        case textEnglish = "text_english"
         case scriptTargetLanguage = "script_target_language"
         case scriptEnglish = "script_english"
         case audioUrl = "audio_url"
@@ -116,8 +108,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         chapterType = (try? container.decode(String.self, forKey: .chapterType)) ?? "chapter"
         titleTargetLanguage = (try? container.decode(String.self, forKey: .titleTargetLanguage)) ?? ""
         titleEnglish = (try? container.decode(String.self, forKey: .titleEnglish)) ?? ""
-        textTargetLanguage = (try? container.decode(String.self, forKey: .textTargetLanguage)) ?? ""
-        textEnglish = (try? container.decode(String.self, forKey: .textEnglish)) ?? ""
         scriptTargetLanguage = try? container.decode(String.self, forKey: .scriptTargetLanguage)
         scriptEnglish = try? container.decode(String.self, forKey: .scriptEnglish)
         audioUrl = try? container.decode(String.self, forKey: .audioUrl)
@@ -147,8 +137,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         try container.encode(chapterType, forKey: .chapterType)
         try container.encode(titleTargetLanguage, forKey: .titleTargetLanguage)
         try container.encode(titleEnglish, forKey: .titleEnglish)
-        try container.encode(textTargetLanguage, forKey: .textTargetLanguage)
-        try container.encode(textEnglish, forKey: .textEnglish)
         try container.encodeIfPresent(scriptTargetLanguage, forKey: .scriptTargetLanguage)
         try container.encodeIfPresent(scriptEnglish, forKey: .scriptEnglish)
         try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
@@ -171,8 +159,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
          chapterType: String = "chapter",
          titleTargetLanguage: String,
          titleEnglish: String,
-         textTargetLanguage: String,
-         textEnglish: String,
          scriptTargetLanguage: String? = nil,
          scriptEnglish: String? = nil,
          audioUrl: String? = nil,
@@ -193,8 +179,6 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         self.chapterType = chapterType
         self.titleTargetLanguage = titleTargetLanguage
         self.titleEnglish = titleEnglish
-        self.textTargetLanguage = textTargetLanguage
-        self.textEnglish = textEnglish
         self.scriptTargetLanguage = scriptTargetLanguage
         self.scriptEnglish = scriptEnglish
         self.audioUrl = audioUrl

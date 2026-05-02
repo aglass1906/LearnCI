@@ -173,8 +173,8 @@ struct DialogSessionView: View {
         // Parse segments using ScriptParser
         let scriptText = chapter.scriptTargetLanguage ?? ""
         let isScriptEmpty = scriptText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        let script = isScriptEmpty ? (chapter.textTargetLanguage ?? "") : scriptText
-        let timings = chapter.wordTimings ?? []
+        let script = isScriptEmpty ? chapter.bodyScriptOrNarrativeForAlignment : scriptText
+        let timings = chapter.bodyWordTimingsForPlayback
         self.segments = ScriptParser.parseSegments(scriptText: script, globalTimings: timings)
         
         print("Parsed \(self.segments.count) segments for chapter \(index).")

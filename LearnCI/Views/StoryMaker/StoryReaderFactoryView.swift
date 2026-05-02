@@ -5,21 +5,16 @@ struct StoryReaderFactoryView: View {
 
     var body: some View {
         switch story.preferences.storyType {
-        case .storyBook:
+        case .storyBook, .standard:
             StorySessionView(story: story)
         case .audioStory:
             AudioBookReaderView(story: story)
-        case .interactiveStory:
-            KaraokeSessionView(story: story)
+        case .dialogStory:
+            DialogSessionView(story: story)
         case .comicBook:
             ComicBookReaderView(story: story)
         case .pictureBook:
             PictureBookReaderView(story: story)
-        case .standard, .vocabularyBuilder:
-            StoryReaderUnavailableView(
-                title: "Unsupported Story Type",
-                message: "This story type is not routed through the story reader."
-            )
         }
     }
 }

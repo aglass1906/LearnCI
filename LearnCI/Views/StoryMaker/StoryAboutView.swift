@@ -139,9 +139,9 @@ struct StoryAboutView: View {
                             .cornerRadius(12)
                         }
 
-                        if story.preferences.storyType == .interactiveStory {
+                        if story.preferences.storyType == .dialogStory {
                             // Dialog Mode
-                            NavigationLink(destination: KaraokeSessionView(story: story)) {
+                            NavigationLink(destination: DialogSessionView(story: story)) {
                                 HStack {
                                     Image(systemName: "mic.fill")
                                     Text("Dialog Playback Mode")
@@ -388,14 +388,14 @@ struct StoryAboutView: View {
             return "Read Comic Book"
         case .pictureBook:
             return "Read Picture Book"
-        case .interactiveStory:
+        case .dialogStory:
             return "Read Dialog Story"
         case .audioStory:
             return "Listen to Audio Story"
         case .storyBook:
             return "Read & Listen to the story"
-        case .standard, .vocabularyBuilder:
-            return "Open Story Reader"
+        case .standard:
+            return "Read & Listen to the story"
         }
     }
 

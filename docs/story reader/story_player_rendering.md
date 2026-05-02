@@ -13,7 +13,7 @@ A story is rendered by one of five concrete **presenter** widgets, selected by `
 ```
 StoryViewFactory.build(story, layout)
   ├── StoryType.storyBook    → StoryBookPresenter     (prose scroll + word highlighting)
-  ├── StoryType.interactive  → InteractiveBookPresenter (karaoke script bubbles)
+  ├── StoryType.dialogStory → DialogBookPresenter   (dialog script bubbles)
   ├── StoryType.audioBook    → AudioBookPresenter     (podcast-style chapter playlist)
   ├── StoryType.comic        → ComicBookPresenter     (panel grid + auto page turns)
   └── StoryType.picture      → PictureBookPresenter   (full-screen swipe spreads)
@@ -155,7 +155,7 @@ When `currentIndexStream` signals a clip transition that crosses a chapter bound
 
 ## 4. Word timing and highlighting
 
-Word highlighting is used by **StoryBook** (prose scroll) and **InteractiveBook** (karaoke) only.
+Word highlighting is used by **StoryBook** (prose scroll) and **InteractiveBook** (dialog) only.
 
 ### How timings are structured
 
@@ -182,11 +182,11 @@ final active = timings.indexWhere((wt) => positionSec >= wt.start && positionSec
 
 ### Segment mapping in InteractiveBook
 
-Interactive mode needs to highlight entire dialogue lines (not individual words). On init, `bodyScriptOrNarrativeForAlignment` is split into segments (one per speaker line). Each segment is assigned a `(start_sec, end_sec)` range by matching words to `bodyWordTimingsForPlayback`. The karaoke display then finds the active segment each frame using a `Ticker` + `Stopwatch` (to avoid the iOS position freeze):
+Interactive mode needs to highlight entire dialogue lines (not individual words). On init, `bodyScriptOrNarrativeForAlignment` is split into segments (one per speaker line). Each segment is assigned a `(start_sec, end_sec)` range by matching words to `bodyWordTimingsForPlayback`. The dialog display then finds the active segment each frame using a `Ticker` + `Stopwatch` (to avoid the iOS position freeze):
 
 ```dart
 // Each frame:
-final localMs = _karaokeAnchorMs + _stopwatch.elapsed.inMilliseconds;
+final localMs = _dialogAnchorMs + _stopwatch.elapsed.inMilliseconds;
 final activeSegment = _segmentIndexAtLocalMs(localMs);
 // Render active segment's bubble highlighted; others dimmed
 ```
@@ -220,9 +220,9 @@ final activeSegment = _segmentIndexAtLocalMs(localMs);
 
 ---
 
-### 5.2 InteractiveBook — karaoke script bubbles
+### 5.2 InteractiveBook — dialog script bubbles
 
-**Story type:** `StoryType.interactive`
+**Story type:** `StoryType.dialogStory`
 
 **Data reads:**
 
@@ -384,7 +384,7 @@ All presenters support a per-chapter intro clip. The flow is identical across mo
 | `lib/presenters/story_presenter.dart` | Abstract base — `story`, `layout`, `onSeekToScene` |
 | `lib/presenters/story_view_factory.dart` | Selects concrete presenter from `storyType` |
 | `lib/presenters/story_book_presenter.dart` | Prose scroll + word highlight |
-| `lib/presenters/interactive_book_presenter.dart` | Karaoke bubbles + character portraits |
+| `lib/presenters/interactive_book_presenter.dart` | Dialog bubbles + character portraits |
 | `lib/presenters/audio_book_presenter.dart` | Podcast playlist |
 | `lib/presenters/comic_book_presenter.dart` | Panel grid + page turns |
 | `lib/presenters/picture_book_presenter.dart` | Full-screen swipe spreads |

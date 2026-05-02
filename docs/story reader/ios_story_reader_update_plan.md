@@ -18,7 +18,7 @@ existing SwiftUI app.
   word timings.
 - Make the new reader depend on the published spine, layout, scene, and
   scene-audio contract instead of preserving chapter-audio-only behavior.
-- Rename the interactive reader concept from "karaoke" to "dialog".
+- Rename the interactive reader concept from "dialog" to "dialog".
 
 ## Current iOS State
 
@@ -33,7 +33,7 @@ existing SwiftUI app.
   ambient audio, lock-screen controls, and playback rate, but does not yet have
   first-class story playlist state such as current chapter, scene, clip index,
   local position, and global position.
-- `KaraokeSessionView` and `InteractiveStorySessionView` overlap conceptually;
+- `DialogSessionView` is the dialog reader entry point.
   they should converge into one dialog reader.
 
 ## Implementation Plan
@@ -177,17 +177,16 @@ Availability behavior:
 
 ### 5. Rename and update interactive mode to dialog mode
 
-Rename the conceptual mode from "karaoke" to "dialog".
+Use dialog terminology throughout the iOS reader implementation.
 
 Target direction:
 
-- `KaraokeSessionView` -> `DialogStorySessionView`
-- karaoke state names -> dialog state names
-- "karaoke highlighting" -> "active dialog line"
-- UI labels should say "Dialog" or "Interactive Dialog", not "Karaoke".
+- `DialogSessionView` is the dialog reader entry point.
+- Dialog state names describe active speakers and active dialog lines.
+- UI labels should say "Dialog" or "Interactive Dialog".
 
-Converge `KaraokeSessionView` and `InteractiveStorySessionView` into one dialog
-reader rather than maintaining two separate interactive readers.
+Keep `DialogSessionView` as the single dialog reader instead of maintaining
+multiple dialog/interactive reader implementations.
 
 The dialog reader should use:
 
@@ -214,14 +213,14 @@ Initial routing:
 
 - `.storyBook` -> prose story reader
 - `.audioStory` -> audio playlist reader
-- `.interactiveStory` -> dialog reader
+- `.dialogStory` -> dialog reader
 - `.comicBook` -> comic book reader
 - `.pictureBook` -> picture book reader
 
 Routing requirements:
 
-- Do not route `.standard` as a reader fallback.
-- Do not include `vocabularyBuilder` in story reader factory routing.
+- Route `.standard` to the prose story reader.
+- Do not include vocabulary-builder routing in the story reader factory.
 - Add iOS enum support for comic book and picture book story types, using raw
   values aligned with the published data contract.
 

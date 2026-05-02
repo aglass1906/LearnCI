@@ -83,10 +83,9 @@ private struct StoryTypeBadge: View {
         switch storyType {
         case .storyBook:         return .blue
         case .audioStory:        return .teal
-        case .interactiveStory:  return .purple
+        case .dialogStory:  return .purple
         case .comicBook:         return .indigo
         case .pictureBook:       return .pink
-        case .vocabularyBuilder: return .green
         case .standard:          return .gray
         }
     }

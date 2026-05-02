@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-struct KaraokeSessionView: View {
+struct DialogSessionView: View {
     let story: Story
     
     @State private var currentChapterIndex: Int = 0
@@ -78,7 +78,7 @@ struct KaraokeSessionView: View {
                     Rectangle()
                         .fill(Color(.systemGroupedBackground)) // Fallback
                     
-                    // The karaoke focused dialogue view
+                    // The dialog focused view
                     if activeSegmentIndex < segments.count {
                         let segment = segments[activeSegmentIndex]
                         
@@ -189,25 +189,25 @@ struct KaraokeSessionView: View {
     private func startAudioPlayback(for chapter: StoryChapter) {
         let remotePath = chapter.audioUrl ?? ""
         guard !remotePath.isEmpty else {
-            print("[KaraokeSession] No audio URL for chapter \(currentChapterIndex)")
+            print("[DialogSession] No audio URL for chapter \(currentChapterIndex)")
             return
         }
 
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let ext = (remotePath as NSString).pathExtension
         let finalExt = ext.isEmpty ? "mp3" : ext
-        let filename = "karaoke_chapter_\(chapter.id.uuidString).\(finalExt)"
+        let filename = "dialog_chapter_\(chapter.id.uuidString).\(finalExt)"
         let fileURL = docs.appendingPathComponent(filename)
 
         // Use cached local file if available
         if FileManager.default.fileExists(atPath: fileURL.path) {
-            print("[KaraokeSession] Playing cached chapter audio: \(filename)")
+            print("[DialogSession] Playing cached chapter audio: \(filename)")
             playLocalAudio(url: fileURL)
             return
         }
 
         // Download then play
-        print("[KaraokeSession] Downloading chapter audio from: \(remotePath)")
+        print("[DialogSession] Downloading chapter audio from: \(remotePath)")
         isDownloadingAudio = true
         Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
     }
@@ -238,10 +238,10 @@ struct KaraokeSessionView: View {
         }
 
         do {
-            print("[KaraokeSession] Downloading audio from \(url.absoluteString.prefix(80))…")
+            print("[DialogSession] Downloading audio from \(url.absoluteString.prefix(80))…")
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200, data.count > 1000 else {
-                print("[KaraokeSession] Audio download failed — HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0), \(data.count) bytes")
+                print("[DialogSession] Audio download failed — HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0), \(data.count) bytes")
                 await MainActor.run { isDownloadingAudio = false }
                 return
             }
@@ -251,14 +251,14 @@ struct KaraokeSessionView: View {
             let correctExt = isWAV ? "wav" : "mp3"
             let correctURL = localURL.deletingPathExtension().appendingPathExtension(correctExt)
             try data.write(to: correctURL)
-            print("[KaraokeSession] Downloaded (\(data.count / 1024)KB, \(correctExt)) — playing")
+            print("[DialogSession] Downloaded (\(data.count / 1024)KB, \(correctExt)) — playing")
 
             await MainActor.run {
                 isDownloadingAudio = false
                 playLocalAudio(url: correctURL)
             }
         } catch {
-            print("[KaraokeSession] Audio download error: \(error)")
+            print("[DialogSession] Audio download error: \(error)")
             await MainActor.run { isDownloadingAudio = false }
         }
     }

@@ -37,10 +37,9 @@ struct StoryPreferences: Codable, Equatable {
     enum StoryType: String, Codable, CaseIterable, Identifiable {
         case storyBook          = "storyBook"
         case audioStory         = "audioStory"
-        case interactiveStory   = "interactiveStory"
+        case dialogStory        = "dialogStory"
         case comicBook          = "comicBook"
         case pictureBook        = "pictureBook"
-        case vocabularyBuilder  = "vocabularyBuilder"
         case standard           = "Standard"   // legacy default for existing stories
 
         var id: String { rawValue }
@@ -49,11 +48,10 @@ struct StoryPreferences: Codable, Equatable {
             switch self {
             case .storyBook:         return "Story Book"
             case .audioStory:        return "Audio Story"
-            case .interactiveStory:  return "Dialog"
+            case .dialogStory:       return "Dialog"
             case .comicBook:         return "Comic Book"
             case .pictureBook:       return "Picture Book"
-            case .vocabularyBuilder: return "Vocabulary Builder"
-            case .standard:          return "Standard"
+            case .standard:          return "Story Book"
             }
         }
 
@@ -61,10 +59,9 @@ struct StoryPreferences: Codable, Equatable {
             switch self {
             case .storyBook:         return "book.fill"
             case .audioStory:        return "headphones"
-            case .interactiveStory:  return "text.bubble.fill"
+            case .dialogStory:       return "text.bubble.fill"
             case .comicBook:         return "rectangle.grid.2x2.fill"
             case .pictureBook:       return "photo.on.rectangle.angled"
-            case .vocabularyBuilder: return "text.book.closed.fill"
             case .standard:          return "book"
             }
         }
@@ -76,8 +73,8 @@ struct StoryPreferences: Codable, Equatable {
                 self = .comicBook
             case "picture", "pictureBook":
                 self = .pictureBook
-            case "dialog", "dialogStory", "dialogue", "dialogueStory", "interactiveStory":
-                self = .interactiveStory
+            case "dialog", "dialogStory", "dialogue", "dialogueStory":
+                self = .dialogStory
             default:
                 self = StoryType(rawValue: rawValue) ?? .standard
             }

@@ -67,9 +67,27 @@ struct StorySessionView: View {
         StoryReaderDataAdapter(story: story)
     }
 
+    private var storyBookSpineItems: [StoryReadingSpineItem] {
+        adapter.items(for: .storyBook)
+    }
+
+    private var storyBookChapterItems: [StoryReadingSpineItem] {
+        storyBookSpineItems.filter {
+            if case .chapter = $0 { return true }
+            return false
+        }
+    }
+
+    private var storyBookReadingMatterItems: [StoryReadingSpineItem] {
+        storyBookSpineItems.filter {
+            if case .readingMatterPage = $0 { return true }
+            return false
+        }
+    }
+
     var body: some View {
         Group {
-            if let issue = adapter.requirementIssue {
+            if let issue = adapter.requirementIssue(for: .storyBook) {
                 StoryReaderUnavailableView(title: issue.title, message: issue.message)
             } else {
                 readerBody
@@ -82,17 +100,9 @@ struct StorySessionView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        // Hero Media (video if available, cover image otherwise)
-                    HeroMediaView(
-                        story: story,
-                        image: $heroImage,
-                        isGeneratingVideo: false,
-                        videoStatus: nil,
-                        videoError: nil,
-                        onGenerateVideo: {}
-                    )
-                    .frame(height: 300)
-                    .clipped()
+                        if storyBookSpineItems.contains(.cover) {
+                            coverSection
+                        }
                     
                     VStack(alignment: .leading, spacing: 20) {
                         Text(story.title)
@@ -188,9 +198,9 @@ struct StorySessionView: View {
 
                     Button(action: {
                         if selectedLanguage == .target {
-                            UIPasteboard.general.string = story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: "\n\n")
+                            UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n")
                         } else {
-                            UIPasteboard.general.string = story.chapters.map { $0.bodyTextEnglishForReading }.joined(separator: "\n\n")
+                            UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextEnglishForReading }.joined(separator: "\n\n")
                         }
                     }) {
                         Label(
@@ -495,7 +505,7 @@ struct StorySessionView: View {
         Task {
             let level = LevelManager.shared.description(for: story.level)
             let questions = try? await OpenAIService().generateComprehensionQuestions(
-                storyText: story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: "\n\n"),
+                storyText: storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n"),
                 language: story.language.displayName,
                 level: level
             )
@@ -526,12 +536,26 @@ struct StorySessionView: View {
     }
 
     // MARK: - Text Chunking & Auto-Scroll
+
+    private var coverSection: some View {
+        HeroMediaView(
+            story: story,
+            image: $heroImage,
+            isGeneratingVideo: false,
+            videoStatus: nil,
+            videoError: nil,
+            onGenerateVideo: {}
+        )
+        .frame(height: 300)
+        .clipped()
+    }
     
     @ViewBuilder
     private var readingMatterSection: some View {
-        if !story.readingMatterPages.isEmpty {
+        if !storyBookReadingMatterItems.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(story.readingMatterPages) { page in
+                ForEach(storyBookReadingMatterItems) { item in
+                    if let page = adapter.readingMatterPage(for: item) {
                     VStack(alignment: .leading, spacing: 6) {
                         if let title = readerMatterText(page.titleTarget) {
                             Text(title)
@@ -548,6 +572,7 @@ struct StorySessionView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
                 }
             }
         }
@@ -560,9 +585,9 @@ struct StorySessionView: View {
 
     @ViewBuilder
     private var chapterHeaderView: some View {
-        if !story.chapters.isEmpty {
+        if !storyBookChapterItems.isEmpty {
             HStack {
-                Text("Chapter \(currentChapterIndex + 1) of \(story.chapters.count)")
+                Text("Chapter \(currentChapterPosition + 1) of \(storyBookChapterItems.count)")
                     .font(.caption)
                     .fontWeight(.bold)
                     .padding(.horizontal, 8)
@@ -631,7 +656,7 @@ struct StorySessionView: View {
             .cornerRadius(24, corners: [.topLeft, .topRight])
             .shadow(radius: 10, y: -5)
             .ignoresSafeArea(edges: .bottom)
-        } else if !story.chapters.isEmpty {
+        } else if !storyBookChapterItems.isEmpty {
             AudioPlayerBar(
                 isPlaying: $isPlaying,
                 sliderValue: $sliderValue,
@@ -644,9 +669,9 @@ struct StorySessionView: View {
                 onSkipBackward: skipBackward,
                 onSeek: seekTo,
                 onChangeRate: setRate,
-                onNextChapter: currentChapterIndex < story.chapters.count - 1 ? {
+                onNextChapter: nextChapterIndex != nil ? {
                     if isPlaying { togglePlay() }
-                    currentChapterIndex += 1
+                    moveToChapter(nextChapterIndex)
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
@@ -654,9 +679,9 @@ struct StorySessionView: View {
                     setupAudio()
                     showingChapterCard = true
                 } : nil,
-                onPreviousChapter: currentChapterIndex > 0 ? {
+                onPreviousChapter: previousChapterIndex != nil ? {
                     if isPlaying { togglePlay() }
-                    currentChapterIndex -= 1
+                    moveToChapter(previousChapterIndex)
                     activeWordIndex = nil
                     activeParagraphId = nil
                     sliderValue = 0
@@ -670,9 +695,36 @@ struct StorySessionView: View {
     }
 
     private var currentChapter: StoryChapter? {
-        guard !story.chapters.isEmpty else { return nil }
-        guard currentChapterIndex < story.chapters.count else { return nil }
-        return story.chapters[currentChapterIndex]
+        guard let item = storyBookChapterItems.first(where: { chapterIndex(for: $0) == currentChapterIndex }) else { return nil }
+        return adapter.chapter(for: item)
+    }
+
+    private var currentChapterPosition: Int {
+        storyBookChapterItems.firstIndex { chapterIndex(for: $0) == currentChapterIndex } ?? 0
+    }
+
+    private var nextChapterIndex: Int? {
+        chapterIndex(atChapterSpineOffset: 1)
+    }
+
+    private var previousChapterIndex: Int? {
+        chapterIndex(atChapterSpineOffset: -1)
+    }
+
+    private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
+        guard case .chapter(let index) = item else { return nil }
+        return index
+    }
+
+    private func chapterIndex(atChapterSpineOffset offset: Int) -> Int? {
+        let targetPosition = currentChapterPosition + offset
+        guard storyBookChapterItems.indices.contains(targetPosition) else { return nil }
+        return chapterIndex(for: storyBookChapterItems[targetPosition])
+    }
+
+    private func moveToChapter(_ chapterIndex: Int?) {
+        guard let chapterIndex else { return }
+        currentChapterIndex = chapterIndex
     }
 
     private var currentChapterClips: [StorySceneAudioClip] {
@@ -696,8 +748,8 @@ struct StorySessionView: View {
             return
         }
 
-        if currentChapterIndex < story.chapters.count - 1 {
-            currentChapterIndex += 1
+        if let nextChapterIndex {
+            currentChapterIndex = nextChapterIndex
             currentSceneClipIndex = 0
             activeWordIndex = nil
             activeParagraphId = nil

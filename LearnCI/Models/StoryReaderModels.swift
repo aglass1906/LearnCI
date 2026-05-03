@@ -338,6 +338,7 @@ enum StoryReadingSpineItem: Identifiable, Equatable {
     case cover
     case readingMatterPage(index: Int, id: String)
     case chapter(index: Int)
+    case scene(chapterIndex: Int, sceneIndex: Int)
 
     var id: String {
         switch self {
@@ -347,19 +348,39 @@ enum StoryReadingSpineItem: Identifiable, Equatable {
             return "matter-\(index)-\(id)"
         case .chapter(let index):
             return "chapter-\(index)"
+        case .scene(let chapterIndex, let sceneIndex):
+            return "scene-\(chapterIndex)-\(sceneIndex)"
         }
     }
+}
+
+enum StoryReadingSpineMode {
+    case storyBook
+    case audioBook
+    case pictureBook
+    case comicBook
+    case dialogStory
 }
 
 struct StoryReadingSpine {
     var items: [StoryReadingSpineItem]
 
-    static func make(for story: Story) -> StoryReadingSpine {
+    static func make(for story: Story, mode: StoryReadingSpineMode = .storyBook) -> StoryReadingSpine {
         var items: [StoryReadingSpineItem] = [.cover]
         items.append(contentsOf: story.readingMatterPages.enumerated().map { index, page in
             .readingMatterPage(index: index, id: page.id)
         })
-        items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+
+        switch mode {
+        case .storyBook:
+            items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+        case .audioBook, .dialogStory:
+            items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+            items.append(contentsOf: sceneItems(for: story, useLayoutOrder: false))
+        case .pictureBook, .comicBook:
+            items.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
+        }
+
         return StoryReadingSpine(items: items)
     }
 
@@ -367,6 +388,41 @@ struct StoryReadingSpine {
         items.compactMap {
             if case .chapter(let index) = $0 { return index }
             return nil
+        }
+    }
+
+    var sceneItems: [StoryReadingSpineItem] {
+        items.filter {
+            if case .scene = $0 { return true }
+            return false
+        }
+    }
+
+    private static func sceneItems(for story: Story, useLayoutOrder: Bool) -> [StoryReadingSpineItem] {
+        if useLayoutOrder {
+            let panels = story.storyLayout?.flatSequence ?? []
+            let layoutItems = panels.map {
+                StoryReadingSpineItem.scene(chapterIndex: $0.chapterIndex, sceneIndex: $0.sceneIndex)
+            }
+            if !layoutItems.isEmpty {
+                return uniqueSceneItems(layoutItems)
+            }
+        }
+
+        let chapterOrderedItems = story.chapters.indices.flatMap { chapterIndex in
+            story.chapters[chapterIndex].scenes
+                .sorted { $0.sceneIndex < $1.sceneIndex }
+                .map { StoryReadingSpineItem.scene(chapterIndex: chapterIndex, sceneIndex: $0.sceneIndex) }
+        }
+        return uniqueSceneItems(chapterOrderedItems)
+    }
+
+    private static func uniqueSceneItems(_ items: [StoryReadingSpineItem]) -> [StoryReadingSpineItem] {
+        var seen = Set<String>()
+        return items.filter { item in
+            guard !seen.contains(item.id) else { return false }
+            seen.insert(item.id)
+            return true
         }
     }
 }

@@ -18,6 +18,9 @@ enum StoryReaderRequirementIssue: Equatable {
     case noScenes
     case incompleteSceneText
     case incompleteSceneAudio
+    case noVisiblePages
+    case incompleteSceneImages
+    case missingLayout
 
     var title: String {
         switch self {
@@ -29,6 +32,12 @@ enum StoryReaderRequirementIssue: Equatable {
             return "Scene Text Missing"
         case .incompleteSceneAudio:
             return "Scene Audio Missing"
+        case .noVisiblePages:
+            return "Reader Data Missing"
+        case .incompleteSceneImages:
+            return "Scene Images Missing"
+        case .missingLayout:
+            return "Layout Missing"
         }
     }
 
@@ -42,6 +51,12 @@ enum StoryReaderRequirementIssue: Equatable {
             return "This reader needs scene target text before it can render the story."
         case .incompleteSceneAudio:
             return "This reader needs scene-level audio for every scene. Chapter-level audio is no longer used as a fallback."
+        case .noVisiblePages:
+            return "This reader needs spine, reading matter, or scene data before it can render the story."
+        case .incompleteSceneImages:
+            return "This reader needs scene images or story/chapter cover images before it can render picture pages."
+        case .missingLayout:
+            return "This reader needs published layout pages before it can render the story."
         }
     }
 }
@@ -53,12 +68,60 @@ struct StoryReaderDataAdapter {
         StoryReadingSpine.make(for: story)
     }
 
+    func spine(for mode: StoryReadingSpineMode) -> StoryReadingSpine {
+        StoryReadingSpine.make(for: story, mode: mode)
+    }
+
+    func items(for mode: StoryReadingSpineMode) -> [StoryReadingSpineItem] {
+        spine(for: mode).items
+    }
+
+    func chapter(for item: StoryReadingSpineItem) -> StoryChapter? {
+        guard case .chapter(let index) = item else { return nil }
+        return story.chapters[safeReaderData: index]
+    }
+
+    func readingMatterPage(for item: StoryReadingSpineItem) -> ReadingMatterPage? {
+        guard case .readingMatterPage(let index, let id) = item else { return nil }
+        guard let page = story.readingMatterPages[safeReaderData: index] else { return nil }
+        return page.id == id ? page : nil
+    }
+
+    func scene(for item: StoryReadingSpineItem) -> StoryScene? {
+        guard case .scene(let chapterIndex, let sceneIndex) = item else { return nil }
+        return story.chapters[safeReaderData: chapterIndex]?.scenes.first { $0.sceneIndex == sceneIndex }
+    }
+
     var requirementIssue: StoryReaderRequirementIssue? {
+        requirementIssue(for: .storyBook)
+    }
+
+    func requirementIssue(for mode: StoryReadingSpineMode) -> StoryReaderRequirementIssue? {
         let chapters = story.chapters
         guard !chapters.isEmpty else { return .noChapters }
         guard chapters.allSatisfy({ !$0.scenes.isEmpty }) else { return .noScenes }
-        guard chapters.allSatisfy({ !$0.bodyTextTargetForReading.isEmpty }) else { return .incompleteSceneText }
-        guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+
+        switch mode {
+        case .storyBook:
+            guard chapters.allSatisfy({ !$0.bodyTextTargetForReading.isEmpty }) else { return .incompleteSceneText }
+            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+        case .audioBook, .dialogStory:
+            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+        case .pictureBook:
+            let visibleItems = items(for: .pictureBook)
+            guard visibleItems.contains(.cover) || visibleItems.contains(where: isReadingMatterPage) || visibleItems.contains(where: isScene) else {
+                return .noVisiblePages
+            }
+            guard visibleItems.allSatisfy({ item in
+                guard case .scene(let chapterIndex, _) = item else { return true }
+                guard let scene = scene(for: item) else { return false }
+                return sceneImageURL(scene: scene, chapterIndex: chapterIndex) != nil
+            }) else { return .incompleteSceneImages }
+        case .comicBook:
+            guard let layout = story.storyLayout, !layout.pages.isEmpty else { return .missingLayout }
+            guard !spine(for: .comicBook).sceneItems.isEmpty else { return .noScenes }
+        }
+
         return nil
     }
 
@@ -98,8 +161,44 @@ struct StoryReaderDataAdapter {
             }
     }
 
+    func audioClip(for sceneItem: StoryReadingSpineItem) -> StorySceneAudioClip? {
+        guard case .scene(let chapterIndex, let sceneIndex) = sceneItem else { return nil }
+        return audioClips(forChapter: chapterIndex).first { $0.sceneIndex == sceneIndex }
+    }
+
+    func audioClips(for mode: StoryReadingSpineMode) -> [StorySceneAudioClip] {
+        var offset = 0.0
+        return spine(for: mode).sceneItems.compactMap { item in
+            guard var clip = audioClip(for: item) else { return nil }
+            clip = StorySceneAudioClip(
+                id: clip.id,
+                chapterIndex: clip.chapterIndex,
+                sceneIndex: clip.sceneIndex,
+                sceneOrdinal: clip.sceneOrdinal,
+                urlString: clip.urlString,
+                duration: clip.duration,
+                startOffset: offset,
+                title: clip.title,
+                caption: clip.caption,
+                imageURL: clip.imageURL
+            )
+            offset += clip.duration ?? 0
+            return clip
+        }
+    }
+
+    private func isReadingMatterPage(_ item: StoryReadingSpineItem) -> Bool {
+        if case .readingMatterPage = item { return true }
+        return false
+    }
+
+    private func isScene(_ item: StoryReadingSpineItem) -> Bool {
+        if case .scene = item { return true }
+        return false
+    }
+
     func allAudioClips() -> [StorySceneAudioClip] {
-        spine.chapterIndices.flatMap { audioClips(forChapter: $0) }
+        audioClips(for: .audioBook)
     }
 
     func duration(forChapter chapterIndex: Int, fallback: Double = 0) -> Double {

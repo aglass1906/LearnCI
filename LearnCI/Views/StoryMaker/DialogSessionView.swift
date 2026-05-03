@@ -5,6 +5,7 @@ struct DialogSessionView: View {
     let story: Story
     
     @State private var currentChapterIndex: Int = 0
+    @State private var currentSceneClipIndex: Int = 0
     @State private var segments: [StorySegmentTiming] = []
     
     // Playback state
@@ -24,8 +25,22 @@ struct DialogSessionView: View {
     
     // 20Hz UI Update Timer
     let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
+
+    private var adapter: StoryReaderDataAdapter {
+        StoryReaderDataAdapter(story: story)
+    }
     
     var body: some View {
+        Group {
+            if let issue = adapter.requirementIssue(for: .dialogStory) {
+                StoryReaderUnavailableView(title: issue.title, message: issue.message)
+            } else {
+                dialogBody
+            }
+        }
+    }
+
+    private var dialogBody: some View {
         ZStack {
             if showingChapterCard, let chapter = currentChapter {
                 // Dimissible Chapter Card Overlay
@@ -36,7 +51,7 @@ struct DialogSessionView: View {
                 ) {
                     // Start playback on continue
                     showingChapterCard = false
-                    startAudioPlayback(for: chapter)
+                    startAudioPlayback()
                 }
                 .transition(.opacity)
                 .zIndex(10)
@@ -160,9 +175,16 @@ struct DialogSessionView: View {
     // MARK: - Logic & Properties
     
     private var currentChapter: StoryChapter? {
-        let chapters = story.chapters
-        guard currentChapterIndex < chapters.count else { return nil }
-        return chapters[currentChapterIndex]
+        adapter.chapter(for: .chapter(index: currentChapterIndex))
+    }
+
+    private var currentChapterClips: [StorySceneAudioClip] {
+        adapter.audioClips(forChapter: currentChapterIndex)
+    }
+
+    private var currentClipStartOffset: Double {
+        guard currentChapterClips.indices.contains(currentSceneClipIndex) else { return 0 }
+        return currentChapterClips[currentSceneClipIndex].startOffset
     }
     
     private func initializeChapter(at index: Int) {
@@ -186,36 +208,53 @@ struct DialogSessionView: View {
     
     @State private var isDownloadingAudio: Bool = false
 
-    private func startAudioPlayback(for chapter: StoryChapter) {
-        let remotePath = chapter.audioUrl ?? ""
-        guard !remotePath.isEmpty else {
-            print("[DialogSession] No audio URL for chapter \(currentChapterIndex)")
+    private func startAudioPlayback(startAt: Double = 0, autoplay: Bool = true, delayBeforePlay: Bool = true) {
+        let clips = currentChapterClips
+        guard !clips.isEmpty else {
+            print("[DialogSession] No scene audio URL for chapter \(currentChapterIndex)")
             return
         }
 
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let ext = (remotePath as NSString).pathExtension
-        let finalExt = ext.isEmpty ? "mp3" : ext
-        let filename = "dialog_chapter_\(chapter.id.uuidString).\(finalExt)"
-        let fileURL = docs.appendingPathComponent(filename)
+        currentSceneClipIndex = min(currentSceneClipIndex, clips.count - 1)
+        let clip = clips[currentSceneClipIndex]
+        let fileURL = StoryReaderDataAdapter.localAudioURL(storyID: story.id, clip: clip)
 
         // Use cached local file if available
         if FileManager.default.fileExists(atPath: fileURL.path) {
-            print("[DialogSession] Playing cached chapter audio: \(filename)")
-            playLocalAudio(url: fileURL)
+            print("[DialogSession] Playing cached scene audio: \(fileURL.lastPathComponent)")
+            playLocalAudio(url: fileURL, startAt: startAt, autoplay: autoplay, delayBeforePlay: delayBeforePlay)
             return
         }
 
         // Download then play
-        print("[DialogSession] Downloading chapter audio from: \(remotePath)")
+        print("[DialogSession] Downloading scene audio from: \(clip.urlString)")
         isDownloadingAudio = true
-        Task { await downloadAndPlayAudio(remotePath: remotePath, localURL: fileURL) }
+        Task {
+            await downloadAndPlayAudio(
+                clip: clip,
+                localURL: fileURL,
+                startAt: startAt,
+                autoplay: autoplay,
+                delayBeforePlay: delayBeforePlay
+            )
+        }
     }
 
-    private func playLocalAudio(url: URL) {
-        audioManager.streamAudio(url: url)
+    private func playLocalAudio(url: URL, startAt: Double = 0, autoplay: Bool = true, delayBeforePlay: Bool = true) {
+        audioManager.streamAudio(url: url, startAt: startAt)
         bumpHoldGeneration()
-        // 1.5-second pause after Continue before audio begins — gives the user a
+        guard autoplay else {
+            isPlaying = false
+            return
+        }
+
+        guard delayBeforePlay else {
+            audioManager.playStream()
+            isPlaying = true
+            return
+        }
+
+        // 1.5-second pause after Continue before audio begins gives the user a
         // moment to settle before the story dialogue starts.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.audioManager.playStream()
@@ -223,16 +262,14 @@ struct DialogSessionView: View {
         }
     }
 
-    private func downloadAndPlayAudio(remotePath: String, localURL: URL) async {
-        let supabaseAudioBase = "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/audio-stories"
-        let remoteURL: URL?
-        if remotePath.hasPrefix("https://") {
-            remoteURL = URL(string: remotePath)
-        } else {
-            remoteURL = URL(string: "\(supabaseAudioBase)/\(remotePath)")
-        }
-
-        guard let url = remoteURL else {
+    private func downloadAndPlayAudio(
+        clip: StorySceneAudioClip,
+        localURL: URL,
+        startAt: Double = 0,
+        autoplay: Bool = true,
+        delayBeforePlay: Bool = true
+    ) async {
+        guard let url = StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else {
             await MainActor.run { isDownloadingAudio = false }
             return
         }
@@ -255,7 +292,7 @@ struct DialogSessionView: View {
 
             await MainActor.run {
                 isDownloadingAudio = false
-                playLocalAudio(url: correctURL)
+                playLocalAudio(url: correctURL, startAt: startAt, autoplay: autoplay, delayBeforePlay: delayBeforePlay)
             }
         } catch {
             print("[DialogSession] Audio download error: \(error)")
@@ -271,6 +308,10 @@ struct DialogSessionView: View {
     
     private func togglePlayback() {
         bumpHoldGeneration()
+        if audioManager.streamPlayer == nil {
+            startAudioPlayback()
+            return
+        }
         if isPlaying {
             audioManager.pauseStream()
             isPlaying = false
@@ -286,7 +327,12 @@ struct DialogSessionView: View {
         guard isPlaying, audioManager.isStreaming else { return }
         
         // Calculate new local time
-        let rawCurrentSecs = audioManager.streamCurrentTime
+        if audioManager.streamFinished {
+            advanceAfterSceneClipFinished()
+            return
+        }
+
+        let rawCurrentSecs = currentClipStartOffset + audioManager.streamCurrentTime
         let newLocalMs = rawCurrentSecs * 1000.0
         
         // Active segment mapping (Spec §7)
@@ -312,12 +358,6 @@ struct DialogSessionView: View {
             }
         }
         
-        // Check for end of chapter (when audio stops naturally)
-        if newActiveIndex == segments.count - 1 && audioManager.streamDuration > 0 && 
-            rawCurrentSecs >= audioManager.streamDuration - 0.5 {
-            advanceToNextChapter()
-        }
-        
         // Update time and non-hold segment index
         self.localTimeMs = newLocalMs
         if !isHoldInProgress {
@@ -337,14 +377,14 @@ struct DialogSessionView: View {
         let targetIndex = activeSegmentIndex + 1
         let targetStartTime = max(0, segments[targetIndex].startTime - 0.05) // 50ms pre-roll
         
-        audioManager.seekStream(to: targetStartTime)
+        seekToTimelineTime(targetStartTime)
         self.activeSegmentIndex = targetIndex
         self.localTimeMs = targetStartTime * 1000.0
     }
     
     private func skipToPreviousLine() {
         guard activeSegmentIndex > 0 else {
-            audioManager.seekStream(to: 0)
+            seekToTimelineTime(0)
             self.localTimeMs = 0
             return
         }
@@ -353,19 +393,47 @@ struct DialogSessionView: View {
         let targetIndex = activeSegmentIndex - 1
         let targetStartTime = max(0, segments[targetIndex].startTime - 0.05) // 50ms pre-roll
         
-        audioManager.seekStream(to: targetStartTime)
+        seekToTimelineTime(targetStartTime)
         self.activeSegmentIndex = targetIndex
         self.localTimeMs = targetStartTime * 1000.0
+    }
+
+    private func seekToTimelineTime(_ timelineTime: Double) {
+        guard let target = adapter.clipIndex(forChapter: currentChapterIndex, localTime: timelineTime) else {
+            audioManager.seekStream(to: timelineTime)
+            return
+        }
+
+        if target.index == currentSceneClipIndex {
+            audioManager.seekStream(to: target.offset)
+        } else {
+            let shouldResume = isPlaying
+            currentSceneClipIndex = target.index
+            startAudioPlayback(startAt: target.offset, autoplay: shouldResume, delayBeforePlay: false)
+        }
     }
     
     private func advanceToNextChapter() {
         let chapters = story.chapters
         guard currentChapterIndex < chapters.count - 1 else { return }
         stopAudio()
+        currentSceneClipIndex = 0
         // Pause 2 seconds after the chapter ends before showing the next chapter card
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.currentChapterIndex += 1
         }
+    }
+
+    private func advanceAfterSceneClipFinished() {
+        audioManager.streamFinished = false
+        let clips = currentChapterClips
+        if currentSceneClipIndex < clips.count - 1 {
+            currentSceneClipIndex += 1
+            startAudioPlayback(delayBeforePlay: false)
+            return
+        }
+
+        advanceToNextChapter()
     }
     
     // MARK: - Timed Narration Holds (Spec §8.4)

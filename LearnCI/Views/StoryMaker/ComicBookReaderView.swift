@@ -6,17 +6,20 @@ struct ComicBookReaderView: View {
     @State private var currentPageIndex = 0
     @State private var selectedPanel: ComicPanelModel?
 
+    private var adapter: StoryReaderDataAdapter {
+        StoryReaderDataAdapter(story: story)
+    }
+
     private var pages: [ComicBookPageModel] {
-        ComicBookRenderer.makePages(story: story)
+        ComicBookRenderer.makePages(story: story, adapter: adapter)
     }
 
     var body: some View {
         Group {
-            if pages.isEmpty {
-                StoryReaderUnavailableView(
-                    title: "Comic Layout Missing",
-                    message: "This comic book needs layout pages and scene data before it can be rendered."
-                )
+            if let issue = adapter.requirementIssue(for: .comicBook) {
+                StoryReaderUnavailableView(title: issue.title, message: issue.message)
+            } else if pages.isEmpty {
+                StoryReaderUnavailableView(title: "Comic Layout Missing", message: "This comic book has no visible spine-backed panels.")
             } else {
                 comicPager
             }
@@ -60,21 +63,24 @@ struct ComicBookReaderView: View {
 }
 
 struct ComicBookRenderer {
-    static func makePages(story: Story) -> [ComicBookPageModel] {
+    static func makePages(story: Story, adapter: StoryReaderDataAdapter) -> [ComicBookPageModel] {
         guard let layout = story.storyLayout, !layout.pages.isEmpty else { return [] }
+        let spineSceneIDs = Set(adapter.spine(for: .comicBook).sceneItems.map(\.id))
 
         return layout.pages.enumerated().map { pageIndex, page in
             let panels = page.canvases
                 .flatMap(\.panels)
                 .compactMap { panel -> ComicPanelModel? in
-                    guard let scene = story.scene(atChapter: panel.chapterIndex, scene: panel.sceneIndex) else {
+                    let spineItem = StoryReadingSpineItem.scene(chapterIndex: panel.chapterIndex, sceneIndex: panel.sceneIndex)
+                    guard spineSceneIDs.contains(spineItem.id),
+                          let scene = adapter.scene(for: spineItem) else {
                         return nil
                     }
                     return ComicPanelModel(
                         panel: panel,
                         scene: scene,
                         chapter: story.chapters[safe: panel.chapterIndex],
-                        imageURL: story.imageURL(for: scene, chapterIndex: panel.chapterIndex)
+                        imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: panel.chapterIndex)
                     )
                 }
 
@@ -306,28 +312,6 @@ private struct ComicPageControls: View {
             .disabled(!canGoForward)
         }
         .buttonStyle(.borderedProminent)
-    }
-}
-
-private extension Story {
-    func scene(atChapter chapterIndex: Int, scene sceneIndex: Int) -> StoryScene? {
-        chapters[safe: chapterIndex]?.scenes.first { $0.sceneIndex == sceneIndex }
-    }
-
-    func imageURL(for scene: StoryScene, chapterIndex: Int) -> URL? {
-        if let imageUrl = scene.imageUrl?.nilIfEmpty {
-            return AppConfig.chapterCoverURL(imageUrl)
-        }
-        if let coverUrl = chapters[safe: chapterIndex]?.coverUrl?.nilIfEmpty {
-            return AppConfig.chapterCoverURL(coverUrl)
-        }
-        if let remoteCoverPath = remoteCoverPath?.nilIfEmpty {
-            return AppConfig.chapterCoverURL(remoteCoverPath)
-        }
-        if let coverArt = coverArt?.nilIfEmpty {
-            return AppConfig.chapterCoverURL(coverArt)
-        }
-        return nil
     }
 }
 

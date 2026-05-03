@@ -3,17 +3,20 @@ import SwiftUI
 struct PictureBookReaderView: View {
     let story: Story
 
+    private var adapter: StoryReaderDataAdapter {
+        StoryReaderDataAdapter(story: story)
+    }
+
     private var spreads: [PictureBookSpreadModel] {
-        PictureBookRenderer.makeSpreads(story: story)
+        PictureBookRenderer.makeSpreads(story: story, adapter: adapter)
     }
 
     var body: some View {
         Group {
-            if spreads.isEmpty {
-                StoryReaderUnavailableView(
-                    title: "Picture Layout Missing",
-                    message: "This picture book needs layout pages and scene data before it can be rendered."
-                )
+            if let issue = adapter.requirementIssue(for: .pictureBook) {
+                StoryReaderUnavailableView(title: issue.title, message: issue.message)
+            } else if spreads.isEmpty {
+                StoryReaderUnavailableView(title: "Reader Data Missing", message: "This picture book has no visible spine items.")
             } else {
                 TabView {
                     ForEach(spreads) { spread in
@@ -30,31 +33,61 @@ struct PictureBookReaderView: View {
 }
 
 struct PictureBookRenderer {
-    static func makeSpreads(story: Story) -> [PictureBookSpreadModel] {
-        guard let layout = story.storyLayout else { return [] }
-
-        let panels = layout.flatSequence.isEmpty
-            ? layout.pages.flatMap { $0.canvases.flatMap(\.panels) }
-            : layout.flatSequence
-
-        return panels.compactMap { panel in
-            guard let scene = story.sceneForPictureBook(chapterIndex: panel.chapterIndex, sceneIndex: panel.sceneIndex) else {
+    static func makeSpreads(story: Story, adapter: StoryReaderDataAdapter) -> [PictureBookSpreadModel] {
+        adapter.items(for: .pictureBook).compactMap { item in
+            switch item {
+            case .cover:
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    title: story.title,
+                    subtitle: "\(story.language.displayName) · Level \(story.level)",
+                    body: nil,
+                    scene: nil,
+                    imageURL: coverURL(for: story)
+                )
+            case .readingMatterPage:
+                guard let page = adapter.readingMatterPage(for: item) else { return nil }
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    title: page.titleTarget?.nilIfEmptyForPictureBook,
+                    subtitle: nil,
+                    body: page.bodyTarget?.nilIfEmptyForPictureBook,
+                    scene: nil,
+                    imageURL: coverURL(for: story)
+                )
+            case .chapter:
                 return nil
+            case .scene(let chapterIndex, _):
+                guard let scene = adapter.scene(for: item) else { return nil }
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    title: story.chapters[safeForPictureBook: chapterIndex]?.titleTargetLanguage.nilIfEmptyForPictureBook,
+                    subtitle: nil,
+                    body: scene.captionTarget?.nilIfEmptyForPictureBook,
+                    scene: scene,
+                    imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex)
+                )
             }
-
-            return PictureBookSpreadModel(
-                chapterTitle: story.chapters[safeForPictureBook: panel.chapterIndex]?.titleTargetLanguage,
-                scene: scene,
-                imageURL: story.imageURLForPictureBook(scene: scene, chapterIndex: panel.chapterIndex)
-            )
         }
+    }
+
+    private static func coverURL(for story: Story) -> URL? {
+        if let remoteCoverPath = story.remoteCoverPath?.nilIfEmptyForPictureBook {
+            return AppConfig.chapterCoverURL(remoteCoverPath)
+        }
+        if let coverArt = story.coverArt?.nilIfEmptyForPictureBook {
+            return AppConfig.chapterCoverURL(coverArt)
+        }
+        return nil
     }
 }
 
 struct PictureBookSpreadModel: Identifiable {
-    let id = UUID()
-    let chapterTitle: String?
-    let scene: StoryScene
+    let id: String
+    let title: String?
+    let subtitle: String?
+    let body: String?
+    let scene: StoryScene?
     let imageURL: URL?
 }
 
@@ -85,49 +118,35 @@ private struct PictureBookSpreadView: View {
             .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 10) {
-                if let chapterTitle = spread.chapterTitle {
-                    Text(chapterTitle)
+                if let title = spread.title {
+                    Text(title)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                }
+
+                if let subtitle = spread.subtitle {
+                    Text(subtitle)
                         .font(.caption.weight(.bold))
                         .textCase(.uppercase)
                         .foregroundStyle(.white.opacity(0.76))
                 }
 
-                if let caption = spread.scene.captionTarget?.nilIfEmptyForPictureBook {
-                    Text(caption)
+                if let body = spread.body {
+                    Text(body)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(.white)
                 }
 
-                ForEach(spread.scene.dialogues.prefix(3)) { dialogue in
-                    Text("\(dialogue.character): \(dialogue.text)")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.92))
+                if let scene = spread.scene {
+                    ForEach(scene.dialogues.prefix(3)) { dialogue in
+                        Text("\(dialogue.character): \(dialogue.text)")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.92))
+                    }
                 }
             }
             .padding(22)
         }
-    }
-}
-
-private extension Story {
-    func sceneForPictureBook(chapterIndex: Int, sceneIndex: Int) -> StoryScene? {
-        chapters[safeForPictureBook: chapterIndex]?.scenes.first { $0.sceneIndex == sceneIndex }
-    }
-
-    func imageURLForPictureBook(scene: StoryScene, chapterIndex: Int) -> URL? {
-        if let imageUrl = scene.imageUrl?.nilIfEmptyForPictureBook {
-            return AppConfig.chapterCoverURL(imageUrl)
-        }
-        if let coverUrl = chapters[safeForPictureBook: chapterIndex]?.coverUrl?.nilIfEmptyForPictureBook {
-            return AppConfig.chapterCoverURL(coverUrl)
-        }
-        if let remoteCoverPath = remoteCoverPath?.nilIfEmptyForPictureBook {
-            return AppConfig.chapterCoverURL(remoteCoverPath)
-        }
-        if let coverArt = coverArt?.nilIfEmptyForPictureBook {
-            return AppConfig.chapterCoverURL(coverArt)
-        }
-        return nil
     }
 }
 

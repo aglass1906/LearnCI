@@ -22,13 +22,31 @@ struct AudioBookReaderView: View {
         StoryReaderDataAdapter(story: story)
     }
 
+    private var spineItems: [StoryReadingSpineItem] {
+        adapter.items(for: .audioBook)
+    }
+
+    private var readingMatterItems: [StoryReadingSpineItem] {
+        spineItems.filter {
+            if case .readingMatterPage = $0 { return true }
+            return false
+        }
+    }
+
+    private var chapterItems: [StoryReadingSpineItem] {
+        spineItems.filter {
+            if case .chapter = $0 { return true }
+            return false
+        }
+    }
+
     private var clips: [StorySceneAudioClip] {
-        adapter.allAudioClips()
+        adapter.audioClips(for: .audioBook)
     }
 
     var body: some View {
         Group {
-            if let issue = adapter.requirementIssue {
+            if let issue = adapter.requirementIssue(for: .audioBook) {
                 StoryReaderUnavailableView(title: issue.title, message: issue.message)
             } else {
                 audioBookBody
@@ -61,9 +79,11 @@ struct AudioBookReaderView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    coverHeader
+                    if spineItems.contains(.cover) {
+                        coverHeader
+                    }
 
-                    if !story.readingMatterPages.isEmpty {
+                    if !readingMatterItems.isEmpty {
                         readingMatterSection
                     }
 
@@ -94,7 +114,8 @@ struct AudioBookReaderView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Reading Matter")
                 .font(.headline)
-            ForEach(story.readingMatterPages) { page in
+            ForEach(readingMatterItems) { item in
+                if let page = adapter.readingMatterPage(for: item) {
                 VStack(alignment: .leading, spacing: 6) {
                     if let title = page.titleTarget?.nilIfEmptyAudioBook {
                         Text(title)
@@ -111,6 +132,7 @@ struct AudioBookReaderView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color(.secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
             }
         }
     }
@@ -120,33 +142,37 @@ struct AudioBookReaderView: View {
             Text("Chapter Playlist")
                 .font(.headline)
 
-            ForEach(Array(clips.enumerated()), id: \.element.id) { index, clip in
+            ForEach(chapterItems) { item in
+                if let chapter = adapter.chapter(for: item),
+                   let chapterIndex = chapterIndex(for: item),
+                   let firstClipIndex = firstClipIndex(forChapter: chapterIndex) {
                 Button {
-                    playClip(at: index, autoplay: true)
+                    playClip(at: firstClipIndex, autoplay: true)
                 } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: index == currentClipIndex && isPlaying ? "speaker.wave.2.fill" : "play.circle")
+                        Image(systemName: currentChapterIndex == chapterIndex && isPlaying ? "speaker.wave.2.fill" : "play.circle")
                             .font(.title3)
-                            .foregroundStyle(index == currentClipIndex ? Color.accentColor : .secondary)
+                            .foregroundStyle(currentChapterIndex == chapterIndex ? Color.accentColor : .secondary)
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(clip.title)
+                            Text(chapter.titleTargetLanguage.isEmpty ? "Chapter \(chapterIndex + 1)" : chapter.titleTargetLanguage)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.primary)
-                            Text(clip.caption.isEmpty ? "Scene \(clip.sceneIndex + 1)" : clip.caption)
+                            Text(chapter.bodyTextTargetForReading)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
                         }
 
                         Spacer()
-                        Text("S\(clip.sceneIndex + 1)")
+                        Text("\(clipsForChapter(chapterIndex).count) scenes")
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 8)
                 }
                 .buttonStyle(.plain)
+                }
             }
         }
     }
@@ -338,6 +364,24 @@ struct AudioBookReaderView: View {
     private func setRate(_ rate: Float) {
         playbackRate = rate
         audioManager.setStreamRate(rate)
+    }
+
+    private var currentChapterIndex: Int? {
+        guard clips.indices.contains(currentClipIndex) else { return nil }
+        return clips[currentClipIndex].chapterIndex
+    }
+
+    private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
+        guard case .chapter(let index) = item else { return nil }
+        return index
+    }
+
+    private func firstClipIndex(forChapter chapterIndex: Int) -> Int? {
+        clips.firstIndex { $0.chapterIndex == chapterIndex }
+    }
+
+    private func clipsForChapter(_ chapterIndex: Int) -> [StorySceneAudioClip] {
+        clips.filter { $0.chapterIndex == chapterIndex }
     }
 }
 

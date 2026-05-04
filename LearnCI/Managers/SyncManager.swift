@@ -994,6 +994,8 @@ struct CoachingCheckInDTO: Codable {
         for dto in dtos {
             if let existing = localStories.first(where: { $0.id == dto.id }) {
                 // Update
+                let previousUpdatedAt = existing.updatedAt
+                let previousChaptersJSON = existing.chaptersJSON
                 existing.title = dto.title
                 existing.isFavorite = dto.is_favorite
                 existing.textGenPrompt = dto.text_gen_prompt
@@ -1043,7 +1045,14 @@ struct CoachingCheckInDTO: Codable {
                 }
 
                 if let chapters = dto.chapters, let data = try? JSONEncoder().encode(chapters) {
-                    existing.chaptersJSON = String(data: data, encoding: .utf8)
+                    let nextChaptersJSON = String(data: data, encoding: .utf8)
+                    if nextChaptersJSON != previousChaptersJSON || dto.updated_at != previousUpdatedAt {
+                        let deleted = StoryReaderDataAdapter.deleteCachedStoryAudio(storyID: existing.id)
+                        if deleted > 0 {
+                            print("[Sync] Stories: Cleared stale scene audio cache for '\(existing.title)'")
+                        }
+                    }
+                    existing.chaptersJSON = nextChaptersJSON
                     // Trigger downloads for each chapter
                     downloadChapterAudio(for: existing, context: context)
                 }

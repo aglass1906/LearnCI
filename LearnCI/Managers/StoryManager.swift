@@ -563,6 +563,8 @@ class StoryManager {
     }
 
     func deleteStory(_ story: Story, context: ModelContext) {
+        StoryReaderDataAdapter.deleteCachedStoryMedia(storyID: story.id)
+
         // Delete audio file
         if let filename = story.audioFilename {
             let url = getDocumentsDirectory().appendingPathComponent(filename)

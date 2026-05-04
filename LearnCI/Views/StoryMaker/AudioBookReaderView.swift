@@ -290,13 +290,15 @@ struct AudioBookReaderView: View {
         guard clips.indices.contains(index) else { return }
         currentClipIndex = index
         let clip = clips[index]
-        let localURL = StoryReaderDataAdapter.localAudioURL(storyID: story.id, clip: clip)
+        let localURL = adapter.localAudioURL(for: clip)
 
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            playLocal(url: localURL, clip: clip, autoplay: autoplay)
+        if let cachedURL = adapter.cachedAudioURL(for: clip) {
+            print("[AudioBook] Playing cached scene audio: \(cachedURL.lastPathComponent)")
+            playLocal(url: cachedURL, clip: clip, autoplay: autoplay)
             return
         }
 
+        print("[AudioBook] Downloading scene audio: chapter \(clip.chapterIndex), scene \(clip.sceneIndex)")
         isDownloadingAudio = true
         Task { await downloadAndPlay(clip: clip, localURL: localURL, autoplay: autoplay) }
     }

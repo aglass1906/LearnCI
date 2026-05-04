@@ -144,8 +144,10 @@ struct StoryReaderDataAdapter {
             .enumerated()
             .compactMap { ordinal, scene in
                 guard let audioUrl = scene.audioUrl?.trimmedNilIfEmpty else { return nil }
-                let duration = scene.audioDurationMs.map { Double($0) / 1000.0 }
-                defer { offset += duration ?? scene.wordTimings.last?.end ?? 0 }
+                let publishedDuration = scene.audioDurationMs.map { Double($0) / 1000.0 }
+                let timingDuration = scene.wordTimings.last?.end
+                let duration = Self.resolvedSceneDuration(published: publishedDuration, timed: timingDuration)
+                defer { offset += duration ?? 0 }
                 return StorySceneAudioClip(
                     id: "\(chapterIndex)-\(scene.sceneIndex)-\(ordinal)",
                     chapterIndex: chapterIndex,
@@ -207,6 +209,28 @@ struct StoryReaderDataAdapter {
         return known > 0 ? known : fallback
     }
 
+    func duration(
+        forChapter chapterIndex: Int,
+        currentClipIndex: Int,
+        currentStreamDuration: Double,
+        fallback: Double = 0
+    ) -> Double {
+        let clips = audioClips(forChapter: chapterIndex)
+        guard !clips.isEmpty else { return fallback }
+
+        let known = duration(forChapter: chapterIndex, fallback: 0)
+        guard clips.indices.contains(currentClipIndex), currentStreamDuration > 0 else {
+            return known > 0 ? known : fallback
+        }
+
+        let currentClip = clips[currentClipIndex]
+        let remainingKnown = clips
+            .dropFirst(currentClipIndex + 1)
+            .reduce(0.0) { total, clip in total + (clip.duration ?? 0) }
+        let actualTimelineDuration = currentClip.startOffset + currentStreamDuration + remainingKnown
+        return max(known, actualTimelineDuration, fallback)
+    }
+
     func clipIndex(forChapter chapterIndex: Int, localTime: Double) -> (index: Int, offset: Double)? {
         let clips = audioClips(forChapter: chapterIndex)
         guard !clips.isEmpty else { return nil }
@@ -238,6 +262,14 @@ struct StoryReaderDataAdapter {
         return nil
     }
 
+    func localAudioURL(for clip: StorySceneAudioClip) -> URL {
+        Self.localAudioURL(storyID: story.id, clip: clip, storyUpdatedAt: story.updatedAt)
+    }
+
+    func cachedAudioURL(for clip: StorySceneAudioClip) -> URL? {
+        Self.cachedAudioURL(storyID: story.id, clip: clip, storyUpdatedAt: story.updatedAt)
+    }
+
     static func remoteAudioURL(for path: String) -> URL? {
         if path.hasPrefix("http://") || path.hasPrefix("https://") {
             return URL(string: path)
@@ -246,11 +278,89 @@ struct StoryReaderDataAdapter {
         return URL(string: "\(supabaseAudioBase)/\(path)")
     }
 
-    static func localAudioURL(storyID: UUID, clip: StorySceneAudioClip) -> URL {
+    static func localAudioURL(storyID: UUID, clip: StorySceneAudioClip, storyUpdatedAt: Date? = nil) -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let ext = (clip.urlString as NSString).pathExtension.trimmedNilIfEmpty ?? "mp3"
-        let filename = "story_\(storyID.uuidString)_chapter_\(clip.chapterIndex)_scene_\(clip.sceneIndex).\(ext)"
+        let filename = "\(audioCacheBasename(storyID: storyID, clip: clip, storyUpdatedAt: storyUpdatedAt)).\(ext)"
         return docs.appendingPathComponent(filename)
+    }
+
+    static func cachedAudioURL(storyID: UUID, clip: StorySceneAudioClip, storyUpdatedAt: Date? = nil) -> URL? {
+        let primaryURL = localAudioURL(storyID: storyID, clip: clip, storyUpdatedAt: storyUpdatedAt)
+        let docs = primaryURL.deletingLastPathComponent()
+        let basename = primaryURL.deletingPathExtension().lastPathComponent
+        let primaryExt = primaryURL.pathExtension.trimmedNilIfEmpty ?? "mp3"
+        let extensions = [primaryExt, "mp3", "wav", "m4a", "aac"].uniquedCacheExtensions
+
+        for ext in extensions {
+            let candidate = docs.appendingPathComponent("\(basename).\(ext)")
+            if FileManager.default.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return nil
+    }
+
+    @discardableResult
+    static func deleteCachedStoryAudio(storyID: UUID) -> Int {
+        deleteCachedStoryFiles(storyID: storyID) { filename in
+            filename.hasPrefix("story_\(storyID.uuidString)_chapter_")
+                || filename.hasPrefix("story_\(storyID.uuidString).")
+        }
+    }
+
+    @discardableResult
+    static func deleteCachedStoryMedia(storyID: UUID) -> Int {
+        deleteCachedStoryFiles(storyID: storyID) { filename in
+            filename.hasPrefix("story_\(storyID.uuidString)_chapter_")
+                || filename.hasPrefix("story_\(storyID.uuidString).")
+                || filename == "video_\(storyID.uuidString)_remote.mp4"
+                || filename == "cover_\(storyID.uuidString).png"
+        }
+    }
+
+    private static func audioCacheBasename(storyID: UUID, clip: StorySceneAudioClip, storyUpdatedAt: Date?) -> String {
+        let updatedAtVersion = storyUpdatedAt.map { String($0.timeIntervalSince1970) } ?? "unversioned"
+        let fingerprint = cacheFingerprint("\(updatedAtVersion)|\(clip.urlString)")
+        return "story_\(storyID.uuidString)_chapter_\(clip.chapterIndex)_scene_\(clip.sceneIndex)_\(fingerprint)"
+    }
+
+    private static func cacheFingerprint(_ value: String) -> String {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in value.utf8 {
+            hash ^= UInt64(byte)
+            hash &*= 0x100000001b3
+        }
+        return String(hash, radix: 16)
+    }
+
+    private static func deleteCachedStoryFiles(storyID: UUID, matching shouldDelete: (String) -> Bool) -> Int {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        guard let files = try? FileManager.default.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) else {
+            return 0
+        }
+
+        var deletedCount = 0
+        for file in files where shouldDelete(file.lastPathComponent) {
+            do {
+                try FileManager.default.removeItem(at: file)
+                deletedCount += 1
+            } catch {
+                print("[StoryMediaCache] Failed to delete \(file.lastPathComponent): \(error)")
+            }
+        }
+        if deletedCount > 0 {
+            print("[StoryMediaCache] Deleted \(deletedCount) cached media files for story \(storyID)")
+        }
+        return deletedCount
+    }
+
+    private static func resolvedSceneDuration(published: Double?, timed: Double?) -> Double? {
+        let candidates = [published, timed].compactMap { value -> Double? in
+            guard let value, value.isFinite, value > 0 else { return nil }
+            return value
+        }
+        return candidates.max()
     }
 }
 
@@ -264,5 +374,16 @@ private extension String {
 private extension Collection {
     subscript(safeReaderData index: Index) -> Element? {
         indices.contains(index) ? self[index] : nil
+    }
+}
+
+private extension Array where Element == String {
+    var uniquedCacheExtensions: [String] {
+        var seen = Set<String>()
+        return compactMap { value in
+            let normalized = value.lowercased()
+            guard seen.insert(normalized).inserted else { return nil }
+            return normalized
+        }
     }
 }

@@ -10,6 +10,7 @@ struct ProfileView: View {
     @State private var showDeleteConfirmation = false
     @State private var showClearFavoritesConfirmation = false
     @State private var showClearStoriesConfirmation = false
+    @State private var showClearStoryMediaConfirmation = false
     @State private var isRefreshingStories = false
     
     var profiles: [UserProfile] {
@@ -61,6 +62,11 @@ struct ProfileView: View {
                         showClearFavoritesConfirmation = true
                     }
                     Button(role: .destructive) {
+                        showClearStoryMediaConfirmation = true
+                    } label: {
+                        Label("Clear Downloaded Story Media", systemImage: "externaldrive.badge.xmark")
+                    }
+                    Button(role: .destructive) {
                         showClearStoriesConfirmation = true
                     } label: {
                         if isRefreshingStories {
@@ -104,6 +110,14 @@ struct ProfileView: View {
                 }
             } message: {
                 Text("This will verify the YouTube fix by resetting your database. All saved items will be removed.")
+            }
+            .alert("Clear Downloaded Story Media?", isPresented: $showClearStoryMediaConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear Media", role: .destructive) {
+                    clearDownloadedStoryMedia()
+                }
+            } message: {
+                Text("This keeps your stories but removes downloaded audio, covers, and remote video caches. Story readers will download fresh media next time.")
             }
             .alert("Refresh Stories From Database?", isPresented: $showClearStoriesConfirmation) {
                 Button("Cancel", role: .cancel) { }
@@ -165,6 +179,7 @@ struct ProfileView: View {
             )
             let localStories = try modelContext.fetch(descriptor)
             for story in localStories {
+                StoryReaderDataAdapter.deleteCachedStoryMedia(storyID: story.id)
                 modelContext.delete(story)
             }
             try modelContext.save()
@@ -179,6 +194,23 @@ struct ProfileView: View {
             await MainActor.run {
                 isRefreshingStories = false
             }
+        }
+    }
+
+    private func clearDownloadedStoryMedia() {
+        guard let userID = authManager.currentUser else { return }
+
+        do {
+            let descriptor = FetchDescriptor<Story>(
+                predicate: #Predicate { $0.userID == userID }
+            )
+            let localStories = try modelContext.fetch(descriptor)
+            let deletedCount = localStories.reduce(0) { count, story in
+                count + StoryReaderDataAdapter.deleteCachedStoryMedia(storyID: story.id)
+            }
+            print("[Profile] Cleared \(deletedCount) downloaded story media files.")
+        } catch {
+            print("Failed to clear downloaded story media: \(error)")
         }
     }
 }

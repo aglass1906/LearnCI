@@ -217,12 +217,12 @@ struct DialogSessionView: View {
 
         currentSceneClipIndex = min(currentSceneClipIndex, clips.count - 1)
         let clip = clips[currentSceneClipIndex]
-        let fileURL = StoryReaderDataAdapter.localAudioURL(storyID: story.id, clip: clip)
+        let fileURL = adapter.localAudioURL(for: clip)
 
         // Use cached local file if available
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            print("[DialogSession] Playing cached scene audio: \(fileURL.lastPathComponent)")
-            playLocalAudio(url: fileURL, startAt: startAt, autoplay: autoplay, delayBeforePlay: delayBeforePlay)
+        if let cachedURL = adapter.cachedAudioURL(for: clip) {
+            print("[DialogSession] Playing cached scene audio: \(cachedURL.lastPathComponent)")
+            playLocalAudio(url: cachedURL, startAt: startAt, autoplay: autoplay, delayBeforePlay: delayBeforePlay)
             return
         }
 

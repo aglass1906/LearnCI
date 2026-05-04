@@ -247,8 +247,16 @@ struct StorySessionView: View {
 
                 sliderValue = localChapterTime
                 
-                // Keep duration updated as AVPlayer loads the exact size asynchronously
-                let resolvedDuration = adapter.duration(forChapter: currentChapterIndex, fallback: streamDur)
+                // Keep duration updated as AVPlayer loads the exact size asynchronously.
+                // The published scene duration can be short when audio is regenerated with
+                // new voices, so the actual current media duration must be allowed to expand
+                // the chapter timeline.
+                let resolvedDuration = adapter.duration(
+                    forChapter: currentChapterIndex,
+                    currentClipIndex: currentSceneClipIndex,
+                    currentStreamDuration: streamDur,
+                    fallback: streamDur
+                )
                 if resolvedDuration > 0 && abs(duration - resolvedDuration) > 0.5 {
                     duration = resolvedDuration
                 }
@@ -285,11 +293,11 @@ struct StorySessionView: View {
 
         currentSceneClipIndex = min(max(sceneClipIndex ?? currentSceneClipIndex, 0), clips.count - 1)
         let clip = clips[currentSceneClipIndex]
-        let localURL = StoryReaderDataAdapter.localAudioURL(storyID: story.id, clip: clip)
+        let localURL = adapter.localAudioURL(for: clip)
 
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            print("[StorySession] Playing scene audio: chapter \(clip.chapterIndex), scene \(clip.sceneIndex)")
-            playLocalAudio(url: localURL, clip: clip, startAt: startAt, autoplay: autoplay)
+        if let cachedURL = adapter.cachedAudioURL(for: clip) {
+            print("[StorySession] Playing cached scene audio: \(cachedURL.lastPathComponent)")
+            playLocalAudio(url: cachedURL, clip: clip, startAt: startAt, autoplay: autoplay)
             return
         }
 
@@ -302,7 +310,12 @@ struct StorySessionView: View {
     private func playLocalAudio(url: URL, clip: StorySceneAudioClip, startAt: Double = 0, autoplay: Bool = false) {
         audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
-        duration = adapter.duration(forChapter: currentChapterIndex, fallback: audioManager.streamDuration)
+        duration = adapter.duration(
+            forChapter: currentChapterIndex,
+            currentClipIndex: currentSceneClipIndex,
+            currentStreamDuration: audioManager.streamDuration,
+            fallback: audioManager.streamDuration
+        )
         sliderValue = clip.startOffset + startAt
         audioManager.updateStreamNowPlayingInfo(
             title: clip.title,

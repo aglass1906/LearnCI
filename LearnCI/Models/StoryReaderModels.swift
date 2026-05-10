@@ -381,7 +381,13 @@ struct StoryReadingSpine {
 
     static func make(for story: Story, mode: StoryReadingSpineMode = .storyBook) -> StoryReadingSpine {
         var items: [StoryReadingSpineItem] = [.cover]
-        items.append(contentsOf: story.readingMatterPages.enumerated().map { index, page in
+        let matterPages = story.readingMatterPages.enumerated().map { index, page in
+            (index: index, page: page)
+        }
+        let frontMatter = matterPages.filter { !$0.page.isBackMatter }
+        let backMatter = matterPages.filter { $0.page.isBackMatter }
+
+        items.append(contentsOf: frontMatter.map { index, page in
             .readingMatterPage(index: index, id: page.id)
         })
 
@@ -394,6 +400,10 @@ struct StoryReadingSpine {
         case .pictureBook, .comicBook:
             items.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
         }
+
+        items.append(contentsOf: backMatter.map { index, page in
+            .readingMatterPage(index: index, id: page.id)
+        })
 
         return StoryReadingSpine(items: items)
     }
@@ -438,5 +448,43 @@ struct StoryReadingSpine {
             seen.insert(item.id)
             return true
         }
+    }
+}
+
+private extension ReadingMatterPage {
+    var isBackMatter: Bool {
+        let placementKey = placement?.readingMatterPlacementKey ?? ""
+        if placementKey.contains("front") || placementKey.contains("about") || placementKey.contains("intro") {
+            return false
+        }
+        if placementKey.contains("back")
+            || placementKey.contains("appendix")
+            || placementKey.contains("after")
+            || placementKey.contains("end")
+            || placementKey.contains("post")
+            || placementKey.contains("credit") {
+            return true
+        }
+
+        let identityKey = [
+            id,
+            titleTarget,
+            titleNative
+        ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+            .readingMatterPlacementKey
+
+        return identityKey.contains("back")
+            || identityKey.contains("appendix")
+            || identityKey.contains("credit")
+            || identityKey.contains("afterword")
+            || identityKey.contains("glossary")
+    }
+}
+
+private extension String {
+    var readingMatterPlacementKey: String {
+        lowercased().filter { $0.isLetter || $0.isNumber }
     }
 }

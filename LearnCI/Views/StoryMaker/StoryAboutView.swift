@@ -33,6 +33,7 @@ struct StoryAboutView: View {
     @State private var showAmbientPicker = false
     @State private var showRegenerateOptions = false
     @State private var showChapterJSON = false
+    @State private var showBookSpine = false
 
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
@@ -268,6 +269,9 @@ struct StoryAboutView: View {
                     Button { showChapterJSON = true } label: {
                         Label("View Chapter JSON", systemImage: "curlybraces")
                     }
+                    Button { showBookSpine = true } label: {
+                        Label("Show Book Spine", systemImage: "list.number")
+                    }
 
                     Divider()
 
@@ -366,6 +370,10 @@ struct StoryAboutView: View {
         }
         .sheet(isPresented: $showChapterJSON) {
             ChapterJSONSheet(chaptersJSON: story.chaptersJSON)
+        }
+        .sheet(isPresented: $showBookSpine) {
+            BookSpineSheet(story: story)
+                .presentationDetents([.medium, .large])
         }
         .alert("Regeneration Failed", isPresented: Binding(
             get: { storyManager.errorMessage != nil },
@@ -611,6 +619,177 @@ private struct ChapterJSONSheet: View {
     }
 }
 
+// MARK: - Book Spine Sheet
+
+private struct BookSpineSheet: View {
+    let story: Story
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedMode: SpineModeOption
+
+    private var adapter: StoryReaderDataAdapter {
+        StoryReaderDataAdapter(story: story)
+    }
+
+    init(story: Story) {
+        self.story = story
+        _selectedMode = State(initialValue: SpineModeOption.defaultMode(for: story))
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Picker("Reader", selection: $selectedMode) {
+                        ForEach(SpineModeOption.allCases) { option in
+                            Label(option.title, systemImage: option.icon).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                Section {
+                    let items = adapter.items(for: selectedMode.spineMode)
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        spineRow(index: index, item: item)
+                    }
+                } header: {
+                    Text("\(selectedMode.title) Order")
+                } footer: {
+                    Text("This is the exact StoryReadingSpine order consumed by the selected reader mode.")
+                }
+            }
+            .navigationTitle("Book Spine")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func spineRow(index: Int, item: StoryReadingSpineItem) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(index + 1)")
+                .font(.caption.monospacedDigit().bold())
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(color(for: item))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label(title(for: item), systemImage: icon(for: item))
+                    .font(.subheadline.weight(.semibold))
+                if let detail = detail(for: item) {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Text(item.id)
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.vertical, 3)
+    }
+
+    private func title(for item: StoryReadingSpineItem) -> String {
+        switch item {
+        case .cover:
+            return "Cover"
+        case .readingMatterPage:
+            return "Reading Matter"
+        case .chapter(let index):
+            guard let chapter = adapter.chapter(for: .chapter(index: index)) else {
+                return "Chapter \(index + 1)"
+            }
+            return chapter.titleTargetLanguage.isEmpty ? "Chapter \(index + 1)" : chapter.titleTargetLanguage
+        case .scene(_, let sceneIndex):
+            return "Scene \(sceneIndex + 1)"
+        }
+    }
+
+    private func detail(for item: StoryReadingSpineItem) -> String? {
+        switch item {
+        case .cover:
+            return story.title
+        case .readingMatterPage:
+            guard let page = adapter.readingMatterPage(for: item) else { return nil }
+            let title = page.titleTarget?.nilIfEmptySpineSheet ?? page.titleNative?.nilIfEmptySpineSheet ?? page.id
+            let placement = page.placement?.nilIfEmptySpineSheet ?? "placement unset"
+            return "\(title) · \(placement)"
+        case .chapter(let index):
+            guard let chapter = adapter.chapter(for: .chapter(index: index)) else { return nil }
+            let type = chapter.isPrologue ? "Prologue" : chapter.isEpilogue ? "Epilogue" : "Chapter"
+            return "\(type) \(index + 1) · \(chapter.scenes.count) scenes"
+        case .scene(let chapterIndex, _):
+            guard let scene = adapter.scene(for: item) else { return nil }
+            let lines = scene.dialogues.count
+            let hasImage = adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex) != nil
+            let hasAudio = scene.audioUrl?.nilIfEmptySpineSheet != nil
+            return "Chapter \(chapterIndex + 1) · \(lines) dialog lines · image \(hasImage ? "yes" : "no") · audio \(hasAudio ? "yes" : "no")"
+        }
+    }
+
+    private func icon(for item: StoryReadingSpineItem) -> String {
+        switch item {
+        case .cover:
+            return "book.closed"
+        case .readingMatterPage:
+            return "doc.text"
+        case .chapter:
+            return "book.pages"
+        case .scene:
+            return "photo.on.rectangle"
+        }
+    }
+
+    private func color(for item: StoryReadingSpineItem) -> Color {
+        switch item {
+        case .cover:
+            return .accentColor
+        case .readingMatterPage:
+            return .indigo
+        case .chapter:
+            return .blue
+        case .scene:
+            return .orange
+        }
+    }
+}
+
+private struct SpineModeOption: Identifiable, Hashable, CaseIterable {
+    let id: String
+    let title: String
+    let icon: String
+    let spineMode: StoryReadingSpineMode
+
+    static let storyBook = SpineModeOption(id: "storyBook", title: "Story Book", icon: "book", spineMode: .storyBook)
+    static let audioBook = SpineModeOption(id: "audioBook", title: "Audio Book", icon: "headphones", spineMode: .audioBook)
+    static let dialogStory = SpineModeOption(id: "dialogStory", title: "Dialog", icon: "text.bubble", spineMode: .dialogStory)
+    static let pictureBook = SpineModeOption(id: "pictureBook", title: "Picture Book", icon: "photo", spineMode: .pictureBook)
+    static let comicBook = SpineModeOption(id: "comicBook", title: "Comic Book", icon: "rectangle.grid.2x2", spineMode: .comicBook)
+
+    static let allCases: [SpineModeOption] = [.storyBook, .audioBook, .dialogStory, .pictureBook, .comicBook]
+
+    static func defaultMode(for story: Story) -> SpineModeOption {
+        switch story.preferences.storyType {
+        case .storyBook, .standard:
+            return .storyBook
+        case .audioStory:
+            return .audioBook
+        case .dialogStory:
+            return .dialogStory
+        case .comicBook:
+            return .comicBook
+        case .pictureBook:
+            return .pictureBook
+        }
+    }
+}
+
 // MARK: - Badge Modifier
 
 private extension View {
@@ -622,6 +801,13 @@ private extension View {
             .padding(.vertical, 5)
             .background(Color(.secondarySystemBackground))
             .clipShape(Capsule())
+    }
+}
+
+private extension String {
+    var nilIfEmptySpineSheet: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

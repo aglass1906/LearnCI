@@ -105,8 +105,16 @@ struct StoryReaderDataAdapter {
         case .storyBook:
             guard chapters.allSatisfy({ !$0.bodyTextTargetForReading.isEmpty }) else { return .incompleteSceneText }
             guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
-        case .audioBook, .dialogStory:
+        case .audioBook:
             guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+        case .dialogStory:
+            guard chapters.allSatisfy({ chapter in
+                chapter.scenes.allSatisfy { scene in
+                    !scene.dialogues.isEmpty
+                        || scene.scriptTargetLanguage?.trimmedNilIfEmpty != nil
+                        || scene.captionTarget?.trimmedNilIfEmpty != nil
+                }
+            }) else { return .incompleteSceneText }
         case .pictureBook:
             let visibleItems = items(for: .pictureBook)
             guard visibleItems.contains(.cover) || visibleItems.contains(where: isReadingMatterPage) || visibleItems.contains(where: isScene) else {

@@ -124,14 +124,22 @@ struct SceneDialogue: Codable, Identifiable, Equatable {
     var id = UUID()
     var character: String
     var text: String
+    var textEnglish: String?
+    var audioUrl: String?
 
     enum CodingKeys: String, CodingKey {
         case character, speaker, name, text
+        case textEnglish
+        case textEnglishSnake = "text_english"
+        case audioUrl
+        case audioUrlSnake = "audio_url"
     }
 
-    init(character: String, text: String) {
+    init(character: String, text: String, textEnglish: String? = nil, audioUrl: String? = nil) {
         self.character = character
         self.text = text
+        self.textEnglish = textEnglish
+        self.audioUrl = audioUrl
     }
 
     init(from decoder: Decoder) throws {
@@ -141,12 +149,18 @@ struct SceneDialogue: Codable, Identifiable, Equatable {
             ?? (try? c.decode(String.self, forKey: .name))
             ?? "NARRATOR"
         text = (try? c.decode(String.self, forKey: .text)) ?? ""
+        textEnglish = (try? c.decode(String.self, forKey: .textEnglish))
+            ?? (try? c.decode(String.self, forKey: .textEnglishSnake))
+        audioUrl = (try? c.decode(String.self, forKey: .audioUrl))
+            ?? (try? c.decode(String.self, forKey: .audioUrlSnake))
     }
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(character, forKey: .character)
         try c.encode(text, forKey: .text)
+        try c.encodeIfPresent(textEnglish, forKey: .textEnglish)
+        try c.encodeIfPresent(audioUrl, forKey: .audioUrl)
     }
 }
 

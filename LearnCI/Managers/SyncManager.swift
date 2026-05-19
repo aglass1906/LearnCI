@@ -238,13 +238,8 @@ struct CoachingCheckInDTO: Codable {
             try await pullDailyFeedback(context: modelContext, userID: userID)
             try await pullCheckIns(context: modelContext, userID: userID)
             
-            // NEW: Pull Stories (and download audio)
+            // Pull server-owned stories. The DB service is the source of truth for stories.
             try await pullStories(context: modelContext, userID: userID)
-            
-            // 4. Push Metadata (Local -> Server)
-            // (We no longer push all local stories to the server automatically.
-            // Stories are optionally pushed to the pipeline manually via pushToPipeline.)
-            
 
             // Push Favorites
             try await syncFavorites(context: modelContext, userID: userID)
@@ -484,7 +479,7 @@ struct CoachingCheckInDTO: Codable {
             }
         }
         
-        if !anonymousProfiles.isEmpty || !otherActivities.isEmpty {
+        if !anonymousProfiles.isEmpty || !otherActivities.isEmpty || !orphanStories.isEmpty {
             try context.save()
         }
     }
@@ -815,7 +810,7 @@ struct CoachingCheckInDTO: Codable {
         }
         try context.save()
     }
-    
+
     @MainActor
     func pushToPipeline(story: Story, context: ModelContext) async throws {
         guard let userID = authManager.currentUser else {
@@ -964,26 +959,27 @@ struct CoachingCheckInDTO: Codable {
     private func pullStories(context: ModelContext, userID: String) async throws {
         guard let uid = UUID(uuidString: userID) else { return }
         
-        // Fetch MY stories to allow persistent sync.
-        // If we want global explore features, they should ideally be handled via a separate query
-        // or a different `ModelContext` / non-persistent cache.
+        // Fetch stories the current user can read: their own rows and public DB-owned rows.
         let response = try await authManager.supabase.from("stories")
             .select()
-            .eq("user_id", value: uid)
+            .or("user_id.eq.\(uid.uuidString),is_public.eq.true")
+            .order("created_at", ascending: false)
             .execute()
             
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601 // Supabase returns ISO strings
         let dtos = try decoder.decode([StoryDTO].self, from: response.data)
+        print("[Sync] Stories: Pulled \(dtos.count) server stories for user \(userID).")
         
         let serverIDs = Set(dtos.map { $0.id })
         
-        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
-        let localStories = try context.fetch(descriptor)
+        let ownedDescriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
+        let ownedLocalStories = try context.fetch(ownedDescriptor)
+        let localStories = try context.fetch(FetchDescriptor<Story>())
         
         // Handle Deletions: If a local story WAS synced to the server previously, but is now missing,
         // it means the user deleted it from the server.
-        for local in localStories {
+        for local in ownedLocalStories {
             let wasSynced = (local.remoteAudioPath != nil || local.remoteCoverPath != nil || local.remoteVideoPath != nil)
             if wasSynced && !serverIDs.contains(local.id) {
                 print("[Sync] Stories: Deleting local story '\(local.title)' as it is no longer on the server.")
@@ -1068,7 +1064,7 @@ struct CoachingCheckInDTO: Codable {
                 
                 let newStory = Story(
                     id: dto.id,
-                    userID: userID,
+                    userID: dto.user_id.uuidString,
                     title: dto.title,
                     targetLanguageText: dto.target_text,
                     nativeLanguageText: dto.native_text,

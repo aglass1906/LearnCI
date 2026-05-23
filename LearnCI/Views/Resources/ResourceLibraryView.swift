@@ -1,11 +1,6 @@
 import SwiftUI
 import SwiftData
 
-private enum LibrarySection: String, CaseIterable {
-    case library = "Library"
-    case favorites = "Favorites"
-}
-
 struct ResourceLibraryView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
@@ -15,7 +10,6 @@ struct ResourceLibraryView: View {
         allProfiles.first { $0.userID == authManager.currentUser }
     }
 
-    @State private var selectedSection: LibrarySection = .library
     @State private var resourceManager = ResourceManager()
     @State private var selectedFilter: ResourceType? = nil // nil = All
 
@@ -55,51 +49,31 @@ struct ResourceLibraryView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Top-level section picker
-            Picker("Section", selection: $selectedSection) {
-                ForEach(LibrarySection.allCases, id: \.self) { section in
-                    Text(section.rawValue).tag(section)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-
-            switch selectedSection {
-            case .library:
-                libraryContent
-            case .favorites:
-                FavoritesView()
-            }
-        }
+        libraryContent
         .navigationTitle("Library")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if selectedSection == .library {
-                Button(action: {
-                    Task {
-                        await resourceManager.loadRemoteResources(
-                            client: authManager.supabase,
-                            language: userProfile?.currentLanguage.code
-                        )
-                    }
-                }) {
-                    Image(systemName: "arrow.clockwise")
+            Button(action: {
+                Task {
+                    await resourceManager.loadRemoteResources(
+                        client: authManager.supabase,
+                        language: userProfile?.currentLanguage.code
+                    )
                 }
+            }) {
+                Image(systemName: "arrow.clockwise")
+            }
 
-                Button(action: {
-                    withAnimation {
-                        viewMode = (viewMode == .grid) ? .list : .grid
-                    }
-                }) {
-                    Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
+            Button(action: {
+                withAnimation {
+                    viewMode = (viewMode == .grid) ? .list : .grid
                 }
+            }) {
+                Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
+            }
 
-                Button(action: { showAddResourceSheet = true }) {
-                    Image(systemName: "plus")
-                }
+            Button(action: { showAddResourceSheet = true }) {
+                Image(systemName: "plus")
             }
         }
         .task {

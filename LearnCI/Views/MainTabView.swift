@@ -5,7 +5,6 @@ enum AppTab: String, CaseIterable {
     case learn
     case discovery
     case history
-    case profile
 }
 
 struct MainTabView: View {
@@ -44,12 +43,6 @@ struct MainTabView: View {
                         Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
                     }
                     .tag(AppTab.history)
-                
-                ProfileView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.circle.fill")
-                    }
-                    .tag(AppTab.profile)
             }
         }
         .sheet(isPresented: $showProfile) {

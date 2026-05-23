@@ -84,13 +84,7 @@ struct DashboardView: View {
                         // 0. Learning Stats
                         LearningStatsCard(stats: learningStats)
                         
-                        // 1. About CI
-                        aboutCISection
-                        
-                        // 2. Favorites
-                        favoritesSection
-                        
-                        // 3. AI Stories
+                        // 1. AI Stories
                         storiesSection
                         
                         // 4. Word of the Day
@@ -373,20 +367,6 @@ extension DashboardView {
         }
     }
     
-    private var aboutCISection: some View {
-        LayoutCardView(
-            title: "About Comprehensible Input",
-            subTitle: "How you actually learn",
-            accentColor: .blue,
-            icon: "brain.head.profile",
-            destination: AboutCIView()
-        ) {
-            Text("Discover why stories and input are all you need to reach fluency.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-    }
-    
     private var roadmapSection: some View {
         LayoutCardView(
             title: "Input Roadmap",
@@ -537,20 +517,6 @@ extension DashboardView {
                 }
                 .padding()
             }
-        }
-    }
-    
-    private var favoritesSection: some View {
-        LayoutCardView(
-            title: "My Input Favorites",
-            subTitle: "Quick Access",
-            accentColor: .pink,
-            icon: "heart.fill",
-            destination: FavoritesView()
-        ) {
-             Text("Jump back into your favorite YouTube channels, Podcasts, and resources.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
     

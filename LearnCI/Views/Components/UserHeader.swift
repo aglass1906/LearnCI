@@ -7,6 +7,9 @@ struct UserHeader: View {
     @Binding var showProfile: Bool
     @Binding var currentTab: AppTab
     
+    @State private var showAboutCI = false
+    @State private var showFavorites = false
+    
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
@@ -24,7 +27,32 @@ struct UserHeader: View {
     
     var body: some View {
         if let profile = userProfile {
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
+                Menu {
+                    Button {
+                        showProfile = true
+                    } label: {
+                        Label("Profile", systemImage: "person.circle")
+                    }
+                    Button {
+                        showAboutCI = true
+                    } label: {
+                        Label("About Comprehensible Input", systemImage: "book.fill")
+                    }
+                    Button {
+                        showFavorites = true
+                    } label: {
+                        Label("Favorites", systemImage: "heart.fill")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("App menu")
+                
                 // User Name & Avatar Link
                 Button {
                     showProfile = true
@@ -98,6 +126,26 @@ struct UserHeader: View {
                     .foregroundStyle(Color.gray.opacity(0.2)),
                 alignment: .bottom
             )
+            .sheet(isPresented: $showAboutCI) {
+                NavigationStack {
+                    AboutCIView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Done") { showAboutCI = false }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showFavorites) {
+                NavigationStack {
+                    FavoritesView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Done") { showFavorites = false }
+                            }
+                        }
+                }
+            }
         }
     }
 }

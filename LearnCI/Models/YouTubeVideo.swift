@@ -6,6 +6,8 @@ struct YouTubeVideo: Identifiable, Codable {
     let description: String
     let thumbnailURL: String
     let channelTitle: String
+    /// YouTube channel ID (`UC…`) when available from the Data API snippet.
+    var channelId: String? = nil
     let duration: String
     let publishedAt: Date
     

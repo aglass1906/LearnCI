@@ -11,6 +11,10 @@ struct InAppBrowserView: View {
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+    private var youtubeVideoId: String? {
+        FavoritesManager.resolveVideoId(from: url.absoluteString)
+    }
+    
     var body: some View {
         NavigationStack {
             SafariView(url: url, onDismiss: onDismiss)
@@ -27,6 +31,18 @@ struct InAppBrowserView: View {
                             Text("input")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                        }
+                    }
+                    if let videoId = youtubeVideoId {
+                        ToolbarItem(placement: .topBarLeading) {
+                            FavoriteButton(
+                                consumptionUrl: "https://www.youtube.com/watch?v=\(videoId)",
+                                type: .youtube,
+                                title: "YouTube Video",
+                                author: nil,
+                                imageUrl: "https://img.youtube.com/vi/\(videoId)/mqdefault.jpg"
+                            )
+                            .font(.title3)
                         }
                     }
                     ToolbarItem(placement: .topBarTrailing) {

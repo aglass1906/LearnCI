@@ -8,6 +8,7 @@ enum FetchTarget: Sendable {
     case feedAppend
     case singleChannel
     case singleChannelAppend
+    case savedFavorites
 }
 
 @Observable
@@ -21,6 +22,8 @@ class YouTubeManager {
     var discoveryVideos: [YouTubeVideo] = []
     var recommendedVideos: [YouTubeVideo] = []
     var channels: [YouTubeChannel] = []
+    /// Videos loaded explicitly from favorited watch URLs (not necessarily in the home feed).
+    var savedFavoriteVideos: [YouTubeVideo] = []
     var isLoading: Bool = false
     var isChannelLoading: Bool = false // Separate loading state for channel details
     var isDiscoveryLoading: Bool = false
@@ -247,6 +250,19 @@ class YouTubeManager {
             } else {
                 self?.fetchVideosFromChannels(token: token, channelIds: channelIds, isRefresh: isRefresh)
             }
+        }
+    }
+    
+    func fetchSavedFavoriteVideos(videoIds: [String]) {
+        let uniqueIds = Array(Set(videoIds))
+        guard !uniqueIds.isEmpty else {
+            savedFavoriteVideos = []
+            return
+        }
+        if let token = accessToken {
+            fetchVideoDetails(token: token, videoIds: uniqueIds, target: .savedFavorites)
+        } else if let apiKey = publicApiKey {
+            fetchVideoDetails(token: nil, apiKey: apiKey, videoIds: uniqueIds, target: .savedFavorites)
         }
     }
     
@@ -667,12 +683,14 @@ class YouTubeManager {
                         ?? ISO8601DateFormatter.fractionalSecondsFormatter.date(from: publishedAtString)
                         ?? Date()
                     
+                    let channelId = snippet["channelId"] as? String
                     var video = YouTubeVideo(
                         id: id,
                         title: title,
                         description: description,
                         thumbnailURL: thumbnailURL,
                         channelTitle: channelTitle,
+                        channelId: channelId,
                         duration: duration,
                         publishedAt: publishedAt
                     )
@@ -700,6 +718,8 @@ class YouTubeManager {
             } else if target == .singleChannel {
                 self?.channelVideos = sortedVideos
                 self?.isChannelLoading = false
+            } else if target == .savedFavorites {
+                self?.savedFavoriteVideos = sortedVideos
             } else if target == .singleChannelAppend {
                 // Append unique videos (avoiding duplicates)
                 let existingIds = Set(self?.channelVideos.map { $0.id } ?? [])
@@ -1023,12 +1043,14 @@ class YouTubeManager {
             let dateFormatter = ISO8601DateFormatter()
             let publishedAt = dateFormatter.date(from: publishedAtString) ?? Date()
             
+            let channelId = snippet["channelId"] as? String
             var video = YouTubeVideo(
                 id: id,
                 title: title,
                 description: description,
                 thumbnailURL: thumbnailURL,
                 channelTitle: channelTitle,
+                channelId: channelId,
                 duration: duration,
                 publishedAt: publishedAt
             )

@@ -8,6 +8,17 @@ struct VideoView: View {
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
+    enum VideoSourceScope: String, CaseIterable {
+        case all = "All Videos"
+        case favorites = "Favorites"
+    }
+    
+    enum FavoritesBrowseMode: String, CaseIterable {
+        case feed = "Feed"
+        case channels = "Channels"
+        case saved = "Saved"
+    }
+    
     enum VideoTabMode: String, CaseIterable {
         case subscriptions = "New Videos"
         case channels = "Subscriptions"
@@ -22,6 +33,10 @@ struct VideoView: View {
         var id: String { self.rawValue }
     }
     
+    @Query(sort: \Favorite.createdAt, order: .reverse) private var allFavorites: [Favorite]
+    
+    @State private var sourceScope: VideoSourceScope = .all
+    @State private var favoritesBrowseMode: FavoritesBrowseMode = .feed
     @State private var mode: VideoTabMode = .subscriptions
     @State private var selectedCategory: String = "All"
     @State private var selectedVideo: YouTubeVideo?
@@ -38,21 +53,95 @@ struct VideoView: View {
         allProfiles.first { $0.userID == authManager.currentUser }
     }
     
+    private var youtubeFavorites: [Favorite] {
+        guard let userID = authManager.currentUser else { return [] }
+        return allFavorites.filter { fav in
+            guard fav.userID == userID else { return false }
+            switch fav.type {
+            case .channel, .youtube:
+                return true
+            default:
+                let url = fav.consumptionUrl
+                return url.contains("youtube.com") || url.contains("youtu.be")
+            }
+        }
+    }
+    
+    private var favoritesIndex: FavoritesManager.YouTubeFavoritesIndex {
+        FavoritesManager.YouTubeFavoritesIndex.build(
+            from: youtubeFavorites,
+            userID: authManager.currentUser ?? ""
+        )
+    }
+    
+    private var favoriteChannelList: [YouTubeChannel] {
+        let index = favoritesIndex
+        var byId: [String: YouTubeChannel] = [:]
+        
+        for channel in youtubeManager.channels where index.matches(channel: channel) {
+            byId[channel.id] = channel
+        }
+        
+        for fav in youtubeFavorites {
+            if let playlistId = FavoritesManager.resolvePlaylistId(from: fav.consumptionUrl) {
+                if byId[playlistId] == nil {
+                    byId[playlistId] = YouTubeChannel(
+                        id: playlistId,
+                        title: fav.title,
+                        thumbnailURL: fav.imageUrl ?? "",
+                        isPlaylist: true
+                    )
+                }
+            } else if let channelId = FavoritesManager.resolveChannelId(from: fav.consumptionUrl)
+                ?? (fav.type == .channel && fav.consumptionUrl.hasPrefix("UC") ? fav.consumptionUrl : nil) {
+                if byId[channelId] == nil {
+                    byId[channelId] = YouTubeChannel(
+                        id: channelId,
+                        title: fav.title,
+                        thumbnailURL: fav.imageUrl ?? ""
+                    )
+                }
+            }
+        }
+        
+        return byId.values.sorted {
+            $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
-            // Mode Toggle
-            Picker("Tab", selection: $mode) {
-                ForEach(VideoTabMode.allCases, id: \.self) { mode in
-                    Text(mode.rawValue).tag(mode)
+            Picker("Source", selection: $sourceScope) {
+                ForEach(VideoSourceScope.allCases, id: \.self) { scope in
+                    Text(scope.rawValue).tag(scope)
                 }
             }
             .pickerStyle(.segmented)
-            .padding()
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
+            if sourceScope == .all {
+                Picker("Tab", selection: $mode) {
+                    ForEach(VideoTabMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding()
+            } else {
+                Picker("Favorites", selection: $favoritesBrowseMode) {
+                    ForEach(FavoritesBrowseMode.allCases, id: \.self) { browseMode in
+                        Text(browseMode.rawValue).tag(browseMode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding()
+            }
             
             // Count Header
             if selectedChannel == nil {
                 HStack {
-                    Text("\(countForMode(mode)) \(mode == .channels ? "Subscriptions" : "Videos") Found")
+                    Text(scopeCountLabel)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -62,7 +151,7 @@ struct VideoView: View {
             }
             
             // Category Scroll
-            if mode == .discovery {
+            if sourceScope == .all && mode == .discovery {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(categories, id: \.self) { category in
@@ -90,6 +179,8 @@ struct VideoView: View {
                         channel: channel,
                         isVideoWatched: isVideoWatched
                     )
+                } else if sourceScope == .favorites {
+                    favoritesContentView
                 } else {
                     switch mode {
                     case .subscriptions:
@@ -100,6 +191,17 @@ struct VideoView: View {
                         discoveryContentView
                     }
                 }
+            }
+        }
+        .onChange(of: sourceScope) { _, newScope in
+            selectedChannel = nil
+            if newScope == .favorites {
+                refreshFavoriteSavedVideos()
+            }
+        }
+        .onChange(of: favoritesBrowseMode) { _, newMode in
+            if newMode == .saved {
+                refreshFavoriteSavedVideos()
             }
         }
         .onChange(of: mode) { _, _ in
@@ -114,10 +216,18 @@ struct VideoView: View {
             refreshDiscovery()
         }
         .task {
+            if sourceScope == .favorites {
+                refreshFavoriteSavedVideos()
+            }
             if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
                 refreshDiscovery()
             } else if mode == .subscriptions && youtubeManager.isAuthenticated {
                 youtubeManager.refreshVideos()
+            }
+        }
+        .onChange(of: youtubeFavorites.count) { _, _ in
+            if sourceScope == .favorites {
+                refreshFavoriteSavedVideos()
             }
         }
         .onChange(of: userProfile?.currentLanguage) { _, _ in
@@ -148,7 +258,10 @@ struct VideoView: View {
             if youtubeManager.isAuthenticated {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: {
-                        if mode == .discovery {
+                        if sourceScope == .favorites {
+                            refreshFavoriteSavedVideos()
+                            youtubeManager.refreshVideos()
+                        } else if mode == .discovery {
                             refreshDiscovery()
                         } else {
                             youtubeManager.refreshVideos()
@@ -293,14 +406,7 @@ struct VideoView: View {
             }
             .padding()
             
-            // Filtered List
-            let svideos = youtubeManager.videos.filter { video in // Changed from channelVideos to videos
-                switch shortsFilter {
-                case .all: return true
-                case .regular: return !video.isShort
-                case .shorts: return video.isShort
-                }
-            }
+            let svideos = feedVideosForCurrentScope()
             
             if svideos.isEmpty && youtubeManager.isLoading && youtubeManager.videos.isEmpty {
                 ProgressView("Loading subscriptions...")
@@ -312,15 +418,132 @@ struct VideoView: View {
                 )
             } else if svideos.isEmpty {
                  ContentUnavailableView(
-                    shortsFilter == .all ? "No videos found" : "No \(shortsFilter.rawValue.lowercased()) found",
-                    systemImage: shortsFilter == .shorts ? "play.rectangle.on.rectangle.slash" : "video.slash",
-                    description: Text("Try changing the filter or scrolling down.")
+                    sourceScope == .favorites ? "No Favorite Videos" : (shortsFilter == .all ? "No videos found" : "No \(shortsFilter.rawValue.lowercased()) found"),
+                    systemImage: sourceScope == .favorites ? "heart.slash" : (shortsFilter == .shorts ? "play.rectangle.on.rectangle.slash" : "video.slash"),
+                    description: Text(sourceScope == .favorites
+                        ? "Favorite channels or individual videos from subscriptions, or use the heart on a channel."
+                        : "Try changing the filter or scrolling down.")
                 )
             } else {
                 VideoGridView(
                     videos: svideos,
                     isLoading: youtubeManager.isLoading,
                     onLoadMore: youtubeManager.loadMoreFeedVideos,
+                    selectedVideo: $selectedVideo,
+                    isVideoWatched: isVideoWatched
+                )
+            }
+        }
+    }
+    
+    var favoritesContentView: some View {
+        Group {
+            switch favoritesBrowseMode {
+            case .feed:
+                subscriptionContentView
+            case .channels:
+                favoriteChannelsView
+            case .saved:
+                savedFavoritesView
+            }
+        }
+    }
+    
+    var favoriteChannelsView: some View {
+        Group {
+            if favoriteChannelList.isEmpty {
+                ContentUnavailableView(
+                    "No Favorite Channels",
+                    systemImage: "heart.slash",
+                    description: Text("Tap the heart on a subscription or channel to add it here.")
+                )
+            } else {
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        ForEach(favoriteChannelList) { channel in
+                            VStack {
+                                AsyncImage(url: URL(string: channel.thumbnailURL)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                } placeholder: {
+                                    Circle().fill(Color.gray.opacity(0.1))
+                                }
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
+                                
+                                Text(channel.title)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.center)
+                                    .frame(height: 35)
+                                
+                                if channel.isPlaylist {
+                                    Text("Playlist")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .onTapGesture {
+                                selectedChannel = channel
+                                if channel.isPlaylist {
+                                    youtubeManager.fetchVideosForPlaylist(channel.id)
+                                } else {
+                                    youtubeManager.fetchVideosForChannel(channel.id)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+    }
+    
+    var savedFavoritesView: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Picker("Filter", selection: $shortsFilter) {
+                    ForEach(VideoFilter.allCases) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.segmented)
+                
+                Button(action: { refreshFavoriteSavedVideos() }) {
+                    if youtubeManager.isLoading {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+            }
+            .padding()
+            
+            let saved = videosMatchingShortsFilter(youtubeManager.savedFavoriteVideos)
+            
+            if favoritesIndex.videoIds.isEmpty {
+                ContentUnavailableView(
+                    "No Saved Videos",
+                    systemImage: "play.circle",
+                    description: Text("Favorite a specific YouTube video to see it here.")
+                )
+            } else if saved.isEmpty && youtubeManager.isLoading {
+                ProgressView("Loading saved videos...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if saved.isEmpty {
+                ContentUnavailableView(
+                    "Could Not Load Videos",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("Check your connection and try again.")
+                )
+            } else {
+                VideoGridView(
+                    videos: saved,
+                    isLoading: youtubeManager.isLoading,
+                    onLoadMore: nil,
                     selectedVideo: $selectedVideo,
                     isVideoWatched: isVideoWatched
                 )
@@ -422,6 +645,60 @@ struct VideoView: View {
         case .discovery:
             return youtubeManager.discoveryVideos.count
         }
+    }
+    
+    private var scopeCountLabel: String {
+        if sourceScope == .favorites {
+            switch favoritesBrowseMode {
+            case .feed:
+                return "\(feedVideosForCurrentScope().count) Favorite Videos"
+            case .channels:
+                return "\(favoriteChannelList.count) Favorite Channels"
+            case .saved:
+                return "\(videosMatchingShortsFilter(youtubeManager.savedFavoriteVideos).count) Saved Videos"
+            }
+        }
+        if mode == .subscriptions {
+            return "\(feedVideosForCurrentScope().count) Videos"
+        }
+        return "\(countForMode(mode)) \(mode == .channels ? "Subscriptions" : "Videos") Found"
+    }
+    
+    private func videosMatchingShortsFilter(_ videos: [YouTubeVideo]) -> [YouTubeVideo] {
+        videos.filter { video in
+            switch shortsFilter {
+            case .all: return true
+            case .regular: return !video.isShort
+            case .shorts: return video.isShort
+            }
+        }
+    }
+    
+    private func feedVideosForCurrentScope() -> [YouTubeVideo] {
+        let fromFeed = videosMatchingShortsFilter(youtubeManager.videos)
+        let index = favoritesIndex
+        
+        if sourceScope == .favorites {
+            let fromSubscriptions = fromFeed.filter { index.matches(video: $0) }
+            let saved = videosMatchingShortsFilter(youtubeManager.savedFavoriteVideos)
+            var byId: [String: YouTubeVideo] = [:]
+            for video in fromSubscriptions + saved {
+                byId[video.id] = video
+            }
+            return byId.values.sorted {
+                ($0.addedToFeedAt ?? $0.publishedAt) > ($1.addedToFeedAt ?? $1.publishedAt)
+            }
+        }
+        
+        // All Videos on New Videos: show subscription feed excluding favorited items.
+        if mode == .subscriptions {
+            return fromFeed.filter { !index.matches(video: $0) }
+        }
+        return fromFeed
+    }
+    
+    private func refreshFavoriteSavedVideos() {
+        youtubeManager.fetchSavedFavoriteVideos(videoIds: Array(favoritesIndex.videoIds))
     }
 }
 

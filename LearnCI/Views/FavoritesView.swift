@@ -31,6 +31,7 @@ struct FavoritesView: View {
     
     // Web Scan Navigation
     @State private var webScanTarget: Favorite? // Holds the favorite to scan
+    @State private var selectedBuiltinVideo: YouTubeVideo?
     
     // Derived Filters
     var filteredFavorites: [Favorite] {
@@ -150,6 +151,20 @@ struct FavoritesView: View {
                 handleBrowserDismiss()
             }
         }
+        .sheet(item: $selectedBuiltinVideo) { video in
+            VideoDetailSheet(
+                video: video,
+                onWatch: {
+                    if let url = URL(string: "https://www.youtube.com/watch?v=\(video.id)") {
+                        UIApplication.shared.open(url)
+                    }
+                    selectedBuiltinVideo = nil
+                },
+                onLogTime: { _ in
+                    selectedBuiltinVideo = nil
+                }
+            )
+        }
         .alert("Debug Info", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -190,9 +205,13 @@ struct FavoritesView: View {
             return
         }
 
-        // YouTube favorites → native channel/playlist browser (or fallback to browser)
+        // YouTube favorites → built-in player for single videos; channel/playlist in-app browser
         if fav.type == .youtube {
             let url = fav.consumptionUrl
+            if let videoId = FavoritesManager.resolveVideoId(from: url) {
+                openBuiltinVideo(videoId: videoId, from: fav)
+                return
+            }
             if let channelId = FavoritesManager.resolveChannelId(from: url) {
                 openChannel(id: channelId, title: fav.title, thumbnail: fav.imageUrl)
             } else if let playlistId = FavoritesManager.resolvePlaylistId(from: url) {
@@ -215,8 +234,8 @@ struct FavoritesView: View {
                         }
                     }
                 }
-            } else {
-                if let url = URL(string: url) { openInBrowser(url) }
+            } else if let url = URL(string: url) {
+                openInBrowser(url)
             }
             return
         }
@@ -276,12 +295,27 @@ struct FavoritesView: View {
                         }
                 }
             }
+        } else if let videoId = FavoritesManager.resolveVideoId(from: fav.consumptionUrl) {
+            openBuiltinVideo(videoId: videoId, from: fav)
         } else {
             // Open Link
             if let url = URL(string: fav.consumptionUrl) {
                 openInBrowser(url)
             }
         }
+    }
+    
+    private func openBuiltinVideo(videoId: String, from fav: Favorite) {
+        let thumb = fav.imageUrl ?? "https://img.youtube.com/vi/\(videoId)/mqdefault.jpg"
+        selectedBuiltinVideo = YouTubeVideo(
+            id: videoId,
+            title: fav.title,
+            description: fav.subtitle ?? "",
+            thumbnailURL: thumb,
+            channelTitle: fav.author ?? "YouTube",
+            duration: "PT0S",
+            publishedAt: fav.createdAt
+        )
     }
     
     // Debug helper

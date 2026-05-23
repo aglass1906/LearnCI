@@ -93,6 +93,94 @@ class FavoritesManager {
         return nil
     }
     
+    static func resolveVideoId(from urlString: String) -> String? {
+        let trimmed = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count == 11,
+           trimmed.range(of: #"^[a-zA-Z0-9_-]{11}$"#, options: .regularExpression) != nil {
+            return trimmed
+        }
+        guard let url = URL(string: trimmed),
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+        if url.host?.contains("youtu.be") == true {
+            let id = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            return id.count == 11 ? id : nil
+        }
+        if let videoId = components.queryItems?.first(where: { $0.name == "v" })?.value, videoId.count == 11 {
+            return videoId
+        }
+        if trimmed.contains("/shorts/"),
+           let id = trimmed.components(separatedBy: "/shorts/").last?.components(separatedBy: "?").first,
+           id.count == 11 {
+            return id
+        }
+        return nil
+    }
+    
+    /// Normalized YouTube favorite keys for filtering subscription feeds and channel grids.
+    struct YouTubeFavoritesIndex {
+        var channelIds: Set<String> = []
+        var videoIds: Set<String> = []
+        var playlistIds: Set<String> = []
+        
+        static func build(from favorites: [Favorite], userID: String) -> YouTubeFavoritesIndex {
+            var index = YouTubeFavoritesIndex()
+            for fav in favorites where fav.userID == userID {
+                switch fav.type {
+                case .channel:
+                    if let channelId = normalizedChannelId(fav.consumptionUrl) {
+                        index.channelIds.insert(channelId)
+                    }
+                case .youtube:
+                    if let videoId = resolveVideoId(from: fav.consumptionUrl) {
+                        index.videoIds.insert(videoId)
+                    } else if let channelId = resolveChannelId(from: fav.consumptionUrl) {
+                        index.channelIds.insert(channelId)
+                    } else if let playlistId = resolvePlaylistId(from: fav.consumptionUrl) {
+                        index.playlistIds.insert(playlistId)
+                    } else if let channelId = normalizedChannelId(fav.consumptionUrl) {
+                        index.channelIds.insert(channelId)
+                    }
+                default:
+                    let url = fav.consumptionUrl
+                    guard url.contains("youtube.com") || url.contains("youtu.be") else { continue }
+                    if let videoId = resolveVideoId(from: url) {
+                        index.videoIds.insert(videoId)
+                    } else if let channelId = resolveChannelId(from: url) {
+                        index.channelIds.insert(channelId)
+                    } else if let playlistId = resolvePlaylistId(from: url) {
+                        index.playlistIds.insert(playlistId)
+                    } else if let channelId = normalizedChannelId(url) {
+                        index.channelIds.insert(channelId)
+                    }
+                }
+            }
+            return index
+        }
+        
+        func matches(video: YouTubeVideo) -> Bool {
+            if videoIds.contains(video.id) { return true }
+            if let channelId = video.channelId, channelIds.contains(channelId) { return true }
+            return false
+        }
+        
+        func matches(channel: YouTubeChannel) -> Bool {
+            if channelIds.contains(channel.id) { return true }
+            if channel.isPlaylist, playlistIds.contains(channel.id) { return true }
+            return false
+        }
+        
+        private static func normalizedChannelId(_ value: String) -> String? {
+            if let resolved = resolveChannelId(from: value) { return resolved }
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.hasPrefix("UC"), trimmed.count >= 20 {
+                return String(trimmed.prefix(24))
+            }
+            return nil
+        }
+    }
+    
     static func resolvePlaylistId(from urlString: String) -> String? {
         // Logging for debugging
         Logger.debug("Attempting to resolve Playlist ID from: \(urlString)", category: .favorites)

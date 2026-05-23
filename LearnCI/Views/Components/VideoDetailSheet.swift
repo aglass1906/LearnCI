@@ -6,6 +6,10 @@ struct VideoDetailSheet: View {
     let onLogTime: (Int) -> Void
     @Environment(\.dismiss) private var dismiss
     
+    private var favoriteVideoUrl: String {
+        "https://www.youtube.com/watch?v=\(video.id)"
+    }
+    
     @State private var watchDuration: TimeInterval = 0
     @State private var hasLoggedTime = false
     
@@ -22,6 +26,8 @@ struct VideoDetailSheet: View {
                         .frame(height: 220)
                         .cornerRadius(12)
                         .shadow(radius: 5)
+                    
+                    favoriteVideoBar
                     
                     Text(video.title)
                         .font(.title2)
@@ -83,12 +89,24 @@ struct VideoDetailSheet: View {
                 }
                 .padding()
             }
+            .navigationTitle("Video")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
                         dismiss()
                     }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    FavoriteButton(
+                        consumptionUrl: favoriteVideoUrl,
+                        type: .youtube,
+                        title: video.title,
+                        author: video.channelTitle,
+                        subtitle: video.durationInMinutes > 0 ? "\(video.durationInMinutes) min" : nil,
+                        imageUrl: video.thumbnailURL
+                    )
+                    .font(.title3)
                 }
             }
             .onDisappear {
@@ -99,5 +117,32 @@ struct VideoDetailSheet: View {
                 }
             }
         }
+    }
+    
+    private var favoriteVideoBar: some View {
+        HStack(spacing: 12) {
+            FavoriteButton(
+                consumptionUrl: favoriteVideoUrl,
+                type: .youtube,
+                title: video.title,
+                author: video.channelTitle,
+                subtitle: video.durationInMinutes > 0 ? "\(video.durationInMinutes) min" : nil,
+                imageUrl: video.thumbnailURL
+            )
+            .font(.title2)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Favorite this video")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text("Find it under Input → YouTube → Favorites → Saved")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
     }
 }

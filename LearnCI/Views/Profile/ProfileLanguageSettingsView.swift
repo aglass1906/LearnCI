@@ -41,6 +41,24 @@ struct ProfileLanguageSettingsView: View {
                         Slider(value: $dailyGoal, in: 10...120, step: 5)
                             .textFieldStyle(.roundedBorder)
                     }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Study Hours")
+                            Spacer()
+                            TextField("0", value: $startingHours, format: .number)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 96)
+                        }
+
+                        Stepper("Adjust Study Hours", value: $startingHours, in: 0...10_000)
+                    }
+
+                    Text("Include any hours you studied before using LearnCI.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     
                     DatePicker("Original Start Date", selection: $originalStartDate, in: ...Date(), displayedComponents: .date)
                 } else {
@@ -49,15 +67,10 @@ struct ProfileLanguageSettingsView: View {
                     let levelLabel = LevelManager.shared.displayString(level: proficiencyLevel, language: selectedLanguage.code, preferredScale: selectedScale)
                     LabeledContent("Current Level", value: levelLabel)
                     LabeledContent("Daily Goal", value: "\(Int(dailyGoal)) minutes")
-                    LabeledContent("Starting Hours", value: "\(startingHours) hours")
+                    LabeledContent("Study Hours", value: "\(startingHours) hours")
                     LabeledContent("Started Learning", value: originalStartDate.formatted(date: .abbreviated, time: .omitted))
                 }
                 
-                if isEditing {
-                    Text("Add your previous learning time to your total.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
             }
         }
         .navigationTitle("Language Learning")

@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import Supabase
+import PostgREST
 
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
@@ -11,6 +13,7 @@ struct ProfileView: View {
     @State private var showClearFavoritesConfirmation = false
     @State private var showClearStoriesConfirmation = false
     @State private var showClearStoryMediaConfirmation = false
+    @State private var isClearingFavorites = false
     @State private var isRefreshingStories = false
     
     var profiles: [UserProfile] {
@@ -21,31 +24,8 @@ struct ProfileView: View {
         NavigationStack {
             List {
                 if let profile = profiles.first {
-                    Section {
-                        NavigationLink(destination: ProfileAccountSettingsView(profile: profile)) {
-                            Label("Account", systemImage: "person.circle")
-                        }
-                        
-                        NavigationLink(destination: ProfileLanguageSettingsView(profile: profile)) {
-                            Label("Language Learning", systemImage: "globe")
-                        }
-                        
-                        NavigationLink(destination: ProfileGameSettingsView(profile: profile)) {
-                            Label("Game Settings", systemImage: "gamecontroller")
-                        }
-                        
-                        NavigationLink(destination: ProfileAudioSettingsView(profile: profile)) {
-                            Label("Audio Settings", systemImage: "speaker.wave.3")
-                        }
-                        
-                        NavigationLink(destination: ProfileAISettingsView(profile: profile)) {
-                            Label("AI Settings", systemImage: "sparkles")
-                        }
-                        
-                        NavigationLink(destination: ProfileConnectionsView()) {
-                            Label("App Connections", systemImage: "link")
-                        }
-                    }
+                    settingsSection(profile: profile)
+                    favoritesTestingSection
                 } else {
                     if !syncManager.hasInitialSyncCompleted {
                         ContentUnavailableView("Syncing Profile...", systemImage: "arrow.triangle.2.circlepath")
@@ -57,9 +37,6 @@ struct ProfileView: View {
                 Section("Development") {
                     Button("Remove All Profiles", role: .destructive) {
                         showDeleteConfirmation = true
-                    }
-                    Button("Clear All Favorites", role: .destructive) {
-                        showClearFavoritesConfirmation = true
                     }
                     Button(role: .destructive) {
                         showClearStoryMediaConfirmation = true
@@ -80,7 +57,7 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Done") {
                         dismiss()
                     }
@@ -106,10 +83,12 @@ struct ProfileView: View {
             .alert("Clear All Favorites?", isPresented: $showClearFavoritesConfirmation) {
                 Button("Cancel", role: .cancel) { }
                 Button("Clear All", role: .destructive) {
-                    deleteAllFavorites()
+                    Task {
+                        await deleteAllFavorites()
+                    }
                 }
             } message: {
-                Text("This will verify the YouTube fix by resetting your database. All saved items will be removed.")
+                Text("This will remove all favorites for your signed-in account from this device and Supabase.")
             }
             .alert("Clear Downloaded Story Media?", isPresented: $showClearStoryMediaConfirmation) {
                 Button("Cancel", role: .cancel) { }
@@ -150,6 +129,54 @@ struct ProfileView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func settingsSection(profile: UserProfile) -> some View {
+        Section {
+            NavigationLink(destination: ProfileAccountSettingsView(profile: profile)) {
+                Label("Account", systemImage: "person.circle")
+            }
+
+            NavigationLink(destination: ProfileLanguageSettingsView(profile: profile)) {
+                Label("Language Learning", systemImage: "globe")
+            }
+
+            NavigationLink(destination: ProfileGameSettingsView(profile: profile)) {
+                Label("Game Settings", systemImage: "gamecontroller")
+            }
+
+            NavigationLink(destination: ProfileAudioSettingsView(profile: profile)) {
+                Label("Audio Settings", systemImage: "speaker.wave.3")
+            }
+
+            NavigationLink(destination: ProfileAISettingsView(profile: profile)) {
+                Label("AI Settings", systemImage: "sparkles")
+            }
+
+            NavigationLink(destination: ProfileConnectionsView()) {
+                Label("App Connections", systemImage: "link")
+            }
+        }
+    }
+
+    private var favoritesTestingSection: some View {
+        Section {
+            Button(role: .destructive) {
+                showClearFavoritesConfirmation = true
+            } label: {
+                if isClearingFavorites {
+                    Label("Resetting Favorites...", systemImage: "arrow.triangle.2.circlepath")
+                } else {
+                    Label("Reset Favorites", systemImage: "heart.slash")
+                }
+            }
+            .disabled(isClearingFavorites || syncManager.isSyncing)
+        } header: {
+            Text("Testing")
+        } footer: {
+            Text("Clears favorites for your signed-in account locally and in Supabase so you can test from a clean state.")
+        }
+    }
     
     private func deleteAllProfiles() {
         do {
@@ -160,13 +187,31 @@ struct ProfileView: View {
         }
     }
     
-    private func deleteAllFavorites() {
+    @MainActor
+    private func deleteAllFavorites() async {
+        guard !isClearingFavorites else { return }
+        guard let userID = authManager.currentUser,
+              let userUUID = UUID(uuidString: userID) else { return }
+
+        isClearingFavorites = true
         do {
-             try modelContext.delete(model: Favorite.self)
-             dismiss()
+            try await authManager.supabase.from("favorites")
+                .delete()
+                .eq("user_id", value: userUUID)
+                .execute()
+
+            let descriptor = FetchDescriptor<Favorite>(
+                predicate: #Predicate { $0.userID == userID }
+            )
+            let favorites = try modelContext.fetch(descriptor)
+            for favorite in favorites {
+                modelContext.delete(favorite)
+            }
+            try modelContext.save()
         } catch {
-             print("Failed to delete favorites: \(error)")
+            print("Failed to delete favorites: \(error)")
         }
+        isClearingFavorites = false
     }
 
     private func clearLocalStoriesAndRefresh() {

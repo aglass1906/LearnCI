@@ -22,11 +22,13 @@ class YouTubeManager {
     var discoveryVideos: [YouTubeVideo] = []
     var recommendedVideos: [YouTubeVideo] = []
     var channels: [YouTubeChannel] = []
+    var playlists: [YouTubeChannel] = []
     /// Videos loaded explicitly from favorited watch URLs (not necessarily in the home feed).
     var savedFavoriteVideos: [YouTubeVideo] = []
     var isLoading: Bool = false
     var isChannelLoading: Bool = false // Separate loading state for channel details
     var isDiscoveryLoading: Bool = false
+    var isPlaylistsLoading: Bool = false
     var discoveryNextPageToken: String?
     private var currentDiscoveryQuery: (language: Language, level: LearningLevel, category: String)?
     var isRecommendedLoading: Bool = false
@@ -41,6 +43,7 @@ class YouTubeManager {
     private let discoveryVideosKey = "yt_discovery_videos"
     private let recommendedVideosKey = "yt_recommended_videos"
     private let channelsKey = "yt_channels"
+    private let playlistsKey = "yt_playlists"
     
     private var accessToken: String? {
         defaults.string(forKey: tokenKey)
@@ -165,7 +168,9 @@ class YouTubeManager {
         youtubeAccount = nil
         videos = []
         channels = []
+        playlists = []
         defaults.removeObject(forKey: accountKey)
+        defaults.removeObject(forKey: playlistsKey)
         defaults.removeObject(forKey: tokenKey)
     }
     
@@ -219,6 +224,14 @@ class YouTubeManager {
         if let data = defaults.data(forKey: channelsKey),
            let decoded = try? decoder.decode([YouTubeChannel].self, from: data) {
             channels = decoded
+        }
+        if let data = defaults.data(forKey: playlistsKey),
+           let decoded = try? decoder.decode([YouTubeChannel].self, from: data) {
+            playlists = decoded.map { channel in
+                var copy = channel
+                copy.isPlaylist = true
+                return copy
+            }
         }
     }
     
@@ -451,6 +464,106 @@ class YouTubeManager {
                 }
             } catch {
                 completion(accumulatedChannels.map { $0.id })
+            }
+        }.resume()
+    }
+    
+    // MARK: - User Playlists
+    
+    func fetchUserPlaylists(forceRefresh: Bool = false) {
+        guard isAuthenticated, let token = accessToken else {
+            errorMessage = "Connect YouTube in Profile to see your playlists."
+            return
+        }
+        if !forceRefresh, !playlists.isEmpty { return }
+        
+        isPlaylistsLoading = true
+        errorMessage = nil
+        fetchUserPlaylistsPage(token: token, pageToken: nil, accumulated: [])
+    }
+    
+    private func fetchUserPlaylistsPage(token: String, pageToken: String?, accumulated: [YouTubeChannel]) {
+        var urlString = "https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50"
+        if let pageToken = pageToken {
+            urlString += "&pageToken=\(pageToken)"
+        }
+        
+        guard let url = URL(string: urlString) else {
+            DispatchQueue.main.async {
+                self.isPlaylistsLoading = false
+            }
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self else { return }
+            
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    self.isPlaylistsLoading = false
+                }
+                return
+            }
+            
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                DispatchQueue.main.async { self.isPlaylistsLoading = false }
+                return
+            }
+            
+            if let errorObj = json["error"] as? [String: Any],
+               let message = errorObj["message"] as? String {
+                DispatchQueue.main.async {
+                    self.errorMessage = message
+                    self.isPlaylistsLoading = false
+                }
+                return
+            }
+            
+            let items = json["items"] as? [[String: Any]] ?? []
+            let pagePlaylists: [YouTubeChannel] = items.compactMap { item in
+                guard let id = item["id"] as? String,
+                      let snippet = item["snippet"] as? [String: Any],
+                      let title = snippet["title"] as? String,
+                      let thumbnails = snippet["thumbnails"] as? [String: Any] else {
+                    return nil
+                }
+                let thumbDict = (thumbnails["high"] as? [String: Any])
+                    ?? (thumbnails["medium"] as? [String: Any])
+                    ?? (thumbnails["default"] as? [String: Any])
+                let thumbnailURL = thumbDict?["url"] as? String ?? ""
+                let itemCount = (item["contentDetails"] as? [String: Any])?["itemCount"] as? Int
+                return YouTubeChannel(
+                    id: id,
+                    title: title,
+                    thumbnailURL: thumbnailURL,
+                    isPlaylist: true,
+                    itemCount: itemCount
+                )
+            }
+            
+            let combined = accumulated + pagePlaylists
+            let nextToken = json["nextPageToken"] as? String
+            
+            if let nextToken = nextToken {
+                self.fetchUserPlaylistsPage(token: token, pageToken: nextToken, accumulated: combined)
+                return
+            }
+            
+            let sorted = combined.sorted {
+                $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+            }
+            
+            DispatchQueue.main.async {
+                self.playlists = sorted
+                self.isPlaylistsLoading = false
+                if let encoded = try? JSONEncoder().encode(sorted) {
+                    self.defaults.set(encoded, forKey: self.playlistsKey)
+                }
             }
         }.resume()
     }

@@ -22,6 +22,7 @@ struct VideoView: View {
     enum VideoTabMode: String, CaseIterable {
         case subscriptions = "New Videos"
         case channels = "Subscriptions"
+        case playlists = "Playlists"
         case discovery = "Discovery"
     }
     
@@ -187,6 +188,8 @@ struct VideoView: View {
                         subscriptionContentView
                     case .channels:
                         channelListView
+                    case .playlists:
+                        playlistListView
                     case .discovery:
                         discoveryContentView
                     }
@@ -210,6 +213,8 @@ struct VideoView: View {
                 refreshDiscovery()
             } else if mode == .subscriptions && youtubeManager.isAuthenticated {
                 youtubeManager.refreshVideos()
+            } else if mode == .playlists && youtubeManager.isAuthenticated {
+                youtubeManager.fetchUserPlaylists()
             }
         }
         .onChange(of: selectedCategory) { _, _ in
@@ -223,6 +228,8 @@ struct VideoView: View {
                 refreshDiscovery()
             } else if mode == .subscriptions && youtubeManager.isAuthenticated {
                 youtubeManager.refreshVideos()
+            } else if mode == .playlists && youtubeManager.isAuthenticated {
+                youtubeManager.fetchUserPlaylists()
             }
         }
         .onChange(of: youtubeFavorites.count) { _, _ in
@@ -263,6 +270,8 @@ struct VideoView: View {
                             youtubeManager.refreshVideos()
                         } else if mode == .discovery {
                             refreshDiscovery()
+                        } else if mode == .playlists {
+                            youtubeManager.fetchUserPlaylists(forceRefresh: true)
                         } else {
                             youtubeManager.refreshVideos()
                         }
@@ -334,6 +343,75 @@ struct VideoView: View {
             }
         }
         .padding()
+    }
+    
+    var playlistListView: some View {
+        Group {
+            if !youtubeManager.isAuthenticated {
+                notConnectedView
+            } else if youtubeManager.isPlaylistsLoading && youtubeManager.playlists.isEmpty {
+                ProgressView("Loading playlists...")
+            } else if youtubeManager.playlists.isEmpty {
+                ContentUnavailableView(
+                    "No Playlists",
+                    systemImage: "list.bullet.rectangle",
+                    description: Text("Create playlists on YouTube, or pull to refresh after connecting your account.")
+                )
+            } else {
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                        ForEach(youtubeManager.playlists) { playlist in
+                            VStack(alignment: .leading, spacing: 8) {
+                                ZStack(alignment: .bottomTrailing) {
+                                    AsyncImage(url: URL(string: playlist.thumbnailURL)) { image in
+                                        image
+                                            .resizable()
+                                            .aspectRatio(16/9, contentMode: .fill)
+                                    } placeholder: {
+                                        Rectangle()
+                                            .fill(Color.gray.opacity(0.15))
+                                            .aspectRatio(16/9, contentMode: .fit)
+                                            .overlay {
+                                                Image(systemName: "list.bullet.rectangle")
+                                                    .font(.title)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    
+                                    Image(systemName: "list.bullet")
+                                        .font(.caption2.bold())
+                                        .padding(5)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(Circle())
+                                        .padding(6)
+                                }
+                                
+                                Text(playlist.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                                
+                                if let count = playlist.itemCount {
+                                    Text("\(count) videos")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .onTapGesture {
+                                selectedChannel = playlist
+                                youtubeManager.fetchVideosForPlaylist(playlist.id)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+                .refreshable {
+                    youtubeManager.fetchUserPlaylists(forceRefresh: true)
+                }
+            }
+        }
     }
     
     var channelListView: some View {
@@ -642,6 +720,8 @@ struct VideoView: View {
             return youtubeManager.videos.count
         case .channels:
             return youtubeManager.channels.count
+        case .playlists:
+            return youtubeManager.playlists.count
         case .discovery:
             return youtubeManager.discoveryVideos.count
         }
@@ -661,7 +741,13 @@ struct VideoView: View {
         if mode == .subscriptions {
             return "\(feedVideosForCurrentScope().count) Videos"
         }
-        return "\(countForMode(mode)) \(mode == .channels ? "Subscriptions" : "Videos") Found"
+        if mode == .playlists {
+            return "\(youtubeManager.playlists.count) Playlists"
+        }
+        if mode == .channels {
+            return "\(countForMode(mode)) Subscriptions"
+        }
+        return "\(countForMode(mode)) Videos Found"
     }
     
     private func videosMatchingShortsFilter(_ videos: [YouTubeVideo]) -> [YouTubeVideo] {

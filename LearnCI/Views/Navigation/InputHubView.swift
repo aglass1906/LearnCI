@@ -12,7 +12,7 @@ struct InputHubView: View {
                 NavigationLink(destination: VideoView()) {
                     HubPanel(
                         title: "YouTube",
-                        subtitle: "Channels & videos",
+                        subtitle: "Subs, playlists & videos",
                         icon: "play.rectangle.fill",
                         gradient: Gradient(colors: [Color(red: 0.9, green: 0, blue: 0), .red])
                     )

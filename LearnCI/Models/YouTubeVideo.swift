@@ -66,6 +66,7 @@ struct YouTubeChannel: Identifiable, Codable, Hashable {
     let title: String
     let thumbnailURL: String
     var isPlaylist: Bool = false // Default to false, mutable for manual setting
+    var itemCount: Int? = nil
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -75,11 +76,12 @@ struct YouTubeChannel: Identifiable, Codable, Hashable {
     }
     
     // Custom init to support default parameter
-    init(id: String, title: String, thumbnailURL: String, isPlaylist: Bool = false) {
+    init(id: String, title: String, thumbnailURL: String, isPlaylist: Bool = false, itemCount: Int? = nil) {
         self.id = id
         self.title = title
         self.thumbnailURL = thumbnailURL
         self.isPlaylist = isPlaylist
+        self.itemCount = itemCount
     }
     
     // Allow decoding without isPlaylist

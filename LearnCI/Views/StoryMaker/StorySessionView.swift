@@ -222,7 +222,7 @@ struct StorySessionView: View {
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
                 word: selectedWord ?? "",
-                language: story.language,
+                languageLabel: story.language.displayName,
                 translation: wordTranslation,
                 partOfSpeech: wordPartOfSpeech,
                 isLoading: isTranslatingWord,
@@ -1656,7 +1656,7 @@ struct ComprehensionQuizSheet: View {
 
 struct WordLookupSheet: View {
     let word: String
-    let language: Language
+    let languageLabel: String
     let translation: String?
     let partOfSpeech: String?
     let isLoading: Bool
@@ -1672,7 +1672,7 @@ struct WordLookupSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text(word)
                             .font(.system(size: 32, weight: .bold, design: .serif))
-                        Text(language.displayName)
+                        Text(languageLabel)
                             .font(.caption.bold())
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 8)

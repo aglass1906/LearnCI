@@ -438,6 +438,94 @@ actor OpenAIService {
         
         return translation.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    func translateCaptionCueBatch(
+        cues: [YouTubeCaptionCue],
+        sourceLanguage: String,
+        targetLanguage: String = "English"
+    ) async throws -> [YouTubeTranslatedCue] {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+        guard !cues.isEmpty else { return [] }
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let cuePayload = cues.map { ["cueIndex": $0.index, "text": $0.normalizedText] }
+        let cueJSONData = try JSONSerialization.data(withJSONObject: cuePayload, options: [.sortedKeys])
+        let cueJSONString = String(data: cueJSONData, encoding: .utf8) ?? "[]"
+
+        let prompt = """
+        Translate each caption cue from \(sourceLanguage) to \(targetLanguage).
+        Return strict JSON with the shape {"translations":[{"cueIndex":0,"text":"..."}]}.
+        Preserve meaning naturally, keep each translation concise, and do not omit any cue.
+
+        Cues:
+        \(cueJSONString)
+        """
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a subtitle translator. Respond strictly in JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        struct TranslationWrapper: Decodable {
+            struct Item: Decodable {
+                let cueIndex: Int
+                let text: String
+            }
+            let translations: [Item]
+        }
+
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let contentString = result.choices.first?.message.content,
+              let contentData = contentString.data(using: .utf8) else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        let wrapper = try JSONDecoder().decode(TranslationWrapper.self, from: contentData)
+        let cueIDs = Dictionary(uniqueKeysWithValues: cues.map { ($0.index, $0.id) })
+
+        return wrapper.translations.map { item in
+            YouTubeTranslatedCue(
+                cueID: cueIDs[item.cueIndex],
+                cueIndex: item.cueIndex,
+                text: item.text
+            )
+        }
+    }
     
     func generateCoverArt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) async throws -> (imageData: Data, prompt: String) {
         guard let apiKey = apiKey, !apiKey.isEmpty else {

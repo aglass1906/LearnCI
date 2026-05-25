@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		131E058F2F1D4FDC009547EB /* Images in Resources */ = {isa = PBXBuildFile; fileRef = 131E058E2F1D4FD9009547EB /* Images */; };
-		AGT000000000000000000001 /* StoryReadingSpineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT000000000000000000002 /* StoryReadingSpineTests.swift */; };
 		135AABA62F087FB5002207B5 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABA52F087FB5002207B5 /* GoogleSignIn */; };
 		135AABA82F087FB5002207B5 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABA72F087FB5002207B5 /* GoogleSignInSwift */; };
 		135AABCA2F098957002207B5 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABC92F098957002207B5 /* Auth */; };
@@ -17,7 +16,18 @@
 		135AABD02F098957002207B5 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABCF2F098957002207B5 /* Realtime */; };
 		135AABD22F098957002207B5 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABD12F098957002207B5 /* Storage */; };
 		135AABD42F098957002207B5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 135AABD32F098957002207B5 /* Supabase */; };
+		AGT000000000000000000001 /* StoryReadingSpineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT000000000000000000002 /* StoryReadingSpineTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AGT00000000000000000000C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 135AAB342F083F93002207B5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 135AAB3B2F083F93002207B5;
+			remoteInfo = LearnCI;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		131E058E2F1D4FD9009547EB /* Images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Images; path = LearnCI/Resources/Images; sourceTree = "<group>"; };
@@ -131,6 +141,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AGT000000000000000000006 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -214,16 +231,6 @@
 		};
 /* End PBXNativeTarget section */
 
-/* Begin PBXContainerItemProxy section */
-		AGT00000000000000000000C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 135AAB342F083F93002207B5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 135AAB3B2F083F93002207B5;
-			remoteInfo = LearnCI;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXProject section */
 		135AAB342F083F93002207B5 /* Project object */ = {
 			isa = PBXProject;
@@ -296,16 +303,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		AGT000000000000000000006 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXTargetDependency section */
 		AGT00000000000000000000D /* PBXTargetDependency */ = {

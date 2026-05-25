@@ -33,6 +33,9 @@ struct LearnCIApp: App {
             DailyFeedback.self,
             CoachingCheckIn.self,
             Favorite.self,
+            YouTubeCaptionCache.self,
+            YouTubeCaptionTranslationCache.self,
+            YouTubeWordLookupCache.self,
             Story.self,
             PodcastShow.self,
             PodcastEpisode.self

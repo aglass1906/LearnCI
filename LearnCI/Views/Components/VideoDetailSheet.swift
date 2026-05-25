@@ -24,6 +24,8 @@ struct VideoDetailSheet: View {
     @State private var isLookingUpWord = false
     @State private var translationRequestsInFlight: Set<Int> = []
 
+    private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
+
     init(
         video: YouTubeVideo,
         onWatch: @escaping () -> Void,
@@ -37,37 +39,28 @@ struct VideoDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    YouTubePlayerView(
-                        videoID: video.id,
-                        videoURL: video.videoStreamURL,
-                        watchDuration: $watchDuration,
-                        seekRequest: $seekRequest,
-                        playbackRateRequest: $playbackRateRequest,
-                        onPlaybackSnapshot: handlePlaybackSnapshot
-                    )
-                    .frame(height: 220)
-                    .cornerRadius(12)
-                    .shadow(radius: 5)
+            VStack(spacing: 0) {
+                topSection
 
-                    favoriteVideoBar
-                    videoHeader
-                    watchStatsBadge
-                    modePicker
-                    studyStatusBanner
+                Divider()
+                    .padding(.horizontal)
 
-                    if studyViewModel.mode == .study {
-                        studyContent
-                    } else {
-                        watchContent
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        studyStatusBanner
+
+                        if studyViewModel.mode == .study {
+                            studyContent
+                        } else {
+                            watchContent
+                        }
+
+                        actionButtons
                     }
-
-                    actionButtons
+                    .padding()
                 }
-                .padding()
             }
-            .navigationTitle("Video")
+            .navigationTitle(video.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -75,7 +68,18 @@ struct VideoDetailSheet: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    playbackSpeedToolbarMenu
+                    modeToolbarButton(
+                        mode: .watch,
+                        icon: "eye.fill",
+                        accessibilityLabel: "Watch mode"
+                    )
+                    modeToolbarButton(
+                        mode: .study,
+                        icon: "captions.bubble.fill",
+                        accessibilityLabel: "Study mode"
+                    )
                     FavoriteButton(
                         consumptionUrl: favoriteVideoUrl,
                         type: .youtube,
@@ -127,27 +131,108 @@ struct VideoDetailSheet: View {
         }
     }
 
-    private var videoHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(video.title)
-                .font(.title2)
-                .fontWeight(.bold)
+    private var topSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            YouTubePlayerView(
+                videoID: video.id,
+                videoURL: video.videoStreamURL,
+                watchDuration: $watchDuration,
+                seekRequest: $seekRequest,
+                playbackRateRequest: $playbackRateRequest,
+                onPlaybackSnapshot: handlePlaybackSnapshot
+            )
+            .frame(height: 220)
+            .cornerRadius(12)
+            .shadow(radius: 5)
 
-            HStack {
-                Text(video.channelTitle)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("Duration: \(video.durationInMinutes) min")
-                    .foregroundColor(.secondary)
-            }
-            .font(.subheadline)
+            compactInSheetHeader
         }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    }
+
+    private var compactInSheetHeader: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(video.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    Text(video.channelTitle)
+                        .lineLimit(1)
+
+                    if video.durationInMinutes > 0 {
+                        Text("•")
+                        Text("\(video.durationInMinutes) min")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            watchStatsBadge
+        }
+    }
+
+    private var playbackSpeedToolbarMenu: some View {
+        Menu {
+            ForEach(playbackRates, id: \.self) { rate in
+                Button {
+                    setPlayerPlaybackRate(rate)
+                } label: {
+                    if isSelectedPlaybackRate(rate) {
+                        Label(String(format: "%.2gx", rate), systemImage: "checkmark")
+                    } else {
+                        Text(String(format: "%.2gx", rate))
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "speedometer")
+        }
+        .accessibilityLabel("Playback speed")
+    }
+
+    private func modeToolbarButton(
+        mode: YouTubeStudyMode,
+        icon: String,
+        accessibilityLabel: String
+    ) -> some View {
+        let isSelected = studyViewModel.mode == mode
+
+        return Button {
+            setViewingMode(mode)
+        } label: {
+            Image(systemName: icon)
+                .foregroundStyle(isSelected ? .blue : .primary)
+        }
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+
+    private func setViewingMode(_ newMode: YouTubeStudyMode) {
+        studyViewModel.setMode(newMode)
+
+        if newMode == .study {
+            Task {
+                await bootstrapStudyModeIfNeeded(force: !studyViewModel.canEnterStudyMode)
+                await ensureTranslationsForCurrentCue()
+            }
+        }
+    }
+
+    private func isSelectedPlaybackRate(_ rate: Float) -> Bool {
+        abs(studyViewModel.playback.playbackRate - rate) < 0.01
     }
 
     @ViewBuilder
     private var watchStatsBadge: some View {
         if watchDuration > 0 {
-            HStack {
+            HStack(spacing: 6) {
                 Image(systemName: "timer")
                 Text("Watching: \(Int(watchDuration))s")
             }
@@ -158,30 +243,6 @@ struct VideoDetailSheet: View {
             .background(Color.blue.opacity(0.1))
             .clipShape(Capsule())
         }
-    }
-
-    private var modePicker: some View {
-        Picker(
-            "Viewing Mode",
-            selection: Binding(
-                get: { studyViewModel.mode },
-                set: { newMode in
-                    studyViewModel.setMode(newMode)
-                    if newMode == .study {
-                        Task {
-                            await bootstrapStudyModeIfNeeded(force: !studyViewModel.canEnterStudyMode)
-                            await ensureTranslationsForCurrentCue()
-                        }
-                    }
-                }
-            )
-        ) {
-            ForEach(YouTubeStudyMode.allCases) { mode in
-                Text(mode.rawValue)
-                    .tag(mode)
-            }
-        }
-        .pickerStyle(.segmented)
     }
 
     @ViewBuilder
@@ -255,7 +316,6 @@ struct VideoDetailSheet: View {
             if studyViewModel.canEnterStudyMode {
                 YouTubeStudyPanel(
                     trackLabel: studyViewModel.selectedTrack?.displayLabel,
-                    playbackRate: studyViewModel.playback.playbackRate,
                     activeCue: studyViewModel.activeCue,
                     activeCueTranslation: studyViewModel.activeCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
                     cues: studyViewModel.activeCues,
@@ -265,7 +325,6 @@ struct VideoDetailSheet: View {
                         studyViewModel.translatedCue(for: cue)?.text
                     },
                     onSeek: seekPlayer,
-                    onPlaybackRateChange: setPlayerPlaybackRate,
                     onWordTap: lookupWord
                 )
 
@@ -322,33 +381,6 @@ struct VideoDetailSheet: View {
             return reason
         }
         return "No captioned study data is available for this video."
-    }
-
-    private var favoriteVideoBar: some View {
-        HStack(spacing: 12) {
-            FavoriteButton(
-                consumptionUrl: favoriteVideoUrl,
-                type: .youtube,
-                title: video.title,
-                author: video.channelTitle,
-                subtitle: video.durationInMinutes > 0 ? "\(video.durationInMinutes) min" : nil,
-                imageUrl: video.thumbnailURL
-            )
-            .font(.title2)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Favorite this video")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Text("Find it under Input → YouTube → Favorites → Saved")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(12)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(12)
     }
 
     @MainActor

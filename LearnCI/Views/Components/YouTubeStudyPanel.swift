@@ -2,7 +2,6 @@ import SwiftUI
 
 struct YouTubeStudyPanel: View {
     let trackLabel: String?
-    let playbackRate: Float
     let activeCue: YouTubeCaptionCue?
     let activeCueTranslation: String?
     let cues: [YouTubeCaptionCue]
@@ -10,15 +9,10 @@ struct YouTubeStudyPanel: View {
     let translationState: YouTubeStudyLoadState
     let translationForCue: (YouTubeCaptionCue) -> String?
     let onSeek: (Double) -> Void
-    let onPlaybackRateChange: (Float) -> Void
     let onWordTap: (String, YouTubeCaptionCue) -> Void
-
-    private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            speedControl
-
             if let activeCue {
                 activeCueCard(activeCue)
             } else {
@@ -33,41 +27,6 @@ struct YouTubeStudyPanel: View {
 
             transcriptSection
         }
-    }
-
-    private var speedControl: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Playback Speed", systemImage: "speedometer")
-                    .font(.subheadline.weight(.semibold))
-                Spacer()
-                if let trackLabel {
-                    Text(trackLabel)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            HStack(spacing: 8) {
-                ForEach(playbackRates, id: \.self) { rate in
-                    Button {
-                        onPlaybackRateChange(rate)
-                    } label: {
-                        Text(String(format: "%.2gx", rate))
-                            .font(.subheadline.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(isSelected(rate) ? Color.blue : Color.secondary.opacity(0.12))
-                            .foregroundStyle(isSelected(rate) ? .white : .primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-        .padding(14)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func activeCueCard(_ cue: YouTubeCaptionCue) -> some View {
@@ -116,8 +75,18 @@ struct YouTubeStudyPanel: View {
 
     private var transcriptSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Transcript")
-                .font(.headline)
+            HStack {
+                Text("Transcript")
+                    .font(.headline)
+
+                Spacer()
+
+                if let trackLabel {
+                    Text(trackLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -170,9 +139,6 @@ struct YouTubeStudyPanel: View {
         .buttonStyle(.plain)
     }
 
-    private func isSelected(_ rate: Float) -> Bool {
-        abs(playbackRate - rate) < 0.01
-    }
 }
 
 private struct CueWordText: View {

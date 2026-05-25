@@ -448,6 +448,26 @@ final class YouTubeStudyViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.consumePendingSeek())
     }
 
+    func testActiveCuePrefersLatestOverlappingCue() {
+        let track = YouTubeCaptionTrack(
+            id: "es-manual",
+            languageCode: "es",
+            languageName: "Spanish",
+            kind: .standard,
+            isDefault: true
+        )
+        let cues = [
+            YouTubeCaptionCue(index: 0, startTime: 0.0, endTime: 2.0, text: "Primero"),
+            YouTubeCaptionCue(index: 1, startTime: 1.2, endTime: 2.8, text: "Segundo")
+        ]
+        let viewModel = YouTubeStudyViewModel(video: makeVideo())
+
+        viewModel.applyTranscript(cues: cues, track: track)
+        viewModel.updatePlayback(currentTime: 1.5)
+
+        XCTAssertEqual(viewModel.activeCue?.text, "Segundo")
+    }
+
     private func makeVideo() -> YouTubeVideo {
         YouTubeVideo(
             id: "abc123",

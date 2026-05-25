@@ -77,6 +77,7 @@ Your browser does not support the video tag.
 </video>
 <script>
 var video = document.getElementById('player');
+var snapshotTimer = null;
 
 function postSnapshot() {
 window.webkit.messageHandlers.playbackHandler.postMessage({
@@ -88,16 +89,31 @@ isPlaying: !video.paused && !video.ended
 });
 }
 
+function startSnapshotTimer() {
+stopSnapshotTimer();
+snapshotTimer = setInterval(postSnapshot, 100);
+}
+
+function stopSnapshotTimer() {
+if (snapshotTimer) {
+clearInterval(snapshotTimer);
+snapshotTimer = null;
+}
+}
+
 video.addEventListener('play', function() {
 window.webkit.messageHandlers.playbackHandler.postMessage(1);
+startSnapshotTimer();
 postSnapshot();
 });
 video.addEventListener('pause', function() {
 window.webkit.messageHandlers.playbackHandler.postMessage(2);
+stopSnapshotTimer();
 postSnapshot();
 });
 video.addEventListener('ended', function() {
 window.webkit.messageHandlers.playbackHandler.postMessage(0);
+stopSnapshotTimer();
 postSnapshot();
 });
 video.addEventListener('timeupdate', postSnapshot);
@@ -170,7 +186,7 @@ postSnapshot();
 
 function startSnapshotTimer() {
 stopSnapshotTimer();
-snapshotTimer = setInterval(postSnapshot, 250);
+snapshotTimer = setInterval(postSnapshot, 100);
 }
 
 function stopSnapshotTimer() {

@@ -1,6 +1,29 @@
 import SwiftUI
 
 struct YouTubeStudyPanel: View {
+    enum DisplayMode {
+        case context
+        case transcript
+    }
+
+    enum ContextWindowSize: String {
+        case small = "Small"
+        case large = "Large"
+
+        var radius: Int {
+            switch self {
+            case .small: 1
+            case .large: 2
+            }
+        }
+
+        var chunkSize: Int {
+            (radius * 2) + 1
+        }
+    }
+
+    let displayMode: DisplayMode
+    let contextWindowSize: ContextWindowSize
     let trackLabel: String?
     let activeCue: YouTubeCaptionCue?
     let activeCueTranslation: String?
@@ -8,6 +31,7 @@ struct YouTubeStudyPanel: View {
     let activeCueID: String?
     let translationState: YouTubeStudyLoadState
     let translationForCue: (YouTubeCaptionCue) -> String?
+    let onContextWindowSizeChange: (ContextWindowSize) -> Void
     let onSeek: (Double) -> Void
     let onWordTap: (String, YouTubeCaptionCue) -> Void
 
@@ -19,37 +43,62 @@ struct YouTubeStudyPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if let activeCue {
-                activeCueCard(activeCue)
-            } else {
-                ContentUnavailableView(
-                    "Waiting for captions",
-                    systemImage: "captions.bubble",
-                    description: Text("Start the video or scrub to a captioned section to begin studying.")
-                )
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
+            switch displayMode {
+            case .context:
+                if let activeCue {
+                    activeCueCard(activeCue)
+                } else {
+                    ContentUnavailableView(
+                        "Waiting for captions",
+                        systemImage: "captions.bubble",
+                        description: Text("Start the video or scrub to a captioned section to begin studying.")
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+            case .transcript:
+                transcriptSection
             }
-
-            transcriptSection
         }
     }
 
     private func activeCueCard(_ cue: YouTubeCaptionCue) -> some View {
         let contextCues = cueContext(around: cue)
+        let previousTargetCue = previousContextTarget(from: cue)
+        let nextTargetCue = nextContextTarget(from: cue)
 
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label("Subtitle Context", systemImage: "text.bubble")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
+                contextWindowSizePicker
+            }
+
+            HStack(spacing: 10) {
                 Button {
-                    onSeek(cue.startTime)
+                    if let previousTargetCue {
+                        onSeek(previousTargetCue.startTime)
+                    }
                 } label: {
-                    Label("Jump", systemImage: "gobackward")
+                    Label("Prev", systemImage: "chevron.left")
                         .font(.caption.weight(.semibold))
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .disabled(previousTargetCue == nil)
+
+                Button {
+                    if let nextTargetCue {
+                        onSeek(nextTargetCue.startTime)
+                    }
+                } label: {
+                    Label("Next", systemImage: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(nextTargetCue == nil)
             }
 
             MergedCueContextText(
@@ -155,9 +204,50 @@ struct YouTubeStudyPanel: View {
             return [cue]
         }
 
-        let lowerBound = max(0, activeIndex - 1)
-        let upperBound = min(cues.count - 1, activeIndex + 1)
+        let lowerBound = max(0, activeIndex - contextWindowSize.radius)
+        let upperBound = min(cues.count - 1, activeIndex + contextWindowSize.radius)
         return Array(cues[lowerBound...upperBound])
+    }
+
+    private var contextWindowSizePicker: some View {
+        HStack(spacing: 6) {
+            contextWindowSizeButton(.small)
+            contextWindowSizeButton(.large)
+        }
+        .padding(4)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(Capsule())
+    }
+
+    private func contextWindowSizeButton(_ size: ContextWindowSize) -> some View {
+        let isSelected = contextWindowSize == size
+
+        return Button {
+            onContextWindowSizeChange(size)
+        } label: {
+            Text(size.rawValue)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(isSelected ? .white : .primary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(isSelected ? Color.blue : Color.clear)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func previousContextTarget(from cue: YouTubeCaptionCue) -> YouTubeCaptionCue? {
+        guard let activeIndex = cues.firstIndex(where: { $0.id == cue.id }) else { return nil }
+        let targetIndex = max(0, activeIndex - contextWindowSize.chunkSize)
+        guard targetIndex != activeIndex else { return nil }
+        return cues[targetIndex]
+    }
+
+    private func nextContextTarget(from cue: YouTubeCaptionCue) -> YouTubeCaptionCue? {
+        guard let activeIndex = cues.firstIndex(where: { $0.id == cue.id }) else { return nil }
+        let targetIndex = min(cues.count - 1, activeIndex + contextWindowSize.chunkSize)
+        guard targetIndex != activeIndex else { return nil }
+        return cues[targetIndex]
     }
 
     private func mergedTranslationState(

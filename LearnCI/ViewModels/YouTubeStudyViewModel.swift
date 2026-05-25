@@ -84,7 +84,7 @@ class YouTubeStudyViewModel {
     }
 
     var activeCue: YouTubeCaptionCue? {
-        activeCues.first(where: { $0.contains(time: playback.currentTime, slack: 0.15) })
+        activeCues.last(where: { $0.contains(time: playback.currentTime, slack: 0.05) })
     }
 
     func setMode(_ mode: YouTubeStudyMode) {

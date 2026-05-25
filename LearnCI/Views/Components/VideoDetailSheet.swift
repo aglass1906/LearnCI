@@ -23,8 +23,15 @@ struct VideoDetailSheet: View {
     @State private var didBootstrapStudyMode = false
     @State private var isLookingUpWord = false
     @State private var translationRequestsInFlight: Set<Int> = []
+    @State private var studyPaneDisplayMode: StudyPaneDisplayMode = .context
+    @State private var studyContextWindowSize: YouTubeStudyPanel.ContextWindowSize = .small
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
+
+    private enum StudyPaneDisplayMode: String {
+        case context = "Context"
+        case transcript = "Transcript"
+    }
 
     init(
         video: YouTubeVideo,
@@ -153,29 +160,66 @@ struct VideoDetailSheet: View {
     }
 
     private var compactInSheetHeader: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(video.title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-
-                HStack(spacing: 6) {
-                    Text(video.channelTitle)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(video.title)
+                        .font(.subheadline.weight(.semibold))
                         .lineLimit(1)
 
-                    if video.durationInMinutes > 0 {
-                        Text("•")
-                        Text("\(video.durationInMinutes) min")
+                    HStack(spacing: 6) {
+                        Text(video.channelTitle)
+                            .lineLimit(1)
+
+                        if video.durationInMinutes > 0 {
+                            Text("•")
+                            Text("\(video.durationInMinutes) min")
+                        }
                     }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+
+                Spacer(minLength: 0)
+
+                watchStatsBadge
             }
 
-            Spacer(minLength: 0)
-
-            watchStatsBadge
+            if studyViewModel.mode == .study, studyViewModel.canEnterStudyMode {
+                studyPaneToggle
+            }
         }
+    }
+
+    private var studyPaneToggle: some View {
+        HStack(spacing: 8) {
+            studyPaneButton(.context, icon: "text.bubble")
+            studyPaneButton(.transcript, icon: "list.bullet.rectangle")
+        }
+        .padding(4)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(Capsule())
+    }
+
+    private func studyPaneButton(_ mode: StudyPaneDisplayMode, icon: String) -> some View {
+        let isSelected = studyPaneDisplayMode == mode
+
+        return Button {
+            studyPaneDisplayMode = mode
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                Text(mode.rawValue)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(isSelected ? .white : .primary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.blue : Color.clear)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     private var playbackSpeedToolbarMenu: some View {
@@ -218,6 +262,7 @@ struct VideoDetailSheet: View {
         studyViewModel.setMode(newMode)
 
         if newMode == .study {
+            studyPaneDisplayMode = .context
             Task {
                 await bootstrapStudyModeIfNeeded(force: !studyViewModel.canEnterStudyMode)
                 await ensureTranslationsForCurrentCue()
@@ -315,6 +360,8 @@ struct VideoDetailSheet: View {
         case .loaded:
             if studyViewModel.canEnterStudyMode {
                 YouTubeStudyPanel(
+                    displayMode: studyPaneDisplayMode == .context ? .context : .transcript,
+                    contextWindowSize: studyContextWindowSize,
                     trackLabel: studyViewModel.selectedTrack?.displayLabel,
                     activeCue: studyViewModel.activeCue,
                     activeCueTranslation: studyViewModel.activeCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
@@ -324,6 +371,7 @@ struct VideoDetailSheet: View {
                     translationForCue: { cue in
                         studyViewModel.translatedCue(for: cue)?.text
                     },
+                    onContextWindowSizeChange: { studyContextWindowSize = $0 },
                     onSeek: seekPlayer,
                     onWordTap: lookupWord
                 )

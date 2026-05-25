@@ -11,6 +11,12 @@ struct YouTubeStudyPanel: View {
     let onSeek: (Double) -> Void
     let onWordTap: (String, YouTubeCaptionCue) -> Void
 
+    private enum MergedTranslationState {
+        case ready(AttributedString)
+        case loading
+        case placeholder
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let activeCue {
@@ -30,9 +36,11 @@ struct YouTubeStudyPanel: View {
     }
 
     private func activeCueCard(_ cue: YouTubeCaptionCue) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let contextCues = cueContext(around: cue)
+
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Current Subtitle", systemImage: "text.bubble")
+                Label("Subtitle Context", systemImage: "text.bubble")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Button {
@@ -44,28 +52,31 @@ struct YouTubeStudyPanel: View {
                 .buttonStyle(.bordered)
             }
 
-            CueWordText(cue: cue, onWordTap: onWordTap)
+            MergedCueContextText(
+                cues: contextCues,
+                activeCueID: cue.id,
+                onWordTap: onWordTap
+            )
                 .font(.system(size: 20, weight: .regular, design: .serif))
                 .tint(.primary)
 
-            Group {
-                if let activeCueTranslation, !activeCueTranslation.isEmpty {
-                    Text(activeCueTranslation)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                } else if translationState == .loading {
-                    HStack(spacing: 8) {
-                        ProgressView()
-                            .controlSize(.small)
-                        Text("Translating current subtitle…")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Text("Translation will appear here as study mode caches it.")
+            switch mergedTranslationState(for: contextCues, activeCueID: cue.id) {
+            case .ready(let mergedTranslation):
+                Text(mergedTranslation)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            case .loading:
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Translating subtitle context…")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            case .placeholder:
+                Text("Translation will appear here as study mode caches nearby lines.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(16)
@@ -139,10 +150,63 @@ struct YouTubeStudyPanel: View {
         .buttonStyle(.plain)
     }
 
+    private func cueContext(around cue: YouTubeCaptionCue) -> [YouTubeCaptionCue] {
+        guard let activeIndex = cues.firstIndex(where: { $0.id == cue.id }) else {
+            return [cue]
+        }
+
+        let lowerBound = max(0, activeIndex - 1)
+        let upperBound = min(cues.count - 1, activeIndex + 1)
+        return Array(cues[lowerBound...upperBound])
+    }
+
+    private func mergedTranslationState(
+        for contextCues: [YouTubeCaptionCue],
+        activeCueID: String
+    ) -> MergedTranslationState {
+        let activeCueHasTranslation = contextCues.contains { cue in
+            cue.id == activeCueID &&
+            !(translationForCue(cue)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty ?? true)
+        }
+
+        if !activeCueHasTranslation, translationState == .loading {
+            return .loading
+        }
+
+        var merged = AttributedString()
+        var hasAnyTranslation = false
+
+        for (index, cue) in contextCues.enumerated() {
+            let translation = translationForCue(cue)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let isActive = cue.id == activeCueID
+            let hasTranslation = !(translation?.isEmpty ?? true)
+
+            let displayText = hasTranslation ? (translation ?? "") : "..."
+            var attributedSegment = AttributedString(displayText)
+            attributedSegment.foregroundColor = .secondary
+            attributedSegment.font = .system(size: 17, weight: isActive ? .semibold : .regular)
+            merged.append(attributedSegment)
+
+            if hasTranslation {
+                hasAnyTranslation = true
+            }
+
+            if index < contextCues.count - 1 {
+                merged.append(AttributedString(" "))
+            }
+        }
+
+        return hasAnyTranslation ? .ready(merged) : .placeholder
+    }
+
 }
 
-private struct CueWordText: View {
-    let cue: YouTubeCaptionCue
+private struct MergedCueContextText: View {
+    let cues: [YouTubeCaptionCue]
+    let activeCueID: String
     let onWordTap: (String, YouTubeCaptionCue) -> Void
 
     var body: some View {
@@ -150,7 +214,10 @@ private struct CueWordText: View {
             .environment(\.openURL, OpenURLAction { url in
                 guard url.scheme == "x-learnci-word",
                       let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                      let word = components.queryItems?.first(where: { $0.name == "word" })?.value else {
+                      let word = components.queryItems?.first(where: { $0.name == "word" })?.value,
+                      let cueIndexValue = components.queryItems?.first(where: { $0.name == "cueIndex" })?.value,
+                      let cueIndex = Int(cueIndexValue),
+                      let cue = cues.first(where: { $0.index == cueIndex }) else {
                     return .systemAction
                 }
                 onWordTap(word, cue)
@@ -159,31 +226,46 @@ private struct CueWordText: View {
     }
 
     private var attributedText: AttributedString {
-        var attributed = AttributedString(cue.text)
-        attributed.foregroundColor = .primary
+        var merged = AttributedString()
 
-        let nsText = cue.text as NSString
-        let regex = try? NSRegularExpression(pattern: "\\p{L}[\\p{L}\\p{Mn}'’-]*", options: [])
-        let matches = regex?.matches(in: cue.text, options: [], range: NSRange(location: 0, length: nsText.length)) ?? []
+        for (index, cue) in cues.enumerated() {
+            var cueAttributed = AttributedString(cue.text)
+            let isActive = cue.id == activeCueID
+            cueAttributed.foregroundColor = isActive ? .primary : .secondary
+            cueAttributed.font = .system(size: 20, weight: isActive ? .semibold : .regular, design: .serif)
 
-        for match in matches {
-            guard let range = Range(match.range, in: cue.text),
-                  let lowerBound = AttributedString.Index(range.lowerBound, within: attributed),
-                  let upperBound = AttributedString.Index(range.upperBound, within: attributed) else {
-                continue
+            let nsText = cue.text as NSString
+            let regex = try? NSRegularExpression(pattern: "\\p{L}[\\p{L}\\p{Mn}'’-]*", options: [])
+            let matches = regex?.matches(in: cue.text, options: [], range: NSRange(location: 0, length: nsText.length)) ?? []
+
+            for match in matches {
+                guard let range = Range(match.range, in: cue.text),
+                      let lowerBound = AttributedString.Index(range.lowerBound, within: cueAttributed),
+                      let upperBound = AttributedString.Index(range.upperBound, within: cueAttributed) else {
+                    continue
+                }
+
+                let word = String(cue.text[range])
+                var components = URLComponents()
+                components.scheme = "x-learnci-word"
+                components.queryItems = [
+                    URLQueryItem(name: "word", value: word),
+                    URLQueryItem(name: "cueIndex", value: String(cue.index))
+                ]
+
+                if let url = components.url {
+                    cueAttributed[lowerBound..<upperBound].link = url
+                    cueAttributed[lowerBound..<upperBound].underlineStyle = .single
+                }
             }
 
-            let word = String(cue.text[range])
-            var components = URLComponents()
-            components.scheme = "x-learnci-word"
-            components.queryItems = [URLQueryItem(name: "word", value: word)]
+            merged.append(cueAttributed)
 
-            if let url = components.url {
-                attributed[lowerBound..<upperBound].link = url
-                attributed[lowerBound..<upperBound].underlineStyle = .single
+            if index < cues.count - 1 {
+                merged.append(AttributedString(" "))
             }
         }
 
-        return attributed
+        return merged
     }
 }

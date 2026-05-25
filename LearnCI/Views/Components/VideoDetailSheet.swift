@@ -510,15 +510,20 @@ struct VideoDetailSheet: View {
                 contextText: cachedLookup.contextText
             )
             isLookingUpWord = false
+            Logger.debug("Loaded cached word lookup for '\(word)' [\(sourceLanguageCode)]", category: .youtube)
             return
         }
 
         isLookingUpWord = true
+        Logger.debug(
+            "Requesting word lookup for '\(word)' using source language '\(lookupPromptLanguageName)'",
+            category: .youtube
+        )
         Task {
             do {
                 let result = try await openAIService.translateWord(
                     word,
-                    language: lookupSourceLanguageName,
+                    language: lookupPromptLanguageName,
                     context: cue.normalizedText
                 )
                 await MainActor.run {
@@ -536,9 +541,11 @@ struct VideoDetailSheet: View {
                         contextText: cue.normalizedText
                     )
                     isLookingUpWord = false
+                    Logger.debug("Resolved word lookup for '\(word)' to '\(result.translation)'", category: .youtube)
                 }
             } catch {
                 await MainActor.run {
+                    let errorMessage = String(describing: error)
                     studyViewModel.applyLookupResult(
                         word: word,
                         translation: "Translation unavailable",
@@ -546,6 +553,7 @@ struct VideoDetailSheet: View {
                         contextText: cue.normalizedText
                     )
                     isLookingUpWord = false
+                    Logger.error("Word lookup failed for '\(word)': \(errorMessage)", category: .youtube)
                 }
             }
         }
@@ -567,6 +575,16 @@ struct VideoDetailSheet: View {
 
     private var lookupSourceLanguageName: String {
         studyViewModel.selectedTrack?.languageName ?? video.language?.displayName ?? "Caption"
+    }
+
+    private var lookupPromptLanguageName: String {
+        lookupSourceLanguageName
+            .replacingOccurrences(
+                of: #"\s*\(auto-generated\)\s*$"#,
+                with: "",
+                options: [.regularExpression, .caseInsensitive]
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     @MainActor

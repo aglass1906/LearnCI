@@ -1703,9 +1703,13 @@ struct WordLookupSheet: View {
                             Text("Translating…")
                                 .foregroundColor(.secondary)
                         }
-                    } else if let t = translation {
+                    } else if let t = translation, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Text(t)
                             .font(.system(size: 22, weight: .regular))
+                    } else {
+                        Text("Translation unavailable.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
                     }
                 }
                 .padding(.horizontal)

@@ -40,18 +40,25 @@ struct MemoryConfigView: View {
             
             Spacer()
             
-            // Next Button
-            Button(action: onNext) {
-                HStack {
-                    Text("Next")
-                    Image(systemName: "chevron.right")
+            VStack(spacing: 12) {
+                Button(action: onNext) {
+                    HStack {
+                        Text("Next")
+                        Image(systemName: "chevron.right")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(12)
                 }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.blue)
-                .cornerRadius(12)
+
+                Button(action: onSkipToSummary) {
+                    Label("Use Defaults", systemImage: "play.fill")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
             .padding()
         }

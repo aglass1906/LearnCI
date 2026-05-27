@@ -39,18 +39,25 @@ struct PlaceholderConfigView: View {
                 
                 Spacer()
                 
-                // Next Button
-                Button(action: onNext) {
-                    HStack {
-                        Text("Next")
-                        Image(systemName: "chevron.right")
+                VStack(spacing: 12) {
+                    Button(action: onNext) {
+                        HStack {
+                            Text("Next")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(15)
                     }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(15)
+
+                    Button(action: onSkipToSummary) {
+                        Label("Use Defaults", systemImage: "play.fill")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 30)

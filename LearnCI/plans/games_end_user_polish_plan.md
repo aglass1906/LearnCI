@@ -6,16 +6,18 @@ Improve the LearnCI games experience around faster play entry, consistent feedba
 
 The plan intentionally starts with low-risk UX and feedback improvements before adding persisted user preferences or deeper game refactors.
 
+Implementation status: Phases 1-4 are implemented in app code. Phase 5 still needs a manual device/simulator verification pass across every game type. Game sound/haptic preferences are currently local SwiftData profile settings; cross-device Supabase sync should be handled in a separate schema-backed follow-up.
+
 ## Current Findings
 
-- The current setup flow is linear: choose game, choose deck, session options, game-specific settings, review, then play. This makes configuration feel required even when the user just wants to start.
-- `GameView` already has skip-to-summary hooks in several places, but there is no true quick-start path that applies defaults and starts cleanly.
-- `SoundManager` exists and supports `flip`, `match`, `mismatch`, `win`, and `click`, but only `sfx_match.wav` and `sfx_win.wav` are currently bundled.
+- The original setup flow was linear: choose game, choose deck, session options, game-specific settings, review, then play. Phase 1 now adds quick-start paths while keeping the full configuration path available.
+- `GameView` now has a true quick-start path that applies defaults and starts with a compatible selected or discovered deck.
+- `SoundManager` supports `flip`, `match`, `mismatch`, `win`, and `click`; all matching bundled SFX assets are now present.
 - Word Rain and Word Crush already have the strongest polish, including score, streaks, celebrations, shake feedback, and match/mismatch sounds.
-- Memory Match has basic flip/match/mismatch/win sounds, but its round progress, transitions, and matched-pair feedback are comparatively plain.
-- Column Connect has minimal end-user polish: limited sound feedback, no final celebration handoff until its local game-over view, and an in-game dismiss button that competes with the shared playing toolbar.
-- Audio Cloze uses haptics directly instead of `SoundManager`; Multiple Choice uses `win` for each correct answer, which makes ordinary success feel like final completion.
-- Progress displays vary by game, so the same session goal can feel different depending on the game type.
+- Memory Match now has round/progress feedback and matched-pair animation polish.
+- Column Connect now has shared feedback routing, round progress, round transitions, and a cleaner completion handoff.
+- Audio Cloze and Multiple Choice now route answer feedback through `GameFeedbackManager`.
+- Progress displays still vary by game, but Memory Match and Column Connect now expose clearer in-game progress.
 
 ## Recommended Changes
 
@@ -37,13 +39,14 @@ The plan intentionally starts with low-risk UX and feedback improvements before 
 
 ## Interfaces And State
 
-- Prefer a first pass without SwiftData profile schema changes.
+- The first pass used local SwiftData profile fields for game sound and haptic preferences.
 - Add a lightweight helper, for example `GameFeedbackManager`, that exposes methods such as `tap()`, `flip()`, `correct()`, `incorrect()`, `match()`, and `complete()`.
 - Keep `SoundManager` as the low-level audio implementation, while the new helper decides which sound and haptic should fire for a game event.
 - Design the helper so future user settings can be added without touching every game again.
-- If persisted preferences are added later, use defaults equivalent to:
+- Persisted local preferences use defaults equivalent to:
   - `soundEffectsEnabled: true`
   - `hapticsEnabled: true`
+- Defer Supabase sync for these preferences until the `profiles` table has explicit columns and `SyncManager` DTOs can be updated without risking writes to missing remote fields.
 - Add a helper method in `GameView`, such as `startWithDefaults()`, that validates deck availability, clamps card count, applies current game-specific defaults, and calls `startActiveSession()`.
 
 ## Test Plan
@@ -94,6 +97,8 @@ xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug
 
 ### Phase 1: Navigation and quick-start
 
+- Status: Implemented.
+
 - Add `Play Now` and `Configure` paths after game selection.
 - Let selected deck plus defaults start a game without visiting every setup screen.
 - Add a `Start` action from deck selection when a compatible deck is selected.
@@ -101,6 +106,8 @@ xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug
 - Keep the current full configuration path available for users who want control.
 
 ### Phase 2: Shared feedback system
+
+- Status: Implemented.
 
 - Add a centralized game feedback helper around `SoundManager`.
 - Route sounds and haptics through one place.
@@ -110,6 +117,8 @@ xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug
 
 ### Phase 3: Game-by-game polish
 
+- Status: Mostly implemented. Memory Match, Column Connect, and shared feedback cleanup are complete; deeper Audio Cloze and Multiple Choice animation polish remains optional follow-up.
+
 - Upgrade Memory Match with round/progress feedback and matched-pair animations.
 - Upgrade Column Connect with match/mismatch feedback, cleaner finish flow, and round transitions.
 - Align Audio Cloze and Multiple Choice answer reveal animations with the shared feedback behavior.
@@ -118,12 +127,16 @@ xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug
 
 ### Phase 4: Preference and settings polish
 
+- Status: Implemented locally. Supabase sync is deferred until a schema migration adds dedicated remote columns.
+
 - Add optional sound and haptic toggles only after the shared helper is in place.
 - Persist preferences in profile settings if users need control over audio or haptics.
 - Add a concise user-facing game settings area later rather than expanding the first implementation.
 - Keep defaults enabled so existing users get the improved experience automatically.
 
 ### Phase 5: Verification pass
+
+- Status: Partially complete. `xcodebuild` has passed after each implementation phase; full manual verification remains.
 
 - Build via `xcodebuild`.
 - Manually test quick-start and configure paths for all game types.

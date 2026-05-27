@@ -246,7 +246,7 @@ class WordRainGameViewModel {
         score += points
         wordsCompleted += 1
 
-        SoundManager.shared.play(.match)
+        GameFeedbackManager.shared.match()
         celebration = MatchCelebration(points: points, streak: streak, word: word.text)
 
         // Streak milestone banners
@@ -295,7 +295,7 @@ class WordRainGameViewModel {
         let cardId = fallingWords[idx].card.id
         cardMissErrors[cardId, default: 0] += 1
         streak = 0
-        SoundManager.shared.play(.mismatch)
+        GameFeedbackManager.shared.incorrect()
 
         let wordId = fallingWords[idx].id
         shakingWordIds.insert(wordId)
@@ -316,7 +316,7 @@ class WordRainGameViewModel {
             fallingWords[i].state = .missed
         }
 
-        SoundManager.shared.play(.mismatch)
+        GameFeedbackManager.shared.incorrect()
 
         screenFlashing = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
@@ -339,7 +339,7 @@ class WordRainGameViewModel {
         guard !finishCalled else { return }
         finishCalled = true
         isGameOver = true
-        SoundManager.shared.play(.win)
+        GameFeedbackManager.shared.complete()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
             self?.onFinish?()
         }

@@ -168,6 +168,7 @@ class LinkerGameViewModel {
              selectedLeftId = nil // Deselect
              return
         }
+        GameFeedbackManager.shared.tap()
         selectedLeftId = item.id
 
         // Play word audio for all round types
@@ -213,6 +214,7 @@ class LinkerGameViewModel {
         // Increment Score
         score += 1
         selectedLeftId = nil
+        GameFeedbackManager.shared.match()
         
         // Remove items
         withAnimation(.easeOut(duration: 0.3)) {
@@ -242,6 +244,7 @@ class LinkerGameViewModel {
     private func handleMismatch(rightItem: LinkerItem) {
         // Mark error for this card
         batchErrors[rightItem.cardId] = true
+        GameFeedbackManager.shared.incorrect()
         
         // Visual feedback
         if let rightIndex = rightItems.firstIndex(where: { $0.id == rightItem.id }) {

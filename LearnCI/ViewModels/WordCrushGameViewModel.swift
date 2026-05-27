@@ -167,7 +167,7 @@ class WordCrushGameViewModel {
         score += 10 * streakBonus
         matchesFound += 1
 
-        SoundManager.shared.play(.match)
+        GameFeedbackManager.shared.match()
 
         // Show celebration
         let pointsEarned = 10 * streakBonus
@@ -217,7 +217,7 @@ class WordCrushGameViewModel {
         batchErrors[tile1.cardId] = true
         batchErrors[tile2.cardId] = true
 
-        SoundManager.shared.play(.mismatch)
+        GameFeedbackManager.shared.incorrect()
 
         // Shake animation
         shakeTileIds = [tile1.id, tile2.id]

@@ -267,7 +267,7 @@ struct AudioClozeGameView: View {
             // Correct
             isCorrect = true
             hasAnswered = true
-            playSuccessSound()
+            GameFeedbackManager.shared.correct()
 
             if sessionConfig.audioClozeReplayAfterCorrect {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
@@ -278,7 +278,7 @@ struct AudioClozeGameView: View {
             // Incorrect
             hadWrongAttempt = true
             wrongAttemptCount += 1
-            playErrorFeedback()
+            GameFeedbackManager.shared.incorrect()
             // selectedOption stays set (to show red)
 
             // "Try Again" style:
@@ -297,19 +297,6 @@ struct AudioClozeGameView: View {
         } else {
             onLearned()
         }
-    }
-    
-    // MARK: - Helpers
-    
-    func playSuccessSound() {
-        // Haptic or System Sound
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    }
-    
-    func playErrorFeedback() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.error)
     }
     
     // MARK: - UI Styling

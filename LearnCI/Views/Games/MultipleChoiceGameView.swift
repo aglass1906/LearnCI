@@ -219,7 +219,7 @@ struct MultipleChoiceGameView: View {
         if option.id == challenge.correctCard.id {
             // Correct
             isCorrect = true
-            SoundManager.shared.play(.win)
+            GameFeedbackManager.shared.correct()
 
             if sessionConfig.multipleChoiceShowTranslation && !challenge.correctCard.sentenceNative.isEmpty {
                 withAnimation { showTranslation = true }
@@ -236,7 +236,7 @@ struct MultipleChoiceGameView: View {
         } else {
             // Incorrect
             isCorrect = false
-            SoundManager.shared.play(.mismatch)
+            GameFeedbackManager.shared.incorrect()
             shakeTrigger += 1
 
             // Report wrong answer to SRS so the card is re-queued

@@ -65,7 +65,7 @@ struct MemoryGameView: View {
                 ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
                     CardTile(card: card)
                         .onTapGesture {
-                            SoundManager.shared.play(.flip)
+                            GameFeedbackManager.shared.flip()
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                                 viewModel.flipCard(at: index)
                             }
@@ -96,17 +96,17 @@ struct MemoryGameView: View {
         }
         
         viewModel.onGameComplete = {
-            SoundManager.shared.play(.win)
+            GameFeedbackManager.shared.complete()
             onGameComplete()
         }
         
         viewModel.onMatchFound = {
-            SoundManager.shared.play(.match)
+            GameFeedbackManager.shared.match()
             onMatchFound()
         }
         
         viewModel.onMistake = {
-            SoundManager.shared.play(.mismatch)
+            GameFeedbackManager.shared.incorrect()
         }
     }
 }

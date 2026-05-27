@@ -90,6 +90,13 @@ struct SessionOptionsView: View {
                     }
                 }
             }
+
+            Section {
+                Button(action: onSkipToSummary) {
+                    Label("Use Game Defaults", systemImage: "play.fill")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
         }
         .onAppear {
             if let max = maxCards {

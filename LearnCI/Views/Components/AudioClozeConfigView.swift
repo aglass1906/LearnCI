@@ -92,7 +92,7 @@ struct AudioClozeConfigView: View {
                 }
 
                 Button(action: onSkipToSummary) {
-                    Text("Skip to Summary")
+                    Label("Use Defaults", systemImage: "play.fill")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

@@ -2,7 +2,9 @@ import SwiftUI
 
 struct GameSelectionView: View {
     @Binding var selectedGameType: GameConfiguration.GameType
-    let onGameSelected: () -> Void
+    let quickStartDeckTitle: String?
+    let onPlayNow: () -> Void
+    let onConfigure: () -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -10,20 +12,60 @@ struct GameSelectionView: View {
     ]
 
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(GameConfiguration.GameType.allCases) { gameType in
-                    GameTileView(
-                        gameType: gameType,
-                        isSelected: selectedGameType == gameType
-                    )
-                    .onTapGesture {
-                        selectedGameType = gameType
-                        onGameSelected()
+        VStack(spacing: 0) {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(GameConfiguration.GameType.allCases) { gameType in
+                        Button {
+                            selectedGameType = gameType
+                        } label: {
+                            GameTileView(
+                                gameType: gameType,
+                                isSelected: selectedGameType == gameType
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding()
             }
-            .padding()
+
+            actionBar
+                .padding()
+                .background(.bar)
+        }
+    }
+
+    private var actionBar: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                Button(action: onPlayNow) {
+                    Label(quickStartDeckTitle == nil ? "Select Deck" : "Play Now", systemImage: "play.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(selectedGameType.tileColor)
+                        .cornerRadius(12)
+                }
+
+                Button(action: onConfigure) {
+                    Label("Configure", systemImage: "slider.horizontal.3")
+                        .font(.headline)
+                        .foregroundColor(selectedGameType.tileColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(selectedGameType.tileColor.opacity(0.12))
+                        .cornerRadius(12)
+                }
+            }
+
+            if let quickStartDeckTitle {
+                Text(quickStartDeckTitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
         }
     }
 }

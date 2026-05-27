@@ -180,6 +180,10 @@ struct GameView: View {
                     profile.currentGameType = newType
                      try? modelContext.save()
                 }
+
+                if let deck = selectedDeck, !deck.supportedModes.contains(newType) {
+                    selectedDeck = quickStartDeck(for: newType)
+                }
             }
     }
     @ViewBuilder
@@ -189,7 +193,9 @@ struct GameView: View {
             let _ = print("DEBUG: Showing gameSelection view")
             GameSelectionView(
                 selectedGameType: $selectedGameType,
-                onGameSelected: { setupStage = .deckSelection }
+                quickStartDeckTitle: quickStartDeckTitle,
+                onPlayNow: startWithDefaults,
+                onConfigure: { setupStage = .deckSelection }
             )
         case .deckSelection:
             let _ = print("DEBUG: Showing deckSelection view")
@@ -361,7 +367,7 @@ struct GameView: View {
             selectedGameType: $selectedGameType,
             availableDecks: dataManager.availableDecks,
             onNext: { setupStage = .sessionConfiguration },
-            onSkipToSummary: { setupStage = .sessionSummary }
+            onSkipToSummary: startWithDefaults
         )
     }
 
@@ -479,8 +485,17 @@ struct GameView: View {
     @ToolbarContentBuilder
     private var deckSelectionToolbarItems: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Next") {
+            Button("Start") {
+                startWithDefaults()
+            }
+            .disabled(selectedDeck == nil)
+        }
+
+        ToolbarItem(placement: .bottomBar) {
+            Button {
                 setupStage = .sessionConfiguration
+            } label: {
+                Label("Configure", systemImage: "slider.horizontal.3")
             }
             .disabled(selectedDeck == nil)
         }
@@ -505,6 +520,36 @@ struct GameView: View {
     }
 
     // MARK: - Logic
+
+    private var quickStartDeckTitle: String? {
+        guard let deck = quickStartDeck(for: selectedGameType) else { return nil }
+        return deck.folderName == "Virtual"
+            ? deck.title.replacingOccurrences(of: "Focus: ", with: "")
+            : deck.title
+    }
+
+    private func quickStartDeck(for gameType: GameConfiguration.GameType) -> DeckMetadata? {
+        if let selectedDeck, selectedDeck.supportedModes.contains(gameType) {
+            return selectedDeck
+        }
+
+        return dataManager.availableDecks.first { $0.supportedModes.contains(gameType) }
+    }
+
+    private func startWithDefaults() {
+        let deckToUse = quickStartDeck(for: selectedGameType)
+            ?? dataManager
+                .discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
+                .first { $0.supportedModes.contains(selectedGameType) }
+
+        guard let deckToUse else {
+            setupStage = .deckSelection
+            return
+        }
+
+        selectedDeck = deckToUse
+        startActiveSession(using: deckToUse)
+    }
 
     func setupConfiguration() {
         print("DEBUG: setupConfiguration called. Profile: \(userProfile?.name ?? "nil"), Initialized: \(hasInitialized)")
@@ -555,11 +600,16 @@ struct GameView: View {
     }
 
     func startActiveSession() {
-        print("DEBUG: ====== startActiveSession() called ======")
         guard let metDeck = selectedDeck else {
             print("DEBUG: ERROR - No selected deck!")
             return
         }
+
+        startActiveSession(using: metDeck)
+    }
+
+    private func startActiveSession(using metDeck: DeckMetadata) {
+        print("DEBUG: ====== startActiveSession() called ======")
         print("DEBUG: Selected deck: \(metDeck.title)")
         _ = dataManager.loadDeck(from: metDeck)
 

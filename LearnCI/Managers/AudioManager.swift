@@ -32,6 +32,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var streamFinished: Bool = false
     var streamPlaybackRate: Float = 1.0
     private var streamTimeObserver: Any?
+    private var isAudioSessionConfigured = false
     
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
@@ -47,6 +48,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
     
     func configureAudioSession() {
+        guard !isAudioSessionConfigured else { return }
+
         do {
             let session = AVAudioSession.sharedInstance()
             // .playback category is required for background audio.
@@ -54,9 +57,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             // Removing .mixWithOthers to ensure we capture remote command events (Lock Screen controls).
             try session.setCategory(.playback, mode: .default)
             try session.setActive(true)
+            isAudioSessionConfigured = true
             print("DEBUG: AVAudioSession active. Category: Playback")
         } catch {
             print("Failed to setup audio session: \(error)")
+            return
         }
 
         setupRemoteTransportControls()
@@ -427,6 +432,24 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         player?.prepareToPlay()
         player?.play()
         isPlaying = true
+    }
+
+    func playOneShot(url: URL, rate: Float = 1.0) throws {
+        stopAudio()
+        configureAudioSession()
+
+        player = try AVAudioPlayer(contentsOf: url)
+        player?.delegate = self
+        player?.enableRate = true
+        player?.rate = rate
+        player?.prepareToPlay()
+        player?.play()
+        isPlaying = true
+    }
+
+    func setOneShotRate(_ rate: Float) {
+        player?.enableRate = true
+        player?.rate = rate
     }
     
     func seek(to time: Double) {

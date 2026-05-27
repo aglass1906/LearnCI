@@ -24,6 +24,7 @@ struct StorySessionView: View {
 
     // UI State
     @State private var showStoryInfo = false
+    @State private var showSpine = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     
@@ -218,6 +219,24 @@ struct StorySessionView: View {
         .sheet(isPresented: $showStoryInfo) {
             StoryInfoSheet(story: story)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showSpine) {
+            StoryBookSpineSheet(
+                chapterItems: storyBookChapterItems,
+                currentChapterIndex: currentChapterIndex,
+                adapter: adapter
+            ) { chapterIndex in
+                showSpine = false
+                if isPlaying { togglePlay() }
+                moveToChapter(chapterIndex)
+                activeWordIndex = nil
+                activeParagraphId = nil
+                sliderValue = 0
+                currentSceneClipIndex = 0
+                setupAudio()
+                showingChapterCard = true
+            }
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
@@ -701,7 +720,8 @@ struct StorySessionView: View {
                     currentSceneClipIndex = 0
                     setupAudio()
                     showingChapterCard = true
-                } : nil
+                } : nil,
+                onShowSpine: { showSpine = true }
             )
             .ignoresSafeArea(edges: .bottom)
         }
@@ -1160,6 +1180,56 @@ struct HeroMediaView: View {
     }
 }
 
+private struct StoryBookSpineSheet: View {
+    let chapterItems: [StoryReadingSpineItem]
+    let currentChapterIndex: Int
+    let adapter: StoryReaderDataAdapter
+    let onSelect: (Int) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List(chapterItems) { item in
+                if let chapter = adapter.chapter(for: item),
+                   let chapterIndex = chapterIndex(for: item) {
+                    Button {
+                        onSelect(chapterIndex)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: chapterIndex == currentChapterIndex ? "text.book.closed.fill" : "text.book.closed")
+                                .frame(width: 24)
+                                .foregroundStyle(chapterIndex == currentChapterIndex ? Color.accentColor : .secondary)
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(chapter.titleTargetLanguage.isEmpty ? "Chapter \(chapterIndex + 1)" : chapter.titleTargetLanguage)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                Text("Chapter \(chapterIndex + 1)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            if chapterIndex == currentChapterIndex {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Story Spine")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
+        guard case .chapter(let index) = item else { return nil }
+        return index
+    }
+}
+
 struct AudioPlayerBar: View {
     @Binding var isPlaying: Bool
     @Binding var sliderValue: Double
@@ -1167,6 +1237,7 @@ struct AudioPlayerBar: View {
     @Binding var playbackRate: Float
     @Binding var ambientVolume: Float
     let isAmbientPlaying: Bool
+    var showsScrubber: Bool = true
 
     var onPlayPause: () -> Void
     var onSkipForward: () -> Void
@@ -1176,6 +1247,7 @@ struct AudioPlayerBar: View {
     
     var onNextChapter: (() -> Void)? = nil
     var onPreviousChapter: (() -> Void)? = nil
+    var onShowSpine: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
@@ -1197,94 +1269,42 @@ struct AudioPlayerBar: View {
                 .padding(.top, 4)
             }
 
-            // Scrubber
-            HStack(spacing: 8) {
-                Text(formatTime(sliderValue))
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
-                
-                Slider(value: Binding(
-                    get: { sliderValue },
-                    set: { newValue in
-                        sliderValue = newValue
-                        onSeek(newValue)
-                    }
-                ), in: 0...duration)
-                
-                Text(formatTime(duration))
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
+            if showsScrubber {
+                HStack(spacing: 8) {
+                    Text(formatTime(sliderValue))
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary)
+                    
+                    Slider(value: Binding(
+                        get: { sliderValue },
+                        set: { newValue in
+                            sliderValue = newValue
+                            onSeek(newValue)
+                        }
+                    ), in: 0...duration)
+                    
+                    Text(formatTime(duration))
+                        .font(.caption2.monospacedDigit())
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
             
-            // Controls
-            HStack(spacing: 20) {
-                // Speed Button
-                Menu {
-                    Button("0.75x") { onChangeRate(0.75) }
-                    Button("1.0x") { onChangeRate(1.0) }
-                    Button("1.25x") { onChangeRate(1.25) }
-                    Button("1.5x") { onChangeRate(1.5) }
-                } label: {
-                    Text("\(String(format: "%.1f", playbackRate))x")
-                        .font(.caption.bold())
-                        .frame(width: 40)
-                        .padding(6)
-                        .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(8)
-                }
-                .foregroundColor(.primary)
-                
-                Spacer()
-
-                // Previous Chapter
-                if let onPrev = onPreviousChapter {
-                    Button(action: onPrev) {
-                        Image(systemName: "backward.end.fill")
-                            .font(.title3)
-                    }
-                    .foregroundColor(.primary)
-                }
-                
-                // Skip Back
-                Button(action: onSkipBackward) {
-                    Image(systemName: "gobackward.10")
-                        .font(.title2)
-                }
-                .foregroundColor(.primary)
-                
-                // Play/Pause
-                Button(action: onPlayPause) {
-                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 56))
-                        .shadow(radius: 4)
-                }
-                .foregroundColor(.blue)
-                
-                // Skip Fwd
-                Button(action: onSkipForward) {
-                    Image(systemName: "goforward.10")
-                        .font(.title2)
-                }
-                .foregroundColor(.primary)
-
-                // Next Chapter
-                if let onNext = onNextChapter {
-                    Button(action: onNext) {
-                        Image(systemName: "forward.end.fill")
-                            .font(.title3)
-                    }
-                    .foregroundColor(.primary)
-                }
-
-                Spacer()
-                
-                // Placeholder to balance the speed button
-                Color.clear.frame(width: 40)
-            }
+            StoryPlaybackControls(
+                isPlaying: isPlaying,
+                playbackRate: playbackRate,
+                canGoPrevious: onPreviousChapter != nil,
+                canGoNext: onNextChapter != nil,
+                onPlayPause: onPlayPause,
+                onPrevious: { onPreviousChapter?() },
+                onNext: { onNextChapter?() },
+                onChangeRate: onChangeRate,
+                onShowSpine: onShowSpine
+            )
+            .padding(.horizontal)
         }
-        .padding(.top, 20)
-        .padding(.bottom, 20)
+        .padding(.top, showsScrubber ? 20 : 12)
+        .padding(.bottom, showsScrubber ? 20 : 12)
         .background(
             Rectangle()
                 .fill(.thinMaterial)
@@ -1299,6 +1319,85 @@ struct AudioPlayerBar: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
+
+struct StoryPlaybackControls: View {
+    let isPlaying: Bool
+    let playbackRate: Float
+    let canGoPrevious: Bool
+    let canGoNext: Bool
+    let onPlayPause: () -> Void
+    let onPrevious: () -> Void
+    let onNext: () -> Void
+    let onChangeRate: (Float) -> Void
+    var onShowSpine: (() -> Void)? = nil
+
+    var body: some View {
+        HStack(spacing: 10) {
+            circleButton(
+                systemName: "backward.end.fill",
+                isEnabled: canGoPrevious,
+                action: onPrevious
+            )
+            .disabled(!canGoPrevious)
+
+            circleButton(
+                systemName: isPlaying ? "pause.fill" : "play.fill",
+                diameter: 52,
+                isEnabled: true,
+                action: onPlayPause
+            )
+
+            circleButton(
+                systemName: "forward.end.fill",
+                isEnabled: canGoNext,
+                action: onNext
+            )
+            .disabled(!canGoNext)
+
+            Menu {
+                Button("0.75x") { onChangeRate(0.75) }
+                Button("1.0x") { onChangeRate(1.0) }
+                Button("1.25x") { onChangeRate(1.25) }
+                Button("1.5x") { onChangeRate(1.5) }
+            } label: {
+                Text("\(String(format: "%.1f", playbackRate))x")
+                    .font(.caption.weight(.bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .frame(width: 52, height: 44)
+                    .background(Color.accentColor)
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.16), radius: 6, y: 3)
+            }
+
+            if let onShowSpine {
+                circleButton(
+                    systemName: "list.bullet",
+                    isEnabled: true,
+                    action: onShowSpine
+                )
+            }
+        }
+    }
+
+    private func circleButton(
+        systemName: String,
+        diameter: CGFloat = 44,
+        isEnabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: diameter == 52 ? 18 : 15, weight: .bold))
+                .foregroundStyle(isEnabled ? .white : .secondary)
+                .frame(width: diameter, height: diameter)
+                .background(isEnabled ? Color.accentColor : Color(.systemGray5))
+                .clipShape(Circle())
+                .shadow(color: isEnabled ? .black.opacity(0.16) : .clear, radius: 6, y: 3)
+        }
+        .buttonStyle(.plain)
     }
 }
 

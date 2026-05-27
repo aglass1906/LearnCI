@@ -379,10 +379,12 @@ struct DialogSessionView: View {
     }
 
     private func playLocal(url: URL, clip: StorySceneAudioClip) {
-        audioManager.streamAudio(url: url)
-        audioManager.setStreamRate(playbackRate)
-        audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
-        audioManager.playStream()
+        do {
+            try audioManager.playOneShot(url: url, rate: playbackRate)
+            audioManager.updateNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
+        } catch {
+            print("[DialogSession] Failed to play dialog audio: \(error)")
+        }
     }
 
     private func downloadAndPlay(clip: StorySceneAudioClip, localURL: URL) async {
@@ -415,7 +417,7 @@ struct DialogSessionView: View {
 
     private func setRate(_ rate: Float) {
         playbackRate = rate
-        audioManager.setStreamRate(rate)
+        audioManager.setOneShotRate(rate)
     }
 }
 

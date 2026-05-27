@@ -10,6 +10,7 @@ struct AudioBookReaderView: View {
     @State private var sliderValue = 0.0
     @State private var duration = 0.0
     @State private var playbackRate: Float = 1.0
+    @State private var showSpine = false
 
     private var audioManager = AudioManager.shared
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -54,6 +55,23 @@ struct AudioBookReaderView: View {
         }
         .navigationTitle("Audio Book")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showSpine) {
+            AudioBookSpineSheet(
+                clips: clips,
+                currentClipIndex: currentClipIndex,
+                readingMatterItems: readingMatterItems,
+                adapter: adapter
+            ) { selection in
+                showSpine = false
+                switch selection {
+                case .clip(let index):
+                    playClip(at: index, autoplay: true)
+                case .readingMatter:
+                    break
+                }
+            }
+            .presentationDetents([.medium, .large])
+        }
         .onDisappear {
             audioManager.stopAudio()
         }
@@ -230,45 +248,32 @@ struct AudioBookReaderView: View {
                 ProgressView()
             }
 
-            HStack {
-                Button(action: previousClip) {
-                    Image(systemName: "backward.end.fill")
-                        .font(.title3)
-                }
-
-                Button(action: togglePlay) {
-                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 48))
-                }
-
-                Button(action: nextClip) {
-                    Image(systemName: "forward.end.fill")
-                        .font(.title3)
-                }
-
-                Slider(value: Binding(
-                    get: { sliderValue },
-                    set: { newValue in
-                        sliderValue = newValue
-                        audioManager.seekStream(to: newValue)
-                    }
-                ), in: 0...max(duration, 1))
-
-                Menu {
-                    Button("0.75x") { setRate(0.75) }
-                    Button("1.0x") { setRate(1.0) }
-                    Button("1.25x") { setRate(1.25) }
-                    Button("1.5x") { setRate(1.5) }
-                } label: {
-                    Text("\(String(format: "%.1f", playbackRate))x")
-                        .font(.caption.bold())
-                        .frame(width: 44)
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
+            AudioPlayerBar(
+                isPlaying: $isPlaying,
+                sliderValue: $sliderValue,
+                duration: max(duration, 1),
+                playbackRate: $playbackRate,
+                ambientVolume: .constant(0),
+                isAmbientPlaying: false,
+                onPlayPause: togglePlay,
+                onSkipForward: {},
+                onSkipBackward: {},
+                onSeek: { audioManager.seekStream(to: $0) },
+                onChangeRate: setRate,
+                onNextChapter: nextClipAction,
+                onPreviousChapter: previousClipAction,
+                onShowSpine: { showSpine = true }
+            )
+            .disabled(isDownloadingAudio)
         }
-        .background(.thinMaterial)
+    }
+
+    private var nextClipAction: (() -> Void)? {
+        currentClipIndex < clips.count - 1 ? { nextClip() } : nil
+    }
+
+    private var previousClipAction: (() -> Void)? {
+        currentClipIndex > 0 ? { previousClip() } : nil
     }
 
     private func togglePlay() {
@@ -384,6 +389,75 @@ struct AudioBookReaderView: View {
 
     private func clipsForChapter(_ chapterIndex: Int) -> [StorySceneAudioClip] {
         clips.filter { $0.chapterIndex == chapterIndex }
+    }
+}
+
+private enum AudioBookSpineSelection {
+    case readingMatter
+    case clip(Int)
+}
+
+private struct AudioBookSpineSheet: View {
+    let clips: [StorySceneAudioClip]
+    let currentClipIndex: Int
+    let readingMatterItems: [StoryReadingSpineItem]
+    let adapter: StoryReaderDataAdapter
+    let onSelect: (AudioBookSpineSelection) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if !readingMatterItems.isEmpty {
+                    Section("Reading Matter") {
+                        ForEach(readingMatterItems) { item in
+                            if let page = adapter.readingMatterPage(for: item) {
+                                Button {
+                                    onSelect(.readingMatter)
+                                } label: {
+                                    Label(
+                                        page.titleTarget?.nilIfEmptyAudioBook ?? "Reading Matter",
+                                        systemImage: "doc.text"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section("Scenes") {
+                    ForEach(Array(clips.enumerated()), id: \.element.id) { index, clip in
+                        Button {
+                            onSelect(.clip(index))
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: index == currentClipIndex ? "speaker.wave.2.fill" : "play.circle")
+                                    .frame(width: 24)
+                                    .foregroundStyle(index == currentClipIndex ? Color.accentColor : .secondary)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(clip.caption.nilIfEmptyAudioBook ?? clip.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(1)
+                                    Text("Chapter \(clip.chapterIndex + 1) · Scene \(clip.sceneIndex + 1)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                if index == currentClipIndex {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Story Spine")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 

@@ -140,6 +140,129 @@ final class StoryReadingSpineTests: XCTestCase {
         )
     }
 
+    func testPictureBookRendererUsesSpineOrderWithBackMatter() throws {
+        let layout = StoryLayout(
+            flatSequence: [
+                PanelLayout(chapterIndex: 1, sceneIndex: 0),
+                PanelLayout(chapterIndex: 0, sceneIndex: 1)
+            ]
+        )
+        let story = try makeStory(
+            layout: layout,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    titleNative: nil,
+                    bodyTarget: "Intro",
+                    bodyNative: nil
+                ),
+                ReadingMatterPage(
+                    id: "appendix",
+                    placement: "back",
+                    titleTarget: "Apendice",
+                    titleNative: nil,
+                    bodyTarget: "Back matter",
+                    bodyNative: nil
+                )
+            ]
+        )
+
+        let spreads = PictureBookRenderer.makeSpreads(story: story, adapter: StoryReaderDataAdapter(story: story))
+
+        XCTAssertEqual(
+            spreads.map(\.id),
+            ["cover", "matter-0-about", "scene-1-0", "scene-0-1", "matter-1-appendix"]
+        )
+        XCTAssertEqual(spreads[2].audioClip?.sceneIndex, 0)
+        XCTAssertEqual(spreads[3].audioClip?.sceneIndex, 1)
+    }
+
+    func testPictureBookRendererAttachesMatchingLayoutPanel() throws {
+        let expectedPanel = PanelLayout(
+            chapterIndex: 0,
+            sceneIndex: 1,
+            x: 10,
+            y: 20,
+            width: 80,
+            height: 60,
+            cropRegion: .topRight
+        )
+        let story = try makeStory(layout: StoryLayout(flatSequence: [expectedPanel]))
+
+        let spreads = PictureBookRenderer.makeSpreads(story: story, adapter: StoryReaderDataAdapter(story: story))
+        let sceneSpread = try XCTUnwrap(spreads.first { $0.id == "scene-0-1" })
+
+        XCTAssertEqual(sceneSpread.panel, expectedPanel)
+        XCTAssertEqual(sceneSpread.audioClip?.chapterIndex, 0)
+        XCTAssertEqual(sceneSpread.audioClip?.sceneIndex, 1)
+    }
+
+    func testPictureBookRendererUsesLayoutPagePanelsWhenPresent() throws {
+        let layout = StoryLayout(
+            pages: [
+                StoryPage(
+                    chapterIndex: 0,
+                    sceneIndex: 1,
+                    canvases: [
+                        StoryCanvas(panels: [
+                            PanelLayout(chapterIndex: 0, sceneIndex: 1, x: 0, y: 0, width: 0.5, height: 1, cropRegion: .topLeft),
+                            PanelLayout(chapterIndex: 1, sceneIndex: 0, x: 0.5, y: 0, width: 0.5, height: 1, cropRegion: .topRight)
+                        ])
+                    ]
+                )
+            ],
+            flatSequence: [
+                PanelLayout(chapterIndex: 0, sceneIndex: 1),
+                PanelLayout(chapterIndex: 1, sceneIndex: 0)
+            ]
+        )
+        let story = try makeStory(layout: layout)
+
+        let spreads = PictureBookRenderer.makeSpreads(story: story, adapter: StoryReaderDataAdapter(story: story))
+        let sceneSpread = try XCTUnwrap(spreads.first { $0.id == "scene-0-1" })
+
+        XCTAssertEqual(sceneSpread.layoutPanels.map { $0.panel.sceneIndex }, [1, 0])
+        XCTAssertEqual(sceneSpread.layoutPanels.map { $0.panel.chapterIndex }, [0, 1])
+    }
+
+    func testPictureBookRendererDedupesDuplicateLayoutPanels() throws {
+        let layout = StoryLayout(
+            flatSequence: [
+                PanelLayout(chapterIndex: 0, sceneIndex: 1),
+                PanelLayout(chapterIndex: 0, sceneIndex: 1),
+                PanelLayout(chapterIndex: 1, sceneIndex: 0)
+            ]
+        )
+        let story = try makeStory(layout: layout)
+
+        let spreads = PictureBookRenderer.makeSpreads(story: story, adapter: StoryReaderDataAdapter(story: story))
+
+        XCTAssertEqual(
+            spreads.map(\.id),
+            ["cover", "matter-0-about", "scene-0-1", "scene-1-0"]
+        )
+    }
+
+    func testPictureBookLayoutClampsPercentAndUnitGeometry() {
+        let frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        let percentPanel = PanelLayout(chapterIndex: 0, sceneIndex: 0, x: 75, y: -10, width: 80, height: 120)
+        let unitPanel = PanelLayout(chapterIndex: 0, sceneIndex: 0, x: 0.1, y: 0.2, width: 0.5, height: 0.4)
+
+        let percentFrame = PictureBookLayout.panelFrame(for: percentPanel, in: frame)
+        let unitFrame = PictureBookLayout.panelFrame(for: unitPanel, in: frame)
+
+        XCTAssertGreaterThan(percentFrame.width, 0)
+        XCTAssertGreaterThan(percentFrame.height, 0)
+        XCTAssertGreaterThan(unitFrame.width, 0)
+        XCTAssertGreaterThan(unitFrame.height, 0)
+        XCTAssertGreaterThanOrEqual(percentFrame.minX, 18)
+        XCTAssertLessThanOrEqual(percentFrame.maxX, 372)
+        XCTAssertGreaterThanOrEqual(unitFrame.minY, 68)
+        XCTAssertLessThanOrEqual(unitFrame.maxY, 544)
+    }
+
     private func makeStory(
         layout: StoryLayout?,
         readingMatterPages: [ReadingMatterPage]? = nil

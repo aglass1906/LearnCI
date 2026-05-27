@@ -31,6 +31,8 @@ class MemoryGameViewModel {
     var totalPairs: Int = 0
     var moves: Int = 0
     var matchMode: GameConfiguration.MemoryMatchMode
+    var currentRoundNumber: Int = 0
+    var isRoundComplete: Bool = false
     
     // Track current learning cards to grade them at the end of the round
     private var currentBatch: [LearningCard] = []
@@ -43,6 +45,14 @@ class MemoryGameViewModel {
     
     private var allSessionCards: [LearningCard]
     private var cardOffset: Int = 0
+    
+    var totalRounds: Int {
+        max(1, Int(ceil(Double(allSessionCards.count) / 8.0)))
+    }
+    
+    var completedCards: Int {
+        max(0, cardOffset - currentBatch.count + matchedPairs)
+    }
 
     init(sessionCards: [LearningCard], matchMode: GameConfiguration.MemoryMatchMode = .pictureToWord) {
         self.allSessionCards = sessionCards
@@ -51,6 +61,8 @@ class MemoryGameViewModel {
 
     func startSession() {
         cardOffset = 0
+        currentRoundNumber = 0
+        isRoundComplete = false
         startNextRound()
     }
 
@@ -65,6 +77,7 @@ class MemoryGameViewModel {
         }
 
         cardOffset += nextBatch.count
+        currentRoundNumber += 1
         setupRound(with: nextBatch)
     }
     
@@ -72,6 +85,7 @@ class MemoryGameViewModel {
         self.currentBatch = learningCards
         totalPairs = learningCards.count
         matchedPairs = 0
+        isRoundComplete = false
         // Don't reset moves if we want total session moves? 
         // Or reset per round? Let's keep it cumulative for the session or reset?
         // Usually moves per board is more relevant for "score", but "Session Moves" might be fun.
@@ -180,6 +194,7 @@ class MemoryGameViewModel {
             self.isProcessing = false
             
             if self.matchedPairs == self.totalPairs {
+                self.isRoundComplete = true
                 // Round Complete!
                 self.completeRound()
             }

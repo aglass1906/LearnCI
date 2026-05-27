@@ -23,6 +23,14 @@ enum LinkerRoundType {
         case .audio: return "Audio Match"
         }
     }
+    
+    var iconName: String {
+        switch self {
+        case .word: return "textformat"
+        case .image: return "photo"
+        case .audio: return "speaker.wave.2.fill"
+        }
+    }
 }
 
 enum LinkerItemType: Equatable {
@@ -99,7 +107,6 @@ class LinkerGameViewModel {
     
     func startRound() {
         guard currentRoundIndex < rounds.count else { return }
-        let currentRound = rounds[currentRoundIndex]
         
         // Populate roundQueue with ALL session cards for this round
         roundQueue = sessionCards.shuffled() // Shuffle for randomness
@@ -205,6 +212,19 @@ class LinkerGameViewModel {
             return rounds[currentRoundIndex]
         }
         return .word
+    }
+    
+    var currentRoundTotal: Int {
+        sessionCards.count
+    }
+    
+    var currentRoundCompleted: Int {
+        max(0, sessionCards.count - roundQueue.count - leftItems.count)
+    }
+    
+    var currentRoundProgress: Double {
+        guard currentRoundTotal > 0 else { return 0 }
+        return Double(currentRoundCompleted) / Double(currentRoundTotal)
     }
 
     private func handleMatch(leftIndex: Int, rightItem: LinkerItem) {

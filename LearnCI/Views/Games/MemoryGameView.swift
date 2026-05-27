@@ -47,41 +47,97 @@ struct MemoryGameView: View {
     ]
     
     var body: some View {
-        VStack {
-            // Header
-            HStack {
-                Text("Memory Match")
-                    .font(.headline)
-                    .foregroundColor(.purple)
-                Spacer()
-                Text("Moves: \(viewModel.moves)")
-                    .font(.subheadline)
-                    .monospacedDigit()
-            }
-            .padding()
-            
-            // Grid
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
-                    CardTile(card: card)
-                        .onTapGesture {
-                            GameFeedbackManager.shared.flip()
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                viewModel.flipCard(at: index)
+        ZStack {
+            VStack(spacing: 0) {
+                headerView
+                    .padding()
+                
+                // Grid
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
+                        CardTile(card: card)
+                            .onTapGesture {
+                                GameFeedbackManager.shared.flip()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                    viewModel.flipCard(at: index)
+                                }
                             }
-                        }
+                    }
                 }
+                .padding()
+                
+                Spacer()
             }
-            .padding()
             
-            Spacer()
+            if viewModel.isRoundComplete {
+                roundCompleteBanner
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
         .onAppear {
             setupEngineCallbacks()
             // Start the session when view appears
             viewModel.startSession()
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: viewModel.isRoundComplete)
         // Removed onChange(of: sessionCards) as it's no longer needed
+    }
+    
+    private var headerView: some View {
+        VStack(spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Memory Match")
+                        .font(.headline)
+                        .foregroundColor(.purple)
+                    Text("Round \(viewModel.currentRoundNumber) of \(viewModel.totalRounds)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Moves")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(viewModel.moves)")
+                        .font(.title3.bold())
+                        .monospacedDigit()
+                }
+            }
+            
+            ProgressView(value: Double(viewModel.matchedPairs), total: Double(max(1, viewModel.totalPairs)))
+                .tint(.purple)
+            
+            HStack {
+                Text("\(viewModel.matchedPairs) / \(viewModel.totalPairs) pairs")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(viewModel.completedCards) cards cleared")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    private var roundCompleteBanner: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 44))
+                .foregroundColor(.green)
+            Text("Round Complete")
+                .font(.title3.bold())
+            Text("Nice board clear")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 26)
+        .padding(.vertical, 18)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.15), radius: 14, y: 8)
     }
     
     func setupEngineCallbacks() {
@@ -181,7 +237,10 @@ struct CardTile: View {
             .degrees(card.isFlipped || card.isMatched ? 180 : 0),
             axis: (x: 0.0, y: 1.0, z: 0.0)
         )
+        .scaleEffect(card.isMatched ? 0.96 : 1.0)
+        .shadow(color: card.isMatched ? .green.opacity(0.28) : .clear, radius: 8)
         .animation(.default, value: card.isFlipped)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: card.isMatched)
     }
     
     // Helper to resolve image URL

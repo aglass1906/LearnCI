@@ -9,7 +9,8 @@ struct VideoView: View {
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     
     enum VideoSourceScope: String, CaseIterable {
-        case all = "All Videos"
+        case all = "All"
+        case playlists = "Playlists"
         case favorites = "Favorites"
     }
     
@@ -22,7 +23,6 @@ struct VideoView: View {
     enum VideoTabMode: String, CaseIterable {
         case subscriptions = "New Videos"
         case channels = "Subscriptions"
-        case playlists = "Playlists"
         case discovery = "Discovery"
     }
     
@@ -129,7 +129,7 @@ struct VideoView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding()
-            } else {
+            } else if sourceScope == .favorites {
                 Picker("Favorites", selection: $favoritesBrowseMode) {
                     ForEach(FavoritesBrowseMode.allCases, id: \.self) { browseMode in
                         Text(browseMode.rawValue).tag(browseMode)
@@ -182,14 +182,14 @@ struct VideoView: View {
                     )
                 } else if sourceScope == .favorites {
                     favoritesContentView
+                } else if sourceScope == .playlists {
+                    playlistListView
                 } else {
                     switch mode {
                     case .subscriptions:
                         subscriptionContentView
                     case .channels:
                         channelListView
-                    case .playlists:
-                        playlistListView
                     case .discovery:
                         discoveryContentView
                     }
@@ -200,6 +200,8 @@ struct VideoView: View {
             selectedChannel = nil
             if newScope == .favorites {
                 refreshFavoriteSavedVideos()
+            } else if newScope == .playlists && youtubeManager.isAuthenticated {
+                youtubeManager.fetchUserPlaylists()
             }
         }
         .onChange(of: favoritesBrowseMode) { _, newMode in
@@ -213,8 +215,6 @@ struct VideoView: View {
                 refreshDiscovery()
             } else if mode == .subscriptions && youtubeManager.isAuthenticated {
                 youtubeManager.refreshVideos()
-            } else if mode == .playlists && youtubeManager.isAuthenticated {
-                youtubeManager.fetchUserPlaylists()
             }
         }
         .onChange(of: selectedCategory) { _, _ in
@@ -224,12 +224,14 @@ struct VideoView: View {
             if sourceScope == .favorites {
                 refreshFavoriteSavedVideos()
             }
-            if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
-                refreshDiscovery()
-            } else if mode == .subscriptions && youtubeManager.isAuthenticated {
-                youtubeManager.refreshVideos()
-            } else if mode == .playlists && youtubeManager.isAuthenticated {
+            if sourceScope == .playlists && youtubeManager.isAuthenticated {
                 youtubeManager.fetchUserPlaylists()
+            } else if sourceScope == .all {
+                if mode == .discovery && youtubeManager.discoveryVideos.isEmpty {
+                    refreshDiscovery()
+                } else if mode == .subscriptions && youtubeManager.isAuthenticated {
+                    youtubeManager.refreshVideos()
+                }
             }
         }
         .onChange(of: youtubeFavorites.count) { _, _ in
@@ -268,10 +270,10 @@ struct VideoView: View {
                         if sourceScope == .favorites {
                             refreshFavoriteSavedVideos()
                             youtubeManager.refreshVideos()
+                        } else if sourceScope == .playlists {
+                            youtubeManager.fetchUserPlaylists(forceRefresh: true)
                         } else if mode == .discovery {
                             refreshDiscovery()
-                        } else if mode == .playlists {
-                            youtubeManager.fetchUserPlaylists(forceRefresh: true)
                         } else {
                             youtubeManager.refreshVideos()
                         }
@@ -720,8 +722,6 @@ struct VideoView: View {
             return youtubeManager.videos.count
         case .channels:
             return youtubeManager.channels.count
-        case .playlists:
-            return youtubeManager.playlists.count
         case .discovery:
             return youtubeManager.discoveryVideos.count
         }
@@ -738,11 +738,11 @@ struct VideoView: View {
                 return "\(videosMatchingShortsFilter(youtubeManager.savedFavoriteVideos).count) Saved Videos"
             }
         }
+        if sourceScope == .playlists {
+            return "\(youtubeManager.playlists.count) Playlists"
+        }
         if mode == .subscriptions {
             return "\(feedVideosForCurrentScope().count) Videos"
-        }
-        if mode == .playlists {
-            return "\(youtubeManager.playlists.count) Playlists"
         }
         if mode == .channels {
             return "\(countForMode(mode)) Subscriptions"

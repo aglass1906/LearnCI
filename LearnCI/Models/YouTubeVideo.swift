@@ -1,5 +1,27 @@
 import Foundation
 
+struct YouTubeVideoChapter: Identifiable, Hashable {
+    let startTime: TimeInterval
+    let title: String
+
+    var id: String {
+        "\(Int(startTime))-\(title)"
+    }
+
+    var formattedTimestamp: String {
+        let totalSeconds = max(0, Int(startTime.rounded()))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        }
+
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
 struct YouTubeVideo: Identifiable, Codable {
     let id: String
     let title: String
@@ -32,6 +54,10 @@ struct YouTubeVideo: Identifiable, Codable {
     var isShort: Bool {
         durationInSeconds <= 61
     }
+
+    var chapters: [YouTubeVideoChapter] {
+        parseChapters(from: description)
+    }
     
     private func parseDuration(_ iso8601: String) -> Int {
         var result = 0
@@ -58,6 +84,54 @@ struct YouTubeVideo: Identifiable, Codable {
         }
         
         return result
+    }
+
+    private func parseChapters(from description: String) -> [YouTubeVideoChapter] {
+        guard !description.isEmpty else { return [] }
+
+        let pattern = #"^\s*((?:\d{1,2}:)?\d{1,2}:\d{2})\s*(?:[-|:]\s*)?(.+?)\s*$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+
+        var chapters: [YouTubeVideoChapter] = []
+        var seenStartTimes: Set<Int> = []
+
+        for line in description.components(separatedBy: .newlines) {
+            let nsRange = NSRange(line.startIndex..<line.endIndex, in: line)
+            guard let match = regex.firstMatch(in: line, range: nsRange),
+                  let timestampRange = Range(match.range(at: 1), in: line),
+                  let titleRange = Range(match.range(at: 2), in: line) else {
+                continue
+            }
+
+            let timestamp = String(line[timestampRange])
+            let title = String(line[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let startSeconds = timestampToSeconds(timestamp)
+
+            guard !title.isEmpty else { continue }
+            guard seenStartTimes.insert(startSeconds).inserted else { continue }
+
+            chapters.append(
+                YouTubeVideoChapter(
+                    startTime: TimeInterval(startSeconds),
+                    title: title
+                )
+            )
+        }
+
+        let sortedChapters = chapters.sorted { $0.startTime < $1.startTime }
+        return sortedChapters.count >= 2 ? sortedChapters : []
+    }
+
+    private func timestampToSeconds(_ timestamp: String) -> Int {
+        let components = timestamp
+            .split(separator: ":")
+            .compactMap { Int($0) }
+
+        guard !components.isEmpty else { return 0 }
+
+        return components.reduce(0) { partialResult, value in
+            (partialResult * 60) + value
+        }
     }
 }
 

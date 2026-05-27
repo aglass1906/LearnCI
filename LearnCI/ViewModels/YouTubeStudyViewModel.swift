@@ -112,6 +112,18 @@ class YouTubeStudyViewModel {
         selectedTrackID = id
     }
 
+    func prepareForTrackChange(id: String) {
+        guard availableTracks.contains(where: { $0.id == id }) else { return }
+        selectedTrackID = id
+        captionLoadState = .loading
+        translationLoadState = .idle
+        activeCues = []
+        translatedCues = []
+        selectedLookup = nil
+        lookupResult = nil
+        availability = .available
+    }
+
     func setCaptionLoadState(_ state: YouTubeStudyLoadState) {
         captionLoadState = state
     }

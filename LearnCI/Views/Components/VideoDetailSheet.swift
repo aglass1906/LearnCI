@@ -7,6 +7,8 @@ struct VideoDetailSheet: View {
     let onLogTime: (Int) -> Void
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Query private var allProfiles: [UserProfile]
 
     private let captionService = YouTubeCaptionService()
     private let openAIService = OpenAIService()
@@ -31,6 +33,10 @@ struct VideoDetailSheet: View {
     private enum StudyPaneDisplayMode: String {
         case context = "Context"
         case transcript = "Transcript"
+    }
+
+    private var currentUserProfile: UserProfile? {
+        allProfiles.first { $0.userID == authManager.currentUser }
     }
 
     init(
@@ -182,13 +188,109 @@ struct VideoDetailSheet: View {
 
                 Spacer(minLength: 0)
 
-                watchStatsBadge
+                VStack(alignment: .trailing, spacing: 8) {
+                    if !video.chapters.isEmpty {
+                        chapterMenu
+                    }
+                    watchStatsBadge
+                }
             }
 
             if studyViewModel.mode == .study, studyViewModel.canEnterStudyMode {
+                studyTrackControls
                 studyPaneToggle
             }
         }
+    }
+
+    private var chapterMenu: some View {
+        let chapters = video.chapters
+
+        return Menu {
+            ForEach(chapters) { chapter in
+                Button {
+                    seekPlayer(to: chapter.startTime)
+                } label: {
+                    if chapter.id == currentChapter?.id {
+                        Label(
+                            "\(chapter.formattedTimestamp)  \(chapter.title)",
+                            systemImage: "checkmark"
+                        )
+                    } else {
+                        Text("\(chapter.formattedTimestamp)  \(chapter.title)")
+                    }
+                }
+            }
+        } label: {
+            Label("Chapters", systemImage: "list.bullet.rectangle")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .clipShape(Capsule())
+        }
+        .accessibilityLabel("Jump to chapter")
+    }
+
+    @ViewBuilder
+    private var studyTrackControls: some View {
+        if let selectedTrack = studyViewModel.selectedTrack {
+            HStack(spacing: 8) {
+                currentTrackBadge(for: selectedTrack)
+
+                if studyViewModel.availableTracks.count > 1 {
+                    trackPickerMenu
+                }
+
+                Spacer(minLength: 0)
+
+                if let preferredStudyLanguageName, !selectedTrackMatchesTargetLanguage {
+                    Text("Target: \(preferredStudyLanguageName)")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func currentTrackBadge(for track: YouTubeCaptionTrack) -> some View {
+        Label(track.displayLabel, systemImage: "captions.bubble.fill")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(selectedTrackMatchesTargetLanguage ? .blue : .orange)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .background(trackBadgeBackgroundColor)
+            .clipShape(Capsule())
+    }
+
+    private var trackPickerMenu: some View {
+        Menu {
+            ForEach(studyViewModel.availableTracks) { track in
+                Button {
+                    Task {
+                        await switchStudyTrack(to: track)
+                    }
+                } label: {
+                    if track.id == studyViewModel.selectedTrack?.id {
+                        Label(trackMenuTitle(for: track), systemImage: "checkmark")
+                    } else {
+                        Text(trackMenuTitle(for: track))
+                    }
+                }
+                .disabled(studyViewModel.captionLoadState == .loading)
+            }
+        } label: {
+            Label("Track", systemImage: "globe")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .clipShape(Capsule())
+        }
+        .accessibilityLabel("Change caption track")
+        .disabled(studyViewModel.captionLoadState == .loading)
     }
 
     private var studyPaneToggle: some View {
@@ -451,28 +553,7 @@ struct VideoDetailSheet: View {
                 throw YouTubeCaptionServiceError.trackNotFound
             }
 
-            studyViewModel.selectTrack(id: selectedTrack.id)
-            Logger.debug("Selected study track \(selectedTrack.id) [\(selectedTrack.languageCode)] for video \(video.id)", category: .youtube)
-
-            if !force, let cachedCaption = fetchCaptionCache(for: selectedTrack) {
-                let cachedTranslation = fetchLatestTranslationCache(for: selectedTrack)
-                studyViewModel.hydrateFromCaches(
-                    captionCache: cachedCaption,
-                    translationCache: cachedTranslation
-                )
-                studyViewModel.setCaptionLoadState(.loaded)
-                Logger.info("Loaded study transcript from cache for video \(video.id)", category: .youtube)
-            } else {
-                let cues = try await captionService.fetchCues(for: selectedTrack)
-                studyViewModel.applyTranscript(cues: cues, track: selectedTrack)
-                saveCaptionCache(track: selectedTrack, cues: cues)
-                Logger.info("Fetched \(cues.count) study cues for video \(video.id)", category: .youtube)
-
-                if let translationCache = fetchLatestTranslationCache(for: selectedTrack) {
-                    studyViewModel.applyTranslatedCues(translationCache.translatedCues)
-                    Logger.debug("Loaded \(translationCache.translatedCues.count) translated cues from cache for video \(video.id)", category: .youtube)
-                }
-            }
+            try await loadStudyTrack(selectedTrack, preferCached: !force)
         } catch {
             Logger.error("Study mode bootstrap failed for video \(video.id): \(error.localizedDescription)", category: .youtube)
             if let (cachedTrack, cachedCaption) = bestCachedCaption() {
@@ -489,6 +570,22 @@ struct VideoDetailSheet: View {
                 studyViewModel.setCaptionLoadState(.failed(message: error.localizedDescription))
                 studyViewModel.setStudyUnavailable(reason: error.localizedDescription)
             }
+        }
+    }
+
+    @MainActor
+    private func switchStudyTrack(to track: YouTubeCaptionTrack) async {
+        guard track.id != studyViewModel.selectedTrack?.id else { return }
+
+        do {
+            try await loadStudyTrack(track, preferCached: true)
+            await ensureTranslationsForCurrentCue()
+        } catch {
+            studyViewModel.setCaptionLoadState(.failed(message: error.localizedDescription))
+            Logger.error(
+                "Study track switch failed for video \(video.id) [\(track.languageCode)]: \(error.localizedDescription)",
+                category: .youtube
+            )
         }
     }
 
@@ -617,8 +714,88 @@ struct VideoDetailSheet: View {
         playbackRateRequest = studyViewModel.consumePendingPlaybackRate()
     }
 
+    @MainActor
+    private func loadStudyTrack(_ track: YouTubeCaptionTrack, preferCached: Bool) async throws {
+        translationRequestsInFlight = []
+        isLookingUpWord = false
+        studyViewModel.prepareForTrackChange(id: track.id)
+
+        Logger.debug(
+            "Loading study track \(track.id) [\(track.languageCode)] for video \(video.id)",
+            category: .youtube
+        )
+
+        if preferCached, let cachedCaption = fetchCaptionCache(for: track) {
+            let cachedTranslation = fetchLatestTranslationCache(for: track)
+            studyViewModel.hydrateFromCaches(
+                captionCache: cachedCaption,
+                translationCache: cachedTranslation
+            )
+            studyViewModel.setCaptionLoadState(.loaded)
+            Logger.info("Loaded study transcript from cache for video \(video.id)", category: .youtube)
+            return
+        }
+
+        let cues = try await captionService.fetchCues(for: track)
+        studyViewModel.applyTranscript(cues: cues, track: track)
+        saveCaptionCache(track: track, cues: cues)
+        Logger.info("Fetched \(cues.count) study cues for video \(video.id)", category: .youtube)
+
+        if let translationCache = fetchLatestTranslationCache(for: track) {
+            studyViewModel.applyTranslatedCues(translationCache.translatedCues)
+            Logger.debug(
+                "Loaded \(translationCache.translatedCues.count) translated cues from cache for video \(video.id)",
+                category: .youtube
+            )
+        } else {
+            studyViewModel.applyTranslatedCues([])
+        }
+    }
+
+    private var currentChapter: YouTubeVideoChapter? {
+        let chapters = video.chapters
+        guard !chapters.isEmpty else { return nil }
+
+        let currentTime = studyViewModel.playback.currentTime
+        return chapters.last(where: { $0.startTime <= currentTime + 0.25 }) ?? chapters.first
+    }
+
     private var preferredStudyLanguageCode: String? {
-        video.language?.rawValue
+        currentUserProfile?.currentLanguage.rawValue ?? video.language?.rawValue
+    }
+
+    private var preferredStudyLanguageName: String? {
+        currentUserProfile?.currentLanguage.displayName ?? video.language?.displayName
+    }
+
+    private var selectedTrackMatchesTargetLanguage: Bool {
+        guard let preferredStudyLanguageCode,
+              let selectedTrack = studyViewModel.selectedTrack else {
+            return true
+        }
+
+        return normalizedLanguageCode(selectedTrack.languageCode) == normalizedLanguageCode(preferredStudyLanguageCode)
+    }
+
+    private var trackBadgeBackgroundColor: Color {
+        selectedTrackMatchesTargetLanguage ? Color.blue.opacity(0.12) : Color.orange.opacity(0.14)
+    }
+
+    private func trackMenuTitle(for track: YouTubeCaptionTrack) -> String {
+        if normalizedLanguageCode(track.languageCode) == normalizedLanguageCode(preferredStudyLanguageCode) {
+            return "\(track.displayLabel) • Target"
+        }
+
+        return track.displayLabel
+    }
+
+    private func normalizedLanguageCode(_ code: String?) -> String {
+        guard let code else { return "" }
+        return code
+            .split(separator: "-")
+            .first
+            .map(String.init)?
+            .lowercased() ?? code.lowercased()
     }
 
     private var lookupSourceLanguageName: String {
@@ -692,7 +869,7 @@ struct VideoDetailSheet: View {
 
     @MainActor
     private func saveCaptionCache(track: YouTubeCaptionTrack, cues: [YouTubeCaptionCue]) {
-        if let existing = fetchLatestCaptionCache() {
+        if let existing = fetchCaptionCache(for: track) {
             existing.replace(track: track, cues: cues)
         } else {
             modelContext.insert(

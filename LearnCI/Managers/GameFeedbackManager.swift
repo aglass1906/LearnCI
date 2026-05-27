@@ -9,6 +9,11 @@ final class GameFeedbackManager {
 
     private init() {}
 
+    func configure(soundEffectsEnabled: Bool, hapticsEnabled: Bool) {
+        self.soundEffectsEnabled = soundEffectsEnabled
+        self.hapticsEnabled = hapticsEnabled
+    }
+
     func tap() {
         play(.click)
         selectionChanged()

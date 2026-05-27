@@ -80,6 +80,7 @@ struct GameView: View {
                 .onChange(of: setupStage) { oldStage, newStage in
                     print("DEBUG: setupStage changed from \(oldStage) to \(newStage)")
                     if newStage == .playing {
+                        applyGameFeedbackPreferences()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             viewModel?.playCurrentCardAudio()
                         }
@@ -184,6 +185,12 @@ struct GameView: View {
                 if let deck = selectedDeck, !deck.supportedModes.contains(newType) {
                     selectedDeck = quickStartDeck(for: newType)
                 }
+            }
+            .onChange(of: userProfile?.gameSoundEffectsEnabled) { _, _ in
+                applyGameFeedbackPreferences()
+            }
+            .onChange(of: userProfile?.gameHapticsEnabled) { _, _ in
+                applyGameFeedbackPreferences()
             }
     }
     @ViewBuilder
@@ -338,6 +345,8 @@ struct GameView: View {
         if !hasInitialized {
             setupConfiguration()
         }
+
+        applyGameFeedbackPreferences()
         
         // Only trigger discovery if availableDecks is empty or context changed
         if dataManager.availableDecks.isEmpty {
@@ -597,6 +606,13 @@ struct GameView: View {
         } else {
              dataManager.discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
         }
+    }
+
+    private func applyGameFeedbackPreferences() {
+        GameFeedbackManager.shared.configure(
+            soundEffectsEnabled: userProfile?.gameSoundEffectsEnabled ?? true,
+            hapticsEnabled: userProfile?.gameHapticsEnabled ?? true
+        )
     }
 
     func startActiveSession() {

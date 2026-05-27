@@ -32,6 +32,8 @@ final class UserProfile {
     var defaultGamePresetRaw: String = GameConfiguration.Preset.inputFocus.rawValue
     var lastGameTypeRaw: String = GameConfiguration.GameType.flashcards.rawValue // Added persistence
     var customGameConfiguration: GameConfiguration? // Persisted custom settings
+    private var gameSoundEffectsEnabledRaw: Bool = true
+    private var gameHapticsEnabledRaw: Bool = true
     
     // Legacy support or direct access
     // var savedCustomConfig: GameConfiguration? { ... }
@@ -79,6 +81,22 @@ final class UserProfile {
             bumpUpdate()
         }
     }
+
+    var gameSoundEffectsEnabled: Bool {
+        get { gameSoundEffectsEnabledRaw }
+        set {
+            gameSoundEffectsEnabledRaw = newValue
+            bumpUpdate()
+        }
+    }
+
+    var gameHapticsEnabled: Bool {
+        get { gameHapticsEnabledRaw }
+        set {
+            gameHapticsEnabledRaw = newValue
+            bumpUpdate()
+        }
+    }
     
     private var lastIdRaw: String?
     var lastSelectedDeckId: String? {
@@ -110,7 +128,7 @@ final class UserProfile {
         }
     }
     
-    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5, ttsVoiceGender: String = "female") {
+    init(name: String = "Learner", currentLanguage: Language = .spanish, currentLevel: LearningLevel = .superBeginner, dailyGoalMinutes: Int = 30, dailyCardGoal: Int = 20, userID: String? = nil, totalMinutes: Int = 0, defaultPreset: GameConfiguration.Preset = .inputFocus, lastGameType: GameConfiguration.GameType = .flashcards, lastSelectedDeckId: String? = nil, lastCheckInHours: Int = 0, startingHours: Int = 0, ttsRate: Float = 0.5, ttsVoiceGender: String = "female", gameSoundEffectsEnabled: Bool = true, gameHapticsEnabled: Bool = true) {
         self.id = UUID()
         self.userID = userID
         self.name = name
@@ -132,6 +150,8 @@ final class UserProfile {
         self.startingHours = startingHours
         self.ttsRateRaw = ttsRate
         self.ttsVoiceGenderRaw = ttsVoiceGender
+        self.gameSoundEffectsEnabledRaw = gameSoundEffectsEnabled
+        self.gameHapticsEnabledRaw = gameHapticsEnabled
         
         // Initialize new fields with safe defaults if needed
         self.originalStartDate = Date()

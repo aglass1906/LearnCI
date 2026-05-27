@@ -7,6 +7,8 @@ struct ProfileGameSettingsView: View {
     
     @State private var dailyCardGoal: Double = 20
     @State private var selectedGamePreset: GameConfiguration.Preset = .inputFocus
+    @State private var soundEffectsEnabled: Bool = true
+    @State private var hapticsEnabled: Bool = true
     @State private var isEditing: Bool = false
     
     var body: some View {
@@ -23,6 +25,21 @@ struct ProfileGameSettingsView: View {
                 } else {
                     LabeledContent("Daily Card Goal", value: "\(Int(dailyCardGoal))")
                     LabeledContent("Default Card Display", value: selectedGamePreset.rawValue)
+                }
+            }
+
+            Section(header: Text("Game Feedback")) {
+                if isEditing {
+                    Toggle(isOn: $soundEffectsEnabled) {
+                        Label("Sound Effects", systemImage: "speaker.wave.2")
+                    }
+
+                    Toggle(isOn: $hapticsEnabled) {
+                        Label("Haptics", systemImage: "iphone.radiowaves.left.and.right")
+                    }
+                } else {
+                    LabeledContent("Sound Effects", value: soundEffectsEnabled ? "On" : "Off")
+                    LabeledContent("Haptics", value: hapticsEnabled ? "On" : "Off")
                 }
             }
         }
@@ -60,11 +77,19 @@ struct ProfileGameSettingsView: View {
     private func loadData() {
         dailyCardGoal = Double(profile.dailyCardGoal ?? 20)
         selectedGamePreset = profile.defaultGamePreset
+        soundEffectsEnabled = profile.gameSoundEffectsEnabled
+        hapticsEnabled = profile.gameHapticsEnabled
     }
     
     private func saveData() {
         profile.dailyCardGoal = Int(dailyCardGoal)
         profile.defaultGamePreset = selectedGamePreset
-        profile.updatedAt = Date()
+        profile.gameSoundEffectsEnabled = soundEffectsEnabled
+        profile.gameHapticsEnabled = hapticsEnabled
+        GameFeedbackManager.shared.configure(
+            soundEffectsEnabled: soundEffectsEnabled,
+            hapticsEnabled: hapticsEnabled
+        )
+        try? modelContext.save()
     }
 }

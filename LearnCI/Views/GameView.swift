@@ -202,7 +202,7 @@ struct GameView: View {
                 selectedGameType: $selectedGameType,
                 quickStartDeckTitle: quickStartDeckTitle,
                 onPlayNow: startWithDefaults,
-                onConfigure: { setupStage = .deckSelection }
+                onConfigure: configureSelectedGame
             )
         case .deckSelection:
             let _ = print("DEBUG: Showing deckSelection view")
@@ -558,6 +558,17 @@ struct GameView: View {
 
         selectedDeck = deckToUse
         startActiveSession(using: deckToUse)
+    }
+
+    private func configureSelectedGame() {
+        if selectedDeck == nil || selectedDeck?.supportedModes.contains(selectedGameType) == false {
+            selectedDeck = quickStartDeck(for: selectedGameType)
+                ?? dataManager
+                    .discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
+                    .first { $0.supportedModes.contains(selectedGameType) }
+        }
+
+        setupStage = selectedDeck == nil ? .deckSelection : .sessionConfiguration
     }
 
     func setupConfiguration() {

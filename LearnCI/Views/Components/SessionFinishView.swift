@@ -56,20 +56,17 @@ struct SessionFinishView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 28) {
-                // Celebration header
-                celebrationHeader
-                    .padding(.top, 24)
-
-                // Circular progress with count-up
-                mainStatView
+            VStack(spacing: 16) {
+                completionOverview
+                    .padding(.top, 12)
+                    .padding(.horizontal, 24)
 
                 // Motivational message
                 Text(motivationalMessage)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 28)
                     .opacity(showStats ? 1 : 0)
                     .animation(.easeIn(duration: 0.3), value: showStats)
 
@@ -94,7 +91,7 @@ struct SessionFinishView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .padding(.bottom, 48)
+            .padding(.bottom, 24)
         }
         .onAppear {
             startAnimations()
@@ -102,6 +99,16 @@ struct SessionFinishView: View {
     }
 
     // MARK: - Celebration Header
+
+    private var completionOverview: some View {
+        HStack(spacing: 14) {
+            celebrationHeader
+                .frame(maxWidth: .infinity)
+
+            mainStatView
+                .frame(maxWidth: .infinity)
+        }
+    }
 
     private var celebrationHeader: some View {
         ZStack {
@@ -118,7 +125,7 @@ struct SessionFinishView: View {
             // Trophy + title
             VStack(spacing: 10) {
                 Image(systemName: "trophy.fill")
-                    .font(.system(size: 68))
+                    .font(.system(size: 56))
                     .foregroundColor(.yellow)
                     .shadow(color: .yellow.opacity(0.5), radius: 16, y: 6)
                     .scaleEffect(trophyScale)
@@ -131,7 +138,7 @@ struct SessionFinishView: View {
                     .animation(.easeIn(duration: 0.2).delay(0.3), value: trophyScale)
             }
         }
-        .frame(height: 180)
+        .frame(height: 144)
     }
 
     // MARK: - Main Stat (circular progress + count-up)
@@ -167,13 +174,13 @@ struct SessionFinishView: View {
                     .tracking(0.5)
             }
         }
-        .frame(width: 190, height: 190)
+        .frame(width: 144, height: 144)
     }
 
     // MARK: - Stats Grid
 
     private var statsGrid: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             PodiumStatCard(
                 icon: "clock.fill",
                 label: "Time",
@@ -192,7 +199,7 @@ struct SessionFinishView: View {
     // MARK: - Session Recap (compact)
 
     private var sessionRecap: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Session Details")
                 .font(.caption)
                 .fontWeight(.bold)
@@ -228,7 +235,8 @@ struct SessionFinishView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(12)
         }
@@ -237,7 +245,7 @@ struct SessionFinishView: View {
     // MARK: - Action Buttons
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Button(action: onPlayAgain) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.counterclockwise")
@@ -245,7 +253,7 @@ struct SessionFinishView: View {
                 }
                 .font(.headline)
                 .foregroundColor(.white)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(gameType.tileColor)
                 .cornerRadius(15)
@@ -260,7 +268,7 @@ struct SessionFinishView: View {
                         .font(.subheadline)
                 }
                 .foregroundColor(.secondary)
-                .padding(.vertical, 10)
+                .padding(.vertical, 6)
             }
         }
     }
@@ -330,23 +338,23 @@ private struct PodiumStatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(.subheadline)
                 .foregroundColor(color)
             Text(value)
-                .font(.title2)
+                .font(.headline)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
             Text(label)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
                 .textCase(.uppercase)
                 .tracking(0.4)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
+        .padding(.vertical, 10)
         .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(14)
+        .cornerRadius(12)
     }
 }

@@ -111,6 +111,31 @@ struct GameConfigurationView: View {
                     }
                     .padding(.top, 8)
                 }
+
+                VStack(spacing: 12) {
+                    Button(action: onSkipToSummary) {
+                        Label("Start Now", systemImage: "play.fill")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedDeck == nil ? Color.gray : selectedGameType.tileColor)
+                            .cornerRadius(12)
+                    }
+                    .disabled(selectedDeck == nil)
+
+                    Button(action: onNext) {
+                        Label("Continue to Game Options", systemImage: "slider.horizontal.3")
+                            .font(.headline)
+                            .foregroundColor(selectedDeck == nil ? .secondary : selectedGameType.tileColor)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background((selectedDeck == nil ? Color.gray : selectedGameType.tileColor).opacity(0.12))
+                            .cornerRadius(12)
+                    }
+                    .disabled(selectedDeck == nil)
+                }
+                .padding(.horizontal)
             }
             .padding(.vertical)
         }
@@ -131,12 +156,12 @@ struct GameConfigurationView: View {
                 selectedDeck: $selectedDeck
             )
         }
-        .onChange(of: selectedGameType, perform: { newType in
+        .onChange(of: selectedGameType) { _, newType in
             // Validate deck compatibility
             if let deck = selectedDeck, !deck.supportedModes.contains(newType) {
                 selectedDeck = nil
             }
-        })
+        }
     }
     
     // MARK: - Helper Properties for Text

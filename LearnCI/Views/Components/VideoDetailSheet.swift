@@ -104,6 +104,9 @@ struct VideoDetailSheet: View {
                     .font(.title3)
                 }
             }
+            .onAppear {
+                hydrateStudyModeFromCacheIfAvailable()
+            }
             .task {
                 await bootstrapStudyModeIfNeeded()
             }
@@ -465,8 +468,8 @@ struct VideoDetailSheet: View {
                     displayMode: studyPaneDisplayMode == .context ? .context : .transcript,
                     contextWindowSize: studyContextWindowSize,
                     trackLabel: studyViewModel.selectedTrack?.displayLabel,
-                    activeCue: studyViewModel.activeCue,
-                    activeCueTranslation: studyViewModel.activeCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
+                    activeCue: studyViewModel.contextCue,
+                    activeCueTranslation: studyViewModel.contextCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
                     cues: studyViewModel.activeCues,
                     activeCueID: studyViewModel.activeCue?.id,
                     translationState: studyViewModel.translationLoadState,
@@ -539,7 +542,10 @@ struct VideoDetailSheet: View {
         didBootstrapStudyMode = true
         Logger.debug("Bootstrapping study mode for video \(video.id)", category: .youtube)
 
-        studyViewModel.setCaptionLoadState(.loading)
+        let hydratedFromCache = hydrateStudyModeFromCacheIfAvailable()
+        if !hydratedFromCache {
+            studyViewModel.setCaptionLoadState(.loading)
+        }
 
         do {
             let tracks = try await captionService.discoverTracks(videoID: video.id)
@@ -556,21 +562,30 @@ struct VideoDetailSheet: View {
             try await loadStudyTrack(selectedTrack, preferCached: !force)
         } catch {
             Logger.error("Study mode bootstrap failed for video \(video.id): \(error.localizedDescription)", category: .youtube)
-            if let (cachedTrack, cachedCaption) = bestCachedCaption() {
-                let cachedTranslation = fetchLatestTranslationCache(for: cachedTrack)
-                studyViewModel.seedAvailableTracks(fetchCaptionCaches().compactMap(\.track))
-                studyViewModel.selectTrack(id: cachedTrack.id)
-                studyViewModel.hydrateFromCaches(
-                    captionCache: cachedCaption,
-                    translationCache: cachedTranslation
-                )
-                studyViewModel.setCaptionLoadState(.loaded)
+            if hydrateStudyModeFromCacheIfAvailable() {
                 Logger.warning("Recovered study mode from cached transcript after failure for video \(video.id)", category: .youtube)
             } else {
                 studyViewModel.setCaptionLoadState(.failed(message: error.localizedDescription))
                 studyViewModel.setStudyUnavailable(reason: error.localizedDescription)
             }
         }
+    }
+
+    @MainActor
+    @discardableResult
+    private func hydrateStudyModeFromCacheIfAvailable() -> Bool {
+        guard let (cachedTrack, cachedCaption) = bestCachedCaption() else { return false }
+
+        let cachedTranslation = fetchLatestTranslationCache(for: cachedTrack)
+        studyViewModel.seedAvailableTracks(fetchCaptionCaches().compactMap(\.track))
+        studyViewModel.selectTrack(id: cachedTrack.id)
+        studyViewModel.hydrateFromCaches(
+            captionCache: cachedCaption,
+            translationCache: cachedTranslation
+        )
+        studyViewModel.setCaptionLoadState(.loaded)
+        Logger.info("Loaded study transcript from cache for video \(video.id)", category: .youtube)
+        return true
     }
 
     @MainActor

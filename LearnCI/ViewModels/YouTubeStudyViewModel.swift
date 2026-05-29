@@ -87,6 +87,25 @@ class YouTubeStudyViewModel {
         activeCues.last(where: { $0.contains(time: playback.currentTime, slack: 0.05) })
     }
 
+    /// Cue to show in the study context panel. Falls back to the nearest line when playback
+    /// is between cues, before the first cue, or before the player reports its current time.
+    var contextCue: YouTubeCaptionCue? {
+        if let activeCue {
+            return activeCue
+        }
+        return nearestCue(to: playback.currentTime)
+    }
+
+    private func nearestCue(to time: Double) -> YouTubeCaptionCue? {
+        guard !activeCues.isEmpty else { return nil }
+
+        if let nextCue = activeCues.first(where: { $0.startTime > time + 0.05 }) {
+            return nextCue
+        }
+
+        return activeCues.last(where: { $0.startTime <= time + 0.05 }) ?? activeCues.first
+    }
+
     func setMode(_ mode: YouTubeStudyMode) {
         guard mode == .watch || canAttemptStudyMode else { return }
         self.mode = mode

@@ -571,6 +571,31 @@ final class YouTubeStudyViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.consumePendingSeek())
     }
 
+    func testContextCueFallsBackToNearestLineWhenPlaybackIsBetweenCues() {
+        let track = YouTubeCaptionTrack(
+            id: "es-manual",
+            languageCode: "es",
+            languageName: "Spanish",
+            kind: .standard,
+            isDefault: true
+        )
+        let cues = [
+            YouTubeCaptionCue(index: 0, startTime: 2.0, endTime: 4.0, text: "Primero"),
+            YouTubeCaptionCue(index: 1, startTime: 6.0, endTime: 8.0, text: "Segundo")
+        ]
+        let viewModel = YouTubeStudyViewModel(video: makeVideo())
+
+        viewModel.applyTranscript(cues: cues, track: track)
+        viewModel.updatePlayback(currentTime: 0)
+
+        XCTAssertNil(viewModel.activeCue)
+        XCTAssertEqual(viewModel.contextCue?.text, "Primero")
+
+        viewModel.updatePlayback(currentTime: 5)
+        XCTAssertNil(viewModel.activeCue)
+        XCTAssertEqual(viewModel.contextCue?.text, "Segundo")
+    }
+
     func testActiveCuePrefersLatestOverlappingCue() {
         let track = YouTubeCaptionTrack(
             id: "es-manual",

@@ -27,6 +27,7 @@ struct VideoDetailSheet: View {
     @State private var translationRequestsInFlight: Set<Int> = []
     @State private var studyPaneDisplayMode: StudyPaneDisplayMode = .context
     @State private var studyContextWindowSize: YouTubeStudyPanel.ContextWindowSize = .small
+    @State private var showInSheetOptions = false
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
@@ -52,26 +53,15 @@ struct VideoDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                topSection
-
-                Divider()
-                    .padding(.horizontal)
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        studyStatusBanner
-
-                        if studyViewModel.mode == .study {
-                            studyContent
-                        } else {
-                            watchContent
-                        }
-
-                        actionButtons
+            GeometryReader { geometry in
+                Group {
+                    if usesStudyLandscapeLayout(for: geometry.size) {
+                        studyLandscapeLayout
+                    } else {
+                        standardLayout
                     }
-                    .padding()
                 }
+                .frame(width: geometry.size.width, height: geometry.size.height)
             }
             .navigationTitle(video.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -147,184 +137,269 @@ struct VideoDetailSheet: View {
         }
     }
 
+    private func usesStudyLandscapeLayout(for size: CGSize) -> Bool {
+        studyViewModel.mode == .study && size.width > size.height
+    }
+
+    private var standardLayout: some View {
+        VStack(spacing: 0) {
+            topSection
+
+            Divider()
+                .padding(.horizontal)
+
+            detailScrollContent
+        }
+    }
+
+    private var studyLandscapeLayout: some View {
+        HStack(alignment: .top, spacing: 0) {
+            studyLandscapeMediaColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
+
+            Divider()
+
+            studyLandscapeStudyColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(1)
+        }
+    }
+
+    private var studyLandscapeMediaColumn: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            youtubePlayer
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black)
+
+            compactInSheetHeader
+                .background(Color(UIColor.systemBackground))
+        }
+    }
+
+    private var studyLandscapeStudyColumn: some View {
+        detailScrollContent
+            .background(Color(UIColor.systemBackground))
+    }
+
+    private var compactInSheetHeader: some View {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(video.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(2)
+
+                sheetWatchTimeLabel
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 0)
+
+            inSheetOptionsMenu
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
+
+    @ViewBuilder
+    private var sheetWatchTimeLabel: some View {
+        if watchDuration > 0 {
+            let watchedMinutes = max(1, Int(watchDuration / 60))
+            HStack(spacing: 4) {
+                Image(systemName: "timer")
+                Text("Watched \(watchedMinutes) min")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private var inSheetOptionsMenu: some View {
+        Button {
+            showInSheetOptions = true
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityLabel("Study options")
+        .sheet(isPresented: $showInSheetOptions) {
+            inSheetOptionsSheet
+        }
+    }
+
+    private var inSheetOptionsSheet: some View {
+        NavigationStack {
+            List {
+                Section("Video") {
+                    LabeledContent("Channel", value: video.channelTitle)
+                    if video.durationInMinutes > 0 {
+                        LabeledContent("Length", value: "\(video.durationInMinutes) min")
+                    }
+                }
+
+                if studyViewModel.canEnterStudyMode {
+                    NavigationLink("Study View") {
+                        inSheetStudyViewOptionsList
+                    }
+                    NavigationLink("Captions") {
+                        inSheetCaptionsInfoList
+                    }
+                    NavigationLink("Track") {
+                        inSheetTrackPickerList
+                    }
+                }
+
+                if !video.chapters.isEmpty {
+                    NavigationLink("Chapters") {
+                        inSheetChaptersList
+                    }
+                }
+            }
+            .navigationTitle("Options")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        showInSheetOptions = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private var inSheetStudyViewOptionsList: some View {
+        List {
+            studyPaneListRow(.context, icon: "text.bubble")
+            studyPaneListRow(.transcript, icon: "list.bullet.rectangle")
+        }
+        .navigationTitle("Study View")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetCaptionsInfoList: some View {
+        List {
+            if let selectedTrack = studyViewModel.selectedTrack {
+                LabeledContent("Current track", value: selectedTrack.displayLabel)
+            } else {
+                LabeledContent("Current track", value: "None selected")
+            }
+
+            if let preferredStudyLanguageName, !selectedTrackMatchesTargetLanguage {
+                LabeledContent("Target language", value: preferredStudyLanguageName)
+            }
+        }
+        .navigationTitle("Captions")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetTrackPickerList: some View {
+        List {
+            ForEach(studyViewModel.availableTracks) { track in
+                Button {
+                    Task {
+                        await switchStudyTrack(to: track)
+                        showInSheetOptions = false
+                    }
+                } label: {
+                    HStack {
+                        Text(trackMenuTitle(for: track))
+                        Spacer()
+                        if track.id == studyViewModel.selectedTrack?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+                .disabled(studyViewModel.captionLoadState == .loading)
+            }
+        }
+        .navigationTitle("Track")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetChaptersList: some View {
+        List {
+            ForEach(video.chapters) { chapter in
+                Button {
+                    seekPlayer(to: chapter.startTime)
+                    showInSheetOptions = false
+                } label: {
+                    HStack {
+                        Text("\(chapter.formattedTimestamp)  \(chapter.title)")
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        if chapter.id == currentChapter?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Chapters")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func studyPaneListRow(_ mode: StudyPaneDisplayMode, icon: String) -> some View {
+        Button {
+            studyPaneDisplayMode = mode
+            showInSheetOptions = false
+        } label: {
+            HStack {
+                Label(mode.rawValue, systemImage: icon)
+                Spacer()
+                if studyPaneDisplayMode == mode {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+        }
+    }
+
+    private var detailScrollContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                studyStatusBanner
+
+                if studyViewModel.mode == .study {
+                    studyContent
+                } else {
+                    watchContent
+                }
+
+                actionButtons
+            }
+            .padding()
+        }
+    }
+
+    private var youtubePlayer: some View {
+        YouTubePlayerView(
+            videoID: video.id,
+            videoURL: video.videoStreamURL,
+            watchDuration: $watchDuration,
+            seekRequest: $seekRequest,
+            playbackRateRequest: $playbackRateRequest,
+            onPlaybackSnapshot: handlePlaybackSnapshot
+        )
+        .cornerRadius(12)
+        .shadow(radius: 5)
+    }
+
     private var topSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            YouTubePlayerView(
-                videoID: video.id,
-                videoURL: video.videoStreamURL,
-                watchDuration: $watchDuration,
-                seekRequest: $seekRequest,
-                playbackRateRequest: $playbackRateRequest,
-                onPlaybackSnapshot: handlePlaybackSnapshot
-            )
-            .frame(height: 220)
-            .cornerRadius(12)
-            .shadow(radius: 5)
+            youtubePlayer
+                .frame(height: 220)
 
             compactInSheetHeader
         }
         .padding(.horizontal)
         .padding(.top, 8)
         .padding(.bottom, 12)
-    }
-
-    private var compactInSheetHeader: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(video.title)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-
-                    HStack(spacing: 6) {
-                        Text(video.channelTitle)
-                            .lineLimit(1)
-
-                        if video.durationInMinutes > 0 {
-                            Text("•")
-                            Text("\(video.durationInMinutes) min")
-                        }
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
-
-                Spacer(minLength: 0)
-
-                VStack(alignment: .trailing, spacing: 8) {
-                    if !video.chapters.isEmpty {
-                        chapterMenu
-                    }
-                    watchStatsBadge
-                }
-            }
-
-            if studyViewModel.mode == .study, studyViewModel.canEnterStudyMode {
-                studyTrackControls
-                studyPaneToggle
-            }
-        }
-    }
-
-    private var chapterMenu: some View {
-        let chapters = video.chapters
-
-        return Menu {
-            ForEach(chapters) { chapter in
-                Button {
-                    seekPlayer(to: chapter.startTime)
-                } label: {
-                    if chapter.id == currentChapter?.id {
-                        Label(
-                            "\(chapter.formattedTimestamp)  \(chapter.title)",
-                            systemImage: "checkmark"
-                        )
-                    } else {
-                        Text("\(chapter.formattedTimestamp)  \(chapter.title)")
-                    }
-                }
-            }
-        } label: {
-            Label("Chapters", systemImage: "list.bullet.rectangle")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .clipShape(Capsule())
-        }
-        .accessibilityLabel("Jump to chapter")
-    }
-
-    @ViewBuilder
-    private var studyTrackControls: some View {
-        if let selectedTrack = studyViewModel.selectedTrack {
-            HStack(spacing: 8) {
-                currentTrackBadge(for: selectedTrack)
-
-                if studyViewModel.availableTracks.count > 1 {
-                    trackPickerMenu
-                }
-
-                Spacer(minLength: 0)
-
-                if let preferredStudyLanguageName, !selectedTrackMatchesTargetLanguage {
-                    Text("Target: \(preferredStudyLanguageName)")
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-
-    private func currentTrackBadge(for track: YouTubeCaptionTrack) -> some View {
-        Label(track.displayLabel, systemImage: "captions.bubble.fill")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(selectedTrackMatchesTargetLanguage ? .blue : .orange)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .background(trackBadgeBackgroundColor)
-            .clipShape(Capsule())
-    }
-
-    private var trackPickerMenu: some View {
-        Menu {
-            ForEach(studyViewModel.availableTracks) { track in
-                Button {
-                    Task {
-                        await switchStudyTrack(to: track)
-                    }
-                } label: {
-                    if track.id == studyViewModel.selectedTrack?.id {
-                        Label(trackMenuTitle(for: track), systemImage: "checkmark")
-                    } else {
-                        Text(trackMenuTitle(for: track))
-                    }
-                }
-                .disabled(studyViewModel.captionLoadState == .loading)
-            }
-        } label: {
-            Label("Track", systemImage: "globe")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .clipShape(Capsule())
-        }
-        .accessibilityLabel("Change caption track")
-        .disabled(studyViewModel.captionLoadState == .loading)
-    }
-
-    private var studyPaneToggle: some View {
-        HStack(spacing: 8) {
-            studyPaneButton(.context, icon: "text.bubble")
-            studyPaneButton(.transcript, icon: "list.bullet.rectangle")
-        }
-        .padding(4)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .clipShape(Capsule())
-    }
-
-    private func studyPaneButton(_ mode: StudyPaneDisplayMode, icon: String) -> some View {
-        let isSelected = studyPaneDisplayMode == mode
-
-        return Button {
-            studyPaneDisplayMode = mode
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                Text(mode.rawValue)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(isSelected ? .white : .primary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.blue : Color.clear)
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     private var playbackSpeedToolbarMenu: some View {
@@ -377,22 +452,6 @@ struct VideoDetailSheet: View {
 
     private func isSelectedPlaybackRate(_ rate: Float) -> Bool {
         abs(studyViewModel.playback.playbackRate - rate) < 0.01
-    }
-
-    @ViewBuilder
-    private var watchStatsBadge: some View {
-        if watchDuration > 0 {
-            HStack(spacing: 6) {
-                Image(systemName: "timer")
-                Text("Watching: \(Int(watchDuration))s")
-            }
-            .font(.caption)
-            .foregroundStyle(.blue)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 8)
-            .background(Color.blue.opacity(0.1))
-            .clipShape(Capsule())
-        }
     }
 
     @ViewBuilder
@@ -790,10 +849,6 @@ struct VideoDetailSheet: View {
         }
 
         return normalizedLanguageCode(selectedTrack.languageCode) == normalizedLanguageCode(preferredStudyLanguageCode)
-    }
-
-    private var trackBadgeBackgroundColor: Color {
-        selectedTrackMatchesTargetLanguage ? Color.blue.opacity(0.12) : Color.orange.opacity(0.14)
     }
 
     private func trackMenuTitle(for track: YouTubeCaptionTrack) -> String {

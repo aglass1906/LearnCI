@@ -15,6 +15,9 @@ struct YouTubePlayerView: UIViewRepresentable {
     @Binding var watchDuration: TimeInterval
     @Binding private var seekRequest: Double?
     @Binding private var playbackRateRequest: Float?
+    @Binding private var playRequest: Bool?
+    @Binding private var pauseRequest: Bool?
+    @Binding private var seekAndPlayRequest: Double?
 
     var onPlaybackSnapshot: ((YouTubePlayerPlaybackSnapshot) -> Void)?
 
@@ -24,6 +27,9 @@ struct YouTubePlayerView: UIViewRepresentable {
         watchDuration: Binding<TimeInterval>,
         seekRequest: Binding<Double?> = .constant(nil),
         playbackRateRequest: Binding<Float?> = .constant(nil),
+        playRequest: Binding<Bool?> = .constant(nil),
+        pauseRequest: Binding<Bool?> = .constant(nil),
+        seekAndPlayRequest: Binding<Double?> = .constant(nil),
         onPlaybackSnapshot: ((YouTubePlayerPlaybackSnapshot) -> Void)? = nil
     ) {
         self.videoID = videoID
@@ -31,6 +37,9 @@ struct YouTubePlayerView: UIViewRepresentable {
         self._watchDuration = watchDuration
         self._seekRequest = seekRequest
         self._playbackRateRequest = playbackRateRequest
+        self._playRequest = playRequest
+        self._pauseRequest = pauseRequest
+        self._seekAndPlayRequest = seekAndPlayRequest
         self.onPlaybackSnapshot = onPlaybackSnapshot
     }
 
@@ -129,6 +138,24 @@ postSnapshot();
 function setPlaybackRateValue(rate) {
 video.playbackRate = rate;
 postSnapshot();
+}
+
+function playVideo() {
+video.play();
+postSnapshot();
+}
+
+function pauseVideo() {
+video.pause();
+postSnapshot();
+}
+
+function playFromTime(seconds) {
+video.currentTime = seconds;
+setTimeout(function() {
+video.play();
+postSnapshot();
+}, 80);
 }
 </script>
 </body>
@@ -231,6 +258,31 @@ player.setPlaybackRate(rate);
 postSnapshot();
 }
 }
+
+function playVideo() {
+if (player && player.playVideo) {
+player.playVideo();
+}
+postSnapshot();
+}
+
+function pauseVideo() {
+if (player && player.pauseVideo) {
+player.pauseVideo();
+}
+postSnapshot();
+}
+
+function playFromTime(seconds) {
+if (!player || !player.seekTo) { return; }
+player.seekTo(seconds, true);
+setTimeout(function() {
+if (player && player.playVideo) {
+player.playVideo();
+}
+postSnapshot();
+}, 120);
+}
 </script>
 </body>
 </html>
@@ -252,12 +304,36 @@ postSnapshot();
                 self.playbackRateRequest = nil
             }
         }
+
+        if playRequest == true {
+            context.coordinator.play(in: uiView)
+            DispatchQueue.main.async {
+                self.playRequest = nil
+            }
+        }
+
+        if pauseRequest == true {
+            context.coordinator.pause(in: uiView)
+            DispatchQueue.main.async {
+                self.pauseRequest = nil
+            }
+        }
+
+        if let seekAndPlayRequest {
+            context.coordinator.seekAndPlay(to: seekAndPlayRequest, in: uiView)
+            DispatchQueue.main.async {
+                self.seekAndPlayRequest = nil
+            }
+        }
+
+        context.coordinator.webView = uiView
     }
 
     class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: YouTubePlayerView
         var watchTimer: Timer?
         var currentVideoID: String?
+        weak var webView: WKWebView?
 
         init(_ parent: YouTubePlayerView) {
             self.parent = parent
@@ -270,6 +346,7 @@ postSnapshot();
                 } else {
                     stopWatchTimer()
                 }
+                webView?.evaluateJavaScript("postSnapshot();", completionHandler: nil)
                 return
             }
 
@@ -286,6 +363,19 @@ postSnapshot();
         func setPlaybackRate(_ rate: Float, in webView: WKWebView) {
             let clampedRate = max(0.25, min(rate, 2.0))
             let js = "setPlaybackRateValue(\(clampedRate));"
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+
+        func play(in webView: WKWebView) {
+            webView.evaluateJavaScript("playVideo();", completionHandler: nil)
+        }
+
+        func pause(in webView: WKWebView) {
+            webView.evaluateJavaScript("pauseVideo();", completionHandler: nil)
+        }
+
+        func seekAndPlay(to time: Double, in webView: WKWebView) {
+            let js = "playFromTime(\(max(0, time)));"
             webView.evaluateJavaScript(js, completionHandler: nil)
         }
 

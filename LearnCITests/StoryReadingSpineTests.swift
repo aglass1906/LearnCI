@@ -632,3 +632,104 @@ final class YouTubeStudyViewModelTests: XCTestCase {
         )
     }
 }
+
+@MainActor
+final class StudySessionViewModelTests: XCTestCase {
+    func testSessionRangeBuilderByBlockCount() {
+        let blocks = (0..<10).map { index in
+            let start = Double(index * 5)
+            return StudyBlock(
+                id: "block-\(index)",
+                index: index,
+                targetText: "Block \(index)",
+                nativeText: nil,
+                mediaStart: start,
+                mediaEnd: start + 4,
+                cueStartIndex: nil,
+                cueEndIndex: nil
+            )
+        }
+        let definition = StudySessionRangeBuilder.byBlockCount(3, from: 2, in: blocks)
+        XCTAssertEqual(definition?.startIndex, 2)
+        XCTAssertEqual(definition?.endIndex, 4)
+        XCTAssertEqual(definition?.blockCount, 3)
+    }
+
+    func testPlaybackControllerPausesAtBlockEnd() {
+        let controller = StudyPlaybackController()
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 1, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playBlockOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .pause)
+        XCTAssertEqual(controller.mode, .free)
+    }
+
+    func testPlaybackControllerLoopsAtBlockEnd() {
+        let controller = StudyPlaybackController()
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 1, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        _ = controller.toggleBlockLoop()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .loopToStart(1))
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .none)
+        XCTAssertEqual(controller.mode, .blockLoop)
+    }
+
+    func testSessionPlaybackAdvancesBeforeSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 0, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playSessionOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: session), .advanceToNextBlock)
+        XCTAssertEqual(controller.mode, .sessionOnce)
+    }
+
+    func testSessionPlaybackPausesAtSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 2, targetText: "End", nativeText: nil, mediaStart: 10, mediaEnd: 13, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playSessionOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 13.2, block: block, session: session), .pause)
+        XCTAssertEqual(controller.mode, .free)
+    }
+
+    func testSessionLoopRestartsAtSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 2, targetText: "End", nativeText: nil, mediaStart: 10, mediaEnd: 13, cueStartIndex: nil, cueEndIndex: nil)
+        _ = controller.toggleSessionLoop()
+        XCTAssertEqual(controller.boundaryAction(for: 13.2, block: block, session: session), .loopSession)
+        XCTAssertEqual(controller.mode, .sessionLoop)
+    }
+
+    func testCaptionProviderMergesThreeLinesByDefault() {
+        let cues = (0..<7).map { index in
+            YouTubeCaptionCue(
+                index: index,
+                startTime: Double(index * 2),
+                endTime: Double(index * 2 + 1),
+                text: "Line \(index)"
+            )
+        }
+        let blocks = CaptionTranscriptProvider(cues: cues, translationForCue: { _ in nil }).makeBlocks()
+        XCTAssertEqual(blocks.count, 3)
+        XCTAssertEqual(blocks[0].captionLineCount, 3)
+        XCTAssertEqual(blocks[0].targetText, "Line 0\nLine 1\nLine 2")
+        XCTAssertEqual(blocks[0].mediaStart, 0)
+        XCTAssertEqual(blocks[0].mediaEnd, 6)
+        XCTAssertEqual(blocks[2].captionLineCount, 1)
+    }
+
+    func testBlockPlaybackEndUsesNextCueStartNotPaddedEnd() {
+        let cues = [
+            YouTubeCaptionCue(index: 0, startTime: 0, endTime: 2.5, text: "One"),
+            YouTubeCaptionCue(index: 1, startTime: 2.5, endTime: 5.0, text: "Two"),
+            YouTubeCaptionCue(index: 2, startTime: 5.0, endTime: 8.0, text: "Three"),
+            YouTubeCaptionCue(index: 3, startTime: 8.0, endTime: 11.0, text: "Four")
+        ]
+        let end = CaptionTranscriptProvider.playbackEndTime(
+            forChunkFrom: 0,
+            through: 2,
+            in: cues,
+            minimumDuration: 0.15
+        )
+        XCTAssertEqual(end, 8.0)
+    }
+}

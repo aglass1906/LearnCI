@@ -1761,6 +1761,8 @@ struct WordLookupSheet: View {
     let isLoading: Bool
     let seekTime: Double?
     let onSeek: (Double) -> Void
+    var onMarkForStudy: (() -> Void)? = nil
+    var isMarkedForStudy: Bool = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -1835,6 +1837,19 @@ struct WordLookupSheet: View {
             .navigationTitle("Word Lookup")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if let onMarkForStudy {
+                        Button {
+                            onMarkForStudy()
+                        } label: {
+                            Label(
+                                isMarkedForStudy ? "Saved" : "Mark for study",
+                                systemImage: isMarkedForStudy ? "star.fill" : "star"
+                            )
+                        }
+                        .disabled(isMarkedForStudy || isLoading)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }

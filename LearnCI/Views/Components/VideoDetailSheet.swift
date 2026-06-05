@@ -89,13 +89,10 @@ struct VideoDetailSheet: View {
             }
             .navigationTitle(compactStudyChrome ? "" : video.title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar(compactStudyChrome ? .hidden : .visible, for: .navigationBar)
             .toolbar {
-                if !compactStudyChrome {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            dismiss()
-                        }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        dismiss()
                     }
                 }
                 if !compactStudyChrome {
@@ -265,13 +262,6 @@ struct VideoDetailSheet: View {
 
     private var compactInSheetHeader: some View {
         HStack(alignment: .top, spacing: 8) {
-            if compactStudyChrome {
-                Button("Close") {
-                    dismiss()
-                }
-                .font(.subheadline.weight(.semibold))
-            }
-
             VStack(alignment: .leading, spacing: 4) {
                 Text(video.title)
                     .font(.subheadline.weight(.semibold))

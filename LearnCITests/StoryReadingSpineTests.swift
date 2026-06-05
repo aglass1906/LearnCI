@@ -717,6 +717,18 @@ final class StudySessionViewModelTests: XCTestCase {
         XCTAssertEqual(blocks[2].captionLineCount, 1)
     }
 
+    func testStudySubtitleTextMergesLinesWithFlowingWhitespace() {
+        let merged = StudySubtitleText.mergedLines([
+            "Hello   world",
+            "Second\tline"
+        ])
+        XCTAssertEqual(merged, "Hello world\nSecond line")
+        XCTAssertEqual(
+            StudySubtitleText.normalizeMultiline("Hello   world\n\nSecond\tline"),
+            "Hello world\nSecond line"
+        )
+    }
+
     func testBlockPlaybackEndUsesNextCueStartNotPaddedEnd() {
         let cues = [
             YouTubeCaptionCue(index: 0, startTime: 0, endTime: 2.5, text: "One"),
@@ -731,5 +743,79 @@ final class StudySessionViewModelTests: XCTestCase {
             minimumDuration: 0.15
         )
         XCTAssertEqual(end, 8.0)
+    }
+
+    func testManualBlockNavigationStaysPinnedUntilPlaybackReachesBlock() {
+        let blocks = (0..<3).map { index in
+            let start = Double(index * 5)
+            return StudyBlock(
+                id: "block-\(index)",
+                index: index,
+                targetText: "Block \(index)",
+                nativeText: nil,
+                mediaStart: start,
+                mediaEnd: start + 5,
+                cueStartIndex: nil,
+                cueEndIndex: nil
+            )
+        }
+        let player = StudyNavigationTestMediaPlayer(currentTime: 12)
+        let source = StudyNavigationTestBlockSource(blocks: blocks, player: player)
+        let session = StudySessionViewModel(source: source)
+
+        XCTAssertEqual(session.currentBlockIndex, 2)
+
+        session.goToPreviousBlock()
+        XCTAssertEqual(session.currentBlockIndex, 1)
+        XCTAssertEqual(player.lastSeekTime, 5)
+
+        session.handlePlaybackTime(12, isPlaying: false)
+        XCTAssertEqual(session.currentBlockIndex, 1)
+
+        player.currentTime = 6
+        session.handlePlaybackTime(6, isPlaying: false)
+        XCTAssertEqual(session.currentBlockIndex, 1)
+    }
+}
+
+@MainActor
+private final class StudyNavigationTestMediaPlayer: StudyMediaPlayer {
+    var currentTime: Double
+    var duration: Double = 100
+    var isPlaying: Bool = false
+    var playbackRate: Float = 1
+    private(set) var lastSeekTime: Double?
+
+    init(currentTime: Double) {
+        self.currentTime = currentTime
+    }
+
+    func seek(to time: Double) {
+        lastSeekTime = max(0, time)
+    }
+
+    func seekAndPlay(from time: Double) {
+        lastSeekTime = max(0, time)
+    }
+
+    func play() {}
+    func pause() {}
+    func setPlaybackRate(_ rate: Float) {}
+}
+
+@MainActor
+private struct StudyNavigationTestBlockSource: StudyBlockSource {
+    let resource: StudyResourceRef
+    let blocks: [StudyBlock]
+    let mediaPlayer: any StudyMediaPlayer
+
+    init(blocks: [StudyBlock], player: StudyNavigationTestMediaPlayer) {
+        self.blocks = blocks
+        self.mediaPlayer = player
+        self.resource = StudyResourceRef.youtube(
+            videoID: "test-video",
+            title: "Test",
+            languageCode: "es"
+        )
     }
 }

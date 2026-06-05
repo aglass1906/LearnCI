@@ -290,23 +290,37 @@ struct YouTubeStudyPanel: View {
         contextCues: [YouTubeCaptionCue],
         activeCueID: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(contextCues) { cue in
-                let translation = translationForCue(cue)?
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                let isActive = cue.id == activeCueID
-                let hasTranslation = !(translation?.isEmpty ?? true)
+        Text(contextTranslationAttributedText(contextCues: contextCues, activeCueID: activeCueID))
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
-                Text(hasTranslation ? (translation ?? "") : "...")
-                    .font(.system(
-                        size: SubtitleTypography.translationSize,
-                        weight: isActive ? .semibold : .regular
-                    ))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+    private func contextTranslationAttributedText(
+        contextCues: [YouTubeCaptionCue],
+        activeCueID: String
+    ) -> AttributedString {
+        var result = AttributedString()
+
+        for (index, cue) in contextCues.enumerated() {
+            if index > 0 {
+                result += AttributedString("\n")
             }
+
+            let translation = translationForCue(cue)
+                .map(StudySubtitleText.normalizeLine)
+            let displayText = (translation?.isEmpty == false) ? translation! : "..."
+
+            var line = AttributedString(displayText)
+            let isActive = cue.id == activeCueID
+            line.font = .system(
+                size: SubtitleTypography.translationSize,
+                weight: isActive ? .semibold : .regular
+            )
+            line.foregroundColor = .secondary
+            result += line
         }
+
+        return result
     }
 
 }

@@ -43,9 +43,10 @@ struct StudyBlockFocusView: View {
             }
 
             if let native = block.nativeText, !native.isEmpty {
-                Text(native)
+                Text(StudySubtitleText.normalizeMultiline(native))
                     .font(.system(size: StudyBlockTypography.translationSize))
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 Text("Translation will appear when available.")

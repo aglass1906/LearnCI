@@ -12,7 +12,10 @@ final class StudySessionViewModel {
     private(set) var sessionDefinition: StudySessionDefinition?
     private(set) var completedBlockIndices: Set<Int> = []
     private var loopRestartTask: Task<Void, Never>?
+    private var pinnedBlockIndex: Int?
+    private var pinnedBlockIndexSetAt: Date?
     private let loopEndPauseDuration: Duration = .milliseconds(650)
+    private let blockNavigationPinTimeout: TimeInterval = 2.0
 
     init(source: any StudyBlockSource) {
         self.source = source
@@ -126,6 +129,7 @@ final class StudySessionViewModel {
 
         cancelPendingLoopRestart()
         playbackController.stopBlockPlayback()
+        pinBlockIndex(index)
         currentBlockIndex = index
         guard let block = currentBlock else { return }
 
@@ -230,6 +234,7 @@ final class StudySessionViewModel {
               blocks.indices.contains(session.startIndex) else { return }
         let startTime = blocks[session.startIndex].mediaStart
         scheduleLoopRestart(from: startTime) {
+            self.pinBlockIndex(session.startIndex)
             self.currentBlockIndex = session.startIndex
         }
     }
@@ -258,6 +263,7 @@ final class StudySessionViewModel {
         guard canGoNext else { return }
 
         let nextIndex = currentBlockIndex + 1
+        pinBlockIndex(nextIndex)
         currentBlockIndex = nextIndex
         playbackController.resetBoundaryState()
 
@@ -269,6 +275,7 @@ final class StudySessionViewModel {
     }
 
     func syncCurrentBlockToPlaybackTime() {
+        clearPinnedBlockIndex()
         syncCurrentBlockIndexIfNeeded(for: mediaPlayer.currentTime)
     }
 
@@ -277,19 +284,51 @@ final class StudySessionViewModel {
             || playbackController.isSessionPlaybackMode
         guard shouldSyncBlockFromTime else { return }
 
+        if let pinnedBlockIndex,
+           blocks.indices.contains(pinnedBlockIndex) {
+            currentBlockIndex = pinnedBlockIndex
+            let pinnedBlock = blocks[pinnedBlockIndex]
+            if pinnedBlock.contains(time: time) {
+                clearPinnedBlockIndex()
+            } else if let pinnedBlockIndexSetAt,
+                      Date().timeIntervalSince(pinnedBlockIndexSetAt) > blockNavigationPinTimeout {
+                clearPinnedBlockIndex()
+            }
+            return
+        }
+
         if let session = sessionDefinition,
            playbackController.isSessionPlaybackMode {
-            if let matched = blocks.last(where: {
-                session.contains(blockIndex: $0.index) && $0.contains(time: time)
-            }) {
+            if let matched = matchingBlock(for: time, within: session) {
                 currentBlockIndex = matched.index
             }
             return
         }
 
-        if let matched = blocks.last(where: { $0.contains(time: time) }) {
+        if let matched = matchingBlock(for: time) {
             currentBlockIndex = matched.index
         }
+    }
+
+    private func matchingBlock(
+        for time: Double,
+        within session: StudySessionDefinition? = nil
+    ) -> StudyBlock? {
+        let candidates = blocks.filter { block in
+            guard session?.contains(blockIndex: block.index) ?? true else { return false }
+            return block.contains(time: time)
+        }
+        return candidates.last
+    }
+
+    private func pinBlockIndex(_ index: Int) {
+        pinnedBlockIndex = index
+        pinnedBlockIndexSetAt = Date()
+    }
+
+    private func clearPinnedBlockIndex() {
+        pinnedBlockIndex = nil
+        pinnedBlockIndexSetAt = nil
     }
 
     private func markCurrentBlockCompletedIfNeeded() {

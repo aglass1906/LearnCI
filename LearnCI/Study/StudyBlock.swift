@@ -125,6 +125,30 @@ enum StudySessionRangeBuilder {
     }
 }
 
+// MARK: - Subtitle text formatting
+
+enum StudySubtitleText {
+    static func normalizeLine(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func mergedLines(_ lines: [String], separator: String = "\n") -> String? {
+        let cleaned = lines.map(normalizeLine).filter { !$0.isEmpty }
+        guard !cleaned.isEmpty else { return nil }
+        return cleaned.joined(separator: separator)
+    }
+
+    static func normalizeMultiline(_ text: String) -> String {
+        text
+            .split(whereSeparator: \.isNewline)
+            .map { normalizeLine(String($0)) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
+    }
+}
+
 // MARK: - Block source
 
 protocol StudyBlockSource {

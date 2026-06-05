@@ -22,17 +22,14 @@ struct CaptionTranscriptProvider: TranscriptProvider {
             let endCueIndex = min(startCueIndex + chunkSize - 1, cues.count - 1)
             let chunkCues = Array(cues[startCueIndex...endCueIndex])
 
-            let targetText = chunkCues
-                .map(\.normalizedText)
-                .filter { !$0.isEmpty }
-                .joined(separator: "\n")
+            let targetText = StudySubtitleText.mergedLines(
+                chunkCues.map(\.normalizedText)
+            ) ?? ""
 
             let nativeLines = chunkCues.compactMap { cue -> String? in
-                guard let line = translationForCue(cue)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                      !line.isEmpty else { return nil }
-                return line
+                translationForCue(cue)
             }
-            let nativeText = nativeLines.isEmpty ? nil : nativeLines.joined(separator: "\n")
+            let nativeText = StudySubtitleText.mergedLines(nativeLines)
 
             guard let firstCue = chunkCues.first else { break }
 

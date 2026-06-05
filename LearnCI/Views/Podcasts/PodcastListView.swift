@@ -31,6 +31,7 @@ struct PodcastListView: View {
     @Environment(AuthManager.self) private var authManager
     @Query(sort: \PodcastShow.addedAt, order: .reverse) private var shows: [PodcastShow]
     @Query(sort: \PodcastEpisode.publishedDate, order: .reverse) private var allEpisodes: [PodcastEpisode]
+    @Query(sort: \Favorite.createdAt, order: .reverse) private var allFavorites: [Favorite]
 
     @State private var podcastManager = PodcastManager()
     @State private var showAddSheet = false
@@ -42,7 +43,30 @@ struct PodcastListView: View {
     @State private var selectedTab: PodcastTab = .newEpisodes
     @State private var isRefreshing = false
     @State private var filterUnplayedOnly = false
+    @State private var filterFavoritesOnly = false
     @State private var sortOption: PodcastSortOption = .newest
+
+    private var hasActiveListFilter: Bool {
+        filterUnplayedOnly || filterFavoritesOnly
+    }
+
+    private var favoriteEpisodeUrls: Set<String> {
+        guard let userID = authManager.currentUser else { return [] }
+        return Set(
+            allFavorites
+                .filter { $0.userID == userID && $0.type == .podcastEpisode }
+                .map(\.consumptionUrl)
+        )
+    }
+
+    private var favoriteShowFeedUrls: Set<String> {
+        guard let userID = authManager.currentUser else { return [] }
+        return Set(
+            allFavorites
+                .filter { $0.userID == userID && $0.type == .podcast }
+                .map(\.consumptionUrl)
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,13 +108,14 @@ struct PodcastListView: View {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
-                        Button(action: { Task { await refreshAllPodcasts() } }) {
+                        Button(action: { Task { await refreshAllPodcasts(showProgress: true) } }) {
                             Image(systemName: "arrow.clockwise")
                         }
                     }
                     
                     Menu {
                         Section("Filter") {
+                            Toggle("Favorites Only", isOn: $filterFavoritesOnly)
                             Toggle("Unplayed Only", isOn: $filterUnplayedOnly)
                         }
                         
@@ -102,8 +127,8 @@ struct PodcastListView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                            .foregroundStyle(filterUnplayedOnly ? .blue : .primary)
+                        Image(systemName: hasActiveListFilter ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                            .foregroundStyle(hasActiveListFilter ? .blue : .primary)
                     }
                     
                     Button(action: { showAddSheet = true }) {
@@ -147,9 +172,17 @@ struct PodcastListView: View {
         }
         .onAppear {
             checkForResumableSession()
-            Task { await refreshAllPodcasts() }
+        }
+        .task {
+            await refreshAllPodcastsIfStale()
+        }
+        .refreshable {
+            await refreshAllPodcasts(showProgress: false)
         }
     }
+
+    private static let lastFullRefreshKey = "podcastLastFullRefresh"
+    private static let fullRefreshInterval: TimeInterval = 30 * 60
 
     // MARK: - New Episodes Tab
 
@@ -160,6 +193,14 @@ struct PodcastListView: View {
                     Label("No Episodes", systemImage: "waveform")
                 } description: {
                     Text("Episodes from your subscribed shows will appear here.")
+                }
+            } else if filteredEpisodes.isEmpty && hasActiveListFilter {
+                ContentUnavailableView {
+                    Label("No Matching Episodes", systemImage: filterFavoritesOnly ? "heart.slash" : "waveform")
+                } description: {
+                    Text(filterFavoritesOnly
+                         ? "Favorite episodes from the player toolbar will appear here."
+                         : "Try turning off filters to see more episodes.")
                 }
             } else {
                 List {
@@ -232,7 +273,7 @@ struct PodcastListView: View {
                     Section {
                         ForEach(filteredEpisodes) { episode in
                             NavigationLink(destination: PodcastPlayerView(episode: episode)) {
-                                NewEpisodeRow(episode: episode, showsInlineFavorite: true)
+                                NewEpisodeRow(episode: episode)
                             }
                         }
                     }
@@ -247,12 +288,15 @@ struct PodcastListView: View {
     private var filteredEpisodes: [PodcastEpisode] {
         var result = allEpisodes
         
-        // 1. Filter
+        if filterFavoritesOnly {
+            let urls = favoriteEpisodeUrls
+            result = result.filter { urls.contains($0.favoriteConsumptionUrl) }
+        }
+
         if filterUnplayedOnly {
             result = result.filter { !$0.isPlayed }
         }
         
-        // 2. Sort
         result.sort { a, b in
             switch sortOption {
             case .newest:           return a.publishedDate > b.publishedDate
@@ -266,30 +310,49 @@ struct PodcastListView: View {
         return result
     }
 
-    private var showsView: some View {
-        List {
-            ForEach(shows) { show in
-                NavigationLink(destination: PodcastShowView(show: show)) {
-                    PodcastShowRow(show: show, showsInlineFavorite: true)
-                }
-            }
-            .onDelete(perform: deleteShows)
-        }
-        .listStyle(.plain)
+    private var filteredShows: [PodcastShow] {
+        guard filterFavoritesOnly else { return shows }
+        let urls = favoriteShowFeedUrls
+        return shows.filter { urls.contains($0.feedUrl) }
     }
 
-    private func refreshAllPodcasts() async {
-        guard !isRefreshing else { return }
-        isRefreshing = true
-        defer { isRefreshing = false }
-
-        // Refresh all shows in parallel
-        await withTaskGroup(of: Void.self) { group in
-            for show in shows {
-                group.addTask {
-                    await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
+    private var showsView: some View {
+        Group {
+            if filteredShows.isEmpty && filterFavoritesOnly {
+                ContentUnavailableView {
+                    Label("No Favorite Shows", systemImage: "heart.slash")
+                } description: {
+                    Text("Favorite a show from its detail page to see it here.")
                 }
+            } else {
+                List {
+                    ForEach(filteredShows) { show in
+                        NavigationLink(destination: PodcastShowView(show: show)) {
+                            PodcastShowRow(show: show)
+                        }
+                    }
+                    .onDelete(perform: deleteShows)
+                }
+                .listStyle(.plain)
             }
+        }
+    }
+
+    private func refreshAllPodcastsIfStale() async {
+        let lastRefresh = UserDefaults.standard.object(forKey: Self.lastFullRefreshKey) as? Date ?? .distantPast
+        guard Date().timeIntervalSince(lastRefresh) > Self.fullRefreshInterval else { return }
+        await refreshAllPodcasts(showProgress: false)
+        UserDefaults.standard.set(Date(), forKey: Self.lastFullRefreshKey)
+    }
+
+    private func refreshAllPodcasts(showProgress: Bool) async {
+        guard !isRefreshing else { return }
+        if showProgress { isRefreshing = true }
+        defer { if showProgress { isRefreshing = false } }
+
+        // Sequential refresh — ModelContext is not thread-safe.
+        for show in shows {
+            await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
         }
     }
 
@@ -333,7 +396,7 @@ struct PodcastListView: View {
 
     private func deleteShows(at offsets: IndexSet) {
         for index in offsets {
-            let show = shows[index]
+            let show = filteredShows[index]
             let showId = show.id
             modelContext.delete(show)
 
@@ -357,7 +420,6 @@ struct PodcastListView: View {
 
 private struct PodcastShowRow: View {
     let show: PodcastShow
-    var showsInlineFavorite: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -379,22 +441,9 @@ private struct PodcastShowRow: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-                HStack(spacing: 6) {
-                    Text("\(show.episodes.count) episodes")
-                    if showsInlineFavorite {
-                        FavoriteButton(
-                            consumptionUrl: show.feedUrl,
-                            type: .podcast,
-                            title: show.title,
-                            author: show.author,
-                            imageUrl: show.artworkUrl
-                        )
-                        .font(.caption)
-                        .buttonStyle(.borderless)
-                    }
-                }
-                .font(.caption)
-                .foregroundColor(.secondary)
+                Text("\(show.episodes.count) episodes")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
         .padding(.vertical, 4)
@@ -405,7 +454,6 @@ private struct PodcastShowRow: View {
 
 private struct NewEpisodeRow: View {
     let episode: PodcastEpisode
-    var showsInlineFavorite: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -437,19 +485,6 @@ private struct NewEpisodeRow: View {
                     if episode.duration > 0 {
                         Text("·")
                         Text(formatDuration(episode.duration))
-                    }
-                    if showsInlineFavorite {
-                        FavoriteButton(
-                            consumptionUrl: episode.favoriteConsumptionUrl,
-                            type: .podcastEpisode,
-                            title: episode.title,
-                            author: episode.show?.title,
-                            subtitle: episode.favoriteSubtitle,
-                            imageUrl: episode.show?.artworkUrl,
-                            sourceResourceId: episode.id.uuidString
-                        )
-                        .font(.caption)
-                        .buttonStyle(.borderless)
                     }
                     Spacer(minLength: 0)
                     if episode.playbackPosition > 0 && !episode.isPlayed {

@@ -6,10 +6,7 @@ struct PodcastShowView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var podcastManager = PodcastManager()
     @State private var isRefreshing = false
-
-    private var sortedEpisodes: [PodcastEpisode] {
-        show.episodes.sorted { $0.publishedDate > $1.publishedDate }
-    }
+    @State private var sortedEpisodes: [PodcastEpisode] = []
 
     var body: some View {
         List {
@@ -56,8 +53,15 @@ struct PodcastShowView: View {
         }
         .listStyle(.insetGrouped)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            updateSortedEpisodes()
+        }
+        .onChange(of: show.episodes.count) { _, _ in
+            updateSortedEpisodes()
+        }
         .refreshable {
             await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
+            updateSortedEpisodes()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -74,6 +78,7 @@ struct PodcastShowView: View {
                         Task {
                             isRefreshing = true
                             await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
+                            updateSortedEpisodes()
                             isRefreshing = false
                         }
                     }) {
@@ -86,6 +91,10 @@ struct PodcastShowView: View {
                 }
             }
         }
+    }
+
+    private func updateSortedEpisodes() {
+        sortedEpisodes = show.episodes.sorted { $0.publishedDate > $1.publishedDate }
     }
 }
 

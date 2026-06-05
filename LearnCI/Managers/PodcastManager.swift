@@ -109,15 +109,17 @@ class PodcastManager {
     func refreshEpisodes(for show: PodcastShow, modelContext: ModelContext) async {
         guard let url = URL(string: show.feedUrl) else { return }
 
+        let feedUrl = show.feedUrl
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let parser = RSSParser(feedUrl: show.feedUrl)
+            let parser = RSSParser(feedUrl: feedUrl)
+            // Network is async; XML parse runs off the main actor before we touch SwiftData.
             let result = parser.parse(data: data)
 
-            let existingUrls = Set(show.episodes.map { $0.audioUrl })
-
             await MainActor.run {
-                // Update show metadata
+                let existingUrls = Set(show.episodes.map { $0.audioUrl })
+
                 if let parsed = result.show {
                     show.title = parsed.title
                     show.author = parsed.author

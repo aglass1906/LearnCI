@@ -13,6 +13,7 @@ struct FavoritesView: View {
     
     @Query(sort: \Favorite.createdAt, order: .reverse) private var favorites: [Favorite]
     @Query(sort: \PodcastShow.addedAt) private var podcastShows: [PodcastShow]
+    @Query(sort: \PodcastEpisode.publishedDate, order: .reverse) private var podcastEpisodes: [PodcastEpisode]
     
     // Filter State
     @State private var typeFilter: FavoriteType? = nil // nil = All
@@ -26,6 +27,7 @@ struct FavoritesView: View {
     @State private var browserUrl: URL?
     @State private var browserStartTime: Date?
     @State private var selectedPodcastShow: PodcastShow?
+    @State private var selectedPodcastEpisode: PodcastEpisode?
     @State private var podcastManager = PodcastManager()
     @State private var showYouTubeAuthAlert = false
     
@@ -73,7 +75,8 @@ struct FavoritesView: View {
                         FilterPill(title: "Channels", isSelected: typeFilter == .channel) { typeFilter = .channel }
                         FilterPill(title: "YouTube", isSelected: typeFilter == .youtube) { typeFilter = .youtube }
                         FilterPill(title: "Websites", isSelected: typeFilter == .website) { typeFilter = .website }
-                        FilterPill(title: "Podcasts", isSelected: typeFilter == .podcast) { typeFilter = .podcast }
+                        FilterPill(title: "Podcast Shows", isSelected: typeFilter == .podcast) { typeFilter = .podcast }
+                        FilterPill(title: "Podcast Episodes", isSelected: typeFilter == .podcastEpisode) { typeFilter = .podcastEpisode }
                         FilterPill(title: "Web Scan", isSelected: typeFilter == .webScan) { typeFilter = .webScan }
                     }
                     .padding(.horizontal)
@@ -139,6 +142,9 @@ struct FavoritesView: View {
         .navigationDestination(item: $selectedPodcastShow) { show in
             PodcastShowView(show: show)
         }
+        .navigationDestination(item: $selectedPodcastEpisode) { episode in
+            PodcastPlayerView(episode: episode)
+        }
         .navigationDestination(item: $webScanTarget) { scanFav in
             if let url = URL(string: scanFav.consumptionUrl) {
                 WebScanView(url: url, title: scanFav.title)
@@ -187,21 +193,15 @@ struct FavoritesView: View {
             return
         }
 
-        // Podcast favorites → in-app player
+        // Podcast favorites → in-app show browser
         if fav.type == .podcast {
-            let feedUrl = fav.consumptionUrl
-            if let show = podcastShows.first(where: { $0.feedUrl == feedUrl }) {
-                selectedPodcastShow = show
-            } else {
-                // Subscribe first, then navigate
-                Task {
-                    await podcastManager.addPodcast(feedUrl: feedUrl, modelContext: modelContext, userID: authManager.currentUser)
-                    let descriptor = FetchDescriptor<PodcastShow>(predicate: #Predicate { $0.feedUrl == feedUrl })
-                    if let show = try? modelContext.fetch(descriptor).first {
-                        selectedPodcastShow = show
-                    }
-                }
-            }
+            openFavoritePodcastShow(feedUrl: fav.consumptionUrl)
+            return
+        }
+
+        // Podcast episode favorites → in-app episode player
+        if fav.type == .podcastEpisode {
+            openFavoritePodcastEpisode(favorite: fav)
             return
         }
 
@@ -305,6 +305,51 @@ struct FavoritesView: View {
         }
     }
     
+    private func openFavoritePodcastShow(feedUrl: String) {
+        if let show = podcastShows.first(where: { $0.feedUrl == feedUrl }) {
+            selectedPodcastShow = show
+            return
+        }
+
+        Task {
+            await podcastManager.addPodcast(
+                feedUrl: feedUrl,
+                modelContext: modelContext,
+                userID: authManager.currentUser
+            )
+            let descriptor = FetchDescriptor<PodcastShow>(
+                predicate: #Predicate { $0.feedUrl == feedUrl }
+            )
+            if let show = try? modelContext.fetch(descriptor).first {
+                await MainActor.run {
+                    selectedPodcastShow = show
+                }
+            } else {
+                await MainActor.run {
+                    errorMessage = "Could not open this podcast show."
+                    showError = true
+                }
+            }
+        }
+    }
+
+    private func openFavoritePodcastEpisode(favorite: Favorite) {
+        if let episodeId = PodcastFavoriteURL.episodeId(from: favorite.consumptionUrl),
+           let episode = podcastEpisodes.first(where: { $0.id == episodeId }) {
+            selectedPodcastEpisode = episode
+            return
+        }
+
+        if let episodeId = favorite.sourceResourceId.flatMap(UUID.init(uuidString:)),
+           let episode = podcastEpisodes.first(where: { $0.id == episodeId }) {
+            selectedPodcastEpisode = episode
+            return
+        }
+
+        errorMessage = "This episode is no longer in your subscribed podcasts."
+        showError = true
+    }
+
     private func openBuiltinVideo(videoId: String, from fav: Favorite) {
         let thumb = fav.imageUrl ?? "https://img.youtube.com/vi/\(videoId)/mqdefault.jpg"
         selectedBuiltinVideo = YouTubeVideo(

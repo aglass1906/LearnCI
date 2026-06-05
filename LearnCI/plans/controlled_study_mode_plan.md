@@ -53,7 +53,7 @@ Hosts: `VideoDetailSheet` (Phase 1), `StoryAboutView` (3), `PodcastPlayerView` (
 1. **Block control** — YouTube adapter, playback controller, focus UI, transport
 2. **Session + artifacts** — setup sheet, notes, marked words
 3. **Stories** — `StoryStudyBlockSource`
-4. **Podcasts** — Whisper + `PodcastStudyBlockSource`
+4. **Podcasts** — Whisper + `PodcastStudyBlockSource` — see [podcast_study_mode_plan.md](podcast_study_mode_plan.md)
 5. **Generic URL** — favorites / resource library
 6. **Review** — SRS queue across all resource types
 

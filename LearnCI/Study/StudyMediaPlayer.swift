@@ -56,3 +56,56 @@ final class YouTubeStudyMediaPlayer: StudyMediaPlayer {
         self.playbackRate = playbackRate
     }
 }
+
+/// Bridges podcast / generic AVPlayer streaming via `AudioManager`.
+@MainActor
+final class AVPlayerStudyMediaPlayer: StudyMediaPlayer {
+    private weak var audioManager: AudioManager?
+
+    var currentTime: Double = 0
+    var duration: Double = 0
+    var isPlaying: Bool = false
+    var playbackRate: Float = 1.0
+
+    init(audioManager: AudioManager) {
+        self.audioManager = audioManager
+    }
+
+    func seek(to time: Double) {
+        audioManager?.seekStream(to: max(0, time))
+        currentTime = max(0, time)
+    }
+
+    func seekAndPlay(from time: Double) {
+        let clamped = max(0, time)
+        audioManager?.seekStream(to: clamped)
+        audioManager?.setStreamRate(1.0)
+        audioManager?.playStream()
+        currentTime = clamped
+        playbackRate = 1.0
+        isPlaying = true
+    }
+
+    func play() {
+        audioManager?.playStream()
+        isPlaying = true
+    }
+
+    func pause() {
+        audioManager?.pauseStream()
+        isPlaying = false
+    }
+
+    func setPlaybackRate(_ rate: Float) {
+        let clamped = max(0.25, min(rate, 2.0))
+        playbackRate = clamped
+        audioManager?.setStreamRate(clamped)
+    }
+
+    func applySnapshot(currentTime: Double, duration: Double, isPlaying: Bool, playbackRate: Float) {
+        self.currentTime = max(0, currentTime)
+        self.duration = max(0, duration)
+        self.isPlaying = isPlaying
+        self.playbackRate = max(0.25, min(playbackRate, 2.0))
+    }
+}

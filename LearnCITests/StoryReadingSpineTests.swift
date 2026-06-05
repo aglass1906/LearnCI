@@ -745,6 +745,52 @@ final class StudySessionViewModelTests: XCTestCase {
         XCTAssertEqual(end, 8.0)
     }
 
+    func testWhisperProviderGroupsWordsIntoSentencesAndBlocks() {
+        let words = [
+            WordTiming(word: "Hola", start: 0.0, end: 0.4),
+            WordTiming(word: "mundo.", start: 0.5, end: 1.0),
+            WordTiming(word: "Cómo", start: 1.2, end: 1.5),
+            WordTiming(word: "estás?", start: 1.6, end: 2.0)
+        ]
+
+        let blocks = WhisperTranscriptProvider(
+            words: words,
+            translationForSentenceRange: { _, _ in nil },
+            focusWindowSize: .single
+        ).makeBlocks()
+
+        XCTAssertEqual(blocks.count, 2)
+        XCTAssertEqual(blocks[0].targetText, "Hola mundo.")
+        XCTAssertEqual(blocks[0].mediaStart, 0.0)
+        XCTAssertEqual(blocks[0].mediaEnd, 1.2)
+        XCTAssertEqual(blocks[1].targetText, "Cómo estás?")
+    }
+
+    func testWhisperSentenceGroupingHandlesFinalSentenceWithoutPunctuation() {
+        let words = [
+            WordTiming(word: "Solo", start: 0.0, end: 0.3),
+            WordTiming(word: "palabra", start: 0.4, end: 0.8)
+        ]
+        let sentences = WhisperTranscriptProvider.groupIntoSentences(words)
+        XCTAssertEqual(sentences.count, 1)
+        XCTAssertEqual(sentences[0].text, "Solo palabra")
+    }
+
+    func testWhisperProviderSplitsLongMonologueIntoFocusBlocks() {
+        let words = (0..<24).map { index in
+            WordTiming(word: "word\(index)", start: Double(index) * 0.4, end: Double(index) * 0.4 + 0.3)
+        }
+
+        let blocks = WhisperTranscriptProvider(
+            words: words,
+            translationForSentenceRange: { _, _ in nil },
+            focusWindowSize: .single
+        ).makeBlocks()
+
+        XCTAssertGreaterThan(blocks.count, 1)
+        XCTAssertLessThanOrEqual(blocks[0].targetText.split(separator: " ").count, 8)
+    }
+
     func testManualBlockNavigationStaysPinnedUntilPlaybackReachesBlock() {
         let blocks = (0..<3).map { index in
             let start = Double(index * 5)
@@ -817,5 +863,70 @@ private struct StudyNavigationTestBlockSource: StudyBlockSource {
             title: "Test",
             languageCode: "es"
         )
+    }
+}
+
+final class PodcastFeedTranscriptParserTests: XCTestCase {
+    func testParseVTTExtractsTimedCues() {
+        let vtt = """
+        WEBVTT
+
+        00:00:00.000 --> 00:00:02.500
+        Hola mundo.
+
+        00:00:02.500 --> 00:00:05.000
+        ¿Cómo estás?
+        """
+
+        let cues = PodcastFeedTranscriptParser.parseVTT(vtt)
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].normalizedText, "Hola mundo.")
+        XCTAssertEqual(cues[0].startTime, 0, accuracy: 0.001)
+        XCTAssertEqual(cues[1].startTime, 2.5, accuracy: 0.001)
+    }
+
+    func testParseSRTExtractsTimedCues() {
+        let srt = """
+        1
+        00:00:00,000 --> 00:00:02,500
+        Hola mundo.
+
+        2
+        00:00:02,500 --> 00:00:05,000
+        Como estas?
+        """
+
+        let cues = PodcastFeedTranscriptParser.parseSRT(srt)
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].normalizedText, "Hola mundo.")
+        XCTAssertEqual(cues[1].startTime, 2.5, accuracy: 0.001)
+    }
+
+    func testParseJSONSegments() throws {
+        let json = """
+        {
+          "segments": [
+            { "startTime": 0.0, "endTime": 2.5, "body": "Hola mundo." },
+            { "startTime": 2.5, "endTime": 5.0, "body": "Como estas?" }
+          ]
+        }
+        """
+        let cues = try PodcastFeedTranscriptParser.parseJSON(data: Data(json.utf8))
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].text, "Hola mundo.")
+    }
+
+    func testSelectPreferredTranscriptPrefersVTTAndMatchingLanguage() {
+        let links = [
+            PodcastFeedTranscriptParser.TranscriptLink(url: "https://x/en.vtt", type: "text/vtt", language: "en"),
+            PodcastFeedTranscriptParser.TranscriptLink(url: "https://x/es.vtt", type: "text/vtt", language: "es")
+        ]
+
+        let selected = PodcastFeedTranscriptParser.selectPreferredTranscript(
+            from: links,
+            preferredLanguageCode: "es-ES"
+        )
+
+        XCTAssertEqual(selected?.url, "https://x/es.vtt")
     }
 }

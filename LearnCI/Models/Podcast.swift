@@ -54,9 +54,16 @@ final class PodcastEpisode: Identifiable {
     var duration: Double // seconds
     var playbackPosition: Double // for resume
     var isPlayed: Bool
+    var transcriptUrl: String?
+    var transcriptType: String?
     var isSynced: Bool = false
 
     var show: PodcastShow?
+
+    var hasFeedTranscript: Bool {
+        guard let transcriptUrl else { return false }
+        return !transcriptUrl.isEmpty
+    }
 
     init(id: UUID = UUID(),
          title: String,
@@ -65,7 +72,9 @@ final class PodcastEpisode: Identifiable {
          publishedDate: Date = Date(),
          duration: Double = 0,
          playbackPosition: Double = 0,
-         isPlayed: Bool = false) {
+         isPlayed: Bool = false,
+         transcriptUrl: String? = nil,
+         transcriptType: String? = nil) {
         self.id = id
         self.title = title
         self.episodeDescription = episodeDescription
@@ -74,6 +83,29 @@ final class PodcastEpisode: Identifiable {
         self.duration = duration
         self.playbackPosition = playbackPosition
         self.isPlayed = isPlayed
+        self.transcriptUrl = transcriptUrl
+        self.transcriptType = transcriptType
         self.isSynced = false
+    }
+
+    var playableAudioURL: URL? {
+        PodcastPlaybackURL.make(from: audioUrl)
+    }
+
+    var favoriteConsumptionUrl: String {
+        PodcastFavoriteURL.episode(id)
+    }
+
+    var favoriteSubtitle: String? {
+        var parts: [String] = []
+        if duration > 0 {
+            let minutes = Int(duration) / 60
+            if minutes > 0 {
+                parts.append("\(minutes) min")
+            }
+        }
+        let dateText = publishedDate.formatted(date: .abbreviated, time: .omitted)
+        parts.append(dateText)
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }

@@ -1,11 +1,37 @@
 import Foundation
 
-enum OpenAIServiceError: Error {
+enum OpenAIServiceError: Error, LocalizedError {
     case invalidURL
     case noAPIKey
     case invalidResponse
     case apiError(String)
     case decodingError
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "The OpenAI request URL was invalid."
+        case .noAPIKey:
+            return "No OpenAI API key is saved. Add one in Profile → AI Settings."
+        case .invalidResponse:
+            return "OpenAI returned an unexpected response."
+        case .apiError(let message):
+            return message
+        case .decodingError:
+            return "Could not read the OpenAI response."
+        }
+    }
+}
+
+enum OpenAIAPIKeyStorage {
+    static var apiKey: String? {
+        UserDefaults.standard.string(forKey: "OpenAI_API_Key")
+    }
+
+    static var isConfigured: Bool {
+        guard let apiKey else { return false }
+        return !apiKey.isEmpty
+    }
 }
 
 actor OpenAIService {
@@ -14,7 +40,7 @@ actor OpenAIService {
     // In a real app, we might store this in Keychain. 
     // For this implementation, we'll read from UserDefaults via a helper or pass it in.
     private var apiKey: String? {
-        UserDefaults.standard.string(forKey: "OpenAI_API_Key")
+        OpenAIAPIKeyStorage.apiKey
     }
     
     func generateStory(topic: String, language: String, level: String, preferences: StoryPreferences) async throws -> (title: String, content: String) {
@@ -526,6 +552,86 @@ actor OpenAIService {
             )
         }
     }
+
+    func translateStudyBlockBatch(
+        blocks: [StudyBlock],
+        sourceLanguage: String,
+        targetLanguage: String = "English"
+    ) async throws -> [Int: String] {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+        guard !blocks.isEmpty else { return [:] }
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let blockPayload = blocks.map { ["blockIndex": $0.index, "text": $0.targetText] }
+        let blockJSONData = try JSONSerialization.data(withJSONObject: blockPayload, options: [.sortedKeys])
+        let blockJSONString = String(data: blockJSONData, encoding: .utf8) ?? "[]"
+
+        let prompt = """
+        Translate each study block from \(sourceLanguage) to \(targetLanguage).
+        Return strict JSON with the shape {"translations":[{"blockIndex":0,"text":"..."}]}.
+        Preserve meaning naturally, keep each translation concise, and do not omit any block.
+
+        Blocks:
+        \(blockJSONString)
+        """
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a subtitle translator. Respond strictly in JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        struct TranslationWrapper: Decodable {
+            struct Item: Decodable {
+                let blockIndex: Int
+                let text: String
+            }
+            let translations: [Item]
+        }
+
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let contentString = result.choices.first?.message.content,
+              let contentData = contentString.data(using: .utf8) else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        let wrapper = try JSONDecoder().decode(TranslationWrapper.self, from: contentData)
+        return Dictionary(uniqueKeysWithValues: wrapper.translations.map { ($0.blockIndex, $0.text) })
+    }
     
     func generateCoverArt(title: String, topic: String, style: StoryPreferences.CoverArtStyle) async throws -> (imageData: Data, prompt: String) {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
@@ -587,7 +693,7 @@ actor OpenAIService {
         return "Create a illustration for a story titled '\(title)' about \(topic). Style: \(styleDesc). No text in the image."
     }
     
-    func generateWordTimings(for audioURL: URL) async throws -> [WordTiming] {
+    func generateWordTimings(for audioURL: URL, languageCode: String? = nil) async throws -> [WordTiming] {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -616,12 +722,19 @@ actor OpenAIService {
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"timestamp_granularities[]\"\r\n\r\n".data(using: .utf8)!)
         body.append("word\r\n".data(using: .utf8)!)
+
+        if let languageCode, !languageCode.isEmpty {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"language\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(languageCode)\r\n".data(using: .utf8)!)
+        }
         
         // File
         let audioData = try Data(contentsOf: audioURL)
+        let fileMeta = Self.multipartFileMetadata(for: audioURL)
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"audio.mp3\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: audio/mpeg\r\n\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileMeta.filename)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(fileMeta.mimeType)\r\n\r\n".data(using: .utf8)!)
         body.append(audioData)
         body.append("\r\n".data(using: .utf8)!)
         
@@ -639,6 +752,8 @@ actor OpenAIService {
                let errorObj = errorJson["error"] as? [String: Any],
                let msg = errorObj["message"] as? String {
                 errorMessage = msg
+            } else if let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+                errorMessage = responseString
             }
             throw OpenAIServiceError.apiError(errorMessage)
         }
@@ -653,12 +768,35 @@ actor OpenAIService {
             let words: [Word]?
         }
         
-        let result = try JSONDecoder().decode(WhisperResponse.self, from: data)
-        guard let whisperWords = result.words else {
-            return []
+        let result: WhisperResponse
+        do {
+            result = try JSONDecoder().decode(WhisperResponse.self, from: data)
+        } catch {
+            throw OpenAIServiceError.decodingError
+        }
+
+        guard let whisperWords = result.words, !whisperWords.isEmpty else {
+            throw OpenAIServiceError.apiError("Whisper did not return any timed words for this audio.")
         }
         
         return whisperWords.map { WordTiming(word: $0.word, start: $0.start, end: $0.end) }
+    }
+
+    private static func multipartFileMetadata(for url: URL) -> (filename: String, mimeType: String) {
+        switch url.pathExtension.lowercased() {
+        case "m4a":
+            return ("audio.m4a", "audio/mp4")
+        case "mp4":
+            return ("audio.mp4", "audio/mp4")
+        case "wav":
+            return ("audio.wav", "audio/wav")
+        case "webm":
+            return ("audio.webm", "audio/webm")
+        case "mp3", "mpeg":
+            return ("audio.mp3", "audio/mpeg")
+        default:
+            return ("audio.mp3", "audio/mpeg")
+        }
     }
     
     func generateComprehensionQuestions(

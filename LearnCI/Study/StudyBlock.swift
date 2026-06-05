@@ -25,9 +25,31 @@ struct StudyResourceRef: Hashable, Sendable {
             languageCode: languageCode
         )
     }
+
+    static func podcast(
+        episodeId: UUID,
+        audioUrl: String,
+        title: String,
+        languageCode: String?
+    ) -> StudyResourceRef {
+        StudyResourceRef(
+            type: .podcast,
+            resourceId: episodeId.uuidString,
+            consumptionUrl: audioUrl,
+            title: title,
+            languageCode: languageCode
+        )
+    }
 }
 
 // MARK: - Focus window (YouTube caption grouping)
+
+enum StudyPaneDisplayMode: String, CaseIterable, Identifiable, Sendable {
+    case studyBlock = "Study Block"
+    case transcript = "Transcript"
+
+    var id: String { rawValue }
+}
 
 enum StudyFocusWindowSize: Int, CaseIterable, Identifiable, Sendable {
     case single = 1

@@ -232,7 +232,7 @@ struct PodcastListView: View {
                     Section {
                         ForEach(filteredEpisodes) { episode in
                             NavigationLink(destination: PodcastPlayerView(episode: episode)) {
-                                NewEpisodeRow(episode: episode)
+                                NewEpisodeRow(episode: episode, showsInlineFavorite: true)
                             }
                         }
                     }
@@ -270,7 +270,7 @@ struct PodcastListView: View {
         List {
             ForEach(shows) { show in
                 NavigationLink(destination: PodcastShowView(show: show)) {
-                    PodcastShowRow(show: show)
+                    PodcastShowRow(show: show, showsInlineFavorite: true)
                 }
             }
             .onDelete(perform: deleteShows)
@@ -357,6 +357,7 @@ struct PodcastListView: View {
 
 private struct PodcastShowRow: View {
     let show: PodcastShow
+    var showsInlineFavorite: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -378,9 +379,22 @@ private struct PodcastShowRow: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-                Text("\(show.episodes.count) episodes")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 6) {
+                    Text("\(show.episodes.count) episodes")
+                    if showsInlineFavorite {
+                        FavoriteButton(
+                            consumptionUrl: show.feedUrl,
+                            type: .podcast,
+                            title: show.title,
+                            author: show.author,
+                            imageUrl: show.artworkUrl
+                        )
+                        .font(.caption)
+                        .buttonStyle(.borderless)
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
             }
         }
         .padding(.vertical, 4)
@@ -391,6 +405,7 @@ private struct PodcastShowRow: View {
 
 private struct NewEpisodeRow: View {
     let episode: PodcastEpisode
+    var showsInlineFavorite: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -417,28 +432,39 @@ private struct NewEpisodeRow: View {
                         .lineLimit(1)
                 }
 
-                HStack {
+                HStack(spacing: 6) {
                     Text(episode.publishedDate, style: .date)
                     if episode.duration > 0 {
                         Text("·")
                         Text(formatDuration(episode.duration))
                     }
+                    if showsInlineFavorite {
+                        FavoriteButton(
+                            consumptionUrl: episode.favoriteConsumptionUrl,
+                            type: .podcastEpisode,
+                            title: episode.title,
+                            author: episode.show?.title,
+                            subtitle: episode.favoriteSubtitle,
+                            imageUrl: episode.show?.artworkUrl,
+                            sourceResourceId: episode.id.uuidString
+                        )
+                        .font(.caption)
+                        .buttonStyle(.borderless)
+                    }
+                    Spacer(minLength: 0)
+                    if episode.playbackPosition > 0 && !episode.isPlayed {
+                        Image(systemName: "circle.lefthalf.filled")
+                            .foregroundColor(.blue)
+                            .font(.caption)
+                    }
+                    if episode.isPlayed {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.caption)
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if episode.playbackPosition > 0 && !episode.isPlayed {
-                Image(systemName: "circle.lefthalf.filled")
-                    .foregroundColor(.blue)
-                    .font(.caption)
-            }
-            if episode.isPlayed {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.caption)
             }
         }
         .padding(.vertical, 4)

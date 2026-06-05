@@ -134,14 +134,25 @@ final class MediaTranscriptCache {
     var consumptionUrl: String
     var languageCode: String
     var blocksJSON: String
+    var wordsJSON: String?
+    var cuesJSON: String?
     var fetchedAt: Date
     var updatedAt: Date
 
-    init(consumptionUrl: String, languageCode: String, blocks: [StudyBlock], fetchedAt: Date = Date()) {
+    init(
+        consumptionUrl: String,
+        languageCode: String,
+        blocks: [StudyBlock],
+        words: [WordTiming]? = nil,
+        cues: [YouTubeCaptionCue]? = nil,
+        fetchedAt: Date = Date()
+    ) {
         self.cacheKey = Self.makeCacheKey(consumptionUrl: consumptionUrl, languageCode: languageCode)
         self.consumptionUrl = consumptionUrl
         self.languageCode = languageCode
         self.blocksJSON = Self.encodeBlocks(blocks)
+        self.wordsJSON = words.flatMap { Self.encodeWords($0) }
+        self.cuesJSON = cues.flatMap { Self.encodeCues($0) }
         self.fetchedAt = fetchedAt
         self.updatedAt = fetchedAt
     }
@@ -150,8 +161,29 @@ final class MediaTranscriptCache {
         Self.decodeBlocks(from: blocksJSON)
     }
 
-    func replace(blocks: [StudyBlock], updatedAt: Date = Date()) {
+    var words: [WordTiming] {
+        guard let wordsJSON else { return [] }
+        return Self.decodeWords(from: wordsJSON)
+    }
+
+    var cues: [YouTubeCaptionCue] {
+        guard let cuesJSON else { return [] }
+        return Self.decodeCues(from: cuesJSON)
+    }
+
+    func replace(
+        blocks: [StudyBlock],
+        words: [WordTiming]? = nil,
+        cues: [YouTubeCaptionCue]? = nil,
+        updatedAt: Date = Date()
+    ) {
         self.blocksJSON = Self.encodeBlocks(blocks)
+        if let words {
+            self.wordsJSON = Self.encodeWords(words)
+        }
+        if let cues {
+            self.cuesJSON = Self.encodeCues(cues)
+        }
         self.updatedAt = updatedAt
     }
 
@@ -168,6 +200,34 @@ final class MediaTranscriptCache {
     private static func decodeBlocks(from json: String) -> [StudyBlock] {
         guard let data = json.data(using: .utf8),
               let decoded = try? JSONDecoder().decode([StudyBlock].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    private static func encodeWords(_ words: [WordTiming]) -> String {
+        let encoder = JSONEncoder()
+        guard let data = try? encoder.encode(words) else { return "[]" }
+        return String(data: data, encoding: .utf8) ?? "[]"
+    }
+
+    private static func decodeWords(from json: String) -> [WordTiming] {
+        guard let data = json.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode([WordTiming].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    private static func encodeCues(_ cues: [YouTubeCaptionCue]) -> String {
+        let encoder = JSONEncoder()
+        guard let data = try? encoder.encode(cues) else { return "[]" }
+        return String(data: data, encoding: .utf8) ?? "[]"
+    }
+
+    private static func decodeCues(from json: String) -> [YouTubeCaptionCue] {
+        guard let data = json.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode([YouTubeCaptionCue].self, from: data) else {
             return []
         }
         return decoded

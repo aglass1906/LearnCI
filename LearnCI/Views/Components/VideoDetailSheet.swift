@@ -87,12 +87,25 @@ struct VideoDetailSheet: View {
                     layoutSize = newSize
                 }
             }
-            .navigationTitle(compactStudyChrome ? "" : video.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+            .overlay(alignment: .topLeading) {
+                if compactStudyChrome {
                     Button("Close") {
                         dismiss()
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.top, 8)
+                }
+            }
+            .navigationTitle(compactStudyChrome ? "" : video.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(compactStudyChrome ? .hidden : .visible, for: .navigationBar)
+            .toolbar {
+                if !compactStudyChrome {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") {
+                            dismiss()
+                        }
                     }
                 }
                 if !compactStudyChrome {
@@ -126,9 +139,6 @@ struct VideoDetailSheet: View {
                 if studyViewModel.mode == .study {
                     syncStudySessionViewModel()
                 }
-            }
-            .onAppear {
-                hydrateStudyModeFromCacheIfAvailable()
             }
             .task {
                 await bootstrapStudyModeIfNeeded()
@@ -254,13 +264,10 @@ struct VideoDetailSheet: View {
     }
 
     private var studyLandscapeStudyDetail: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            studyContent(fillsAvailableHeight: true)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(.horizontal, 12)
-        .padding(.top, 4)
-        .padding(.bottom, 8)
+        studyContent(fillsAvailableHeight: true)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 8)
     }
 
     private var compactInSheetHeader: some View {
@@ -630,6 +637,11 @@ struct VideoDetailSheet: View {
                         onDefineSession: { showSessionSetup = true },
                         onNotes: { showNotes = true },
                         onFocusWindowSizeChange: applyFocusWindowSize
+                    )
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: fillsAvailableHeight ? .infinity : nil,
+                        alignment: .topLeading
                     )
                 } else {
                     YouTubeStudyPanel(

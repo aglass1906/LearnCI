@@ -7,6 +7,7 @@ enum FavoriteType: String, Codable, CaseIterable, Identifiable {
     case youtube // New dedicated type
     case webScan // New: Scans page for videos
     case podcast
+    case podcastEpisode
     case book // If we have book links
     case other
     
@@ -18,6 +19,7 @@ enum FavoriteType: String, Codable, CaseIterable, Identifiable {
         case .youtube: return "play.circle.fill" 
         case .webScan: return "doc.text.viewfinder"
         case .podcast: return "headphones"
+        case .podcastEpisode: return "waveform.circle.fill"
         case .book: return "book.fill"
         case .website, .other: return "globe"
         }

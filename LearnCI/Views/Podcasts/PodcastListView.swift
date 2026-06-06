@@ -31,6 +31,7 @@ struct PodcastListView: View {
     @Environment(AuthManager.self) private var authManager
     @Query(sort: \PodcastShow.addedAt, order: .reverse) private var shows: [PodcastShow]
     @Query(sort: \PodcastEpisode.publishedDate, order: .reverse) private var allEpisodes: [PodcastEpisode]
+    @Query(sort: \Favorite.createdAt, order: .reverse) private var allFavorites: [Favorite]
 
     @State private var podcastManager = PodcastManager()
     @State private var showAddSheet = false
@@ -42,7 +43,29 @@ struct PodcastListView: View {
     @State private var selectedTab: PodcastTab = .newEpisodes
     @State private var isRefreshing = false
     @State private var filterUnplayedOnly = false
+    @State private var filterFavoritesOnly = false
     @State private var sortOption: PodcastSortOption = .newest
+
+    private var hasActiveListFilter: Bool {
+        filterUnplayedOnly || filterFavoritesOnly
+    }
+
+    private var podcastFavoritesIndex: PodcastFavoriteURL.Index {
+        guard let userID = authManager.currentUser else { return .init() }
+        return PodcastFavoriteURL.Index.build(from: allFavorites, userID: userID)
+    }
+
+    private var listRefreshToken: String {
+        [
+            selectedTab.rawValue,
+            sortOption.rawValue,
+            filterFavoritesOnly ? "fav" : "all",
+            filterUnplayedOnly ? "unplayed" : "any",
+            String(allEpisodes.count),
+            String(shows.count),
+            String(allFavorites.count),
+        ].joined(separator: "|")
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,26 +107,33 @@ struct PodcastListView: View {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
-                        Button(action: { Task { await refreshAllPodcasts() } }) {
+                        Button(action: { Task { await refreshAllPodcasts(showProgress: true) } }) {
                             Image(systemName: "arrow.clockwise")
                         }
                     }
                     
                     Menu {
                         Section("Filter") {
+                            Toggle("Favorites Only", isOn: $filterFavoritesOnly)
                             Toggle("Unplayed Only", isOn: $filterUnplayedOnly)
                         }
                         
                         Section("Sort") {
-                            Picker("Sort Order", selection: $sortOption) {
-                                ForEach(PodcastSortOption.allCases) { option in
-                                    Label(option.rawValue, systemImage: option.icon).tag(option)
+                            ForEach(PodcastSortOption.allCases) { option in
+                                Button {
+                                    sortOption = option
+                                } label: {
+                                    if sortOption == option {
+                                        Label(option.rawValue, systemImage: "checkmark")
+                                    } else {
+                                        Text(option.rawValue)
+                                    }
                                 }
                             }
                         }
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                            .foregroundStyle(filterUnplayedOnly ? .blue : .primary)
+                        Image(systemName: hasActiveListFilter ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                            .foregroundStyle(hasActiveListFilter ? .blue : .primary)
                     }
                     
                     Button(action: { showAddSheet = true }) {
@@ -147,9 +177,17 @@ struct PodcastListView: View {
         }
         .onAppear {
             checkForResumableSession()
-            Task { await refreshAllPodcasts() }
+        }
+        .task {
+            await refreshAllPodcastsIfStale()
+        }
+        .refreshable {
+            await refreshAllPodcasts(showProgress: false)
         }
     }
+
+    private static let lastFullRefreshKey = "podcastLastFullRefresh"
+    private static let fullRefreshInterval: TimeInterval = 30 * 60
 
     // MARK: - New Episodes Tab
 
@@ -160,6 +198,14 @@ struct PodcastListView: View {
                     Label("No Episodes", systemImage: "waveform")
                 } description: {
                     Text("Episodes from your subscribed shows will appear here.")
+                }
+            } else if filteredEpisodes.isEmpty && hasActiveListFilter {
+                ContentUnavailableView {
+                    Label("No Matching Episodes", systemImage: filterFavoritesOnly ? "heart.slash" : "waveform")
+                } description: {
+                    Text(filterFavoritesOnly
+                         ? "Favorite episodes from the player toolbar will appear here."
+                         : "Try turning off filters to see more episodes.")
                 }
             } else {
                 List {
@@ -237,6 +283,7 @@ struct PodcastListView: View {
                         }
                     }
                 }
+                .id(listRefreshToken)
                 .listStyle(.plain)
             }
         }
@@ -246,50 +293,131 @@ struct PodcastListView: View {
 
     private var filteredEpisodes: [PodcastEpisode] {
         var result = allEpisodes
-        
-        // 1. Filter
+
+        if filterFavoritesOnly {
+            let index = podcastFavoritesIndex
+            result = result.filter { index.matchesFavoritedEpisode($0) }
+        }
+
         if filterUnplayedOnly {
             result = result.filter { !$0.isPlayed }
         }
-        
-        // 2. Sort
-        result.sort { a, b in
+
+        result.sort { lhs, rhs in
             switch sortOption {
-            case .newest:           return a.publishedDate > b.publishedDate
-            case .oldest:           return a.publishedDate < b.publishedDate
-            case .durationLongest:  return a.duration > b.duration
-            case .durationShortest: return a.duration < b.duration
-            case .showName:         return (a.show?.title ?? "") < (b.show?.title ?? "")
+            case .newest:
+                if lhs.publishedDate != rhs.publishedDate {
+                    return lhs.publishedDate > rhs.publishedDate
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .oldest:
+                if lhs.publishedDate != rhs.publishedDate {
+                    return lhs.publishedDate < rhs.publishedDate
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationLongest:
+                if lhs.duration != rhs.duration {
+                    return lhs.duration > rhs.duration
+                }
+                return lhs.publishedDate > rhs.publishedDate
+            case .durationShortest:
+                if lhs.duration != rhs.duration {
+                    return lhs.duration < rhs.duration
+                }
+                return lhs.publishedDate > rhs.publishedDate
+            case .showName:
+                let left = lhs.show?.title ?? ""
+                let right = rhs.show?.title ?? ""
+                if left != right {
+                    return left.localizedCaseInsensitiveCompare(right) == .orderedAscending
+                }
+                return lhs.publishedDate > rhs.publishedDate
             }
         }
-        
+
+        return result
+    }
+
+    private var filteredShows: [PodcastShow] {
+        var result = shows
+
+        if filterFavoritesOnly {
+            let index = podcastFavoritesIndex
+            result = result.filter { index.matches($0) }
+        }
+
+        result.sort { lhs, rhs in
+            switch sortOption {
+            case .newest:
+                if lhs.addedAt != rhs.addedAt {
+                    return lhs.addedAt > rhs.addedAt
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .oldest:
+                if lhs.addedAt != rhs.addedAt {
+                    return lhs.addedAt < rhs.addedAt
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationLongest:
+                let leftCount = lhs.episodes.count
+                let rightCount = rhs.episodes.count
+                if leftCount != rightCount {
+                    return leftCount > rightCount
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationShortest:
+                let leftCount = lhs.episodes.count
+                let rightCount = rhs.episodes.count
+                if leftCount != rightCount {
+                    return leftCount < rightCount
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .showName:
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            }
+        }
+
         return result
     }
 
     private var showsView: some View {
-        List {
-            ForEach(shows) { show in
-                NavigationLink(destination: PodcastShowView(show: show)) {
-                    PodcastShowRow(show: show)
+        Group {
+            if filteredShows.isEmpty && filterFavoritesOnly {
+                ContentUnavailableView {
+                    Label("No Favorite Shows", systemImage: "heart.slash")
+                } description: {
+                    Text("Favorite a show from its detail page to see it here.")
                 }
+            } else {
+                List {
+                    ForEach(filteredShows) { show in
+                        NavigationLink(destination: PodcastShowView(show: show)) {
+                            PodcastShowRow(show: show)
+                        }
+                    }
+                    .onDelete(perform: deleteShows)
+                }
+                .id(listRefreshToken)
+                .listStyle(.plain)
             }
-            .onDelete(perform: deleteShows)
         }
-        .listStyle(.plain)
     }
 
-    private func refreshAllPodcasts() async {
-        guard !isRefreshing else { return }
-        isRefreshing = true
-        defer { isRefreshing = false }
+    private func refreshAllPodcastsIfStale() async {
+        let lastRefresh = UserDefaults.standard.object(forKey: Self.lastFullRefreshKey) as? Date ?? .distantPast
+        guard Date().timeIntervalSince(lastRefresh) > Self.fullRefreshInterval else { return }
+        await refreshAllPodcasts(showProgress: false)
+        UserDefaults.standard.set(Date(), forKey: Self.lastFullRefreshKey)
+    }
 
-        // Refresh all shows in parallel
-        await withTaskGroup(of: Void.self) { group in
-            for show in shows {
-                group.addTask {
-                    await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
-                }
-            }
+    private func refreshAllPodcasts(showProgress: Bool) async {
+        guard !isRefreshing else { return }
+        if showProgress { isRefreshing = true }
+        defer { if showProgress { isRefreshing = false } }
+
+        // Sequential refresh — ModelContext is not thread-safe.
+        for show in shows {
+            await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
         }
     }
 
@@ -333,7 +461,7 @@ struct PodcastListView: View {
 
     private func deleteShows(at offsets: IndexSet) {
         for index in offsets {
-            let show = shows[index]
+            let show = filteredShows[index]
             let showId = show.id
             modelContext.delete(show)
 
@@ -417,28 +545,26 @@ private struct NewEpisodeRow: View {
                         .lineLimit(1)
                 }
 
-                HStack {
+                HStack(spacing: 6) {
                     Text(episode.publishedDate, style: .date)
                     if episode.duration > 0 {
                         Text("·")
                         Text(formatDuration(episode.duration))
                     }
+                    Spacer(minLength: 0)
+                    if episode.playbackPosition > 0 && !episode.isPlayed {
+                        Image(systemName: "circle.lefthalf.filled")
+                            .foregroundColor(.blue)
+                            .font(.caption)
+                    }
+                    if episode.isPlayed {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.caption)
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if episode.playbackPosition > 0 && !episode.isPlayed {
-                Image(systemName: "circle.lefthalf.filled")
-                    .foregroundColor(.blue)
-                    .font(.caption)
-            }
-            if episode.isPlayed {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.caption)
             }
         }
         .padding(.vertical, 4)

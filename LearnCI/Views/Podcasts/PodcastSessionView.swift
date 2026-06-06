@@ -78,6 +78,8 @@ struct PodcastSessionView: View {
                     playbackRate: $playbackRate,
                     ambientVolume: .constant(0),
                     isAmbientPlaying: false,
+                    isBuffering: audioManager.streamIsBuffering,
+                    bufferingLabel: "Loading episode…",
                     onPlayPause: togglePlay,
                     onSkipForward: skipForward,
                     onSkipBackward: skipBackward,
@@ -192,17 +194,32 @@ struct PodcastSessionView: View {
 
     private func currentEpisodeView(_ episode: PodcastEpisode) -> some View {
         VStack(spacing: 12) {
-            CachedAsyncImage(url: URL(string: episode.show?.artworkUrl ?? "")) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.secondary.opacity(0.2))
-                    .overlay(Image(systemName: "headphones").font(.system(size: 50)).foregroundColor(.secondary))
+            ZStack {
+                CachedAsyncImage(url: URL(string: episode.show?.artworkUrl ?? "")) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.secondary.opacity(0.2))
+                        .overlay(Image(systemName: "headphones").font(.system(size: 50)).foregroundColor(.secondary))
+                }
+                .id(episode.id)
+                .frame(width: 220, height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(radius: 6)
+
+                if audioManager.streamIsBuffering {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(.black.opacity(0.45))
+                        .frame(width: 220, height: 220)
+                    VStack(spacing: 10) {
+                        ProgressView()
+                            .tint(.white)
+                        Text("Loading episode…")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.white)
+                    }
+                }
             }
-            .id(episode.id)
-            .frame(width: 220, height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .shadow(radius: 6)
 
             VStack(spacing: 4) {
                 Text(episode.title)
@@ -291,7 +308,7 @@ struct PodcastSessionView: View {
 
     private func playCurrentEpisode() {
         guard let episode = currentEpisode,
-              let url = URL(string: episode.audioUrl) else { return }
+              let url = episode.playableAudioURL else { return }
 
         audioManager.streamAudio(url: url, startAt: episode.playbackPosition)
         audioManager.playStream()

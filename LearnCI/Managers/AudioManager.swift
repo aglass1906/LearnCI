@@ -31,7 +31,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var streamCurrentTime: Double = 0
     var streamFinished: Bool = false
     var streamPlaybackRate: Float = 1.0
+    var streamLoadError: String?
+    var streamIsBuffering: Bool = false
     private var streamTimeObserver: Any?
+    private var streamItemObservations: [NSKeyValueObservation] = []
     private var isAudioSessionConfigured = false
     
     // Caching resolved URLs to avoid repeated recursive searches
@@ -66,6 +69,15 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
         setupRemoteTransportControls()
         setupInterruptionObserver()
+    }
+
+    func activatePlaybackSession() {
+        configureAudioSession()
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed to activate audio session: \(error)")
+        }
     }
 
     private func setupInterruptionObserver() {
@@ -530,11 +542,18 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
     func streamAudio(url: URL, startAt: Double = 0) {
         stopAudio()
-        configureAudioSession()
+        activatePlaybackSession()
         streamFinished = false
+        streamLoadError = nil
 
-        let playerItem = AVPlayerItem(url: url)
+        let headers = ["User-Agent": "LearnCI/1.0 (iOS; Podcast Player)"]
+        let asset = AVURLAsset(
+            url: url,
+            options: ["AVURLAssetHTTPHeaderFieldsKey": headers]
+        )
+        let playerItem = AVPlayerItem(asset: asset)
         streamPlayer = AVPlayer(playerItem: playerItem)
+        attachStreamObservations(player: streamPlayer!, item: playerItem)
 
         // Observe when duration becomes available
         Task {
@@ -581,23 +600,36 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     func playStream() {
+        guard streamPlayer != nil else {
+            streamLoadError = streamLoadError ?? "Audio is not ready to play yet."
+            isStreaming = false
+            return
+        }
+
+        activatePlaybackSession()
         streamPlayer?.play()
         // Apply custom rate if set (no-op if 1.0)
         if streamPlaybackRate != 1.0 {
             streamPlayer?.rate = streamPlaybackRate
         }
         isStreaming = true
+        updateStreamBufferingState()
     }
 
     func pauseStream() {
         streamPlayer?.pause()
         isStreaming = false
+        streamIsBuffering = false
     }
 
     func seekStream(to seconds: Double) {
         let time = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         streamPlayer?.seek(to: time)
         streamCurrentTime = seconds
+        if isStreaming {
+            streamIsBuffering = true
+            updateStreamBufferingState()
+        }
     }
 
     func setStreamRate(_ rate: Float) {
@@ -618,6 +650,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             streamPlayer?.removeTimeObserver(observer)
             streamTimeObserver = nil
         }
+        clearStreamObservations()
         NotificationCenter.default.removeObserver(self, name: AVPlayerItem.didPlayToEndTimeNotification, object: streamPlayer?.currentItem)
         streamPlayer?.pause()
         streamPlayer = nil
@@ -625,7 +658,101 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamDuration = 0
         streamCurrentTime = 0
         streamPlaybackRate = 1.0
+        streamLoadError = nil
+        streamIsBuffering = false
         clearNowPlayingInfo()
+    }
+
+    private func clearStreamObservations() {
+        streamItemObservations.forEach { $0.invalidate() }
+        streamItemObservations.removeAll()
+    }
+
+    private func attachStreamObservations(player: AVPlayer, item: AVPlayerItem) {
+        clearStreamObservations()
+        streamIsBuffering = true
+
+        streamItemObservations.append(
+            item.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
+                Task { @MainActor in
+                    self?.handleStreamItemStatus(item)
+                    self?.updateStreamBufferingState()
+                }
+            }
+        )
+
+        streamItemObservations.append(
+            item.observe(\.isPlaybackLikelyToKeepUp, options: [.initial, .new]) { [weak self] _, _ in
+                Task { @MainActor in
+                    self?.updateStreamBufferingState()
+                }
+            }
+        )
+
+        streamItemObservations.append(
+            item.observe(\.isPlaybackBufferEmpty, options: [.initial, .new]) { [weak self] _, _ in
+                Task { @MainActor in
+                    self?.updateStreamBufferingState()
+                }
+            }
+        )
+
+        streamItemObservations.append(
+            player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] _, _ in
+                Task { @MainActor in
+                    self?.updateStreamBufferingState()
+                }
+            }
+        )
+    }
+
+    private func updateStreamBufferingState() {
+        guard let player = streamPlayer, let item = player.currentItem else {
+            streamIsBuffering = false
+            return
+        }
+
+        if item.status == .failed {
+            streamIsBuffering = false
+            return
+        }
+
+        if item.status == .unknown {
+            streamIsBuffering = true
+            return
+        }
+
+        if player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
+            streamIsBuffering = true
+            return
+        }
+
+        if isStreaming, item.isPlaybackBufferEmpty, !item.isPlaybackLikelyToKeepUp {
+            streamIsBuffering = true
+            return
+        }
+
+        streamIsBuffering = false
+    }
+
+    private func handleStreamItemStatus(_ item: AVPlayerItem) {
+        switch item.status {
+        case .readyToPlay:
+            streamLoadError = nil
+            let duration = item.duration
+            if duration.isNumeric {
+                streamDuration = CMTimeGetSeconds(duration)
+            }
+        case .failed:
+            streamLoadError = item.error?.localizedDescription ?? "Could not load episode audio."
+            isStreaming = false
+            streamIsBuffering = false
+            print("[AudioManager] Stream failed: \(item.error?.localizedDescription ?? "unknown")")
+        case .unknown:
+            streamIsBuffering = true
+        @unknown default:
+            break
+        }
     }
 
     func updateStreamNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil) {

@@ -632,3 +632,301 @@ final class YouTubeStudyViewModelTests: XCTestCase {
         )
     }
 }
+
+@MainActor
+final class StudySessionViewModelTests: XCTestCase {
+    func testSessionRangeBuilderByBlockCount() {
+        let blocks = (0..<10).map { index in
+            let start = Double(index * 5)
+            return StudyBlock(
+                id: "block-\(index)",
+                index: index,
+                targetText: "Block \(index)",
+                nativeText: nil,
+                mediaStart: start,
+                mediaEnd: start + 4,
+                cueStartIndex: nil,
+                cueEndIndex: nil
+            )
+        }
+        let definition = StudySessionRangeBuilder.byBlockCount(3, from: 2, in: blocks)
+        XCTAssertEqual(definition?.startIndex, 2)
+        XCTAssertEqual(definition?.endIndex, 4)
+        XCTAssertEqual(definition?.blockCount, 3)
+    }
+
+    func testPlaybackControllerPausesAtBlockEnd() {
+        let controller = StudyPlaybackController()
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 1, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playBlockOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .pause)
+        XCTAssertEqual(controller.mode, .free)
+    }
+
+    func testPlaybackControllerLoopsAtBlockEnd() {
+        let controller = StudyPlaybackController()
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 1, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        _ = controller.toggleBlockLoop()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .loopToStart(1))
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: nil), .none)
+        XCTAssertEqual(controller.mode, .blockLoop)
+    }
+
+    func testSessionPlaybackAdvancesBeforeSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 0, targetText: "Hi", nativeText: nil, mediaStart: 0, mediaEnd: 3, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playSessionOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 3.2, block: block, session: session), .advanceToNextBlock)
+        XCTAssertEqual(controller.mode, .sessionOnce)
+    }
+
+    func testSessionPlaybackPausesAtSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 2, targetText: "End", nativeText: nil, mediaStart: 10, mediaEnd: 13, cueStartIndex: nil, cueEndIndex: nil)
+        controller.playSessionOnce()
+        XCTAssertEqual(controller.boundaryAction(for: 13.2, block: block, session: session), .pause)
+        XCTAssertEqual(controller.mode, .free)
+    }
+
+    func testSessionLoopRestartsAtSessionEnd() {
+        let controller = StudyPlaybackController()
+        let session = StudySessionDefinition(startIndex: 0, endIndex: 2, targetMinutes: nil)
+        let block = StudyBlock(id: "x", index: 2, targetText: "End", nativeText: nil, mediaStart: 10, mediaEnd: 13, cueStartIndex: nil, cueEndIndex: nil)
+        _ = controller.toggleSessionLoop()
+        XCTAssertEqual(controller.boundaryAction(for: 13.2, block: block, session: session), .loopSession)
+        XCTAssertEqual(controller.mode, .sessionLoop)
+    }
+
+    func testCaptionProviderMergesThreeLinesByDefault() {
+        let cues = (0..<7).map { index in
+            YouTubeCaptionCue(
+                index: index,
+                startTime: Double(index * 2),
+                endTime: Double(index * 2 + 1),
+                text: "Line \(index)"
+            )
+        }
+        let blocks = CaptionTranscriptProvider(cues: cues, translationForCue: { _ in nil }).makeBlocks()
+        XCTAssertEqual(blocks.count, 3)
+        XCTAssertEqual(blocks[0].captionLineCount, 3)
+        XCTAssertEqual(blocks[0].targetText, "Line 0\nLine 1\nLine 2")
+        XCTAssertEqual(blocks[0].mediaStart, 0)
+        XCTAssertEqual(blocks[0].mediaEnd, 6)
+        XCTAssertEqual(blocks[2].captionLineCount, 1)
+    }
+
+    func testStudySubtitleTextMergesLinesWithFlowingWhitespace() {
+        let merged = StudySubtitleText.mergedLines([
+            "Hello   world",
+            "Second\tline"
+        ])
+        XCTAssertEqual(merged, "Hello world\nSecond line")
+        XCTAssertEqual(
+            StudySubtitleText.normalizeMultiline("Hello   world\n\nSecond\tline"),
+            "Hello world\nSecond line"
+        )
+    }
+
+    func testBlockPlaybackEndUsesNextCueStartNotPaddedEnd() {
+        let cues = [
+            YouTubeCaptionCue(index: 0, startTime: 0, endTime: 2.5, text: "One"),
+            YouTubeCaptionCue(index: 1, startTime: 2.5, endTime: 5.0, text: "Two"),
+            YouTubeCaptionCue(index: 2, startTime: 5.0, endTime: 8.0, text: "Three"),
+            YouTubeCaptionCue(index: 3, startTime: 8.0, endTime: 11.0, text: "Four")
+        ]
+        let end = CaptionTranscriptProvider.playbackEndTime(
+            forChunkFrom: 0,
+            through: 2,
+            in: cues,
+            minimumDuration: 0.15
+        )
+        XCTAssertEqual(end, 8.0)
+    }
+
+    func testWhisperProviderGroupsWordsIntoSentencesAndBlocks() {
+        let words = [
+            WordTiming(word: "Hola", start: 0.0, end: 0.4),
+            WordTiming(word: "mundo.", start: 0.5, end: 1.0),
+            WordTiming(word: "Cómo", start: 1.2, end: 1.5),
+            WordTiming(word: "estás?", start: 1.6, end: 2.0)
+        ]
+
+        let blocks = WhisperTranscriptProvider(
+            words: words,
+            translationForSentenceRange: { _, _ in nil },
+            focusWindowSize: .single
+        ).makeBlocks()
+
+        XCTAssertEqual(blocks.count, 2)
+        XCTAssertEqual(blocks[0].targetText, "Hola mundo.")
+        XCTAssertEqual(blocks[0].mediaStart, 0.0)
+        XCTAssertEqual(blocks[0].mediaEnd, 1.2)
+        XCTAssertEqual(blocks[1].targetText, "Cómo estás?")
+    }
+
+    func testWhisperSentenceGroupingHandlesFinalSentenceWithoutPunctuation() {
+        let words = [
+            WordTiming(word: "Solo", start: 0.0, end: 0.3),
+            WordTiming(word: "palabra", start: 0.4, end: 0.8)
+        ]
+        let sentences = WhisperTranscriptProvider.groupIntoSentences(words)
+        XCTAssertEqual(sentences.count, 1)
+        XCTAssertEqual(sentences[0].text, "Solo palabra")
+    }
+
+    func testWhisperProviderSplitsLongMonologueIntoFocusBlocks() {
+        let words = (0..<24).map { index in
+            WordTiming(word: "word\(index)", start: Double(index) * 0.4, end: Double(index) * 0.4 + 0.3)
+        }
+
+        let blocks = WhisperTranscriptProvider(
+            words: words,
+            translationForSentenceRange: { _, _ in nil },
+            focusWindowSize: .single
+        ).makeBlocks()
+
+        XCTAssertGreaterThan(blocks.count, 1)
+        XCTAssertLessThanOrEqual(blocks[0].targetText.split(separator: " ").count, 8)
+    }
+
+    func testManualBlockNavigationStaysPinnedUntilPlaybackReachesBlock() {
+        let blocks = (0..<3).map { index in
+            let start = Double(index * 5)
+            return StudyBlock(
+                id: "block-\(index)",
+                index: index,
+                targetText: "Block \(index)",
+                nativeText: nil,
+                mediaStart: start,
+                mediaEnd: start + 5,
+                cueStartIndex: nil,
+                cueEndIndex: nil
+            )
+        }
+        let player = StudyNavigationTestMediaPlayer(currentTime: 12)
+        let source = StudyNavigationTestBlockSource(blocks: blocks, player: player)
+        let session = StudySessionViewModel(source: source)
+
+        XCTAssertEqual(session.currentBlockIndex, 2)
+
+        session.goToPreviousBlock()
+        XCTAssertEqual(session.currentBlockIndex, 1)
+        XCTAssertEqual(player.lastSeekTime, 5)
+
+        session.handlePlaybackTime(12, isPlaying: false)
+        XCTAssertEqual(session.currentBlockIndex, 1)
+
+        player.currentTime = 6
+        session.handlePlaybackTime(6, isPlaying: false)
+        XCTAssertEqual(session.currentBlockIndex, 1)
+    }
+}
+
+@MainActor
+private final class StudyNavigationTestMediaPlayer: StudyMediaPlayer {
+    var currentTime: Double
+    var duration: Double = 100
+    var isPlaying: Bool = false
+    var playbackRate: Float = 1
+    private(set) var lastSeekTime: Double?
+
+    init(currentTime: Double) {
+        self.currentTime = currentTime
+    }
+
+    func seek(to time: Double) {
+        lastSeekTime = max(0, time)
+    }
+
+    func seekAndPlay(from time: Double) {
+        lastSeekTime = max(0, time)
+    }
+
+    func play() {}
+    func pause() {}
+    func setPlaybackRate(_ rate: Float) {}
+}
+
+@MainActor
+private struct StudyNavigationTestBlockSource: StudyBlockSource {
+    let resource: StudyResourceRef
+    let blocks: [StudyBlock]
+    let mediaPlayer: any StudyMediaPlayer
+
+    init(blocks: [StudyBlock], player: StudyNavigationTestMediaPlayer) {
+        self.blocks = blocks
+        self.mediaPlayer = player
+        self.resource = StudyResourceRef.youtube(
+            videoID: "test-video",
+            title: "Test",
+            languageCode: "es"
+        )
+    }
+}
+
+final class PodcastFeedTranscriptParserTests: XCTestCase {
+    func testParseVTTExtractsTimedCues() {
+        let vtt = """
+        WEBVTT
+
+        00:00:00.000 --> 00:00:02.500
+        Hola mundo.
+
+        00:00:02.500 --> 00:00:05.000
+        ¿Cómo estás?
+        """
+
+        let cues = PodcastFeedTranscriptParser.parseVTT(vtt)
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].normalizedText, "Hola mundo.")
+        XCTAssertEqual(cues[0].startTime, 0, accuracy: 0.001)
+        XCTAssertEqual(cues[1].startTime, 2.5, accuracy: 0.001)
+    }
+
+    func testParseSRTExtractsTimedCues() {
+        let srt = """
+        1
+        00:00:00,000 --> 00:00:02,500
+        Hola mundo.
+
+        2
+        00:00:02,500 --> 00:00:05,000
+        Como estas?
+        """
+
+        let cues = PodcastFeedTranscriptParser.parseSRT(srt)
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].normalizedText, "Hola mundo.")
+        XCTAssertEqual(cues[1].startTime, 2.5, accuracy: 0.001)
+    }
+
+    func testParseJSONSegments() throws {
+        let json = """
+        {
+          "segments": [
+            { "startTime": 0.0, "endTime": 2.5, "body": "Hola mundo." },
+            { "startTime": 2.5, "endTime": 5.0, "body": "Como estas?" }
+          ]
+        }
+        """
+        let cues = try PodcastFeedTranscriptParser.parseJSON(data: Data(json.utf8))
+        XCTAssertEqual(cues.count, 2)
+        XCTAssertEqual(cues[0].text, "Hola mundo.")
+    }
+
+    func testSelectPreferredTranscriptPrefersVTTAndMatchingLanguage() {
+        let links = [
+            PodcastFeedTranscriptParser.TranscriptLink(url: "https://x/en.vtt", type: "text/vtt", language: "en"),
+            PodcastFeedTranscriptParser.TranscriptLink(url: "https://x/es.vtt", type: "text/vtt", language: "es")
+        ]
+
+        let selected = PodcastFeedTranscriptParser.selectPreferredTranscript(
+            from: links,
+            preferredLanguageCode: "es-ES"
+        )
+
+        XCTAssertEqual(selected?.url, "https://x/es.vtt")
+    }
+}

@@ -1238,6 +1238,8 @@ struct AudioPlayerBar: View {
     @Binding var ambientVolume: Float
     let isAmbientPlaying: Bool
     var showsScrubber: Bool = true
+    var isBuffering: Bool = false
+    var bufferingLabel: String = "Buffering…"
 
     var onPlayPause: () -> Void
     var onSkipForward: () -> Void
@@ -1251,6 +1253,19 @@ struct AudioPlayerBar: View {
 
     var body: some View {
         VStack(spacing: 12) {
+            if isBuffering {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text(bufferingLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                .padding(.top, 4)
+            }
+
             // Ambient volume row — only visible while ambient audio is active
             if isAmbientPlaying {
                 HStack(spacing: 8) {
@@ -1761,6 +1776,8 @@ struct WordLookupSheet: View {
     let isLoading: Bool
     let seekTime: Double?
     let onSeek: (Double) -> Void
+    var onMarkForStudy: (() -> Void)? = nil
+    var isMarkedForStudy: Bool = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -1835,6 +1852,19 @@ struct WordLookupSheet: View {
             .navigationTitle("Word Lookup")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if let onMarkForStudy {
+                        Button {
+                            onMarkForStudy()
+                        } label: {
+                            Label(
+                                isMarkedForStudy ? "Saved" : "Mark for study",
+                                systemImage: isMarkedForStudy ? "star.fill" : "star"
+                            )
+                        }
+                        .disabled(isMarkedForStudy || isLoading)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }

@@ -22,21 +22,40 @@ struct VideoDetailSheet: View {
     @State private var studyViewModel: YouTubeStudyViewModel
     @State private var seekRequest: Double?
     @State private var playbackRateRequest: Float?
+    @State private var playRequest: Bool?
+    @State private var pauseRequest: Bool?
+    @State private var seekAndPlayRequest: Double?
     @State private var didBootstrapStudyMode = false
     @State private var isLookingUpWord = false
     @State private var translationRequestsInFlight: Set<Int> = []
-    @State private var studyPaneDisplayMode: StudyPaneDisplayMode = .context
+    @State private var studyPaneDisplayMode: StudyPaneDisplayMode = .focus
     @State private var studyContextWindowSize: YouTubeStudyPanel.ContextWindowSize = .small
+    @State private var showInSheetOptions = false
+    @State private var showSessionSetup = false
+    @State private var showNotes = false
+    @State private var studySessionViewModel: StudySessionViewModel?
+    @State private var youtubeStudyMediaPlayer = YouTubeStudyMediaPlayer()
+    @State private var studyFocusWindowSize: StudyFocusWindowSize = .sentence
+    @State private var layoutSize: CGSize = .zero
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
     private enum StudyPaneDisplayMode: String {
+        case focus = "Focus"
         case context = "Context"
         case transcript = "Transcript"
     }
 
     private var currentUserProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
+    }
+
+    private var compactStudyChrome: Bool {
+        usesStudyLandscapeLayout(for: layoutSize)
+    }
+
+    private var showsTranscriptBelowStudyBlock: Bool {
+        studyPaneDisplayMode == .transcript
     }
 
     init(
@@ -52,28 +71,23 @@ struct VideoDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                topSection
-
-                Divider()
-                    .padding(.horizontal)
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        studyStatusBanner
-
-                        if studyViewModel.mode == .study {
-                            studyContent
-                        } else {
-                            watchContent
-                        }
-
-                        actionButtons
+            GeometryReader { geometry in
+                Group {
+                    if usesStudyLandscapeLayout(for: geometry.size) {
+                        studyLandscapeLayout
+                    } else {
+                        standardLayout
                     }
-                    .padding()
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .onAppear {
+                    layoutSize = geometry.size
+                }
+                .onChange(of: geometry.size) { _, newSize in
+                    layoutSize = newSize
                 }
             }
-            .navigationTitle(video.title)
+            .navigationTitle(compactStudyChrome ? "" : video.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -81,27 +95,36 @@ struct VideoDetailSheet: View {
                         dismiss()
                     }
                 }
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    playbackSpeedToolbarMenu
-                    modeToolbarButton(
-                        mode: .watch,
-                        icon: "eye.fill",
-                        accessibilityLabel: "Watch mode"
-                    )
-                    modeToolbarButton(
-                        mode: .study,
-                        icon: "captions.bubble.fill",
-                        accessibilityLabel: "Study mode"
-                    )
-                    FavoriteButton(
-                        consumptionUrl: favoriteVideoUrl,
-                        type: .youtube,
-                        title: video.title,
-                        author: video.channelTitle,
-                        subtitle: video.durationInMinutes > 0 ? "\(video.durationInMinutes) min" : nil,
-                        imageUrl: video.thumbnailURL
-                    )
-                    .font(.title3)
+                if !compactStudyChrome {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        playbackSpeedToolbarMenu
+                        modeToolbarButton(
+                            mode: .watch,
+                            icon: "eye.fill",
+                            accessibilityLabel: "Watch mode"
+                        )
+                        modeToolbarButton(
+                            mode: .study,
+                            icon: "captions.bubble.fill",
+                            accessibilityLabel: "Study mode"
+                        )
+                        FavoriteButton(
+                            consumptionUrl: favoriteVideoUrl,
+                            type: .youtube,
+                            title: video.title,
+                            author: video.channelTitle,
+                            subtitle: video.durationInMinutes > 0 ? "\(video.durationInMinutes) min" : nil,
+                            imageUrl: video.thumbnailURL
+                        )
+                        .font(.title3)
+                    }
+                }
+            }
+            .onAppear {
+                wireYouTubeStudyMediaPlayer()
+                hydrateStudyModeFromCacheIfAvailable()
+                if studyViewModel.mode == .study {
+                    syncStudySessionViewModel()
                 }
             }
             .onAppear {
@@ -133,9 +156,42 @@ struct VideoDetailSheet: View {
                         },
                         onSeek: { time in
                             seekPlayer(to: time)
-                        }
+                        },
+                        onMarkForStudy: {
+                            markWordForStudy(
+                                word: selectedLookup.word,
+                                cueIndex: selectedLookup.cueIndex,
+                                contextText: selectedLookup.contextText
+                            )
+                        },
+                        isMarkedForStudy: isWordMarkedForStudy(selectedLookup.word)
                     )
                     .presentationDetents([.medium])
+                }
+            }
+            .sheet(isPresented: $showSessionSetup) {
+                if let session = studySessionViewModel {
+                    StudySessionSetupSheet(
+                        blocks: session.blocks,
+                        currentBlockIndex: session.currentBlockIndex,
+                        onStart: { definition in
+                            session.startSession(definition)
+                            saveSessionRecord(definition: definition)
+                        }
+                    )
+                }
+            }
+            .sheet(isPresented: $showNotes) {
+                if let session = studySessionViewModel,
+                   let block = session.currentBlock,
+                   let userID = authManager.currentUser {
+                    StudyNotesSheet(
+                        resource: session.resource,
+                        block: block,
+                        currentMediaTime: session.mediaPlayer.currentTime,
+                        userID: userID,
+                        onSeek: seekPlayer
+                    )
                 }
             }
             .onDisappear {
@@ -147,184 +203,290 @@ struct VideoDetailSheet: View {
         }
     }
 
+    private func usesStudyLandscapeLayout(for size: CGSize) -> Bool {
+        studyViewModel.mode == .study && size.width > size.height
+    }
+
+    private var standardLayout: some View {
+        VStack(spacing: 0) {
+            topSection
+
+            Divider()
+                .padding(.horizontal)
+
+            detailScrollContent
+        }
+    }
+
+    private var studyLandscapeLayout: some View {
+        HStack(alignment: .top, spacing: 0) {
+            studyLandscapeMediaColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .layoutPriority(1)
+
+            Divider()
+
+            studyLandscapeStudyColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .layoutPriority(1)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var studyLandscapeMediaColumn: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            youtubePlayer
+                .padding(.horizontal)
+                .padding(.top, compactStudyChrome ? 0 : 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black)
+
+            compactInSheetHeader
+                .background(Color(UIColor.systemBackground))
+        }
+        .safeAreaPadding(.top, compactStudyChrome ? 8 : 0)
+    }
+
+    private var studyLandscapeStudyColumn: some View {
+        studyLandscapeStudyDetail
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color(UIColor.systemBackground))
+    }
+
+    private var studyLandscapeStudyDetail: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            studyContent(fillsAvailableHeight: true)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.horizontal, 12)
+        .padding(.top, 4)
+        .padding(.bottom, 8)
+    }
+
+    private var compactInSheetHeader: some View {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(video.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(2)
+
+                sheetWatchTimeLabel
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 0)
+
+            inSheetOptionsMenu
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
+
+    @ViewBuilder
+    private var sheetWatchTimeLabel: some View {
+        if watchDuration > 0 {
+            let watchedMinutes = max(1, Int(watchDuration / 60))
+            HStack(spacing: 4) {
+                Image(systemName: "timer")
+                Text("Watched \(watchedMinutes) min")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private var inSheetOptionsMenu: some View {
+        Button {
+            showInSheetOptions = true
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityLabel("Study options")
+        .sheet(isPresented: $showInSheetOptions) {
+            inSheetOptionsSheet
+        }
+    }
+
+    private var inSheetOptionsSheet: some View {
+        NavigationStack {
+            List {
+                Section("Video") {
+                    LabeledContent("Channel", value: video.channelTitle)
+                    if video.durationInMinutes > 0 {
+                        LabeledContent("Length", value: "\(video.durationInMinutes) min")
+                    }
+                }
+
+                if studyViewModel.canEnterStudyMode {
+                    NavigationLink("Study View") {
+                        inSheetStudyViewOptionsList
+                    }
+                    NavigationLink("Captions") {
+                        inSheetCaptionsInfoList
+                    }
+                    NavigationLink("Track") {
+                        inSheetTrackPickerList
+                    }
+                }
+
+                if !video.chapters.isEmpty {
+                    NavigationLink("Chapters") {
+                        inSheetChaptersList
+                    }
+                }
+            }
+            .navigationTitle("Options")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        showInSheetOptions = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private var inSheetStudyViewOptionsList: some View {
+        List {
+            studyPaneListRow(.focus, icon: "text.book.closed")
+            studyPaneListRow(.context, icon: "text.bubble")
+            studyPaneListRow(.transcript, icon: "list.bullet.rectangle")
+        }
+        .navigationTitle("Study View")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetCaptionsInfoList: some View {
+        List {
+            if let selectedTrack = studyViewModel.selectedTrack {
+                LabeledContent("Current track", value: selectedTrack.displayLabel)
+            } else {
+                LabeledContent("Current track", value: "None selected")
+            }
+
+            if let preferredStudyLanguageName, !selectedTrackMatchesTargetLanguage {
+                LabeledContent("Target language", value: preferredStudyLanguageName)
+            }
+        }
+        .navigationTitle("Captions")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetTrackPickerList: some View {
+        List {
+            ForEach(studyViewModel.availableTracks) { track in
+                Button {
+                    Task {
+                        await switchStudyTrack(to: track)
+                        showInSheetOptions = false
+                    }
+                } label: {
+                    HStack {
+                        Text(trackMenuTitle(for: track))
+                        Spacer()
+                        if track.id == studyViewModel.selectedTrack?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+                .disabled(studyViewModel.captionLoadState == .loading)
+            }
+        }
+        .navigationTitle("Track")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var inSheetChaptersList: some View {
+        List {
+            ForEach(video.chapters) { chapter in
+                Button {
+                    seekPlayer(to: chapter.startTime)
+                    showInSheetOptions = false
+                } label: {
+                    HStack {
+                        Text("\(chapter.formattedTimestamp)  \(chapter.title)")
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        if chapter.id == currentChapter?.id {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Chapters")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func studyPaneListRow(_ mode: StudyPaneDisplayMode, icon: String) -> some View {
+        Button {
+            studyPaneDisplayMode = mode
+            showInSheetOptions = false
+        } label: {
+            HStack {
+                Label(mode.rawValue, systemImage: icon)
+                Spacer()
+                if studyPaneDisplayMode == mode {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+        }
+    }
+
+    private var detailScrollContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: compactStudyChrome ? 10 : 16) {
+                if !compactStudyChrome {
+                    studyStatusBanner
+                }
+
+                if studyViewModel.mode == .study {
+                    studyContent()
+                } else {
+                    watchContent
+                }
+
+                if !compactStudyChrome {
+                    actionButtons
+                }
+            }
+            .padding(compactStudyChrome ? 12 : 16)
+        }
+    }
+
+    private var youtubePlayer: some View {
+        YouTubePlayerView(
+            videoID: video.id,
+            videoURL: video.videoStreamURL,
+            watchDuration: $watchDuration,
+            seekRequest: $seekRequest,
+            playbackRateRequest: $playbackRateRequest,
+            playRequest: $playRequest,
+            pauseRequest: $pauseRequest,
+            seekAndPlayRequest: $seekAndPlayRequest,
+            onPlaybackSnapshot: handlePlaybackSnapshot
+        )
+        .cornerRadius(12)
+        .shadow(radius: 5)
+    }
+
     private var topSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            YouTubePlayerView(
-                videoID: video.id,
-                videoURL: video.videoStreamURL,
-                watchDuration: $watchDuration,
-                seekRequest: $seekRequest,
-                playbackRateRequest: $playbackRateRequest,
-                onPlaybackSnapshot: handlePlaybackSnapshot
-            )
-            .frame(height: 220)
-            .cornerRadius(12)
-            .shadow(radius: 5)
+            youtubePlayer
+                .frame(height: 220)
 
             compactInSheetHeader
         }
         .padding(.horizontal)
         .padding(.top, 8)
         .padding(.bottom, 12)
-    }
-
-    private var compactInSheetHeader: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(video.title)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-
-                    HStack(spacing: 6) {
-                        Text(video.channelTitle)
-                            .lineLimit(1)
-
-                        if video.durationInMinutes > 0 {
-                            Text("•")
-                            Text("\(video.durationInMinutes) min")
-                        }
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
-
-                Spacer(minLength: 0)
-
-                VStack(alignment: .trailing, spacing: 8) {
-                    if !video.chapters.isEmpty {
-                        chapterMenu
-                    }
-                    watchStatsBadge
-                }
-            }
-
-            if studyViewModel.mode == .study, studyViewModel.canEnterStudyMode {
-                studyTrackControls
-                studyPaneToggle
-            }
-        }
-    }
-
-    private var chapterMenu: some View {
-        let chapters = video.chapters
-
-        return Menu {
-            ForEach(chapters) { chapter in
-                Button {
-                    seekPlayer(to: chapter.startTime)
-                } label: {
-                    if chapter.id == currentChapter?.id {
-                        Label(
-                            "\(chapter.formattedTimestamp)  \(chapter.title)",
-                            systemImage: "checkmark"
-                        )
-                    } else {
-                        Text("\(chapter.formattedTimestamp)  \(chapter.title)")
-                    }
-                }
-            }
-        } label: {
-            Label("Chapters", systemImage: "list.bullet.rectangle")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .clipShape(Capsule())
-        }
-        .accessibilityLabel("Jump to chapter")
-    }
-
-    @ViewBuilder
-    private var studyTrackControls: some View {
-        if let selectedTrack = studyViewModel.selectedTrack {
-            HStack(spacing: 8) {
-                currentTrackBadge(for: selectedTrack)
-
-                if studyViewModel.availableTracks.count > 1 {
-                    trackPickerMenu
-                }
-
-                Spacer(minLength: 0)
-
-                if let preferredStudyLanguageName, !selectedTrackMatchesTargetLanguage {
-                    Text("Target: \(preferredStudyLanguageName)")
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-
-    private func currentTrackBadge(for track: YouTubeCaptionTrack) -> some View {
-        Label(track.displayLabel, systemImage: "captions.bubble.fill")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(selectedTrackMatchesTargetLanguage ? .blue : .orange)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .background(trackBadgeBackgroundColor)
-            .clipShape(Capsule())
-    }
-
-    private var trackPickerMenu: some View {
-        Menu {
-            ForEach(studyViewModel.availableTracks) { track in
-                Button {
-                    Task {
-                        await switchStudyTrack(to: track)
-                    }
-                } label: {
-                    if track.id == studyViewModel.selectedTrack?.id {
-                        Label(trackMenuTitle(for: track), systemImage: "checkmark")
-                    } else {
-                        Text(trackMenuTitle(for: track))
-                    }
-                }
-                .disabled(studyViewModel.captionLoadState == .loading)
-            }
-        } label: {
-            Label("Track", systemImage: "globe")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .clipShape(Capsule())
-        }
-        .accessibilityLabel("Change caption track")
-        .disabled(studyViewModel.captionLoadState == .loading)
-    }
-
-    private var studyPaneToggle: some View {
-        HStack(spacing: 8) {
-            studyPaneButton(.context, icon: "text.bubble")
-            studyPaneButton(.transcript, icon: "list.bullet.rectangle")
-        }
-        .padding(4)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .clipShape(Capsule())
-    }
-
-    private func studyPaneButton(_ mode: StudyPaneDisplayMode, icon: String) -> some View {
-        let isSelected = studyPaneDisplayMode == mode
-
-        return Button {
-            studyPaneDisplayMode = mode
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                Text(mode.rawValue)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(isSelected ? .white : .primary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.blue : Color.clear)
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     private var playbackSpeedToolbarMenu: some View {
@@ -367,32 +529,19 @@ struct VideoDetailSheet: View {
         studyViewModel.setMode(newMode)
 
         if newMode == .study {
-            studyPaneDisplayMode = .context
+            studyPaneDisplayMode = .focus
             Task {
                 await bootstrapStudyModeIfNeeded(force: !studyViewModel.canEnterStudyMode)
                 await ensureTranslationsForCurrentCue()
+                syncStudySessionViewModel()
             }
+        } else {
+            studySessionViewModel?.playbackController.stopBlockPlayback()
         }
     }
 
     private func isSelectedPlaybackRate(_ rate: Float) -> Bool {
         abs(studyViewModel.playback.playbackRate - rate) < 0.01
-    }
-
-    @ViewBuilder
-    private var watchStatsBadge: some View {
-        if watchDuration > 0 {
-            HStack(spacing: 6) {
-                Image(systemName: "timer")
-                Text("Watching: \(Int(watchDuration))s")
-            }
-            .font(.caption)
-            .foregroundStyle(.blue)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 8)
-            .background(Color.blue.opacity(0.1))
-            .clipShape(Capsule())
-        }
     }
 
     @ViewBuilder
@@ -445,7 +594,7 @@ struct VideoDetailSheet: View {
     }
 
     @ViewBuilder
-    private var studyContent: some View {
+    private func studyContent(fillsAvailableHeight: Bool = false) -> some View {
         switch studyViewModel.captionLoadState {
         case .idle, .loading:
             VStack(spacing: 12) {
@@ -464,24 +613,50 @@ struct VideoDetailSheet: View {
             )
         case .loaded:
             if studyViewModel.canEnterStudyMode {
-                YouTubeStudyPanel(
-                    displayMode: studyPaneDisplayMode == .context ? .context : .transcript,
-                    contextWindowSize: studyContextWindowSize,
-                    trackLabel: studyViewModel.selectedTrack?.displayLabel,
-                    activeCue: studyViewModel.contextCue,
-                    activeCueTranslation: studyViewModel.contextCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
-                    cues: studyViewModel.activeCues,
-                    activeCueID: studyViewModel.activeCue?.id,
-                    translationState: studyViewModel.translationLoadState,
-                    translationForCue: { cue in
-                        studyViewModel.translatedCue(for: cue)?.text
-                    },
-                    onContextWindowSizeChange: { studyContextWindowSize = $0 },
-                    onSeek: seekPlayer,
-                    onWordTap: lookupWord
-                )
+                if studyPaneDisplayMode == .focus, let session = studySessionViewModel {
+                    StudySessionShell(
+                        session: session,
+                        userID: authManager.currentUser,
+                        focusWindowSize: $studyFocusWindowSize,
+                        translationState: studyViewModel.translationLoadState,
+                        showsTranscript: showsTranscriptBelowStudyBlock,
+                        fillsAvailableHeight: fillsAvailableHeight,
+                        transcript: {
+                            transcriptPanel
+                        },
+                        onWordTap: { word in
+                            lookupWordInFocus(word)
+                        },
+                        onDefineSession: { showSessionSetup = true },
+                        onNotes: { showNotes = true },
+                        onFocusWindowSizeChange: applyFocusWindowSize
+                    )
+                } else {
+                    YouTubeStudyPanel(
+                        displayMode: studyPaneDisplayMode == .transcript ? .transcript : .context,
+                        contextWindowSize: studyContextWindowSize,
+                        trackLabel: studyViewModel.selectedTrack?.displayLabel,
+                        activeCue: studyViewModel.contextCue,
+                        activeCueTranslation: studyViewModel.contextCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
+                        cues: studyViewModel.activeCues,
+                        activeCueID: studyViewModel.activeCue?.id,
+                        translationState: studyViewModel.translationLoadState,
+                        translationForCue: { cue in
+                            studyViewModel.translatedCue(for: cue)?.text
+                        },
+                        onContextWindowSizeChange: { studyContextWindowSize = $0 },
+                        onSeek: seekPlayer,
+                        onWordTap: lookupWord
+                    )
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: fillsAvailableHeight ? .infinity : nil,
+                        alignment: .topLeading
+                    )
+                }
 
-                if !video.description.isEmpty {
+
+                if !compactStudyChrome, !video.description.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("About This Video")
                             .font(.headline)
@@ -585,6 +760,9 @@ struct VideoDetailSheet: View {
         )
         studyViewModel.setCaptionLoadState(.loaded)
         Logger.info("Loaded study transcript from cache for video \(video.id)", category: .youtube)
+        if studyViewModel.mode == .study {
+            syncStudySessionViewModel()
+        }
         return true
     }
 
@@ -612,13 +790,174 @@ struct VideoDetailSheet: View {
             isPlaying: snapshot.isPlaying,
             playbackRate: snapshot.playbackRate
         )
+        youtubeStudyMediaPlayer.applySnapshot(
+            currentTime: snapshot.currentTime,
+            duration: snapshot.duration,
+            isPlaying: snapshot.isPlaying,
+            playbackRate: snapshot.playbackRate
+        )
 
-        if studyViewModel.mode == .study,
-           studyViewModel.activeCue?.id != previousActiveCueID {
-            Task {
-                await ensureTranslationsForCurrentCue()
+        if studyViewModel.mode == .study {
+            studySessionViewModel?.handlePlaybackTime(
+                snapshot.currentTime,
+                isPlaying: snapshot.isPlaying
+            )
+            if studyViewModel.activeCue?.id != previousActiveCueID {
+                Task {
+                    await ensureTranslationsForCurrentCue()
+                    refreshStudySessionBlocks()
+                }
             }
         }
+    }
+
+    private var transcriptPanel: some View {
+        YouTubeStudyPanel(
+            displayMode: .transcript,
+            contextWindowSize: studyContextWindowSize,
+            trackLabel: studyViewModel.selectedTrack?.displayLabel,
+            activeCue: studyViewModel.contextCue,
+            activeCueTranslation: studyViewModel.contextCue.flatMap { studyViewModel.translatedCue(for: $0)?.text },
+            cues: studyViewModel.activeCues,
+            activeCueID: studySessionViewModel?.currentBlock?.id ?? studyViewModel.activeCue?.id,
+            translationState: studyViewModel.translationLoadState,
+            translationForCue: { cue in
+                studyViewModel.translatedCue(for: cue)?.text
+            },
+            onContextWindowSizeChange: { studyContextWindowSize = $0 },
+            onSeek: { time in
+                seekPlayer(to: time)
+                studySessionViewModel?.syncCurrentBlockToPlaybackTime()
+            },
+            onWordTap: lookupWord
+        )
+    }
+
+    private func wireYouTubeStudyMediaPlayer() {
+        youtubeStudyMediaPlayer.onSeek = { time in
+            seekPlayer(to: time)
+        }
+        youtubeStudyMediaPlayer.onSeekAndPlay = { time in
+            seekAndPlayRequest = time
+        }
+        youtubeStudyMediaPlayer.onPlay = {
+            playRequest = true
+        }
+        youtubeStudyMediaPlayer.onPause = {
+            pauseRequest = true
+        }
+        youtubeStudyMediaPlayer.onSetRate = { rate in
+            setPlayerPlaybackRate(rate)
+        }
+    }
+
+    private func syncStudySessionViewModel() {
+        guard studyViewModel.canEnterStudyMode, !studyViewModel.activeCues.isEmpty else {
+            studySessionViewModel = nil
+            return
+        }
+
+        let source = YouTubeStudyBlockSource(
+            video: video,
+            cues: studyViewModel.activeCues,
+            languageCode: studyViewModel.selectedTrack?.languageCode,
+            focusWindowSize: studyFocusWindowSize,
+            translationForCue: { cue in
+                studyViewModel.translatedCue(for: cue)?.text
+            },
+            mediaPlayer: youtubeStudyMediaPlayer
+        )
+        let session = StudySessionViewModel(source: source)
+        if let activeCue = studyViewModel.activeCue,
+           let blockIndex = session.blockIndex(for: activeCue) {
+            session.goToBlock(at: blockIndex, autoPlay: false)
+        } else {
+            session.syncCurrentBlockToPlaybackTime()
+        }
+        studySessionViewModel = session
+    }
+
+    private func refreshStudySessionBlocks() {
+        guard let session = studySessionViewModel else {
+            syncStudySessionViewModel()
+            return
+        }
+        let blocks = makeFocusStudyBlocks()
+        session.rebuildBlocks(blocks, anchorTime: session.mediaPlayer.currentTime)
+    }
+
+    private func applyFocusWindowSize(_ size: StudyFocusWindowSize) {
+        studyFocusWindowSize = size
+        guard let session = studySessionViewModel else { return }
+        let blocks = makeFocusStudyBlocks()
+        session.rebuildBlocks(blocks, anchorTime: session.mediaPlayer.currentTime)
+    }
+
+    private func makeFocusStudyBlocks() -> [StudyBlock] {
+        CaptionTranscriptProvider(
+            cues: studyViewModel.activeCues,
+            translationForCue: { cue in
+                studyViewModel.translatedCue(for: cue)?.text
+            },
+            focusWindowSize: studyFocusWindowSize
+        ).makeBlocks()
+    }
+
+    private func lookupWordInFocus(_ word: String) {
+        guard let block = studySessionViewModel?.currentBlock else { return }
+        let cue: YouTubeCaptionCue
+        if let cueStartIndex = block.cueStartIndex,
+           studyViewModel.activeCues.indices.contains(cueStartIndex) {
+            cue = studyViewModel.activeCues[cueStartIndex]
+        } else {
+            cue = YouTubeCaptionCue(
+                index: block.index,
+                startTime: block.mediaStart,
+                endTime: block.mediaEnd,
+                text: block.targetText
+            )
+        }
+        lookupWord(word, cue: cue)
+    }
+
+    private func markWordForStudy(word: String, cueIndex: Int?, contextText: String?) {
+        guard let userID = authManager.currentUser,
+              let session = studySessionViewModel else { return }
+        let blockIndex = cueIndex ?? session.currentBlockIndex
+        let mediaTime = session.mediaPlayer.currentTime
+        let marked = MarkedStudyWord(
+            userID: userID,
+            resource: session.resource,
+            blockIndex: blockIndex,
+            word: word,
+            translation: studyViewModel.lookupResult?.translation,
+            contextSnippet: contextText,
+            mediaTime: mediaTime
+        )
+        modelContext.insert(marked)
+    }
+
+    private func isWordMarkedForStudy(_ word: String) -> Bool {
+        guard let userID = authManager.currentUser,
+              let session = studySessionViewModel else { return false }
+        let descriptor = FetchDescriptor<MarkedStudyWord>()
+        guard let marks = try? modelContext.fetch(descriptor) else { return false }
+        return marks.contains {
+            $0.userID == userID &&
+            $0.resourceId == session.resource.resourceId &&
+            $0.word.lowercased() == word.lowercased()
+        }
+    }
+
+    private func saveSessionRecord(definition: StudySessionDefinition) {
+        guard let userID = authManager.currentUser,
+              let session = studySessionViewModel else { return }
+        let record = StudySessionRecord(
+            userID: userID,
+            resource: session.resource,
+            definition: definition
+        )
+        modelContext.insert(record)
     }
 
     @MainActor
@@ -748,11 +1087,17 @@ struct VideoDetailSheet: View {
             )
             studyViewModel.setCaptionLoadState(.loaded)
             Logger.info("Loaded study transcript from cache for video \(video.id)", category: .youtube)
+            if studyViewModel.mode == .study {
+                syncStudySessionViewModel()
+            }
             return
         }
 
         let cues = try await captionService.fetchCues(for: track)
         studyViewModel.applyTranscript(cues: cues, track: track)
+        if studyViewModel.mode == .study {
+            syncStudySessionViewModel()
+        }
         saveCaptionCache(track: track, cues: cues)
         Logger.info("Fetched \(cues.count) study cues for video \(video.id)", category: .youtube)
 
@@ -790,10 +1135,6 @@ struct VideoDetailSheet: View {
         }
 
         return normalizedLanguageCode(selectedTrack.languageCode) == normalizedLanguageCode(preferredStudyLanguageCode)
-    }
-
-    private var trackBadgeBackgroundColor: Color {
-        selectedTrackMatchesTargetLanguage ? Color.blue.opacity(0.12) : Color.orange.opacity(0.14)
     }
 
     private func trackMenuTitle(for track: YouTubeCaptionTrack) -> String {

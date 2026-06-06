@@ -51,12 +51,8 @@ struct FavoriteButton: View {
     
     var body: some View {
         Button(action: {
-            print("DEBUG: FavoriteButton tapped. Current User: \(String(describing: authManager.currentUser))")
-            guard let currentUser = authManager.currentUser else {
-                 print("DEBUG: No user logged in, cannot favorite.")
-                 return 
-            }
-            
+            guard let currentUser = authManager.currentUser else { return }
+
             manager.toggleFavorite(
                 context: modelContext,
                 userID: currentUser,
@@ -69,15 +65,9 @@ struct FavoriteButton: View {
                 sourceResourceId: sourceResourceId
             )
         }) {
-            // Debug overlay
-            ZStack {
-                Image(systemName: isFavorited ? "heart.fill" : "heart")
-                    .foregroundColor(isFavorited ? .red : .primary)
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .onChange(of: favorites) { oldValue, newValue in
-                print("DEBUG: FavoriteButton query updated. Count: \(newValue.count)")
-            }
+            Image(systemName: isFavorited ? "heart.fill" : "heart")
+                .foregroundColor(isFavorited ? .red : .primary)
+                .contentTransition(.symbolEffect(.replace))
         }
     }
 }

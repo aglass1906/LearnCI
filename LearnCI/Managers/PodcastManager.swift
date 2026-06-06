@@ -109,15 +109,17 @@ class PodcastManager {
     func refreshEpisodes(for show: PodcastShow, modelContext: ModelContext) async {
         guard let url = URL(string: show.feedUrl) else { return }
 
+        let feedUrl = show.feedUrl
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let parser = RSSParser(feedUrl: show.feedUrl)
+            let parser = RSSParser(feedUrl: feedUrl)
+            // Network is async; XML parse runs off the main actor before we touch SwiftData.
             let result = parser.parse(data: data)
 
-            let existingUrls = Set(show.episodes.map { $0.audioUrl })
-
             await MainActor.run {
-                // Update show metadata
+                let existingUrls = Set(show.episodes.map { $0.audioUrl })
+
                 if let parsed = result.show {
                     show.title = parsed.title
                     show.author = parsed.author
@@ -129,6 +131,12 @@ class PodcastManager {
                     if !existingUrls.contains(episode.audioUrl) {
                         episode.show = show
                         modelContext.insert(episode)
+                    } else if let existing = show.episodes.first(where: { $0.audioUrl == episode.audioUrl }) {
+                        if existing.transcriptUrl == nil, let transcriptUrl = episode.transcriptUrl {
+                            existing.transcriptUrl = transcriptUrl
+                            existing.transcriptType = episode.transcriptType
+                            existing.isSynced = false
+                        }
                     }
                 }
                 try? modelContext.save()
@@ -145,6 +153,18 @@ private struct RSSParseResult {
     var show: PodcastShow?
     var episodes: [PodcastEpisode] = []
     var error: String?
+}
+
+private struct PodcastTranscriptLink: Equatable {
+    let url: String
+    let type: String
+    let language: String?
+}
+
+private extension PodcastTranscriptLink {
+    var asFeedLink: PodcastFeedTranscriptParser.TranscriptLink {
+        PodcastFeedTranscriptParser.TranscriptLink(url: url, type: type, language: language)
+    }
 }
 
 private class RSSParser: NSObject, XMLParserDelegate {
@@ -170,6 +190,7 @@ private class RSSParser: NSObject, XMLParserDelegate {
     private var itemAudioUrl = ""
     private var itemPubDate = ""
     private var itemDuration = ""
+    private var itemTranscriptLinks: [PodcastTranscriptLink] = []
 
     init(feedUrl: String) {
         self.feedUrl = feedUrl
@@ -199,6 +220,7 @@ private class RSSParser: NSObject, XMLParserDelegate {
             itemAudioUrl = ""
             itemPubDate = ""
             itemDuration = ""
+            itemTranscriptLinks = []
         } else if elementName == "enclosure" && isInItem {
             if let url = attributes["url"],
                let type = attributes["type"], type.hasPrefix("audio") {
@@ -207,6 +229,14 @@ private class RSSParser: NSObject, XMLParserDelegate {
         } else if elementName == "itunes:image" && !isInItem {
             if let href = attributes["href"] {
                 channelArtworkUrl = href
+            }
+        } else if isInItem, isTranscriptElement(elementName) {
+            if let url = attributes["url"], !url.isEmpty {
+                let type = attributes["type"] ?? inferredTranscriptType(from: url)
+                let language = attributes["language"] ?? attributes["lang"]
+                itemTranscriptLinks.append(
+                    PodcastTranscriptLink(url: url, type: type.lowercased(), language: language)
+                )
             }
         }
     }
@@ -228,12 +258,18 @@ private class RSSParser: NSObject, XMLParserDelegate {
             case "item":
                 isInItem = false
                 guard !itemAudioUrl.isEmpty else { return }
+                let selectedTranscript = PodcastFeedTranscriptParser.selectPreferredTranscript(
+                    from: itemTranscriptLinks.map(\.asFeedLink),
+                    preferredLanguageCode: channelLanguage
+                )
                 let episode = PodcastEpisode(
                     title: itemTitle,
                     episodeDescription: itemDescription,
                     audioUrl: itemAudioUrl,
                     publishedDate: parseRSSDate(itemPubDate) ?? Date(),
-                    duration: parseDuration(itemDuration)
+                    duration: parseDuration(itemDuration),
+                    transcriptUrl: selectedTranscript?.url,
+                    transcriptType: selectedTranscript?.type
                 )
                 result.episodes.append(episode)
             default: break
@@ -261,6 +297,19 @@ private class RSSParser: NSObject, XMLParserDelegate {
     }
 
     // MARK: - Helpers
+
+    private func isTranscriptElement(_ elementName: String) -> Bool {
+        let normalized = elementName.lowercased()
+        return normalized == "transcript" || normalized.hasSuffix(":transcript")
+    }
+
+    private func inferredTranscriptType(from url: String) -> String {
+        PodcastFeedTranscriptParser.resolvedMIMEType(
+            declaredType: nil,
+            response: nil,
+            url: URL(string: url) ?? URL(fileURLWithPath: "/")
+        )
+    }
 
     private func parseRSSDate(_ string: String) -> Date? {
         let formatter = DateFormatter()

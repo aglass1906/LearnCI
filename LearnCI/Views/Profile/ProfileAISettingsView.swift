@@ -4,34 +4,17 @@ struct ProfileAISettingsView: View {
     @Bindable var profile: UserProfile
     @State private var openAIKey: String = ""
     @State private var openAISaved: Bool = false
-    @State private var showOpenAIKey: Bool = false
     @State private var googleKey: String = ""
     @State private var googleSaved: Bool = false
-    @State private var showGoogleKey: Bool = false
     @AppStorage(VideoPromptModel.userDefaultsKey) private var videoPromptModel: String = VideoPromptModel.openAI.rawValue
 
     var body: some View {
         Form {
             // MARK: OpenAI
             Section {
-                HStack {
-                    if showOpenAIKey {
-                        TextField("sk-...", text: $openAIKey)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                    } else {
-                        SecureField("sk-...", text: $openAIKey)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                    }
-                    Button {
-                        showOpenAIKey.toggle()
-                    } label: {
-                        Image(systemName: showOpenAIKey ? "eye.slash" : "eye")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
+                TextField("sk-...", text: $openAIKey)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
             } header: {
                 Text("OpenAI API Key")
             } footer: {
@@ -60,24 +43,9 @@ struct ProfileAISettingsView: View {
 
             // MARK: Google / Veo
             Section {
-                HStack {
-                    if showGoogleKey {
-                        TextField("AIza...", text: $googleKey)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                    } else {
-                        SecureField("AIza...", text: $googleKey)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                    }
-                    Button {
-                        showGoogleKey.toggle()
-                    } label: {
-                        Image(systemName: showGoogleKey ? "eye.slash" : "eye")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
+                TextField("AIza...", text: $googleKey)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
             } header: {
                 Text("Google API Key")
             } footer: {

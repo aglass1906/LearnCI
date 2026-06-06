@@ -127,6 +127,9 @@ struct VideoDetailSheet: View {
                     syncStudySessionViewModel()
                 }
             }
+            .onAppear {
+                hydrateStudyModeFromCacheIfAvailable()
+            }
             .task {
                 await bootstrapStudyModeIfNeeded()
             }
@@ -645,7 +648,13 @@ struct VideoDetailSheet: View {
                         onSeek: seekPlayer,
                         onWordTap: lookupWord
                     )
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: fillsAvailableHeight ? .infinity : nil,
+                        alignment: .topLeading
+                    )
                 }
+
 
                 if !compactStudyChrome, !video.description.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {

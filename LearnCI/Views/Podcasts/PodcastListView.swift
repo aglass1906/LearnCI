@@ -50,22 +50,21 @@ struct PodcastListView: View {
         filterUnplayedOnly || filterFavoritesOnly
     }
 
-    private var favoriteEpisodeUrls: Set<String> {
-        guard let userID = authManager.currentUser else { return [] }
-        return Set(
-            allFavorites
-                .filter { $0.userID == userID && $0.type == .podcastEpisode }
-                .map(\.consumptionUrl)
-        )
+    private var podcastFavoritesIndex: PodcastFavoriteURL.Index {
+        guard let userID = authManager.currentUser else { return .init() }
+        return PodcastFavoriteURL.Index.build(from: allFavorites, userID: userID)
     }
 
-    private var favoriteShowFeedUrls: Set<String> {
-        guard let userID = authManager.currentUser else { return [] }
-        return Set(
-            allFavorites
-                .filter { $0.userID == userID && $0.type == .podcast }
-                .map(\.consumptionUrl)
-        )
+    private var listRefreshToken: String {
+        [
+            selectedTab.rawValue,
+            sortOption.rawValue,
+            filterFavoritesOnly ? "fav" : "all",
+            filterUnplayedOnly ? "unplayed" : "any",
+            String(allEpisodes.count),
+            String(shows.count),
+            String(allFavorites.count),
+        ].joined(separator: "|")
     }
 
     var body: some View {
@@ -120,9 +119,15 @@ struct PodcastListView: View {
                         }
                         
                         Section("Sort") {
-                            Picker("Sort Order", selection: $sortOption) {
-                                ForEach(PodcastSortOption.allCases) { option in
-                                    Label(option.rawValue, systemImage: option.icon).tag(option)
+                            ForEach(PodcastSortOption.allCases) { option in
+                                Button {
+                                    sortOption = option
+                                } label: {
+                                    if sortOption == option {
+                                        Label(option.rawValue, systemImage: "checkmark")
+                                    } else {
+                                        Text(option.rawValue)
+                                    }
                                 }
                             }
                         }
@@ -278,6 +283,7 @@ struct PodcastListView: View {
                         }
                     }
                 }
+                .id(listRefreshToken)
                 .listStyle(.plain)
             }
         }
@@ -287,33 +293,91 @@ struct PodcastListView: View {
 
     private var filteredEpisodes: [PodcastEpisode] {
         var result = allEpisodes
-        
+
         if filterFavoritesOnly {
-            let urls = favoriteEpisodeUrls
-            result = result.filter { urls.contains($0.favoriteConsumptionUrl) }
+            let index = podcastFavoritesIndex
+            result = result.filter { index.matchesFavoritedEpisode($0) }
         }
 
         if filterUnplayedOnly {
             result = result.filter { !$0.isPlayed }
         }
-        
-        result.sort { a, b in
+
+        result.sort { lhs, rhs in
             switch sortOption {
-            case .newest:           return a.publishedDate > b.publishedDate
-            case .oldest:           return a.publishedDate < b.publishedDate
-            case .durationLongest:  return a.duration > b.duration
-            case .durationShortest: return a.duration < b.duration
-            case .showName:         return (a.show?.title ?? "") < (b.show?.title ?? "")
+            case .newest:
+                if lhs.publishedDate != rhs.publishedDate {
+                    return lhs.publishedDate > rhs.publishedDate
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .oldest:
+                if lhs.publishedDate != rhs.publishedDate {
+                    return lhs.publishedDate < rhs.publishedDate
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationLongest:
+                if lhs.duration != rhs.duration {
+                    return lhs.duration > rhs.duration
+                }
+                return lhs.publishedDate > rhs.publishedDate
+            case .durationShortest:
+                if lhs.duration != rhs.duration {
+                    return lhs.duration < rhs.duration
+                }
+                return lhs.publishedDate > rhs.publishedDate
+            case .showName:
+                let left = lhs.show?.title ?? ""
+                let right = rhs.show?.title ?? ""
+                if left != right {
+                    return left.localizedCaseInsensitiveCompare(right) == .orderedAscending
+                }
+                return lhs.publishedDate > rhs.publishedDate
             }
         }
-        
+
         return result
     }
 
     private var filteredShows: [PodcastShow] {
-        guard filterFavoritesOnly else { return shows }
-        let urls = favoriteShowFeedUrls
-        return shows.filter { urls.contains($0.feedUrl) }
+        var result = shows
+
+        if filterFavoritesOnly {
+            let index = podcastFavoritesIndex
+            result = result.filter { index.matches($0) }
+        }
+
+        result.sort { lhs, rhs in
+            switch sortOption {
+            case .newest:
+                if lhs.addedAt != rhs.addedAt {
+                    return lhs.addedAt > rhs.addedAt
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .oldest:
+                if lhs.addedAt != rhs.addedAt {
+                    return lhs.addedAt < rhs.addedAt
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationLongest:
+                let leftCount = lhs.episodes.count
+                let rightCount = rhs.episodes.count
+                if leftCount != rightCount {
+                    return leftCount > rightCount
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .durationShortest:
+                let leftCount = lhs.episodes.count
+                let rightCount = rhs.episodes.count
+                if leftCount != rightCount {
+                    return leftCount < rightCount
+                }
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            case .showName:
+                return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            }
+        }
+
+        return result
     }
 
     private var showsView: some View {
@@ -333,6 +397,7 @@ struct PodcastListView: View {
                     }
                     .onDelete(perform: deleteShows)
                 }
+                .id(listRefreshToken)
                 .listStyle(.plain)
             }
         }

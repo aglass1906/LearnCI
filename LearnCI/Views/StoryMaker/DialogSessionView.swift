@@ -46,9 +46,12 @@ struct DialogSessionView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 18) {
-                        ForEach(Array(items.prefix(visibleCount).enumerated()), id: \.element.id) { index, item in
-                            view(for: item, isNewest: index == visibleCount - 1)
-                                .id(item.id)
+                        ForEach(displayedItems, id: \.item.id) { displayedItem in
+                            view(
+                                for: displayedItem.item,
+                                isNewest: displayedItem.index == visibleCount - 1
+                            )
+                                .id(displayedItem.item.id)
                         }
                         Color.clear.frame(height: 18).id("dialog-bottom")
                     }
@@ -310,6 +313,22 @@ struct DialogSessionView: View {
         visibleCount < items.count
     }
 
+    private var displayedItems: [(index: Int, item: DialogStoryItem)] {
+        let revealedItems = Array(items.prefix(visibleCount).enumerated()).map {
+            (index: $0.offset, item: $0.element)
+        }
+        guard let currentSceneStart = revealedItems.last(where: {
+            if case .sceneHeader = $0.item {
+                return true
+            }
+            return false
+        })?.index else {
+            return revealedItems
+        }
+
+        return Array(revealedItems[currentSceneStart...])
+    }
+
     private var currentSceneOrdinal: Int {
         guard !sceneHeaderIndices.isEmpty else { return 0 }
         return sceneHeaderIndices.lastIndex { $0 < visibleCount } ?? 0
@@ -338,10 +357,11 @@ struct DialogSessionView: View {
 
     private func advanceOne(scrollProxy: ScrollViewProxy) {
         guard canAdvance else { return }
+        let nextVisibleCount = visibleCountAfterAdvancing(from: visibleCount)
         withAnimation(.easeOut(duration: 0.22)) {
-            visibleCount += 1
+            visibleCount = nextVisibleCount
         }
-        playAudioIfNeeded(for: visibleCount - 1)
+        playAudioIfNeeded(for: nextVisibleCount - 1)
         scrollToBottom(scrollProxy)
     }
 
@@ -356,9 +376,43 @@ struct DialogSessionView: View {
     private func goToScene(_ ordinal: Int) {
         guard sceneHeaderIndices.indices.contains(ordinal) else { return }
         audioManager.stopAudio()
+        let sceneStart = sceneHeaderIndices[ordinal]
         withAnimation(.easeOut(duration: 0.18)) {
-            visibleCount = min(items.count, sceneHeaderIndices[ordinal] + 1)
+            visibleCount = visibleCountAfterEnteringScene(at: sceneStart)
         }
+        playAudioIfNeeded(for: visibleCount - 1)
+    }
+
+    private func visibleCountAfterAdvancing(from currentCount: Int) -> Int {
+        guard items.indices.contains(currentCount) else { return items.count }
+
+        switch items[currentCount] {
+        case .sceneHeader:
+            return visibleCountAfterEnteringScene(at: currentCount)
+        case .sceneImage:
+            return visibleCountThroughFirstBubble(startingAt: currentCount)
+        default:
+            return min(items.count, currentCount + 1)
+        }
+    }
+
+    private func visibleCountAfterEnteringScene(at sceneStart: Int) -> Int {
+        visibleCountThroughFirstBubble(startingAt: sceneStart + 1)
+    }
+
+    private func visibleCountThroughFirstBubble(startingAt startIndex: Int) -> Int {
+        var index = startIndex
+        while items.indices.contains(index) {
+            switch items[index] {
+            case .bubble:
+                return index + 1
+            case .sceneHeader:
+                return index
+            default:
+                index += 1
+            }
+        }
+        return items.count
     }
 
     private func playAudioIfNeeded(for itemIndex: Int) {

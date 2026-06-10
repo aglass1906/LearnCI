@@ -9,6 +9,14 @@ private enum PodcastPlaybackMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+private enum PodcastStudyPaneMode: String, CaseIterable, Identifiable {
+    case studyBlock = "Study Block"
+    case transcript = "Transcript"
+    case timing = "Timing"
+
+    var id: String { rawValue }
+}
+
 struct PodcastPlayerView: View {
     let episode: PodcastEpisode
 
@@ -38,7 +46,7 @@ struct PodcastPlayerView: View {
     @State private var studyTranscriptSource: PodcastTranscriptSource?
     @State private var studySessionViewModel: StudySessionViewModel?
     @State private var studyFocusWindowSize: StudyFocusWindowSize = .sentence
-    @State private var studyPaneDisplayMode: StudyPaneDisplayMode = .studyBlock
+    @State private var studyPaneDisplayMode: PodcastStudyPaneMode = .studyBlock
     @State private var studyMediaPlayer: AVPlayerStudyMediaPlayer?
     @State private var didBootstrapStudyMode = false
     @State private var whisperOffer: PodcastTranscriptWhisperOffer?
@@ -50,6 +58,9 @@ struct PodcastPlayerView: View {
     @State private var lookupTranslation: String?
     @State private var lookupPartOfSpeech: String?
     @State private var isLookingUpWord = false
+    @State private var showClearTranscriptConfirm = false
+    @State private var showRegenerateTranscriptConfirm = false
+    @State private var contentStartEntryText = ""
 
     private let transcriptService = PodcastTranscriptService()
     private let openAIService = OpenAIService()
@@ -119,6 +130,7 @@ struct PodcastPlayerView: View {
         }
         .onAppear {
             startTime = Date()
+            syncContentStartEntryFromEpisode()
             if studyMediaPlayer == nil {
                 studyMediaPlayer = AVPlayerStudyMediaPlayer(audioManager: audioManager)
             }
@@ -132,7 +144,10 @@ struct PodcastPlayerView: View {
         }
         .onChange(of: playbackMode) { _, newMode in
             if newMode == .study {
-                Task { await bootstrapStudyModeIfNeeded() }
+                Task {
+                    await bootstrapStudyModeIfNeeded()
+                    ensurePlaybackAtStudyContentStart()
+                }
             } else {
                 resetStudyBootstrapState()
             }
@@ -175,6 +190,28 @@ struct PodcastPlayerView: View {
                     markWordForStudy(word: selection.word)
                 }
             )
+        }
+        .confirmationDialog(
+            "Clear transcript?",
+            isPresented: $showClearTranscriptConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Clear Transcript", role: .destructive) {
+                Task { await clearStudyTranscript() }
+            }
+        } message: {
+            Text("Removes the saved study transcript for this episode. Adjust the content start mark if needed, then generate again.")
+        }
+        .confirmationDialog(
+            "Regenerate transcript with AI?",
+            isPresented: $showRegenerateTranscriptConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Regenerate with AI") {
+                Task { await regenerateStudyTranscript() }
+            }
+        } message: {
+            Text("Clears the current transcript and runs Whisper again using your current content start mark.")
         }
     }
 
@@ -245,23 +282,33 @@ struct PodcastPlayerView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
             case .failed(let message):
-                ContentUnavailableView(
-                    "Study Mode Unavailable",
-                    systemImage: "waveform",
-                    description: Text(message)
-                )
+                VStack(alignment: .leading, spacing: 12) {
+                    studyPaneModePicker
+
+                    switch studyPaneDisplayMode {
+                    case .studyBlock, .transcript:
+                        ContentUnavailableView(
+                            "Study Mode Unavailable",
+                            systemImage: "waveform",
+                            description: Text(message)
+                        )
+                    case .timing:
+                        podcastTimingModeView
+                    }
+                }
             case .loaded:
                 if let session = studySessionViewModel {
                     VStack(alignment: .leading, spacing: 12) {
-                        if let note = studyCoverageNote {
-                            Label(note, systemImage: "info.circle")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
                         studyPaneModePicker
 
-                        if studyPaneDisplayMode == .studyBlock {
+                        switch studyPaneDisplayMode {
+                        case .studyBlock:
+                            if let note = studyCoverageNote {
+                                Label(note, systemImage: "info.circle")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
                             StudySessionShell(
                                 session: session,
                                 userID: authManager.currentUser,
@@ -276,16 +323,27 @@ struct PodcastPlayerView: View {
                                 onNotes: { showNotes = true },
                                 onFocusWindowSizeChange: applyFocusWindowSize
                             )
-                        } else {
+                        case .transcript:
                             podcastTranscriptModeView(session: session)
+                        case .timing:
+                            podcastTimingModeView
                         }
                     }
                 } else {
-                    ContentUnavailableView(
-                        "Study Mode Unavailable",
-                        systemImage: "waveform",
-                        description: Text("No transcript blocks were produced for this episode.")
-                    )
+                    VStack(alignment: .leading, spacing: 12) {
+                        studyPaneModePicker
+
+                        switch studyPaneDisplayMode {
+                        case .studyBlock, .transcript:
+                            ContentUnavailableView(
+                                "Study Mode Unavailable",
+                                systemImage: "waveform",
+                                description: Text("No transcript blocks were produced for this episode.")
+                            )
+                        case .timing:
+                            podcastTimingModeView
+                        }
+                    }
                 }
             }
         }
@@ -293,11 +351,33 @@ struct PodcastPlayerView: View {
 
     private var studyPaneModePicker: some View {
         Picker("Study view", selection: $studyPaneDisplayMode) {
-            ForEach(StudyPaneDisplayMode.allCases) { mode in
+            ForEach(PodcastStudyPaneMode.allCases) { mode in
                 Text(mode.rawValue).tag(mode)
             }
         }
         .pickerStyle(.segmented)
+    }
+
+    private var podcastTimingModeView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if let note = studyCoverageNote {
+                Label(note, systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            studyTranscriptActions
+
+            studyContentStartSection
+
+            if studyLoadState == .loaded {
+                studyTranscriptSyncSection
+            } else {
+                Text("Generate or load a transcript to use the alignment timeline.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     @ViewBuilder
@@ -419,8 +499,246 @@ struct PodcastPlayerView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            if offer.descriptionAttempted {
+                Label("A transcript link in the episode description could not be used.", systemImage: "doc.text.magnifyingglass")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var studyContentStart: TimeInterval {
+        PodcastStudyContentStart.effectiveStart(for: episode)
+    }
+
+    private var studyContentStartSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Transcript timing", systemImage: "flag.fill")
+                .font(.caption.weight(.semibold))
+
+            Text("AI start controls where Whisper begins. Sync shift nudges loaded transcript timestamps without regenerating.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            studyTimingValuesReadout
+
+            Text("AI transcript start")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.top, 4)
+
+            Text("Where study content begins on the episode. Whisper records from ~20s before this. Regenerate after changing.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
+                TextField("MM:SS or seconds", text: $contentStartEntryText)
+                    .font(.caption.monospacedDigit())
+                    .keyboardType(.numbersAndPunctuation)
+                    .textFieldStyle(.roundedBorder)
+
+                Button("Set") {
+                    applyContentStartFromEntry()
+                }
+                .font(.caption.weight(.semibold))
+                .buttonStyle(.borderedProminent)
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    nudgeContentStart(by: -10)
+                } label: {
+                    Text("-10s").font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    nudgeContentStart(by: -1)
+                } label: {
+                    Text("-1s").font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    markStudyContentStartFromPlayhead()
+                } label: {
+                    Label("Use playhead", systemImage: "play.fill")
+                        .font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    nudgeContentStart(by: 1)
+                } label: {
+                    Text("+1s").font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    nudgeContentStart(by: 10)
+                } label: {
+                    Text("+10s").font(.caption2.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if studyContentStart > 0 {
+                Button("Clear start mark") {
+                    clearStudyContentStart()
+                }
+                .font(.caption)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var studyTimingValuesReadout: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            timingValueRow(
+                title: "AI transcript start",
+                value: studyContentStart > 0
+                    ? PodcastStudyContentStart.formattedTimestampWithSeconds(studyContentStart)
+                    : "Not set (0s)",
+                hint: "studyContentStartSeconds"
+            )
+
+            if studyContentStart > 0 {
+                timingValueRow(
+                    title: "Whisper clip from",
+                    value: PodcastStudyContentStart.formattedTimestampWithSeconds(
+                        PodcastStudyContentStart.whisperExportStart(for: episode)
+                    ),
+                    hint: "20s lead-in before AI start"
+                )
+            }
+
+            timingValueRow(
+                title: "Sync shift",
+                value: PodcastStudyContentStart.formattedSignedOffset(episode.studyTranscriptOffsetSeconds),
+                hint: "studyTranscriptOffsetSeconds · drag timeline to change"
+            )
+
+            if let firstBlock = makeBaseStudyBlocks().first {
+                let displayStart = firstBlock.mediaStart + episode.studyTranscriptOffsetSeconds
+                timingValueRow(
+                    title: "First highlight at",
+                    value: PodcastStudyContentStart.formattedTimestampWithSeconds(displayStart),
+                    hint: "raw \(PodcastStudyContentStart.formattedTimestampWithSeconds(firstBlock.mediaStart)) + shift"
+                )
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(UIColor.systemBackground).opacity(0.45))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private func timingValueRow(title: String, value: String, hint: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                Text(value)
+                    .font(.caption.monospacedDigit().weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            Text(hint)
+                .font(.system(size: 10))
+                .foregroundStyle(.tertiary)
+        }
+    }
+
+    private var studyTranscriptSyncSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Align transcript to audio", systemImage: "waveform.path.ecg")
+                .font(.caption.weight(.semibold))
+
+            Text("White bars = audio. Teal = transcript. Drag teal strip to align. Use Pan / zoom controls below the waveform.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            let alignedBlocks = makeFocusStudyBlocks()
+            if !alignedBlocks.isEmpty {
+                PodcastTimingTranscriptSnippet(
+                    blocks: alignedBlocks,
+                    playbackTime: audioManager.streamCurrentTime,
+                    onSeek: { time in
+                        if let session = studySessionViewModel,
+                           let index = blockIndex(for: time, in: session.blocks) {
+                            session.goToBlock(at: index, autoPlay: false)
+                        }
+                        seekTo(time)
+                    }
+                )
+            }
+
+            if let url = episode.playableAudioURL, !makeBaseStudyBlocks().isEmpty {
+                PodcastTranscriptSyncTimelineView(
+                    audioURL: url,
+                    duration: max(duration, audioManager.streamDuration),
+                    currentTime: audioManager.streamCurrentTime,
+                    blocks: makeBaseStudyBlocks(),
+                    transcriptOffset: episode.studyTranscriptOffsetSeconds,
+                    contentStart: studyContentStart,
+                    onSeek: { time in
+                        seekTo(time)
+                    },
+                    onOffsetChange: { offset in
+                        setTranscriptOffset(to: offset)
+                    }
+                )
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    alignTranscriptToCurrentPlayback()
+                } label: {
+                    Label("Snap to playhead", systemImage: "scope")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+
+                if abs(episode.studyTranscriptOffsetSeconds) > 0.05 {
+                    Button("Reset shift") {
+                        resetTranscriptOffset()
+                    }
+                    .font(.caption)
+                }
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var studyTranscriptActions: some View {
+        HStack(spacing: 8) {
+            Button(role: .destructive) {
+                showClearTranscriptConfirm = true
+            } label: {
+                Label("Clear Transcript", systemImage: "trash")
+                    .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
+
+            if OpenAIAPIKeyStorage.isConfigured {
+                Button {
+                    showRegenerateTranscriptConfirm = true
+                } label: {
+                    Label("Regenerate with AI", systemImage: "arrow.clockwise")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+            }
+        }
     }
 
     private var artworkView: some View {
@@ -475,6 +793,49 @@ struct PodcastPlayerView: View {
     }
 
     @MainActor
+    private func resetStudyTranscriptState() {
+        studyWords = []
+        studyCues = []
+        studyCachedBlocks = []
+        studyCachedCues = []
+        studyTranslations = [:]
+        studyTranslationState = .idle
+        studyCoverageNote = nil
+        studyTranscriptSource = nil
+        studySessionViewModel = nil
+        whisperOffer = nil
+        isGeneratingWhisper = false
+        studyLoadState = .idle
+    }
+
+    @MainActor
+    private func clearStudyTranscript() async {
+        let language = episode.show?.language ?? .spanish
+        transcriptService.clearCachedTranscript(
+            episode: episode,
+            language: language,
+            modelContext: modelContext
+        )
+        resetStudyTranscriptState()
+        didBootstrapStudyMode = false
+        showToast("Transcript cleared")
+        await bootstrapStudyModeIfNeeded(force: true)
+    }
+
+    @MainActor
+    private func regenerateStudyTranscript() async {
+        let language = episode.show?.language ?? .spanish
+        transcriptService.clearCachedTranscript(
+            episode: episode,
+            language: language,
+            modelContext: modelContext
+        )
+        resetStudyTranscriptState()
+        didBootstrapStudyMode = false
+        await startWhisperTranscription()
+    }
+
+    @MainActor
     private func bootstrapStudyModeIfNeeded(force: Bool = false) async {
         guard force || !didBootstrapStudyMode else { return }
         didBootstrapStudyMode = true
@@ -522,7 +883,8 @@ struct PodcastPlayerView: View {
             whisperOffer = PodcastTranscriptWhisperOffer(
                 title: "Generate transcript with AI?",
                 message: "An OpenAI API key is required in Profile → AI Settings before Study mode can transcribe this episode with Whisper.",
-                feedAttempted: episode.hasFeedTranscript
+                feedAttempted: episode.hasFeedTranscript,
+                descriptionAttempted: !episode.episodeDescription.isEmpty
             )
             return
         }
@@ -542,6 +904,7 @@ struct PodcastPlayerView: View {
             applyTranscriptResult(result)
             studyLoadState = .loaded
             syncStudySessionViewModel()
+            ensurePlaybackAtStudyContentStart()
             await ensureTranslationsForNearbyBlocks()
         } catch {
             studyLoadState = .failed(message: userFacingTranscriptError(error))
@@ -581,15 +944,34 @@ struct PodcastPlayerView: View {
         switch result.source {
         case .feed:
             studyCoverageNote = "Using published transcript from the podcast feed."
+        case .description:
+            studyCoverageNote = "Using transcript linked in the episode description."
         case .whisper:
+            var whisperNote = "Generated with AI (Whisper)."
+            if studyContentStart > 0 {
+                let stamp = PodcastStudyContentStart.formattedTimestamp(studyContentStart)
+                whisperNote += " Transcribed from your content start mark at \(stamp)."
+            }
+            if let skippedAds = result.skippedAdSegmentCount, skippedAds > 0 {
+                let label = skippedAds == 1 ? "segment" : "segments"
+                whisperNote += " Skipped \(skippedAds) ad \(label) marked in show notes."
+            }
             if let covers = result.coversDurationSeconds {
                 let minutes = Int(covers / 60)
-                studyCoverageNote = "Generated with AI (Whisper). Covers the first \(minutes) minutes."
+                studyCoverageNote = "\(whisperNote) Covers the first \(minutes) minutes."
             } else {
-                studyCoverageNote = "Generated with AI (Whisper)."
+                studyCoverageNote = whisperNote
             }
         case .cache:
             studyCoverageNote = nil
+        }
+
+        if studyContentStart > 0 {
+            let stamp = PodcastStudyContentStart.formattedTimestamp(studyContentStart)
+            let startNote = "Content starts at \(stamp)."
+            if studyCoverageNote?.contains(startNote) != true {
+                studyCoverageNote = studyCoverageNote.map { "\($0) \(startNote)" } ?? startNote
+            }
         }
     }
 
@@ -599,7 +981,8 @@ struct PodcastPlayerView: View {
         let languageCode = (episode.show?.language ?? .spanish).rawValue
         let cacheKey = MediaTranscriptCache.makeCacheKey(
             consumptionUrl: episode.audioUrl,
-            languageCode: languageCode
+            languageCode: languageCode,
+            contentStartSeconds: studyContentStart
         )
         let descriptor = FetchDescriptor<MediaTranscriptCache>(
             predicate: #Predicate { $0.cacheKey == cacheKey }
@@ -637,10 +1020,10 @@ struct PodcastPlayerView: View {
                 mediaPlayer: studyMediaPlayer
             )
             studySessionViewModel = StudySessionViewModel(source: source)
-        } else if !studyWords.isEmpty {
+        } else if !activeStudyWords.isEmpty {
             let source = PodcastStudyBlockSource(
                 episode: episode,
-                words: studyWords,
+                words: activeStudyWords,
                 languageCode: episode.show?.language.rawValue,
                 focusWindowSize: studyFocusWindowSize,
                 translationsBySentenceRange: studyTranslations,
@@ -676,11 +1059,15 @@ struct PodcastPlayerView: View {
     }
 
     private var activeStudyCues: [YouTubeCaptionCue] {
-        if !studyCues.isEmpty { return studyCues }
-        return studyCachedCues
+        let cues = if !studyCues.isEmpty { studyCues } else { studyCachedCues }
+        return PodcastStudyContentStart.filterCuesAtOrAfter(cues, start: studyContentStart)
     }
 
-    private func makeFocusStudyBlocks() -> [StudyBlock] {
+    private var activeStudyWords: [WordTiming] {
+        PodcastStudyContentStart.filterWordsAtOrAfter(studyWords, start: studyContentStart)
+    }
+
+    private func makeBaseStudyBlocks() -> [StudyBlock] {
         if !activeStudyCues.isEmpty {
             let blocks = CaptionTranscriptProvider(
                 cues: activeStudyCues,
@@ -689,9 +1076,9 @@ struct PodcastPlayerView: View {
             ).makeBlocks()
             return applyTranslations(to: blocks)
         }
-        if !studyWords.isEmpty {
+        if !activeStudyWords.isEmpty {
             let blocks = WhisperTranscriptProvider(
-                words: studyWords,
+                words: activeStudyWords,
                 translationForSentenceRange: { start, end in
                     studyTranslations["\(start)-\(end)"]
                 },
@@ -700,9 +1087,24 @@ struct PodcastPlayerView: View {
             return applyTranslations(to: blocks)
         }
         if !studyCachedBlocks.isEmpty {
-            return applyTranslations(to: studyCachedBlocks)
+            let blocks = PodcastStudyContentStart.filterBlocksAtOrAfter(
+                studyCachedBlocks,
+                start: studyContentStart
+            )
+            return applyTranslations(to: blocks)
         }
         return []
+    }
+
+    private func makeFocusStudyBlocks() -> [StudyBlock] {
+        applyTimingOffset(to: makeBaseStudyBlocks())
+    }
+
+    private func applyTimingOffset(to blocks: [StudyBlock]) -> [StudyBlock] {
+        PodcastStudyContentStart.applyTimingOffset(
+            to: blocks,
+            offset: episode.studyTranscriptOffsetSeconds
+        )
     }
 
     private func translationForCue(_ cue: YouTubeCaptionCue) -> String? {
@@ -768,7 +1170,7 @@ struct PodcastPlayerView: View {
             refreshStudySessionBlocks()
 
             transcriptService.updateCache(
-                consumptionUrl: episode.audioUrl,
+                episode: episode,
                 languageCode: (episode.show?.language ?? .spanish).rawValue,
                 blocks: makeFocusStudyBlocks(),
                 words: studyWords.isEmpty ? nil : studyWords,
@@ -841,6 +1243,131 @@ struct PodcastPlayerView: View {
         try? modelContext.save()
     }
 
+    private func alignTranscriptToCurrentPlayback() {
+        guard let session = studySessionViewModel else {
+            showToast("Load a transcript first")
+            return
+        }
+
+        session.syncCurrentBlockToPlaybackTime()
+        guard let block = session.currentBlock else {
+            showToast("No transcript block at the current playback time")
+            return
+        }
+
+        let playbackTime = audioManager.streamCurrentTime
+        let delta = playbackTime - block.mediaStart
+        guard abs(delta) > 0.05 else {
+            showToast("Highlight already matches playback")
+            return
+        }
+
+        setTranscriptOffset(to: episode.studyTranscriptOffsetSeconds + delta)
+        studySessionViewModel?.syncCurrentBlockToPlaybackTime()
+        showToast("Matched — shifted \(PodcastStudyContentStart.formattedSignedOffset(delta))")
+    }
+
+    private func setTranscriptOffset(to offset: TimeInterval) {
+        let clamped = min(600, max(-600, offset))
+        guard abs(clamped - episode.studyTranscriptOffsetSeconds) > 0.01 else { return }
+        episode.studyTranscriptOffsetSeconds = clamped
+        episode.isSynced = false
+        try? modelContext.save()
+
+        if studyLoadState == .loaded {
+            refreshStudySessionBlocks()
+            studySessionViewModel?.syncCurrentBlockToPlaybackTime()
+        }
+    }
+
+    private func resetTranscriptOffset() {
+        guard abs(episode.studyTranscriptOffsetSeconds) > 0.05 else { return }
+        setTranscriptOffset(to: 0)
+        showToast("Transcript alignment reset")
+    }
+
+    private func syncContentStartEntryFromEpisode() {
+        contentStartEntryText = studyContentStart > 0
+            ? PodcastStudyContentStart.formattedTimestamp(studyContentStart)
+            : ""
+    }
+
+    private func applyContentStartFromEntry() {
+        guard let seconds = PodcastStudyContentStart.parseTimestampEntry(contentStartEntryText) else {
+            showToast("Enter time as MM:SS, H:MM:SS, or seconds")
+            return
+        }
+        applyContentStartAt(seconds: seconds)
+    }
+
+    private func markStudyContentStartFromPlayhead() {
+        applyContentStartAt(seconds: max(0, audioManager.streamCurrentTime))
+    }
+
+    private func nudgeContentStart(by delta: TimeInterval) {
+        let base = studyContentStart > 0 ? studyContentStart : audioManager.streamCurrentTime
+        applyContentStartAt(seconds: max(0, base + delta))
+    }
+
+    private func applyContentStartAt(seconds: TimeInterval) {
+        let previousStart = episode.studyContentStartSeconds
+        let clamped: TimeInterval
+        if duration > 1 {
+            clamped = min(max(0, seconds), duration - 0.5)
+        } else {
+            clamped = max(0, seconds)
+        }
+        episode.studyContentStartSeconds = clamped
+        episode.isSynced = false
+        try? modelContext.save()
+        syncContentStartEntryFromEpisode()
+
+        let stamp = PodcastStudyContentStart.formattedTimestamp(clamped)
+        let startChanged = abs(clamped - previousStart) > 1
+
+        if startChanged {
+            let language = episode.show?.language ?? .spanish
+            transcriptService.clearCachedTranscripts(
+                episode: episode,
+                language: language,
+                modelContext: modelContext
+            )
+            resetStudyTranscriptState()
+            didBootstrapStudyMode = false
+            showToast("AI start set to \(stamp). Regenerate transcript.")
+            Task { await bootstrapStudyModeIfNeeded(force: true) }
+            return
+        }
+
+        showToast("AI start set to \(stamp)")
+    }
+
+    private func clearStudyContentStart() {
+        guard studyContentStart > 0 else { return }
+        episode.studyContentStartSeconds = 0
+        episode.isSynced = false
+        try? modelContext.save()
+        syncContentStartEntryFromEpisode()
+
+        let language = episode.show?.language ?? .spanish
+        transcriptService.clearCachedTranscripts(
+            episode: episode,
+            language: language,
+            modelContext: modelContext
+        )
+        resetStudyTranscriptState()
+        didBootstrapStudyMode = false
+        showToast("Content start cleared. Regenerate transcript to include earlier audio.")
+        Task { await bootstrapStudyModeIfNeeded(force: true) }
+    }
+
+    private func ensurePlaybackAtStudyContentStart() {
+        guard studyContentStart > 1 else { return }
+        if audioManager.streamCurrentTime < studyContentStart - 0.5 {
+            seekTo(studyContentStart)
+        }
+    }
+
     // MARK: - Audio
 
     private func setupStream() {
@@ -858,8 +1385,7 @@ struct PodcastPlayerView: View {
             artist: episode.show?.title ?? "Podcast"
         )
 
-        audioManager.playStream()
-        isPlaying = audioManager.isStreaming
+        isPlaying = false
         sliderValue = episode.playbackPosition
 
         if let artworkUrlStr = episode.show?.artworkUrl,
@@ -942,10 +1468,9 @@ struct PodcastPlayerView: View {
         } else {
             if audioManager.streamPlayer == nil || audioManager.streamLoadError != nil {
                 setupStream()
-            } else {
-                audioManager.playStream()
-                isPlaying = audioManager.isStreaming
             }
+            audioManager.playStream()
+            isPlaying = audioManager.isStreaming
         }
         audioManager.updateStreamNowPlayingInfo()
     }

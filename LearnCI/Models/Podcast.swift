@@ -54,6 +54,10 @@ final class PodcastEpisode: Identifiable {
     var duration: Double // seconds
     var playbackPosition: Double // for resume
     var isPlayed: Bool
+    /// User-marked start of study content (skips intro/ads before this timestamp).
+    var studyContentStartSeconds: Double = 0
+    /// Manual nudge applied to transcript block timings (+ = shift later, − = shift earlier).
+    var studyTranscriptOffsetSeconds: Double = 0
     var transcriptUrl: String?
     var transcriptType: String?
     var isSynced: Bool = false
@@ -73,6 +77,8 @@ final class PodcastEpisode: Identifiable {
          duration: Double = 0,
          playbackPosition: Double = 0,
          isPlayed: Bool = false,
+         studyContentStartSeconds: Double = 0,
+         studyTranscriptOffsetSeconds: Double = 0,
          transcriptUrl: String? = nil,
          transcriptType: String? = nil) {
         self.id = id
@@ -83,6 +89,8 @@ final class PodcastEpisode: Identifiable {
         self.duration = duration
         self.playbackPosition = playbackPosition
         self.isPlayed = isPlayed
+        self.studyContentStartSeconds = studyContentStartSeconds
+        self.studyTranscriptOffsetSeconds = studyTranscriptOffsetSeconds
         self.transcriptUrl = transcriptUrl
         self.transcriptType = transcriptType
         self.isSynced = false

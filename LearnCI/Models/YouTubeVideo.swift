@@ -56,7 +56,9 @@ struct YouTubeVideo: Identifiable, Codable {
     }
 
     var chapters: [YouTubeVideoChapter] {
-        parseChapters(from: description)
+        MediaChapterParser.parseChapters(from: description).map {
+            YouTubeVideoChapter(startTime: $0.startTime, title: $0.title)
+        }
     }
     
     private func parseDuration(_ iso8601: String) -> Int {
@@ -84,54 +86,6 @@ struct YouTubeVideo: Identifiable, Codable {
         }
         
         return result
-    }
-
-    private func parseChapters(from description: String) -> [YouTubeVideoChapter] {
-        guard !description.isEmpty else { return [] }
-
-        let pattern = #"^\s*((?:\d{1,2}:)?\d{1,2}:\d{2})\s*(?:[-|:]\s*)?(.+?)\s*$"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
-
-        var chapters: [YouTubeVideoChapter] = []
-        var seenStartTimes: Set<Int> = []
-
-        for line in description.components(separatedBy: .newlines) {
-            let nsRange = NSRange(line.startIndex..<line.endIndex, in: line)
-            guard let match = regex.firstMatch(in: line, range: nsRange),
-                  let timestampRange = Range(match.range(at: 1), in: line),
-                  let titleRange = Range(match.range(at: 2), in: line) else {
-                continue
-            }
-
-            let timestamp = String(line[timestampRange])
-            let title = String(line[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let startSeconds = timestampToSeconds(timestamp)
-
-            guard !title.isEmpty else { continue }
-            guard seenStartTimes.insert(startSeconds).inserted else { continue }
-
-            chapters.append(
-                YouTubeVideoChapter(
-                    startTime: TimeInterval(startSeconds),
-                    title: title
-                )
-            )
-        }
-
-        let sortedChapters = chapters.sorted { $0.startTime < $1.startTime }
-        return sortedChapters.count >= 2 ? sortedChapters : []
-    }
-
-    private func timestampToSeconds(_ timestamp: String) -> Int {
-        let components = timestamp
-            .split(separator: ":")
-            .compactMap { Int($0) }
-
-        guard !components.isEmpty else { return 0 }
-
-        return components.reduce(0) { partialResult, value in
-            (partialResult * 60) + value
-        }
     }
 }
 

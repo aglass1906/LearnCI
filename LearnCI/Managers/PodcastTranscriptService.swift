@@ -5,6 +5,7 @@ import SwiftData
 enum PodcastTranscriptSource: String, Sendable {
     case cache
     case feed
+    case description
     case whisper
 }
 
@@ -27,7 +28,7 @@ enum PodcastTranscriptError: LocalizedError {
         case .transcriptionEmpty:
             return "Whisper did not return any words for this episode."
         case .fileTooLarge:
-            return "Episode audio is too large to transcribe in one request."
+            return "This episode could not be compressed enough for Whisper. Study mode transcribes up to the first 15 minutes."
         case .whisperConfirmationRequired:
             return "AI transcription requires your confirmation before it starts."
         }
@@ -42,12 +43,14 @@ struct PodcastTranscriptResult: Sendable {
     let cachedWords: [WordTiming]?
     let cachedCues: [YouTubeCaptionCue]?
     let coversDurationSeconds: Double?
+    let skippedAdSegmentCount: Int?
 }
 
 struct PodcastTranscriptWhisperOffer: Sendable {
     let title: String
     let message: String
     let feedAttempted: Bool
+    let descriptionAttempted: Bool
 }
 
 enum PodcastTranscriptAvailability: Sendable {
@@ -71,7 +74,12 @@ final class PodcastTranscriptService {
         }
 
         let languageCode = language.rawValue
-        if let cached = fetchCache(consumptionUrl: episode.audioUrl, languageCode: languageCode, modelContext: modelContext),
+        let contentStart = PodcastStudyContentStart.effectiveStart(for: episode)
+        if let cached = fetchCache(
+            episode: episode,
+            languageCode: languageCode,
+            modelContext: modelContext
+        ),
            !cached.blocks.isEmpty {
             Logger.info("Loaded podcast transcript from cache for episode \(episode.id)", category: .general)
             return .ready(
@@ -82,7 +90,8 @@ final class PodcastTranscriptService {
                     cachedBlocks: cached.blocks,
                     cachedWords: cached.words.isEmpty ? nil : cached.words,
                     cachedCues: cached.cues.isEmpty ? nil : cached.cues,
-                    coversDurationSeconds: nil
+                    coversDurationSeconds: nil,
+                    skippedAdSegmentCount: nil
                 )
             )
         }
@@ -91,42 +100,14 @@ final class PodcastTranscriptService {
         if episode.hasFeedTranscript,
            let transcriptUrl = episode.transcriptUrl {
             do {
-                let cues = try await PodcastFeedTranscriptParser.fetchAndParse(
-                    urlString: transcriptUrl,
-                    type: episode.transcriptType,
-                    fallbackDuration: episode.duration
-                )
-                guard !cues.isEmpty else {
-                    throw PodcastFeedTranscriptError.emptyTranscript
-                }
-
-                let blocks = CaptionTranscriptProvider(
-                    cues: cues,
-                    translationForCue: { _ in nil }
-                ).makeBlocks()
-
-                persistCache(
-                    consumptionUrl: episode.audioUrl,
-                    languageCode: languageCode,
-                    blocks: blocks,
-                    cues: cues,
-                    modelContext: modelContext
-                )
-
-                Logger.info(
-                    "Loaded podcast feed transcript for episode \(episode.id) (\(cues.count) cues)",
-                    category: .general
-                )
-
                 return .ready(
-                    PodcastTranscriptResult(
-                        source: .feed,
-                        words: [],
-                        cues: cues,
-                        cachedBlocks: nil,
-                        cachedWords: nil,
-                        cachedCues: nil,
-                        coversDurationSeconds: nil
+                    try await loadPublishedTranscript(
+                        urlString: transcriptUrl,
+                        type: episode.transcriptType,
+                        episode: episode,
+                        languageCode: languageCode,
+                        modelContext: modelContext,
+                        source: .feed
                     )
                 )
             } catch {
@@ -138,8 +119,105 @@ final class PodcastTranscriptService {
             }
         }
 
+        var descriptionFailureReason: String?
+        let descriptionLinks = PodcastFeedTranscriptParser.extractTranscriptLinks(
+            from: episode.episodeDescription,
+            preferredLanguageCode: languageCode
+        )
+        if let selectedDescriptionLink = PodcastFeedTranscriptParser.selectPreferredTranscript(
+            from: descriptionLinks,
+            preferredLanguageCode: languageCode
+        ) {
+            do {
+                return .ready(
+                    try await loadPublishedTranscript(
+                        urlString: selectedDescriptionLink.url,
+                        type: selectedDescriptionLink.type,
+                        episode: episode,
+                        languageCode: languageCode,
+                        modelContext: modelContext,
+                        source: .description,
+                        persistFeedMetadata: true
+                    )
+                )
+            } catch {
+                descriptionFailureReason = error.localizedDescription
+                Logger.warning(
+                    "Description transcript unavailable for episode \(episode.id): \(error.localizedDescription)",
+                    category: .general
+                )
+            }
+        }
+
         return .whisperOffer(
-            makeWhisperOffer(for: episode, feedFailureReason: feedFailureReason)
+            makeWhisperOffer(
+                for: episode,
+                feedFailureReason: feedFailureReason,
+                descriptionFailureReason: descriptionFailureReason,
+                descriptionLinksFound: !descriptionLinks.isEmpty
+            )
+        )
+    }
+
+    func whisperOffer(for episode: PodcastEpisode) -> PodcastTranscriptWhisperOffer {
+        makeWhisperOffer(for: episode, feedFailureReason: nil)
+    }
+
+    private func loadPublishedTranscript(
+        urlString: String,
+        type: String?,
+        episode: PodcastEpisode,
+        languageCode: String,
+        modelContext: ModelContext,
+        source: PodcastTranscriptSource,
+        persistFeedMetadata: Bool = false
+    ) async throws -> PodcastTranscriptResult {
+        let cues = try await PodcastFeedTranscriptParser.fetchAndParse(
+            urlString: urlString,
+            type: type,
+            fallbackDuration: episode.duration
+        )
+        let contentStart = PodcastStudyContentStart.effectiveStart(for: episode)
+        let filteredCues = PodcastStudyContentStart.filterCuesAtOrAfter(cues, start: contentStart)
+        guard !filteredCues.isEmpty else {
+            throw PodcastFeedTranscriptError.emptyTranscript
+        }
+
+        let blocks = CaptionTranscriptProvider(
+            cues: filteredCues,
+            translationForCue: { _ in nil }
+        ).makeBlocks()
+
+        persistCache(
+            episode: episode,
+            languageCode: languageCode,
+            blocks: blocks,
+            cues: filteredCues,
+            modelContext: modelContext
+        )
+
+        if persistFeedMetadata, episode.transcriptUrl == nil {
+            episode.transcriptUrl = urlString
+            episode.transcriptType = type
+            episode.isSynced = false
+            try? modelContext.save()
+        }
+
+        let logLabel = source == .description ? "description" : "feed"
+        Logger.info(
+            "Loaded podcast \(logLabel) transcript for episode \(episode.id) (\(filteredCues.count) cues)",
+            category: .general
+        )
+
+        return PodcastTranscriptResult(
+            source: source,
+            words: [],
+            cues: filteredCues,
+            cachedBlocks: nil,
+            cachedWords: nil,
+            cachedCues: nil,
+            coversDurationSeconds: nil,
+            skippedAdSegmentCount: nil
         )
     }
 
@@ -172,6 +250,8 @@ final class PodcastTranscriptService {
     private func makeWhisperOffer(
         for episode: PodcastEpisode,
         feedFailureReason: String?,
+        descriptionFailureReason: String? = nil,
+        descriptionLinksFound: Bool = false,
         missingAPIKey: Bool = false
     ) -> PodcastTranscriptWhisperOffer {
         let longEpisode = episode.duration > 15 * 60
@@ -179,17 +259,37 @@ final class PodcastTranscriptService {
 
         if episode.hasFeedTranscript {
             if let feedFailureReason {
-                detailParts.append("The published transcript could not be loaded (\(feedFailureReason)).")
+                detailParts.append("The published feed transcript could not be loaded (\(feedFailureReason)).")
             } else {
-                detailParts.append("The published transcript could not be loaded.")
+                detailParts.append("The published feed transcript could not be loaded.")
             }
-        } else {
-            detailParts.append("This episode does not include a transcript link in the podcast feed.")
+        }
+
+        if descriptionLinksFound {
+            if let descriptionFailureReason {
+                detailParts.append("A transcript link in the episode description could not be loaded (\(descriptionFailureReason)).")
+            } else {
+                detailParts.append("A transcript link in the episode description could not be loaded.")
+            }
+        } else if !episode.hasFeedTranscript {
+            detailParts.append("No transcript link was found in the podcast feed or episode description.")
         }
 
         detailParts.append(
             "Study mode can generate one with AI (Whisper) by downloading the episode audio. This may take a minute and uses your OpenAI quota."
         )
+
+        if PodcastStudyContentStart.effectiveStart(for: episode) > 0 {
+            let stamp = PodcastStudyContentStart.formattedTimestamp(episode.studyContentStartSeconds)
+            detailParts.append("Content start is marked at \(stamp). Whisper transcribes from ~20s before that so opening words are not cut off.")
+        } else {
+            detailParts.append(
+                "To skip an intro or ad, scrub to where the episode begins and tap Mark Content Start before generating."
+            )
+            detailParts.append(
+                "Without a manual start mark, ad segments from show-note chapters may also be removed automatically."
+            )
+        }
 
         if longEpisode {
             detailParts.append("Episodes longer than 15 minutes are transcribed from the first 15 minutes only.")
@@ -202,12 +302,13 @@ final class PodcastTranscriptService {
         return PodcastTranscriptWhisperOffer(
             title: "Generate transcript with AI?",
             message: detailParts.joined(separator: " "),
-            feedAttempted: episode.hasFeedTranscript
+            feedAttempted: episode.hasFeedTranscript,
+            descriptionAttempted: descriptionLinksFound
         )
     }
 
     func updateCache(
-        consumptionUrl: String,
+        episode: PodcastEpisode,
         languageCode: String,
         blocks: [StudyBlock],
         words: [WordTiming]? = nil,
@@ -215,13 +316,44 @@ final class PodcastTranscriptService {
         modelContext: ModelContext
     ) {
         persistCache(
-            consumptionUrl: consumptionUrl,
+            episode: episode,
             languageCode: languageCode,
             blocks: blocks,
             words: words,
             cues: cues,
             modelContext: modelContext
         )
+    }
+
+    func clearCachedTranscripts(
+        episode: PodcastEpisode,
+        language: Language,
+        modelContext: ModelContext
+    ) {
+        let consumptionUrl = episode.audioUrl
+        let languageCode = language.rawValue
+        let descriptor = FetchDescriptor<MediaTranscriptCache>(
+            predicate: #Predicate {
+                $0.consumptionUrl == consumptionUrl && $0.languageCode == languageCode
+            }
+        )
+        guard let cachedItems = try? modelContext.fetch(descriptor), !cachedItems.isEmpty else {
+            return
+        }
+        for item in cachedItems {
+            modelContext.delete(item)
+        }
+        try? modelContext.save()
+        Logger.info("Cleared podcast study transcript cache for episode \(episode.id)", category: .general)
+    }
+
+    /// Backward-compatible alias used by the player UI.
+    func clearCachedTranscript(
+        episode: PodcastEpisode,
+        language: Language,
+        modelContext: ModelContext
+    ) {
+        clearCachedTranscripts(episode: episode, language: language, modelContext: modelContext)
     }
 
     private func transcribeWithWhisper(
@@ -233,28 +365,58 @@ final class PodcastTranscriptService {
             throw PodcastTranscriptError.invalidAudioURL
         }
 
-        let prepared = try await prepareWhisperAudio(from: remoteURL)
+        let prepared = try await prepareWhisperAudio(from: remoteURL, episode: episode)
         defer { try? FileManager.default.removeItem(at: prepared.localURL) }
 
-        let words = try await openAIService.generateWordTimings(
+        let contentStart = PodcastStudyContentStart.effectiveStart(for: episode)
+        let exportStart = PodcastStudyContentStart.whisperExportStart(for: episode)
+        let rawWords = try await openAIService.generateWordTimings(
             for: prepared.localURL,
             languageCode: languageCode
         )
+        guard !rawWords.isEmpty else {
+            throw PodcastTranscriptError.transcriptionEmpty
+        }
+
+        let wordsWithEpisodeTimeline = PodcastStudyContentStart.offsetWords(rawWords, by: exportStart)
+
+        let words: [WordTiming]
+        let skippedAdSegments: Int
+        if contentStart > 0 {
+            // Manual content start already skips intro/ads; don't also apply chapter ad ranges.
+            words = wordsWithEpisodeTimeline
+            skippedAdSegments = 0
+        } else {
+            let adIntervals = PodcastAdSegmentDetector.adIntervals(
+                from: episode.episodeDescription,
+                episodeDuration: max(episode.duration, wordsWithEpisodeTimeline.last?.end ?? 0)
+            )
+            words = PodcastAdSegmentDetector.filterWords(
+                wordsWithEpisodeTimeline,
+                excludingAdIntervals: adIntervals
+            )
+            skippedAdSegments = adIntervals.count
+        }
         guard !words.isEmpty else {
             throw PodcastTranscriptError.transcriptionEmpty
         }
 
         let blocks = WhisperTranscriptProvider(words: words, translationForSentenceRange: { _, _ in nil }).makeBlocks()
         persistCache(
-            consumptionUrl: episode.audioUrl,
+            episode: episode,
             languageCode: languageCode,
             blocks: blocks,
             words: words,
             modelContext: modelContext
         )
 
+        let adLogSuffix = skippedAdSegments > 0
+            ? " (skipped \(skippedAdSegments) ad segment(s) from show notes)"
+            : (contentStart > 0
+                ? " (export from \(Int(exportStart.rounded()))s, study from \(Int(contentStart.rounded()))s)"
+                : "")
         Logger.info(
-            "Transcribed podcast episode \(episode.id) into \(blocks.count) study blocks via Whisper",
+            "Transcribed podcast episode \(episode.id) into \(blocks.count) study blocks via Whisper\(adLogSuffix)",
             category: .general
         )
 
@@ -265,16 +427,21 @@ final class PodcastTranscriptService {
             cachedBlocks: nil,
             cachedWords: nil,
             cachedCues: nil,
-            coversDurationSeconds: prepared.coversDurationSeconds
+            coversDurationSeconds: prepared.coversDurationSeconds,
+            skippedAdSegmentCount: skippedAdSegments > 0 ? skippedAdSegments : nil
         )
     }
 
     private func fetchCache(
-        consumptionUrl: String,
+        episode: PodcastEpisode,
         languageCode: String,
         modelContext: ModelContext
     ) -> MediaTranscriptCache? {
-        let cacheKey = MediaTranscriptCache.makeCacheKey(consumptionUrl: consumptionUrl, languageCode: languageCode)
+        let cacheKey = MediaTranscriptCache.makeCacheKey(
+            consumptionUrl: episode.audioUrl,
+            languageCode: languageCode,
+            contentStartSeconds: PodcastStudyContentStart.effectiveStart(for: episode)
+        )
         let descriptor = FetchDescriptor<MediaTranscriptCache>(
             predicate: #Predicate { $0.cacheKey == cacheKey }
         )
@@ -282,20 +449,22 @@ final class PodcastTranscriptService {
     }
 
     private func persistCache(
-        consumptionUrl: String,
+        episode: PodcastEpisode,
         languageCode: String,
         blocks: [StudyBlock],
         words: [WordTiming]? = nil,
         cues: [YouTubeCaptionCue]? = nil,
         modelContext: ModelContext
     ) {
-        if let existing = fetchCache(consumptionUrl: consumptionUrl, languageCode: languageCode, modelContext: modelContext) {
+        let contentStart = PodcastStudyContentStart.effectiveStart(for: episode)
+        if let existing = fetchCache(episode: episode, languageCode: languageCode, modelContext: modelContext) {
             existing.replace(blocks: blocks, words: words, cues: cues)
         } else {
             modelContext.insert(
                 MediaTranscriptCache(
-                    consumptionUrl: consumptionUrl,
+                    consumptionUrl: episode.audioUrl,
                     languageCode: languageCode,
+                    contentStartSeconds: contentStart,
                     blocks: blocks,
                     words: words,
                     cues: cues
@@ -310,7 +479,7 @@ final class PodcastTranscriptService {
         let coversDurationSeconds: Double?
     }
 
-    private func prepareWhisperAudio(from remoteURL: URL) async throws -> PreparedAudio {
+    private func prepareWhisperAudio(from remoteURL: URL, episode: PodcastEpisode) async throws -> PreparedAudio {
         let (tempURL, _) = try await URLSession.shared.download(from: remoteURL)
         let downloadedURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -318,38 +487,127 @@ final class PodcastTranscriptService {
 
         try FileManager.default.moveItem(at: tempURL, to: downloadedURL)
 
+        let asset = AVURLAsset(url: downloadedURL)
+        let totalSeconds = CMTimeGetSeconds(try await asset.load(.duration))
         let fileSize = (try? FileManager.default.attributesOfItem(atPath: downloadedURL.path)[.size] as? Int) ?? 0
-        if fileSize <= Self.whisperMaxBytes {
+        let contentStart = PodcastStudyContentStart.effectiveStart(for: episode)
+        let exportStart = PodcastStudyContentStart.whisperExportStart(for: episode)
+        let remainingSeconds = max(0, totalSeconds - exportStart)
+
+        guard remainingSeconds > 0 else {
+            throw PodcastTranscriptError.exportFailed
+        }
+
+        let exceedsDurationLimit = remainingSeconds > Self.defaultTrimDuration
+        let exceedsSizeLimit = fileSize > Self.whisperMaxBytes
+
+        if exportStart <= 0 && !exceedsDurationLimit && !exceedsSizeLimit {
             return PreparedAudio(localURL: downloadedURL, coversDurationSeconds: nil)
         }
 
-        let trimmedURL = try await exportTrimmedAudio(from: downloadedURL, maxDuration: Self.defaultTrimDuration)
+        let preferredDuration = min(remainingSeconds, Self.defaultTrimDuration)
+        let exportResult = try await exportAudioUnderWhisperLimit(
+            from: downloadedURL,
+            contentStart: exportStart,
+            preferredDuration: preferredDuration
+        )
         try? FileManager.default.removeItem(at: downloadedURL)
-        return PreparedAudio(localURL: trimmedURL, coversDurationSeconds: Self.defaultTrimDuration)
+
+        let coversDuration = trimmedDurationSeconds(
+            totalSeconds: remainingSeconds,
+            exportedDuration: exportResult.durationSeconds
+        )
+        return PreparedAudio(localURL: exportResult.url, coversDurationSeconds: coversDuration)
     }
 
-    private func exportTrimmedAudio(from sourceURL: URL, maxDuration: TimeInterval) async throws -> URL {
+    private struct WhisperExportResult {
+        let url: URL
+        let durationSeconds: TimeInterval
+    }
+
+    private func trimmedDurationSeconds(
+        totalSeconds: TimeInterval,
+        exportedDuration: TimeInterval
+    ) -> Double? {
+        guard totalSeconds > exportedDuration + 1 else { return nil }
+        return exportedDuration
+    }
+
+    private func exportAudioUnderWhisperLimit(
+        from sourceURL: URL,
+        contentStart: TimeInterval,
+        preferredDuration: TimeInterval
+    ) async throws -> WhisperExportResult {
+        var duration = max(preferredDuration, Self.minimumWhisperDuration)
+        let step = Self.whisperDurationStep
+
+        while duration >= Self.minimumWhisperDuration {
+            let exportedURL = try await exportTrimmedAudio(
+                from: sourceURL,
+                contentStart: contentStart,
+                maxDuration: duration
+            )
+            let exportedSize = (try? FileManager.default.attributesOfItem(atPath: exportedURL.path)[.size] as? Int) ?? 0
+
+            if exportedSize <= Self.whisperMaxBytes {
+                return WhisperExportResult(url: exportedURL, durationSeconds: duration)
+            }
+
+            try? FileManager.default.removeItem(at: exportedURL)
+            duration -= step
+        }
+
+        throw PodcastTranscriptError.fileTooLarge
+    }
+
+    private static let minimumWhisperDuration: TimeInterval = 5 * 60
+    private static let whisperDurationStep: TimeInterval = 2 * 60
+
+    private func exportTrimmedAudio(
+        from sourceURL: URL,
+        contentStart: TimeInterval,
+        maxDuration: TimeInterval
+    ) async throws -> URL {
         let asset = AVURLAsset(url: sourceURL)
         let duration = try await asset.load(.duration)
         let totalSeconds = CMTimeGetSeconds(duration)
-        let exportSeconds = min(maxDuration, totalSeconds)
+        let availableSeconds = max(0, totalSeconds - contentStart)
+        return try await exportAudioRange(
+            from: asset,
+            start: contentStart,
+            duration: min(maxDuration, availableSeconds)
+        )
+    }
+
+    private func exportAudioRange(
+        from asset: AVURLAsset,
+        start: TimeInterval,
+        duration: TimeInterval
+    ) async throws -> URL {
+        guard duration > 0 else {
+            throw PodcastTranscriptError.exportFailed
+        }
 
         guard let exportSession = AVAssetExportSession(
             asset: asset,
-            presetName: AVAssetExportPresetMediumQuality
+            presetName: AVAssetExportPresetAppleM4A
         ) else {
+            throw PodcastTranscriptError.exportFailed
+        }
+
+        guard let outputFileType = preferredExportFileType(for: exportSession) else {
             throw PodcastTranscriptError.exportFailed
         }
 
         let outputURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("m4a")
+            .appendingPathExtension(fileExtension(for: outputFileType))
 
         exportSession.outputURL = outputURL
-        exportSession.outputFileType = .m4a
+        exportSession.outputFileType = outputFileType
         exportSession.timeRange = CMTimeRange(
-            start: .zero,
-            duration: CMTime(seconds: exportSeconds, preferredTimescale: 600)
+            start: CMTime(seconds: start, preferredTimescale: 600),
+            duration: CMTime(seconds: duration, preferredTimescale: 600)
         )
 
         await exportSession.export()
@@ -358,11 +616,28 @@ final class PodcastTranscriptService {
             throw PodcastTranscriptError.exportFailed
         }
 
-        let exportedSize = (try? FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int) ?? 0
-        guard exportedSize <= Self.whisperMaxBytes else {
-            throw PodcastTranscriptError.fileTooLarge
-        }
-
         return outputURL
+    }
+
+    private func preferredExportFileType(for session: AVAssetExportSession) -> AVFileType? {
+        let supported = session.supportedFileTypes
+        if supported.contains(.m4a) { return .m4a }
+        if supported.contains(.mp4) { return .mp4 }
+        return supported.first
+    }
+
+    private func fileExtension(for fileType: AVFileType) -> String {
+        switch fileType {
+        case .m4a: return "m4a"
+        case .mp4: return "mp4"
+        case .mov: return "mov"
+        case .wav: return "wav"
+        case .mp3: return "mp3"
+        default:
+            let raw = fileType.rawValue.lowercased()
+            if raw.contains("m4a") { return "m4a" }
+            if raw.contains("mp4") { return "mp4" }
+            return "m4a"
+        }
     }
 }

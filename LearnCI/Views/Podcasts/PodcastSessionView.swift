@@ -107,7 +107,7 @@ struct PodcastSessionView: View {
             episodes = initialEpisodes
             currentIndex = resumingFromIndex
             sessionStartTime = Date()
-            playCurrentEpisode()
+            prepareCurrentEpisode()
         }
         .onDisappear {
             saveCurrentEpisodeProgress()
@@ -306,15 +306,14 @@ struct PodcastSessionView: View {
 
     // MARK: - Audio Logic
 
-    private func playCurrentEpisode() {
+    private func prepareCurrentEpisode() {
         guard let episode = currentEpisode,
               let url = episode.playableAudioURL else { return }
 
         audioManager.streamAudio(url: url, startAt: episode.playbackPosition)
-        audioManager.playStream()
         duration = episode.duration
-        isPlaying = true
-        manuallyPaused = false
+        isPlaying = false
+        sliderValue = episode.playbackPosition
 
         audioManager.updateStreamNowPlayingInfo(
             title: episode.title,
@@ -333,6 +332,15 @@ struct PodcastSessionView: View {
                 }
             }
         }
+    }
+
+    private func playCurrentEpisode() {
+        if audioManager.streamPlayer == nil {
+            prepareCurrentEpisode()
+        }
+        audioManager.playStream()
+        isPlaying = true
+        manuallyPaused = false
     }
 
     private func advanceToNextEpisode() {
@@ -418,9 +426,13 @@ struct PodcastSessionView: View {
             isPlaying = false
             manuallyPaused = true
         } else {
-            audioManager.playStream()
-            isPlaying = true
-            manuallyPaused = false
+            if audioManager.streamPlayer == nil {
+                playCurrentEpisode()
+            } else {
+                audioManager.playStream()
+                isPlaying = true
+                manuallyPaused = false
+            }
         }
         audioManager.updateStreamNowPlayingInfo()
     }

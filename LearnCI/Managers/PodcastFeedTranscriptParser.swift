@@ -27,6 +27,80 @@ enum PodcastFeedTranscriptParser {
         let language: String?
     }
 
+    /// Finds transcript URLs embedded in episode show notes (plain links, markdown, or nearby "transcript" text).
+    static func extractTranscriptLinks(
+        from description: String,
+        preferredLanguageCode: String
+    ) -> [TranscriptLink] {
+        guard !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return []
+        }
+
+        var seenURLs = Set<String>()
+        var links: [TranscriptLink] = []
+
+        func appendCandidate(url rawURL: String, linkText: String?, range: Range<String.Index>) {
+            let cleaned = sanitizeURL(rawURL)
+            guard !cleaned.isEmpty, seenURLs.insert(cleaned).inserted else { return }
+
+            let contextStart = description.index(
+                range.lowerBound,
+                offsetBy: -min(80, description.distance(from: description.startIndex, to: range.lowerBound)),
+                limitedBy: description.startIndex
+            ) ?? description.startIndex
+            let contextEnd = description.index(
+                range.upperBound,
+                offsetBy: min(40, description.distance(from: range.upperBound, to: description.endIndex)),
+                limitedBy: description.endIndex
+            ) ?? description.endIndex
+            let context = String(description[contextStart..<contextEnd])
+
+            guard looksLikeTranscriptReference(url: cleaned, linkText: linkText, context: context) else {
+                return
+            }
+
+            let url = URL(string: cleaned) ?? URL(fileURLWithPath: "/")
+            links.append(
+                TranscriptLink(
+                    url: cleaned,
+                    type: resolvedMIMEType(declaredType: nil, response: nil, url: url),
+                    language: inferredLanguage(from: cleaned, preferredLanguageCode: preferredLanguageCode)
+                )
+            )
+        }
+
+        let markdownPattern = #"\[([^\]]+)\]\((https?://[^)\s]+)\)"#
+        if let markdownRegex = try? NSRegularExpression(pattern: markdownPattern) {
+            let nsRange = NSRange(description.startIndex..<description.endIndex, in: description)
+            for match in markdownRegex.matches(in: description, range: nsRange) {
+                guard match.numberOfRanges >= 3,
+                      let textRange = Range(match.range(at: 1), in: description),
+                      let urlRange = Range(match.range(at: 2), in: description),
+                      let fullRange = Range(match.range, in: description) else { continue }
+                appendCandidate(
+                    url: String(description[urlRange]),
+                    linkText: String(description[textRange]),
+                    range: fullRange
+                )
+            }
+        }
+
+        let urlPattern = #"https?://[^\s<>"')\]]+"#
+        if let urlRegex = try? NSRegularExpression(pattern: urlPattern) {
+            let nsRange = NSRange(description.startIndex..<description.endIndex, in: description)
+            for match in urlRegex.matches(in: description, range: nsRange) {
+                guard let urlRange = Range(match.range, in: description) else { continue }
+                appendCandidate(
+                    url: String(description[urlRange]),
+                    linkText: nil,
+                    range: urlRange
+                )
+            }
+        }
+
+        return links
+    }
+
     static func selectPreferredTranscript(
         from links: [TranscriptLink],
         preferredLanguageCode: String
@@ -356,5 +430,44 @@ enum PodcastFeedTranscriptParser {
         let normalized = language.lowercased()
         if normalized.hasPrefix(preferredPrefix) { return 0 }
         return 2
+    }
+
+    private static func sanitizeURL(_ raw: String) -> String {
+        var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        while let last = value.last, ",.;)]}".contains(last) {
+            value.removeLast()
+        }
+        return value
+    }
+
+    private static func looksLikeTranscriptReference(url: String, linkText: String?, context: String) -> Bool {
+        let lowerURL = url.lowercased()
+        let ext = URL(string: url)?.pathExtension.lowercased() ?? ""
+        if ["vtt", "srt", "json", "xml"].contains(ext) {
+            return true
+        }
+
+        let transcriptTokens = [
+            "transcript", "transcripción", "transcripcion", "transcripts",
+            "caption", "captions", "subtitle", "subtitles", "subtítulos", "subtitulos"
+        ]
+
+        if transcriptTokens.contains(where: { lowerURL.contains($0) }) {
+            return true
+        }
+
+        let combined = [linkText, context]
+            .compactMap { $0?.lowercased() }
+            .joined(separator: " ")
+        return transcriptTokens.contains(where: { combined.contains($0) })
+    }
+
+    private static func inferredLanguage(from url: String, preferredLanguageCode: String) -> String? {
+        let lower = url.lowercased()
+        let preferredPrefix = String(preferredLanguageCode.prefix(2)).lowercased()
+        if lower.contains("/\(preferredPrefix)/") || lower.contains("_\(preferredPrefix).") || lower.contains("-\(preferredPrefix).") {
+            return preferredLanguageCode
+        }
+        return nil
     }
 }

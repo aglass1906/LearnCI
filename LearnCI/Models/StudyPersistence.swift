@@ -142,12 +142,17 @@ final class MediaTranscriptCache {
     init(
         consumptionUrl: String,
         languageCode: String,
+        contentStartSeconds: TimeInterval = 0,
         blocks: [StudyBlock],
         words: [WordTiming]? = nil,
         cues: [YouTubeCaptionCue]? = nil,
         fetchedAt: Date = Date()
     ) {
-        self.cacheKey = Self.makeCacheKey(consumptionUrl: consumptionUrl, languageCode: languageCode)
+        self.cacheKey = Self.makeCacheKey(
+            consumptionUrl: consumptionUrl,
+            languageCode: languageCode,
+            contentStartSeconds: contentStartSeconds
+        )
         self.consumptionUrl = consumptionUrl
         self.languageCode = languageCode
         self.blocksJSON = Self.encodeBlocks(blocks)
@@ -187,8 +192,16 @@ final class MediaTranscriptCache {
         self.updatedAt = updatedAt
     }
 
-    static func makeCacheKey(consumptionUrl: String, languageCode: String) -> String {
-        "\(consumptionUrl)::\(languageCode)"
+    static func makeCacheKey(
+        consumptionUrl: String,
+        languageCode: String,
+        contentStartSeconds: TimeInterval = 0
+    ) -> String {
+        let roundedStart = max(0, Int(contentStartSeconds.rounded()))
+        guard roundedStart > 0 else {
+            return "\(consumptionUrl)::\(languageCode)"
+        }
+        return "\(consumptionUrl)::\(languageCode)::start-\(roundedStart)"
     }
 
     private static func encodeBlocks(_ blocks: [StudyBlock]) -> String {

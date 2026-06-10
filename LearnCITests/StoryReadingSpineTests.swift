@@ -929,4 +929,190 @@ final class PodcastFeedTranscriptParserTests: XCTestCase {
 
         XCTAssertEqual(selected?.url, "https://x/es.vtt")
     }
+
+    func testExtractTranscriptLinksFindsPlainURLNearKeyword() {
+        let description = """
+        In this episode we discuss travel Spanish.
+        Full transcript: https://cdn.example.com/episodes/42/transcript.vtt
+        """
+
+        let links = PodcastFeedTranscriptParser.extractTranscriptLinks(
+            from: description,
+            preferredLanguageCode: "es"
+        )
+
+        XCTAssertEqual(links.count, 1)
+        XCTAssertEqual(links[0].url, "https://cdn.example.com/episodes/42/transcript.vtt")
+        XCTAssertEqual(links[0].type, "text/vtt")
+    }
+
+    func testExtractTranscriptLinksFindsMarkdownLink() {
+        let description = "Read the [episode transcript](https://example.com/files/ep-7.srt) for vocabulary notes."
+
+        let links = PodcastFeedTranscriptParser.extractTranscriptLinks(
+            from: description,
+            preferredLanguageCode: "es"
+        )
+
+        XCTAssertEqual(links.count, 1)
+        XCTAssertEqual(links[0].url, "https://example.com/files/ep-7.srt")
+    }
+
+    func testExtractTranscriptLinksIgnoresUnrelatedURLs() {
+        let description = """
+        Visit our website at https://example.com and follow us on social media.
+        """
+
+        let links = PodcastFeedTranscriptParser.extractTranscriptLinks(
+            from: description,
+            preferredLanguageCode: "es"
+        )
+
+        XCTAssertTrue(links.isEmpty)
+    }
+
+    func testExtractTranscriptLinksStripsTrailingPunctuation() {
+        let description = "Transcript: https://example.com/ep.vtt."
+
+        let links = PodcastFeedTranscriptParser.extractTranscriptLinks(
+            from: description,
+            preferredLanguageCode: "es"
+        )
+
+        XCTAssertEqual(links.first?.url, "https://example.com/ep.vtt")
+    }
+
+    func testAdIntervalsFromShowNotesChapters() {
+        let description = """
+        0:00 Intro
+        2:30 Sponsored message
+        4:15 Episode start
+        38:00 Outro
+        """
+
+        let intervals = PodcastAdSegmentDetector.adIntervals(
+            from: description,
+            episodeDuration: 2400
+        )
+
+        XCTAssertEqual(intervals.count, 1)
+        XCTAssertEqual(intervals[0].start, 150, accuracy: 0.001)
+        XCTAssertEqual(intervals[0].end, 255, accuracy: 0.001)
+    }
+
+    func testFilterWordsRemovesAdRegion() {
+        let words = [
+            WordTiming(word: "Hola", start: 140, end: 141),
+            WordTiming(word: "patrocinador", start: 160, end: 161),
+            WordTiming(word: "Empezamos", start: 260, end: 261)
+        ]
+
+        let filtered = PodcastAdSegmentDetector.filterWords(
+            words,
+            excludingAdIntervals: [(start: 150, end: 255)]
+        )
+
+        XCTAssertEqual(filtered.map(\.word), ["Hola", "Empezamos"])
+    }
+
+    func testIsAdChapterTitleMatchesCommonLabels() {
+        XCTAssertTrue(PodcastAdSegmentDetector.isAdChapterTitle("Ad break"))
+        XCTAssertTrue(PodcastAdSegmentDetector.isAdChapterTitle("Patrocinio"))
+        XCTAssertFalse(PodcastAdSegmentDetector.isAdChapterTitle("Episode start"))
+    }
+
+    func testStudyContentStartFiltersWordsAndOffsetsWhisperTimeline() {
+        let words = [
+            WordTiming(word: "intro", start: 10, end: 11),
+            WordTiming(word: "hola", start: 130, end: 131)
+        ]
+
+        let filtered = PodcastStudyContentStart.filterWordsAtOrAfter(words, start: 120)
+        XCTAssertEqual(filtered.map(\.word), ["hola"])
+
+        let offset = PodcastStudyContentStart.offsetWords(
+            [WordTiming(word: "hola", start: 0, end: 1)],
+            by: 120
+        )
+        XCTAssertEqual(offset.first?.start ?? -1, 120, accuracy: 0.001)
+    }
+
+    func testApplyTimingOffsetShiftsBlockMediaRange() {
+        let blocks = [
+            StudyBlock(
+                id: "a",
+                index: 0,
+                targetText: "Hola",
+                nativeText: nil,
+                mediaStart: 10,
+                mediaEnd: 12,
+                cueStartIndex: nil,
+                cueEndIndex: nil
+            )
+        ]
+
+        let shifted = PodcastStudyContentStart.applyTimingOffset(to: blocks, offset: 4)
+        XCTAssertEqual(shifted.first?.mediaStart ?? -1, 14, accuracy: 0.001)
+        XCTAssertEqual(shifted.first?.mediaEnd ?? -1, 16, accuracy: 0.001)
+    }
+
+    func testCacheKeyIncludesContentStartMark() {
+        let base = MediaTranscriptCache.makeCacheKey(
+            consumptionUrl: "https://example.com/ep.mp3",
+            languageCode: "es"
+        )
+        let withStart = MediaTranscriptCache.makeCacheKey(
+            consumptionUrl: "https://example.com/ep.mp3",
+            languageCode: "es",
+            contentStartSeconds: 182
+        )
+
+        XCTAssertNotEqual(base, withStart)
+        XCTAssertTrue(withStart.contains("start-182"))
+    }
+
+    func testParseTimestampEntryAcceptsSecondsAndClockFormats() {
+        XCTAssertEqual(PodcastStudyContentStart.parseTimestampEntry("180") ?? -1, 180, accuracy: 0.001)
+        XCTAssertEqual(PodcastStudyContentStart.parseTimestampEntry("3:00") ?? -1, 180, accuracy: 0.001)
+        XCTAssertEqual(PodcastStudyContentStart.parseTimestampEntry("1:02:03") ?? -1, 3723, accuracy: 0.001)
+        XCTAssertNil(PodcastStudyContentStart.parseTimestampEntry("abc"))
+    }
+
+    func testParseSignedSecondsEntryAcceptsSignedValues() {
+        XCTAssertEqual(PodcastStudyContentStart.parseSignedSecondsEntry("-30") ?? 0, -30, accuracy: 0.001)
+        XCTAssertEqual(PodcastStudyContentStart.parseSignedSecondsEntry("+30") ?? 0, 30, accuracy: 0.001)
+        XCTAssertEqual(PodcastStudyContentStart.parseSignedSecondsEntry("30s") ?? 0, 30, accuracy: 0.001)
+        XCTAssertNil(PodcastStudyContentStart.parseSignedSecondsEntry("abc"))
+    }
+
+    func testWhisperExportStartIncludesLeadIn() {
+        let episode = PodcastEpisode(
+            title: "Test",
+            audioUrl: "https://example.com/a.mp3",
+            studyContentStartSeconds: 120
+        )
+        XCTAssertEqual(PodcastStudyContentStart.whisperExportStart(for: episode), 100)
+    }
+
+    func testSyncTimelineFixedWindowDefaultsToThreeMinutes() {
+        let window = PodcastTranscriptSyncTimelineLayout.fixedSpanWindow(
+            duration: 3600,
+            centerTime: 600,
+            span: 180
+        )
+
+        XCTAssertEqual(window.start, 510, accuracy: 0.001)
+        XCTAssertEqual(window.end, 690, accuracy: 0.001)
+    }
+
+    func testSyncTimelineFixedWindowClampsAtEpisodeStart() {
+        let window = PodcastTranscriptSyncTimelineLayout.fixedSpanWindow(
+            duration: 3600,
+            centerTime: 30,
+            span: 180
+        )
+
+        XCTAssertEqual(window.start, 0, accuracy: 0.001)
+        XCTAssertEqual(window.end, 180, accuracy: 0.001)
+    }
 }

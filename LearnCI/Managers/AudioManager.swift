@@ -541,24 +541,70 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     // MARK: - Streaming Playback (AVPlayer)
 
     func streamAudio(url: URL, startAt: Double = 0) {
-        stopAudio()
         activatePlaybackSession()
         streamFinished = false
         streamLoadError = nil
 
+        if let player = streamPlayer {
+            replaceStreamItem(url: url, startAt: startAt, player: player)
+            return
+        }
+
+        stopNonStreamAudio()
+        let playerItem = makeStreamPlayerItem(url: url)
+        streamPlayer = AVPlayer(playerItem: playerItem)
+        configureStreamPlayback(player: streamPlayer!, item: playerItem, startAt: startAt)
+    }
+
+    private func stopNonStreamAudio() {
+        sequenceWorkItem?.cancel()
+        sequenceWorkItem = nil
+        player?.stop()
+        synthesizer.stopSpeaking(at: .immediate)
+        onCompletion = nil
+        currentSequence = []
+        isPlaying = false
+    }
+
+    private func makeStreamPlayerItem(url: URL) -> AVPlayerItem {
         let headers = ["User-Agent": "LearnCI/1.0 (iOS; Podcast Player)"]
         let asset = AVURLAsset(
             url: url,
             options: ["AVURLAssetHTTPHeaderFieldsKey": headers]
         )
-        let playerItem = AVPlayerItem(asset: asset)
-        streamPlayer = AVPlayer(playerItem: playerItem)
-        attachStreamObservations(player: streamPlayer!, item: playerItem)
+        return AVPlayerItem(asset: asset)
+    }
 
-        // Observe when duration becomes available
+    private func replaceStreamItem(url: URL, startAt: Double, player: AVPlayer) {
+        if let oldItem = player.currentItem {
+            NotificationCenter.default.removeObserver(
+                self,
+                name: AVPlayerItem.didPlayToEndTimeNotification,
+                object: oldItem
+            )
+        }
+        if let observer = streamTimeObserver {
+            player.removeTimeObserver(observer)
+            streamTimeObserver = nil
+        }
+        clearStreamObservations()
+
+        streamDuration = 0
+        streamCurrentTime = 0
+        isStreaming = false
+        streamIsBuffering = true
+
+        let playerItem = makeStreamPlayerItem(url: url)
+        player.replaceCurrentItem(with: playerItem)
+        configureStreamPlayback(player: player, item: playerItem, startAt: startAt)
+    }
+
+    private func configureStreamPlayback(player: AVPlayer, item: AVPlayerItem, startAt: Double) {
+        attachStreamObservations(player: player, item: item)
+
         Task {
             do {
-                let duration = try await playerItem.asset.load(.duration)
+                let duration = try await item.asset.load(.duration)
                 await MainActor.run {
                     if duration.isNumeric {
                         self.streamDuration = CMTimeGetSeconds(duration)
@@ -569,13 +615,11 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             }
         }
 
-        // Periodic time observer
-        let interval = CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        streamTimeObserver = streamPlayer?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+        let interval = CMTime(seconds: 0.25, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        streamTimeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self else { return }
             self.streamCurrentTime = CMTimeGetSeconds(time)
 
-            // Update duration if it wasn't available initially
             if self.streamDuration == 0, let item = self.streamPlayer?.currentItem {
                 let dur = item.duration
                 if dur.isNumeric {
@@ -584,18 +628,17 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             }
         }
 
-        // Seek to resume position
         if startAt > 0 {
             let seekTime = CMTime(seconds: startAt, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-            streamPlayer?.seek(to: seekTime)
+            player.seek(to: seekTime)
+            streamCurrentTime = startAt
         }
 
-        // Observe end of playback
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(streamDidFinish),
             name: AVPlayerItem.didPlayToEndTimeNotification,
-            object: playerItem
+            object: item
         )
     }
 

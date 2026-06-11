@@ -31,6 +31,8 @@ struct StoryAboutView: View {
 
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
+    @State private var navigateToReader = false
+    @State private var isOpeningReader = false
 
     var body: some View {
         GeometryReader { fullGeo in
@@ -123,17 +125,40 @@ struct StoryAboutView: View {
                     // ── Play Options ──────────────────────────────────────
                     VStack(spacing: 12) {
                         // Read & Listen
-                        NavigationLink(destination: StoryReaderFactoryView(story: story)) {
-                            HStack {
-                                Image(systemName: story.preferences.storyType.icon)
-                                Text(primaryReaderTitle)
+                        if story.preferences.storyType == .audioStory {
+                            Button {
+                                isOpeningReader = true
+                                navigateToReader = true
+                            } label: {
+                                HStack(spacing: 10) {
+                                    if isOpeningReader {
+                                        ProgressView()
+                                            .tint(.white)
+                                    }
+                                    Image(systemName: story.preferences.storyType.icon)
+                                    Text(primaryReaderTitle)
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.accentColor)
+                                .cornerRadius(12)
                             }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor)
-                            .cornerRadius(12)
+                            .disabled(isOpeningReader)
+                        } else {
+                            NavigationLink(destination: StoryReaderFactoryView(story: story)) {
+                                HStack {
+                                    Image(systemName: story.preferences.storyType.icon)
+                                    Text(primaryReaderTitle)
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color.accentColor)
+                                .cornerRadius(12)
+                            }
                         }
 
                         if story.preferences.storyType == .dialogStory {
@@ -222,6 +247,10 @@ struct StoryAboutView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         // Hide tab bar for the entire immersive story flow
         .toolbar(.hidden, for: .tabBar)
+        .navigationDestination(isPresented: $navigateToReader) {
+            StoryReaderFactoryView(story: story)
+                .onAppear { isOpeningReader = false }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

@@ -113,6 +113,73 @@ struct StoryScene: Codable, Identifiable, Equatable {
         try c.encodeIfPresent(contentMode, forKey: .contentMode)
         try c.encodeIfPresent(cropRegion, forKey: .cropRegion)
     }
+
+    /// Target-language text that matches per-scene TTS / narration (pipeline parity with Flutter).
+    func spokenTranscriptText(preferences: StoryPreferences) -> String {
+        if preferences.storyType == .comicBook || contentMode == .panel {
+            return captionAndDialogueTranscript(fallbackScript: true)
+        }
+
+        if preferences.audioStyle == .dramatized,
+           let script = Self.trimmedNonEmpty(scriptTargetLanguage) {
+            return script
+        }
+
+        if let caption = Self.trimmedNonEmpty(captionTarget) {
+            return caption
+        }
+
+        return captionAndDialogueTranscript(fallbackScript: true)
+    }
+
+    var hasNarrationAudio: Bool {
+        !(audioUrl ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Timed segments for transcript highlighting (per-scene word timings).
+    func transcriptSegments(preferences: StoryPreferences) -> [StorySegmentTiming] {
+        let text = spokenTranscriptText(preferences: preferences)
+        let timings = wordTimings
+        guard !text.isEmpty, !timings.isEmpty else { return [] }
+
+        if preferences.audioStyle == .dramatized, text.contains("[") {
+            let parsed = ScriptParser.parseSegments(scriptText: text, globalTimings: timings)
+            if !parsed.isEmpty { return parsed }
+        }
+
+        return [
+            StorySegmentTiming(
+                speaker: "NARRATOR",
+                text: text,
+                startTime: timings.first?.start ?? 0,
+                endTime: timings.last?.end ?? 0,
+                timings: timings
+            )
+        ]
+    }
+
+    private func captionAndDialogueTranscript(fallbackScript: Bool) -> String {
+        var lines: [String] = []
+        if let caption = Self.trimmedNonEmpty(captionTarget) {
+            lines.append(caption)
+        }
+        for dialogue in dialogues {
+            let character = dialogue.character.trimmingCharacters(in: .whitespacesAndNewlines)
+            let text = dialogue.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !character.isEmpty, !text.isEmpty else { continue }
+            lines.append("\(character): \(text)")
+        }
+        if lines.isEmpty, fallbackScript, let script = Self.trimmedNonEmpty(scriptTargetLanguage) {
+            lines.append(script)
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private static func trimmedNonEmpty(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
 }
 
 enum StorySceneContentMode: String, Codable, Equatable {

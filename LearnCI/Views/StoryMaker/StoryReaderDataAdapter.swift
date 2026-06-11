@@ -405,6 +405,33 @@ struct StoryReaderDataAdapter {
         return nil
     }
 
+    /// Downloads scene audio to the local cache when missing. Safe to call concurrently for the same clip.
+    static func downloadAndCacheAudioIfNeeded(
+        storyID: UUID,
+        clip: StorySceneAudioClip,
+        storyUpdatedAt: Date?
+    ) async -> URL? {
+        if let cached = cachedAudioURL(storyID: storyID, clip: clip, storyUpdatedAt: storyUpdatedAt) {
+            return cached
+        }
+        guard let remoteURL = remoteAudioURL(for: clip.urlString) else { return nil }
+
+        let localURL = localAudioURL(storyID: storyID, clip: clip, storyUpdatedAt: storyUpdatedAt)
+        do {
+            let (data, response) = try await URLSession.shared.data(from: remoteURL)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200, data.count > 1000 else {
+                return nil
+            }
+
+            let isWAV = data.prefix(4) == Data([0x52, 0x49, 0x46, 0x46])
+            let correctURL = localURL.deletingPathExtension().appendingPathExtension(isWAV ? "wav" : "mp3")
+            try data.write(to: correctURL, options: .atomic)
+            return correctURL
+        } catch {
+            return nil
+        }
+    }
+
     @discardableResult
     static func deleteCachedStoryAudio(storyID: UUID) -> Int {
         deleteCachedStoryFiles(storyID: storyID) { filename in

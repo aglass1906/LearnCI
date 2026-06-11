@@ -109,14 +109,16 @@ struct StoryAboutView: View {
                                     .foregroundStyle(.secondary)
                             }
 
-                            // Metadata badges
-                            FlowLayout(spacing: 8) {
-                                Label(story.preferences.genre.rawValue, systemImage: "theatermasks")
-                                    .badgeStyle()
-                                Label(story.language.displayName, systemImage: "globe")
-                                    .badgeStyle()
-                                Label(LevelManager.shared.description(for: story.level), systemImage: "chart.bar")
-                                    .badgeStyle()
+                            StoryWorkspaceMetaChips(story: story)
+
+                            if story.preferences.audioStyle == .dramatized {
+                                Label("Dramatized", systemImage: "person.2.fill")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.teal.opacity(0.12))
+                                    .foregroundStyle(.teal)
+                                    .cornerRadius(4)
                             }
                         }
                     }
@@ -181,14 +183,6 @@ struct StoryAboutView: View {
 
                     // Additional Metadata
                     FlowLayout(spacing: 8) {
-                        if !story.chapters.isEmpty {
-                            Label("\(story.chapters.count) chapters", systemImage: "book.pages")
-                                .badgeStyle()
-                        }
-                        if story.isDramatized {
-                            Label("Dramatized", systemImage: "person.2.fill")
-                                .badgeStyle()
-                        }
                         if let wordCount = storyWordCount {
                             Label(wordCount, systemImage: "doc.text")
                                 .badgeStyle()
@@ -202,15 +196,19 @@ struct StoryAboutView: View {
 
                     Divider()
 
-                    // Story teaser (first ~200 chars of target text)
-                    if !storyTeaser.isEmpty {
-                        Text(storyTeaser)
-                            .font(.system(size: 17, weight: .regular, design: .serif))
-                            .foregroundColor(.secondary)
-                            .lineSpacing(6)
+                    if let overview = story.storyOverviewText {
+                        previewSection(
+                            title: "Story Overview",
+                            systemImage: "text.book.closed",
+                            body: overview
+                        )
+                        Divider()
                     }
 
-                    Divider()
+                    if let profile = story.ciProfile {
+                        learningProfileSection(profile)
+                        Divider()
+                    }
 
                     // ── Chapters ──────────────────────────────────────────
                     if !story.chapters.isEmpty {
@@ -479,11 +477,43 @@ struct StoryAboutView: View {
         }
     }
 
-    private var storyTeaser: String {
-        let text = story.chapters.first?.bodyTextTargetForReading ?? ""
-        guard text.count > 200 else { return text }
-        let index = text.index(text.startIndex, offsetBy: 200)
-        return String(text[..<index]) + "…"
+    @ViewBuilder
+    private func previewSection(title: String, systemImage: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+            Text(body)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private func learningProfileSection(_ profile: CiProfile) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Learning Profile", systemImage: "graduationcap")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label(profile.learningStrategy.displayName, systemImage: profile.learningStrategy.systemImage)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(profile.learningStrategy.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let summary = profile.summaryText {
+                Text(summary)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(5)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private var storyWordCount: String? {

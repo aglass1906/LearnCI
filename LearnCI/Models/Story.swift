@@ -46,7 +46,9 @@ final class Story: Identifiable {
     var layoutJSON: String? // JSON string of StoryLayout
     var readingMatterPagesJSON: String? // JSON string of [ReadingMatterPage]
     var assetForgeJSON: String? // JSON string of visual asset registry
-    
+    var ciProfileJSON: String? // JSON string of CiProfile (pipeline PROFILE stage)
+    var bibleJSON: String? // JSON string of Story Bible (pipeline LORE stage)
+
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
         guard let json = wordTimingsJSON, let data = json.data(using: .utf8) else { return [] }
@@ -76,6 +78,35 @@ final class Story: Identifiable {
     @Transient var readingMatterPages: [ReadingMatterPage] {
         guard let json = readingMatterPagesJSON, let data = json.data(using: .utf8) else { return [] }
         return (try? JSONDecoder().decode([ReadingMatterPage].self, from: data)) ?? []
+    }
+
+    @Transient var ciProfile: CiProfile? {
+        guard let json = ciProfileJSON, let data = json.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(CiProfile.self, from: data)
+    }
+
+    @Transient var storyBible: StoryBible? {
+        guard let json = bibleJSON, let data = json.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(StoryBible.self, from: data)
+    }
+
+    /// Narrative synopsis for the preview page — bible overview, then logline, then prompt.
+    var storyOverviewText: String? {
+        if let overview = storyBible?.storyOverview?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !overview.isEmpty {
+            return overview
+        }
+        if let logline = storyBible?.logline?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !logline.isEmpty {
+            return logline
+        }
+        if let prompt = prompt?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !prompt.isEmpty {
+            return prompt
+        }
+        return nil
     }
 
     var isDramatized: Bool { taggedTargetText != nil }
@@ -116,6 +147,8 @@ final class Story: Identifiable {
          layoutJSON: String? = nil,
          readingMatterPagesJSON: String? = nil,
          assetForgeJSON: String? = nil,
+         ciProfileJSON: String? = nil,
+         bibleJSON: String? = nil,
          language: Language,
          level: Int,
          createdAt: Date = Date(),
@@ -145,6 +178,8 @@ final class Story: Identifiable {
         self.layoutJSON = layoutJSON
         self.readingMatterPagesJSON = readingMatterPagesJSON
         self.assetForgeJSON = assetForgeJSON
+        self.ciProfileJSON = ciProfileJSON
+        self.bibleJSON = bibleJSON
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

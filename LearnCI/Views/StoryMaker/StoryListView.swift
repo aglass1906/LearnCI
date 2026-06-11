@@ -83,7 +83,7 @@ private struct StoryTypeBadge: View {
         switch storyType {
         case .storyBook:         return .blue
         case .audioStory:        return .teal
-        case .dialogStory:  return .purple
+        case .dialogStory:       return .purple
         case .comicBook:         return .indigo
         case .pictureBook:       return .pink
         case .standard:          return .gray
@@ -203,7 +203,7 @@ struct StoryListView: View {
                                 }
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                
+
                                 StoryTypeBadge(storyType: story.preferences.storyType)
                                 let isDramatized = story.preferences.audioStyle == .dramatized
                                 HStack(spacing: 8) {

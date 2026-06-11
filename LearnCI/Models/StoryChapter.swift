@@ -25,6 +25,12 @@ struct StoryChapter: Codable, Identifiable, Equatable {
 
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
+
+    var hasChapterIntroContent: Bool {
+        let hasAudio = !(chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        let hasText = !(chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return hasAudio || hasText
+    }
     var bodyTextTargetForReading: String {
         return scenes
             .sorted { $0.sceneIndex < $1.sceneIndex }

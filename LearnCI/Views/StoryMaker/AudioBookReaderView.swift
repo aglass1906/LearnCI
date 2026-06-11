@@ -18,6 +18,7 @@ struct AudioBookReaderView: View {
     @State private var playbackRate: Float = 1.0
     @State private var showTranscript = false
     @State private var showSleepTimer = false
+    @State private var showTracklist = false
     @State private var prefetchingClipIDs: Set<String> = []
     @State private var lockScreenArtwork: UIImage?
     @State private var sleepTimerMode: AudioBookSleepTimerMode = .inactive
@@ -40,17 +41,15 @@ struct AudioBookReaderView: View {
 
     private var currentChapterClips: [StorySceneAudioClip] {
         guard let chapterIndex = currentChapterIndex else { return [] }
-        return readerAdapter.audioClips(forChapter: chapterIndex)
+        return readerAdapter.chapterPlaybackClips(forChapter: chapterIndex)
     }
 
     private var currentSceneClipIndex: Int {
         guard let chapterIndex = currentChapterIndex,
               clips.indices.contains(currentClipIndex) else { return 0 }
         let clip = clips[currentClipIndex]
-        let chapterClips = readerAdapter.audioClips(forChapter: chapterIndex)
-        return chapterClips.firstIndex {
-            $0.chapterIndex == clip.chapterIndex && $0.sceneIndex == clip.sceneIndex
-        } ?? 0
+        let chapterClips = readerAdapter.chapterPlaybackClips(forChapter: chapterIndex)
+        return chapterClips.firstIndex { $0.id == clip.id } ?? 0
     }
 
     private var currentClipStartOffset: Double {
@@ -131,7 +130,8 @@ struct AudioBookReaderView: View {
                 forChapter: chapterIndex,
                 currentClipIndex: currentSceneClipIndex,
                 currentStreamDuration: streamDuration,
-                fallback: streamDuration
+                fallback: streamDuration,
+                includeIntro: true
             )
             if resolvedDuration > 0, abs(duration - resolvedDuration) > 0.5 {
                 duration = resolvedDuration
@@ -160,6 +160,35 @@ struct AudioBookReaderView: View {
             )
             .presentationDetents([.medium])
         }
+        .sheet(isPresented: $showTracklist) {
+            tracklistSheet
+                .presentationDetents([.medium, .large])
+        }
+    }
+
+    @ViewBuilder
+    private var tracklistSheet: some View {
+        if selectedNavItem?.kind == .chapter, let chapterIndex = currentChapterIndex {
+            AudioBookChapterTracklistSheet(
+                story: story,
+                chapterIndex: chapterIndex,
+                chapterClips: readerAdapter.chapterPlaybackClips(forChapter: chapterIndex),
+                globalClips: clips,
+                currentClipIndex: currentClipIndex,
+                adapter: readerAdapter
+            ) { globalIndex in
+                showTracklist = false
+                playClip(at: globalIndex, autoplay: true)
+            }
+        } else {
+            AudioBookMacroTracklistSheet(
+                navItems: navItems,
+                selectedNavItemID: selectedNavItemID
+            ) { item in
+                showTracklist = false
+                selectNavItem(item)
+            }
+        }
     }
 
     private func prepareReaderIfNeeded() {
@@ -168,12 +197,12 @@ struct AudioBookReaderView: View {
         Task(priority: .userInitiated) {
             let adapter = StoryReaderDataAdapter(story: story)
             let issue = adapter.requirementIssue(for: .audioBook)
-            let loadedClips = issue == nil ? adapter.audioClips(for: .audioBook) : []
+            let loadedClips = issue == nil ? adapter.audioBookPlaybackClips() : []
             let loadedNavItems = issue == nil
                 ? Self.buildNavItems(story: story, adapter: adapter, clips: loadedClips)
                 : []
             var sceneCounts: [Int: Int] = [:]
-            for clip in loadedClips {
+            for clip in loadedClips where !clip.isChapterIntro {
                 sceneCounts[clip.chapterIndex, default: 0] += 1
             }
 
@@ -414,12 +443,22 @@ struct AudioBookReaderView: View {
                 if let clip = clips[safeAudioBook: currentClipIndex],
                    item.kind == .chapter,
                    item.chapterIndex == clip.chapterIndex {
-                    Text("Scene \(clip.sceneIndex + 1) of \(sceneCountByChapter[clip.chapterIndex] ?? 1)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    if clip.isChapterIntro {
+                        Text("Chapter Intro")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    } else {
+                        Text("Scene \(clip.sceneIndex + 1) of \(sceneCountByChapter[clip.chapterIndex] ?? 1)")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
+
+            if item.kind == .chapter, let chapterIndex = item.chapterIndex {
+                chapterSceneChipStrip(chapterIndex: chapterIndex)
+            }
 
             Button {
                 showTranscript = true
@@ -435,6 +474,39 @@ struct AudioBookReaderView: View {
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.top, 8)
+    }
+
+    private func chapterSceneChipStrip(chapterIndex: Int) -> some View {
+        let chapterClips = readerAdapter.chapterPlaybackClips(forChapter: chapterIndex)
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(chapterClips) { clip in
+                    let isActive = clips[safeAudioBook: currentClipIndex]?.id == clip.id
+                    Button {
+                        guard let globalIndex = clips.firstIndex(where: { $0.id == clip.id }) else { return }
+                        playClip(at: globalIndex, autoplay: isPlaying)
+                    } label: {
+                        Text(clip.isChapterIntro ? "Intro" : "\(clip.sceneIndex + 1)")
+                            .font(.caption.weight(.semibold))
+                            .monospacedDigit()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(isActive ? Color.accentColor.opacity(0.18) : Color(.secondarySystemBackground))
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(isActive ? Color.accentColor.opacity(0.5) : .clear, lineWidth: 1)
+                            )
+                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 2)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private func heroPlaceholder(for item: AudioBookNavItem) -> some View {
@@ -495,43 +567,43 @@ struct AudioBookReaderView: View {
                 onSkipBackward: skipBackward,
                 onSeek: seekToChapterTime,
                 onChangeRate: setRate,
-                onNextChapter: nextChapterAction,
-                onPreviousChapter: previousChapterAction
+                onNextChapter: nextClipAction,
+                onPreviousChapter: previousClipAction,
+                onSkipPreviousChapter: skipToPreviousChapterAction,
+                onSkipNextChapter: skipToNextChapterAction,
+                onShowSpine: { showTracklist = true }
             )
             .disabled(isBufferingPlayback)
         }
     }
 
-    private var nextChapterAction: (() -> Void)? {
-        guard let current = selectedNavItem,
-              current.kind == .chapter,
-              let chapterIndex = current.chapterIndex else {
-            return currentClipIndex < clips.count - 1 ? { nextClip() } : nil
-        }
-        if let next = navItems.first(where: {
-            $0.kind == .chapter && ($0.chapterIndex ?? -1) > chapterIndex
-        }), let clipIndex = next.firstClipIndex {
-            return { playClip(at: clipIndex, autoplay: isPlaying) }
-        }
-        return nil
+    private var nextClipAction: (() -> Void)? {
+        currentClipIndex < clips.count - 1 ? { nextClip() } : nil
     }
 
-    private var previousChapterAction: (() -> Void)? {
-        guard let current = selectedNavItem,
-              current.kind == .chapter,
-              let chapterIndex = current.chapterIndex else {
-            return currentClipIndex > 0 ? { previousClip() } : nil
-        }
-        if let previous = navItems.last(where: {
+    private var previousClipAction: (() -> Void)? {
+        currentClipIndex > 0 ? { previousClip() } : nil
+    }
+
+    private var skipToNextChapterAction: (() -> Void)? {
+        guard let chapterIndex = currentChapterIndex else { return nil }
+        guard let next = navItems.first(where: {
+            $0.kind == .chapter && ($0.chapterIndex ?? -1) > chapterIndex
+        }), let clipIndex = next.firstClipIndex else { return nil }
+        return { playClip(at: clipIndex, autoplay: isPlaying) }
+    }
+
+    private var skipToPreviousChapterAction: (() -> Void)? {
+        guard let chapterIndex = currentChapterIndex else { return nil }
+        guard let previous = navItems.last(where: {
             $0.kind == .chapter && ($0.chapterIndex ?? Int.max) < chapterIndex
-        }), let clipIndex = previous.firstClipIndex {
-            return { playClip(at: clipIndex, autoplay: isPlaying) }
-        }
-        return nil
+        }), let clipIndex = previous.firstClipIndex else { return nil }
+        return { playClip(at: clipIndex, autoplay: isPlaying) }
     }
 
     private func isNowPlaying(_ item: AudioBookNavItem) -> Bool {
-        guard isPlaying, item.kind == .chapter, let chapterIndex = item.chapterIndex else { return false }
+        guard item.kind == .chapter, let chapterIndex = item.chapterIndex else { return false }
+        guard isPlaying else { return false }
         return currentChapterIndex == chapterIndex
     }
 
@@ -601,9 +673,9 @@ struct AudioBookReaderView: View {
 
     private func seekToChapterTime(_ chapterTime: Double) {
         guard let chapterIndex = currentChapterIndex else { return }
-        guard let target = readerAdapter.clipIndex(forChapter: chapterIndex, localTime: chapterTime) else { return }
+        guard let target = readerAdapter.clipIndex(forChapter: chapterIndex, localTime: chapterTime, includeIntro: true) else { return }
 
-        let chapterClips = readerAdapter.audioClips(forChapter: chapterIndex)
+        let chapterClips = readerAdapter.chapterPlaybackClips(forChapter: chapterIndex)
         guard chapterClips.indices.contains(target.index) else { return }
         let targetClip = chapterClips[target.index]
         guard let globalIndex = clips.firstIndex(where: { $0.id == targetClip.id }) else { return }
@@ -622,7 +694,8 @@ struct AudioBookReaderView: View {
             forChapter: chapterIndex,
             currentClipIndex: currentSceneClipIndex,
             currentStreamDuration: audioManager.streamDuration,
-            fallback: audioManager.streamDuration
+            fallback: audioManager.streamDuration,
+            includeIntro: true
         )
         if resolvedDuration > 0 {
             duration = resolvedDuration
@@ -633,7 +706,11 @@ struct AudioBookReaderView: View {
         guard clips.indices.contains(index) else { return }
         currentClipIndex = index
         let clip = clips[index]
-        loadingAudioLabel = "Chapter \(clip.chapterIndex + 1) · Scene \(clip.sceneIndex + 1)"
+        if clip.isChapterIntro {
+            loadingAudioLabel = "Chapter \(clip.chapterIndex + 1) · Intro"
+        } else {
+            loadingAudioLabel = "Chapter \(clip.chapterIndex + 1) · Scene \(clip.sceneIndex + 1)"
+        }
 
         let playbackURL: URL? = StoryReaderDataAdapter.cachedAudioURL(
             storyID: story.id,
@@ -1051,6 +1128,144 @@ private struct AudioBookSleepTimerSheet: View {
     }
 }
 
+// MARK: - Tracklist
+
+private struct AudioBookChapterTracklistSheet: View {
+    let story: Story
+    let chapterIndex: Int
+    let chapterClips: [StorySceneAudioClip]
+    let globalClips: [StorySceneAudioClip]
+    let currentClipIndex: Int
+    let adapter: StoryReaderDataAdapter
+    let onSelect: (Int) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var chapter: StoryChapter? {
+        story.chapters[safeAudioBook: chapterIndex]
+    }
+
+    private var currentClipID: String? {
+        globalClips[safeAudioBook: currentClipIndex]?.id
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if let chapter {
+                    ForEach(chapterClips) { clip in
+                        let globalIndex = globalClips.firstIndex { $0.id == clip.id }
+                        let isCurrent = clip.id == currentClipID
+                        Button {
+                            guard let globalIndex else { return }
+                            onSelect(globalIndex)
+                            dismiss()
+                        } label: {
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: clip.isChapterIntro ? "text.quote" : "waveform")
+                                    .frame(width: 24)
+                                    .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(adapter.tracklistTitle(for: clip, chapter: chapter))
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(1)
+
+                                    let subtitle = adapter.tracklistSubtitle(for: clip, chapter: chapter)
+                                    if !subtitle.isEmpty {
+                                        Text(subtitle)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+                                    }
+
+                                    if let duration = clip.duration, duration > 0 {
+                                        Text(formatDuration(duration))
+                                            .font(.caption2)
+                                            .foregroundStyle(.tertiary)
+                                            .monospacedDigit()
+                                    }
+                                }
+
+                                Spacer(minLength: 0)
+
+                                if isCurrent {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                        .disabled(globalIndex == nil)
+                    }
+                }
+            }
+            .navigationTitle(chapter?.titleTargetLanguage.nilIfEmptyAudioBook ?? "Chapter \(chapterIndex + 1)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func formatDuration(_ seconds: Double) -> String {
+        let minutes = Int(seconds) / 60
+        let secs = Int(seconds) % 60
+        return String(format: "%d:%02d", minutes, secs)
+    }
+}
+
+private struct AudioBookMacroTracklistSheet: View {
+    let navItems: [AudioBookNavItem]
+    let selectedNavItemID: String?
+    let onSelect: (AudioBookNavItem) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List(navItems) { item in
+                Button {
+                    onSelect(item)
+                    dismiss()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: item.kind.systemImage)
+                            .frame(width: 24)
+                            .foregroundStyle(selectedNavItemID == item.id ? Color.accentColor : .secondary)
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .lineLimit(2)
+                            Text(item.kind.label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer(minLength: 0)
+
+                        if selectedNavItemID == item.id {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("In This Story")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Transcript
 
 private struct AudioBookTranscriptSheet: View {
@@ -1191,17 +1406,52 @@ private struct AudioBookTranscriptSheet: View {
                 return []
             }
 
+            var sections: [AudioBookTranscriptSection] = []
+
+            if chapter.hasChapterIntroContent,
+               let introText = chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !introText.isEmpty {
+                let isIntroCurrent = currentClip?.isChapterIntro == true
+                    && currentClip?.chapterIndex == chapterIndex
+                let introSegments: [StorySegmentTiming]
+                if isIntroCurrent,
+                   let timings = chapter.chapterIntroWordTimings,
+                   !timings.isEmpty {
+                    introSegments = [
+                        StorySegmentTiming(
+                            speaker: "",
+                            text: introText,
+                            startTime: 0,
+                            endTime: .greatestFiniteMagnitude,
+                            timings: timings
+                        )
+                    ]
+                } else {
+                    introSegments = []
+                }
+                sections.append(
+                    AudioBookTranscriptSection(
+                        id: "chapter-\(chapterIndex)-intro",
+                        heading: isIntroCurrent ? "Chapter Intro · Now Playing" : "Chapter Intro",
+                        body: introText,
+                        segments: introSegments,
+                        isNowPlaying: isIntroCurrent
+                    )
+                )
+            }
+
             let scenes = chapter.scenes
                 .filter(\.hasNarrationAudio)
                 .sorted { $0.sceneIndex < $1.sceneIndex }
 
-            if scenes.isEmpty {
+            if scenes.isEmpty, sections.isEmpty {
                 let body = chapter.bodyScriptOrNarrativeForAlignment
                 let segments = ScriptParser.parseSegments(
                     scriptText: body,
                     globalTimings: chapter.bodyWordTimingsForPlayback
                 )
                 let isCurrent = currentClip?.chapterIndex == chapterIndex
+                    && currentClip?.isChapterIntro != true
                 return [
                     AudioBookTranscriptSection(
                         id: "chapter-\(chapterIndex)",
@@ -1213,8 +1463,9 @@ private struct AudioBookTranscriptSheet: View {
                 ].filter { !$0.body.isEmpty }
             }
 
-            return scenes.compactMap { scene in
+            sections.append(contentsOf: scenes.compactMap { scene in
                 let isCurrent = currentClip?.chapterIndex == chapterIndex
+                    && currentClip?.isChapterIntro != true
                     && currentClip?.sceneIndex == scene.sceneIndex
                 let heading = isCurrent
                     ? "Scene \(scene.sceneIndex + 1) · Now Playing"
@@ -1228,7 +1479,9 @@ private struct AudioBookTranscriptSheet: View {
                     segments: isCurrent ? scene.transcriptSegments(preferences: story.preferences) : [],
                     isNowPlaying: isCurrent
                 )
-            }
+            })
+
+            return sections
         }
     }
 }

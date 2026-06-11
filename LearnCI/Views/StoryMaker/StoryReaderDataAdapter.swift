@@ -11,6 +11,8 @@ struct StorySceneAudioClip: Identifiable, Equatable {
     let title: String
     let caption: String
     let imageURL: URL?
+
+    var isChapterIntro: Bool { sceneIndex < 0 }
 }
 
 enum StoryReaderRequirementIssue: Equatable {
@@ -143,9 +145,80 @@ struct StoryReaderDataAdapter {
     }
 
     func audioClips(forChapter chapterIndex: Int) -> [StorySceneAudioClip] {
+        sceneClips(forChapter: chapterIndex, introBaseOffset: 0)
+    }
+
+    /// Chapter timeline clips: optional intro pre-scene, then scene narration (for audio book playback + scrubber).
+    func tracklistTitle(for clip: StorySceneAudioClip, chapter: StoryChapter) -> String {
+        if clip.isChapterIntro {
+            return "Chapter Intro"
+        }
+        return "Scene \(clip.sceneIndex + 1)"
+    }
+
+    func tracklistSubtitle(for clip: StorySceneAudioClip, chapter: StoryChapter) -> String {
+        if clip.isChapterIntro {
+            let intro = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !intro.isEmpty { return intro }
+            return chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        }
+
+        let caption = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !caption.isEmpty { return caption }
+
+        guard let scene = chapter.scenes.first(where: { $0.sceneIndex == clip.sceneIndex }) else {
+            return ""
+        }
+        return scene.spokenTranscriptText(preferences: story.preferences)
+    }
+
+    func chapterPlaybackClips(forChapter chapterIndex: Int) -> [StorySceneAudioClip] {
         guard story.chapters.indices.contains(chapterIndex) else { return [] }
         let chapter = story.chapters[chapterIndex]
+        var clips: [StorySceneAudioClip] = []
         var offset = 0.0
+
+        if let introPath = chapter.chapterIntroAudioUrl?.trimmedNilIfEmpty {
+            let introDuration = Self.resolvedSceneDuration(
+                published: nil,
+                timed: chapter.chapterIntroWordTimings?.last?.end
+            )
+            clips.append(
+                StorySceneAudioClip(
+                    id: "\(chapterIndex)-intro",
+                    chapterIndex: chapterIndex,
+                    sceneIndex: -1,
+                    sceneOrdinal: -1,
+                    urlString: introPath,
+                    duration: introDuration,
+                    startOffset: offset,
+                    title: chapter.titleTargetLanguage.isEmpty ? "Chapter \(chapterIndex + 1)" : chapter.titleTargetLanguage,
+                    caption: chapter.chapterIntroText?.trimmedNilIfEmpty ?? "",
+                    imageURL: chapterImageURL(forChapterAt: chapterIndex)
+                )
+            )
+            offset += introDuration ?? 0
+        }
+
+        clips.append(contentsOf: sceneClips(forChapter: chapterIndex, introBaseOffset: offset))
+        return clips
+    }
+
+    func audioBookPlaybackClips() -> [StorySceneAudioClip] {
+        var result: [StorySceneAudioClip] = []
+        var seenChapters = Set<Int>()
+
+        for item in spine(for: .audioBook).items {
+            guard case .chapter(let chapterIndex) = item, seenChapters.insert(chapterIndex).inserted else { continue }
+            result.append(contentsOf: chapterPlaybackClips(forChapter: chapterIndex))
+        }
+        return result
+    }
+
+    private func sceneClips(forChapter chapterIndex: Int, introBaseOffset: Double) -> [StorySceneAudioClip] {
+        guard story.chapters.indices.contains(chapterIndex) else { return [] }
+        let chapter = story.chapters[chapterIndex]
+        var offset = introBaseOffset
 
         return chapter.scenes
             .sorted { $0.sceneIndex < $1.sceneIndex }
@@ -211,8 +284,8 @@ struct StoryReaderDataAdapter {
         audioClips(for: .audioBook)
     }
 
-    func duration(forChapter chapterIndex: Int, fallback: Double = 0) -> Double {
-        let clips = audioClips(forChapter: chapterIndex)
+    func duration(forChapter chapterIndex: Int, fallback: Double = 0, includeIntro: Bool = false) -> Double {
+        let clips = includeIntro ? chapterPlaybackClips(forChapter: chapterIndex) : audioClips(forChapter: chapterIndex)
         let known = clips.reduce(0.0) { total, clip in total + (clip.duration ?? 0) }
         return known > 0 ? known : fallback
     }
@@ -221,12 +294,13 @@ struct StoryReaderDataAdapter {
         forChapter chapterIndex: Int,
         currentClipIndex: Int,
         currentStreamDuration: Double,
-        fallback: Double = 0
+        fallback: Double = 0,
+        includeIntro: Bool = false
     ) -> Double {
-        let clips = audioClips(forChapter: chapterIndex)
+        let clips = includeIntro ? chapterPlaybackClips(forChapter: chapterIndex) : audioClips(forChapter: chapterIndex)
         guard !clips.isEmpty else { return fallback }
 
-        let known = duration(forChapter: chapterIndex, fallback: 0)
+        let known = duration(forChapter: chapterIndex, fallback: 0, includeIntro: includeIntro)
         guard clips.indices.contains(currentClipIndex), currentStreamDuration > 0 else {
             return known > 0 ? known : fallback
         }
@@ -239,8 +313,8 @@ struct StoryReaderDataAdapter {
         return max(known, actualTimelineDuration, fallback)
     }
 
-    func clipIndex(forChapter chapterIndex: Int, localTime: Double) -> (index: Int, offset: Double)? {
-        let clips = audioClips(forChapter: chapterIndex)
+    func clipIndex(forChapter chapterIndex: Int, localTime: Double, includeIntro: Bool = false) -> (index: Int, offset: Double)? {
+        let clips = includeIntro ? chapterPlaybackClips(forChapter: chapterIndex) : audioClips(forChapter: chapterIndex)
         guard !clips.isEmpty else { return nil }
 
         for (index, clip) in clips.enumerated() {

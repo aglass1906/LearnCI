@@ -1581,6 +1581,8 @@ struct AudioPlayerBar: View {
     
     var onNextChapter: (() -> Void)? = nil
     var onPreviousChapter: (() -> Void)? = nil
+    var onSkipPreviousChapter: (() -> Void)? = nil
+    var onSkipNextChapter: (() -> Void)? = nil
     var onShowSpine: (() -> Void)? = nil
 
     var body: some View {
@@ -1637,6 +1639,37 @@ struct AudioPlayerBar: View {
             }
             .padding(.horizontal)
             .opacity(canSeek ? 1 : 0.55)
+
+            if onSkipPreviousChapter != nil || onSkipNextChapter != nil {
+                HStack(spacing: 12) {
+                    Button {
+                        onSkipPreviousChapter?()
+                    } label: {
+                        Image(systemName: "chevron.left.2")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .disabled(onSkipPreviousChapter == nil)
+                    .opacity(onSkipPreviousChapter == nil ? 0.35 : 1)
+
+                    Spacer()
+
+                    Text("Chapter")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Button {
+                        onSkipNextChapter?()
+                    } label: {
+                        Image(systemName: "chevron.right.2")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .disabled(onSkipNextChapter == nil)
+                    .opacity(onSkipNextChapter == nil ? 0.35 : 1)
+                }
+                .padding(.horizontal, 28)
+            }
             
             StoryPlaybackControls(
                 isPlaying: isPlaying,

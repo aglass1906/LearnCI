@@ -254,19 +254,115 @@ struct StoryReaderDataAdapter {
         return (lastIndex, max(0, localTime - clips[lastIndex].startOffset))
     }
 
+    func chapterImageURL(forChapterAt chapterIndex: Int) -> URL? {
+        guard story.chapters.indices.contains(chapterIndex) else { return nil }
+        let chapter = story.chapters[chapterIndex]
+
+        if let path = Self.assetForgeChapterImagePath(story: story, chapterIndex: chapterIndex),
+           let url = AppConfig.chapterCoverURL(path) {
+            return url
+        }
+        if let coverUrl = chapter.coverUrl?.trimmedNilIfEmpty,
+           let url = AppConfig.chapterCoverURL(coverUrl) {
+            return url
+        }
+        if let remoteCoverPath = story.remoteCoverPath?.trimmedNilIfEmpty,
+           let url = AppConfig.chapterCoverURL(remoteCoverPath) {
+            return url
+        }
+        if let coverArt = story.coverArt?.trimmedNilIfEmpty,
+           let url = AppConfig.chapterCoverURL(coverArt) {
+            return url
+        }
+        return nil
+    }
+
     func sceneImageURL(scene: StoryScene, chapterIndex: Int) -> URL? {
         if let imageUrl = scene.imageUrl?.trimmedNilIfEmpty {
             return AppConfig.chapterCoverURL(imageUrl)
         }
-        if let coverUrl = story.chapters[safeReaderData: chapterIndex]?.coverUrl?.trimmedNilIfEmpty {
-            return AppConfig.chapterCoverURL(coverUrl)
+        return chapterImageURL(forChapterAt: chapterIndex)
+    }
+
+    private static func assetForgeChapterImagePath(story: Story, chapterIndex: Int) -> String? {
+        guard let assetForgeJSON = story.assetForgeJSON,
+              let data = assetForgeJSON.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
+
+        let targetAssetID = "af_ch_\(chapterIndex)"
+        if let path = masterImagePath(in: root, matchingAssetID: targetAssetID) {
+            return path
         }
-        if let remoteCoverPath = story.remoteCoverPath?.trimmedNilIfEmpty {
-            return AppConfig.chapterCoverURL(remoteCoverPath)
+        if let chapters = root as? [String: Any],
+           let chapterRows = chapters["chapters"] as? [Any],
+           chapterIndex < chapterRows.count,
+           let path = masterImagePath(in: chapterRows[chapterIndex]) {
+            return path
         }
-        if let coverArt = story.coverArt?.trimmedNilIfEmpty {
-            return AppConfig.chapterCoverURL(coverArt)
+        return nil
+    }
+
+    private static func masterImagePath(in value: Any, matchingAssetID: String) -> String? {
+        if let dictionary = value as? [String: Any] {
+            let assetID = [
+                dictionary["asset_id"] as? String,
+                dictionary["assetId"] as? String
+            ].compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }.first
+
+            if assetID == matchingAssetID, let path = masterImagePath(in: dictionary) {
+                return path
+            }
+
+            for child in dictionary.values {
+                if let path = masterImagePath(in: child, matchingAssetID: matchingAssetID) {
+                    return path
+                }
+            }
+        } else if let array = value as? [Any] {
+            for child in array {
+                if let path = masterImagePath(in: child, matchingAssetID: matchingAssetID) {
+                    return path
+                }
+            }
         }
+        return nil
+    }
+
+    private static func masterImagePath(in value: Any) -> String? {
+        if let path = value as? String {
+            let trimmed = path.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+
+        guard let dictionary = value as? [String: Any] else { return nil }
+
+        if let images = dictionary["images"] as? [String: Any] {
+            for key in ["master_path", "masterPath"] {
+                if let path = images[key] as? String {
+                    let trimmed = path.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmed.isEmpty { return trimmed }
+                }
+            }
+        }
+
+        for key in [
+            "master_path", "masterPath",
+            "image_path", "imagePath",
+            "image_url", "imageUrl",
+            "url", "path"
+        ] {
+            if let path = dictionary[key] as? String {
+                let trimmed = path.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { return trimmed }
+            }
+        }
+
+        for key in ["images", "master_images", "masterImages", "variations"] {
+            if let child = dictionary[key], let path = masterImagePath(in: child) {
+                return path
+            }
+        }
+
         return nil
     }
 

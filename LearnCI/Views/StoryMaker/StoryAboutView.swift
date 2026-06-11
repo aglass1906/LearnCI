@@ -6,12 +6,6 @@ struct StoryAboutView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
-    @Environment(SyncManager.self) private var syncManager
-
-    // Pipeline pushing
-    @State private var isPushingToPipeline = false
-    @State private var pipelineStatusMessage: String? = nil
-    @State private var showPipelineSuccessAlert = false
 
     // Hero image state
     @State private var heroImage: UIImage? = nil
@@ -218,34 +212,7 @@ struct StoryAboutView: View {
 
                     // ── Ambient Sound ─────────────────────────────────────
                     AmbientSoundRow(story: story, onChangeTap: { showAmbientPicker = true })
-
-                    Divider()
-
-                    // ── Administrative Actions ────────────────────────────
-                    VStack(spacing: 12) {
-                        
-                        // Push to Pipeline
-                        Button(action: pushStoryToPipeline) {
-                            HStack {
-                                if isPushingToPipeline {
-                                    ProgressView().tint(.white)
-                                        .padding(.trailing, 4)
-                                    Text("Saving...")
-                                } else {
-                                    Image(systemName: "icloud.and.arrow.up")
-                                    Text("Save to Pipeline")
-                                }
-                            }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.blue)
-                            .cornerRadius(12)
-                        }
-                        .disabled(isPushingToPipeline)
-                    }
-                    .padding(.bottom, 40)
+                        .padding(.bottom, 40)
                 }
                 .padding(.horizontal)
             }
@@ -381,11 +348,6 @@ struct StoryAboutView: View {
         } message: {
             Text(storyManager.errorMessage ?? "")
         }
-        .alert("Pipeline", isPresented: $showPipelineSuccessAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(pipelineStatusMessage ?? "")
-        }
     }
 
     private var primaryReaderTitle: String {
@@ -408,71 +370,18 @@ struct StoryAboutView: View {
     // MARK: - Helpers
 
     private var chapterListSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Chapters")
+        let adapter = StoryReaderDataAdapter(story: story)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Label("Table of Contents", systemImage: "list.bullet.rectangle")
                 .font(.headline)
+
             ForEach(Array(story.chapters.enumerated()), id: \.offset) { index, chapter in
-                HStack(alignment: .top, spacing: 12) {
-                    let label = chapter.isPrologue ? "P" : chapter.isEpilogue ? "E" : "\(index + 1)"
-                    let color = chapter.isPrologue ? Color.orange : (chapter.isEpilogue ? Color.purple : Color.accentColor)
-
-                    Text(label)
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .frame(width: 24, height: 24)
-                        .background(color)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack {
-                            Text(chapter.titleTargetLanguage)
-                                .font(.subheadline.bold())
-                            if chapter.isPrologue {
-                                Text("Prologue")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.orange)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.orange.opacity(0.1))
-                                    .cornerRadius(4)
-                            } else if chapter.isEpilogue {
-                                Text("Epilogue")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.purple)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.purple.opacity(0.1))
-                                    .cornerRadius(4)
-                            }
-                        }
-                        if let intro = chapter.chapterIntroText ?? chapter.chapterIntroTextEnglish {
-                            Text(intro)
-                                .font(.caption.italic())
-                                .foregroundStyle(.secondary)
-                                .padding(.bottom, 2)
-                        }
-                        if let summary = chapter.plotSummaryEnglish ?? chapter.plotSummaryTarget {
-                            Text(summary)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                        }
-                    }
-
-                    if let urlString = chapter.coverUrl,
-                       let url = AppConfig.chapterCoverURL(urlString) {
-                        Spacer()
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            Color(.secondarySystemBackground)
-                        }
-                        .frame(width: 60, height: 80)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-                }
+                ChapterTableOfContentsRow(
+                    chapter: chapter,
+                    chapterIndex: index,
+                    imageURL: adapter.chapterImageURL(forChapterAt: index)
+                )
             }
         }
     }
@@ -572,21 +481,136 @@ struct StoryAboutView: View {
         isGeneratingVideo = false
     }
 
-    // MARK: - Pipeline Push Action
-    
-    @MainActor
-    private func pushStoryToPipeline() {
-        isPushingToPipeline = true
-        Task {
-            do {
-                try await syncManager.pushToPipeline(story: story, context: modelContext)
-                pipelineStatusMessage = "Successfully saved story to pipeline."
-            } catch {
-                pipelineStatusMessage = "Failed to save: \(error.localizedDescription)"
+}
+
+// MARK: - Table of Contents Row
+
+private struct ChapterTableOfContentsRow: View {
+    let chapter: StoryChapter
+    let chapterIndex: Int
+    let imageURL: URL?
+
+    private var chapterBadgeLabel: String {
+        if chapter.isPrologue { return "P" }
+        if chapter.isEpilogue { return "E" }
+        return "\(chapter.chapterNumber)"
+    }
+
+    private var chapterBadgeColor: Color {
+        if chapter.isPrologue { return .orange }
+        if chapter.isEpilogue { return .purple }
+        return .accentColor
+    }
+
+    private var displayTitle: String {
+        let title = chapter.titleTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !title.isEmpty { return title }
+        if chapter.isPrologue { return "Prologue" }
+        if chapter.isEpilogue { return "Epilogue" }
+        return "Chapter \(chapter.chapterNumber)"
+    }
+
+    private var englishSubtitle: String? {
+        let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !english.isEmpty, english != displayTitle else { return nil }
+        return english
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            chapterThumbnail
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(displayTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if chapter.isPrologue {
+                        chapterTypeBadge("Prologue", color: .orange)
+                    } else if chapter.isEpilogue {
+                        chapterTypeBadge("Epilogue", color: .purple)
+                    }
+                }
+
+                if let englishSubtitle {
+                    Text(englishSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let overview = chapter.tableOfContentsOverview {
+                    Text(overview)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(3)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            isPushingToPipeline = false
-            showPipelineSuccessAlert = true
         }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var chapterThumbnail: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if let imageURL {
+                    AsyncImage(url: imageURL) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFill()
+                        case .failure, .empty:
+                            chapterThumbnailPlaceholder
+                        @unknown default:
+                            chapterThumbnailPlaceholder
+                        }
+                    }
+                } else {
+                    chapterThumbnailPlaceholder
+                }
+            }
+            .frame(width: 88, height: 88)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            Text(chapterBadgeLabel)
+                .font(.caption2.bold())
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(chapterBadgeColor)
+                .clipShape(Capsule())
+                .padding(6)
+        }
+    }
+
+    private var chapterThumbnailPlaceholder: some View {
+        ZStack {
+            Color(.tertiarySystemFill)
+            VStack(spacing: 4) {
+                Image(systemName: "book.closed")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                Text(chapterBadgeLabel)
+                    .font(.caption.bold())
+                    .foregroundStyle(chapterBadgeColor)
+            }
+        }
+    }
+
+    private func chapterTypeBadge(_ label: String, color: Color) -> some View {
+        Text(label)
+            .font(.caption2.bold())
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12))
+            .cornerRadius(4)
     }
 }
 

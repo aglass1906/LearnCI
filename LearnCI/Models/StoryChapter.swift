@@ -41,6 +41,14 @@ struct StoryChapter: Codable, Identifiable, Equatable {
             .joined(separator: "\n\n")
     }
 
+    /// Short synopsis for preview / table-of-contents rows (plot summary, not intro or body).
+    var tableOfContentsOverview: String? {
+        let target = plotSummaryTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !target.isEmpty { return target }
+        let english = plotSummaryEnglish?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return english.isEmpty ? nil : english
+    }
+
     var bodyScriptOrNarrativeForAlignment: String {
         let script = scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return script.isEmpty ? bodyTextTargetForReading : script

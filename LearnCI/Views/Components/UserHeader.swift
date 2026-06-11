@@ -30,6 +30,27 @@ struct UserHeader: View {
             HStack(spacing: 12) {
                 Menu {
                     Button {
+                        currentTab = .dashboard
+                    } label: {
+                        Label("Home", systemImage: "house.fill")
+                    }
+                    Button {
+                        currentTab = .learn
+                    } label: {
+                        Label("Learn / Games", systemImage: "gamecontroller.fill")
+                    }
+                    Button {
+                        currentTab = .discovery
+                    } label: {
+                        Label("Input", systemImage: "brain.head.profile.fill")
+                    }
+                    Button {
+                        currentTab = .history
+                    } label: {
+                        Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
+                    }
+                    Divider()
+                    Button {
                         showProfile = true
                     } label: {
                         Label("Profile", systemImage: "person.circle")

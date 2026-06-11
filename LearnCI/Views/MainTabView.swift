@@ -34,7 +34,7 @@ struct MainTabView: View {
                 
                 InputDiscoveryView()
                     .tabItem {
-                        Label("Input", systemImage: "sparkles")
+                        Label("Input", systemImage: "brain.head.profile.fill")
                     }
                     .tag(AppTab.discovery)
                 

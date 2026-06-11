@@ -19,6 +19,7 @@ struct StorySessionView: View {
     @State private var playbackRate: Float = 1.0
     @State private var ambientVolume: Float = 0.15
     @State private var isDownloadingAudio = false
+    @State private var currentSpineIndex: Int = 0
     @State private var currentChapterIndex: Int = 0
     @State private var currentSceneClipIndex: Int = 0
 
@@ -36,8 +37,8 @@ struct StorySessionView: View {
     @State private var startTime: Date?
     @State private var didPlayAudio: Bool = false
 
-    // Chapter Intro Card
-    @State private var showingChapterCard: Bool = true
+    // Chapter intro vs body within the same chapter spine step.
+    @State private var isShowingChapterIntro: Bool = false
 
     // Comprehension Quiz
     @State private var navigateToQuiz: Bool = false
@@ -79,10 +80,39 @@ struct StorySessionView: View {
         }
     }
 
-    private var storyBookReadingMatterItems: [StoryReadingSpineItem] {
-        storyBookSpineItems.filter {
-            if case .readingMatterPage = $0 { return true }
-            return false
+    private var currentSpineItem: StoryReadingSpineItem? {
+        storyBookSpineItems[safeStorySession: currentSpineIndex]
+    }
+
+    private var isOnChapterSpineItem: Bool {
+        if case .chapter = currentSpineItem { return true }
+        return false
+    }
+
+    private var nextSpineIndex: Int? {
+        let next = currentSpineIndex + 1
+        return storyBookSpineItems.indices.contains(next) ? next : nil
+    }
+
+    private var previousSpineIndex: Int? {
+        let previous = currentSpineIndex - 1
+        return previous >= 0 ? previous : nil
+    }
+
+    private func spineStepNavigationHandler(delta: Int) -> (() -> Void)? {
+        if delta > 0 {
+            if isShowingChapterIntro {
+                return { finishChapterIntro(andPlayBody: false) }
+            }
+            guard let nextSpineIndex else { return nil }
+            return {
+                goToSpineIndex(nextSpineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: nextSpineIndex))
+            }
+        }
+
+        guard let previousSpineIndex else { return nil }
+        return {
+            goToSpineIndex(previousSpineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: previousSpineIndex))
         }
     }
 
@@ -98,62 +128,28 @@ struct StorySessionView: View {
 
     private var readerBody: some View {
         ZStack(alignment: .bottom) {
-            ScrollViewReader { scrollProxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        if storyBookSpineItems.contains(.cover) {
-                            coverSection
-                        }
-                    
-                    VStack(alignment: .leading, spacing: 20) {
-                        Text(story.title)
-                            .font(.system(size: 32, weight: .bold, design: .serif))
-                            .padding(.top, 20)
-                        
-                        // Metadata Row
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                storyBookSpineHeader
 
-                        readingMatterSection
-                        
-                        chapterHeaderView
-                        
-                        Divider()
-                        
-                        storyTextView
-                        
-                        // Spacer for sticky bar
-                        Color.clear.frame(height: 180)
-                            .id("BottomSpacer")
-                    }
-                    .padding()
-                }
-                .onChange(of: activeParagraphId) { _, newId in
-                    if let id = newId {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            // Use .center to perfectly frame the paragraph above the play bar
-                            scrollProxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.35)) 
-                        }
+                Group {
+                    switch currentSpineItem {
+                    case .cover:
+                        coverPageView
+                    case .readingMatterPage:
+                        currentReadingMatterPageView
+                    case .chapter:
+                        chapterReaderContent
+                    case .scene, .none:
+                        StoryReaderUnavailableView(
+                            title: "Reader Data Missing",
+                            message: "This story spine item could not be displayed."
+                        )
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .ignoresSafeArea(edges: .top)
-            } // Close ScrollViewReader
-            
+
             stickyPlayerView
-
-            if showingChapterCard, let chapter = currentChapter {
-                ChapterInfoCardView(
-                    chapter: chapter,
-                    heroImage: heroImage,
-                    languageCode: story.languageRaw
-                ) {
-                    showingChapterCard = false
-                    setupAudio(autoplay: true)
-                }
-                .transition(.opacity)
-                .zIndex(10)
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -164,12 +160,12 @@ struct StorySessionView: View {
         .onAppear {
             startTime = Date()
             ambientVolume = story.ambientVolume
-            // When a chapter intro card will be shown, defer audio setup until Continue
-            // is tapped so AVSpeechSynthesizer can use the audio session uninterrupted.
-            if currentChapter == nil {
+            if isOnChapterSpineItem, !isShowingChapterIntro {
                 setupAudio()
             }
-            loadChapterImage()
+            if isOnChapterSpineItem {
+                loadChapterImage()
+            }
         }
         .onDisappear {
             cleanupSession()
@@ -222,19 +218,12 @@ struct StorySessionView: View {
         }
         .sheet(isPresented: $showSpine) {
             StoryBookSpineSheet(
-                chapterItems: storyBookChapterItems,
-                currentChapterIndex: currentChapterIndex,
+                spineItems: storyBookSpineItems,
+                currentSpineIndex: currentSpineIndex,
                 adapter: adapter
-            ) { chapterIndex in
+            ) { spineIndex in
                 showSpine = false
-                if isPlaying { togglePlay() }
-                moveToChapter(chapterIndex)
-                activeWordIndex = nil
-                activeParagraphId = nil
-                sliderValue = 0
-                currentSceneClipIndex = 0
-                setupAudio()
-                showingChapterCard = true
+                goToSpineIndex(spineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: spineIndex))
             }
             .presentationDetents([.medium, .large])
         }
@@ -254,6 +243,8 @@ struct StorySessionView: View {
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
+            guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
+
             if audioManager.streamFinished {
                 advanceAfterSceneClipFinished()
                 return
@@ -431,7 +422,19 @@ struct StorySessionView: View {
     }
     
     private func togglePlay() {
+        guard isOnChapterSpineItem else { return }
         didPlayAudio = true
+
+        if isShowingChapterIntro {
+            if isPlaying {
+                isPlaying = false
+            } else if hasChapterIntroContent {
+                isPlaying = true
+            } else {
+                finishChapterIntro(andPlayBody: true)
+            }
+            return
+        }
 
         if audioManager.streamPlayer == nil {
             setupAudio(autoplay: true)
@@ -451,6 +454,7 @@ struct StorySessionView: View {
     }
     
     private func skipForward() {
+        guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         let newTime = sliderValue + 10
         let maxDur = max(duration, 10.0)
         let safeTime = min(maxDur, newTime)
@@ -459,6 +463,7 @@ struct StorySessionView: View {
     }
     
     private func skipBackward() {
+        guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         let newTime = sliderValue - 10
         let safeTime = max(0, newTime)
         seekTo(safeTime)
@@ -466,6 +471,7 @@ struct StorySessionView: View {
     }
     
     private func seekTo(_ value: Double) {
+        guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         guard let target = adapter.clipIndex(forChapter: currentChapterIndex, localTime: value) else { return }
         if target.index == currentSceneClipIndex {
             audioManager.seekStream(to: target.offset)
@@ -581,29 +587,264 @@ struct StorySessionView: View {
         .frame(height: 300)
         .clipped()
     }
-    
+
+    private var isOnReadingMatterSpineItem: Bool {
+        if case .readingMatterPage = currentSpineItem { return true }
+        return false
+    }
+
+    private var storyBookSpineHeader: some View {
+        Group {
+            if isOnChapterSpineItem {
+                chapterSpineHeader
+            } else if isOnReadingMatterSpineItem {
+                readingMatterSpineHeader
+            } else {
+                defaultSpineHeader
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
+    }
+
+    private var defaultSpineHeader: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(story.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+
+                if let subtitle = currentSpineSubtitle {
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if !storyBookSpineItems.isEmpty {
+                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+    }
+
+    private var chapterSpineHeader: some View {
+        HStack(spacing: 10) {
+            chapterHeaderThumbnail
+
+            VStack(alignment: .leading, spacing: 2) {
+                if let subtitle = currentSpineSubtitle {
+                    Text(subtitle)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                }
+
+                Text(story.title)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if currentChapterHasEnglishContent {
+                chapterLanguageToggle
+            }
+
+            if !storyBookSpineItems.isEmpty {
+                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+    }
+
     @ViewBuilder
-    private var readingMatterSection: some View {
-        if !storyBookReadingMatterItems.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(storyBookReadingMatterItems) { item in
-                    if let page = adapter.readingMatterPage(for: item) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        if let title = readerMatterText(page.titleTarget) {
-                            Text(title)
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        if let body = readerMatterText(page.bodyTarget) {
-                            Text(body)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(5)
-                        }
+    private var chapterHeaderThumbnail: some View {
+        Group {
+            if let heroImage {
+                Image(uiImage: heroImage)
+                    .resizable()
+                    .scaledToFill()
+            } else if let coverPath = currentChapter?.coverUrl,
+                      let url = AppConfig.chapterCoverURL(coverPath) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure, .empty:
+                        chapterHeaderThumbnailPlaceholder
+                    @unknown default:
+                        chapterHeaderThumbnailPlaceholder
                     }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            } else {
+                chapterHeaderThumbnailPlaceholder
+            }
+        }
+        .frame(width: 44, height: 44)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var chapterHeaderThumbnailPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color.accentColor.opacity(0.18))
+            .overlay {
+                Image(systemName: "text.book.closed")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+            }
+    }
+
+    private var readingMatterSpineHeader: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(story.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+
+                if let subtitle = currentSpineSubtitle {
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if currentReadingMatterHasEnglishContent {
+                chapterLanguageToggle
+            }
+
+            if !storyBookSpineItems.isEmpty {
+                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+    }
+
+    private var currentChapterHasEnglishContent: Bool {
+        guard let chapter = currentChapter else { return false }
+        if !chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if let intro = chapter.chapterIntroTextEnglish,
+           !intro.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        return !chapter.bodyTextEnglishForReading.isEmpty
+    }
+
+    private var currentReadingMatterHasEnglishContent: Bool {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return false }
+        if let title = page.titleNative, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if let body = page.bodyNative, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        return false
+    }
+
+    private var currentSpineSubtitle: String? {
+        guard let item = currentSpineItem else { return nil }
+        switch item {
+        case .cover:
+            return "Cover"
+        case .readingMatterPage:
+            if let page = adapter.readingMatterPage(for: item) {
+                let title = selectedLanguage == .native
+                    ? (readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget))
+                    : readerMatterText(page.titleTarget)
+                return title ?? "Reading Matter"
+            }
+            return "Reading Matter"
+        case .chapter(let index):
+            if let chapter = story.chapters[safeStorySession: index] {
+                let title = selectedLanguage == .native
+                    ? (chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        ? chapter.titleTargetLanguage
+                        : chapter.titleEnglish)
+                    : chapter.titleTargetLanguage
+                let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.isEmpty {
+                    return "Chapter \(index + 1)"
+                }
+                return "Chapter \(index + 1) · \(trimmed)"
+            }
+            return "Chapter \(index + 1)"
+        case .scene:
+            return nil
+        }
+    }
+
+    private var coverPageView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                coverSection
+                    .frame(height: 340)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                Text(story.title)
+                    .font(.system(size: 32, weight: .bold, design: .serif))
+
+                Text("\(story.language.displayName) · Level \(story.level)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Color.clear.frame(height: 160)
+            }
+            .padding()
+        }
+        .ignoresSafeArea(edges: .top)
+    }
+
+    @ViewBuilder
+    private var currentReadingMatterPageView: some View {
+        if let item = currentSpineItem,
+           let page = adapter.readingMatterPage(for: item) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let title = readingMatterDisplayTitle(for: page) {
+                        Text(title)
+                            .font(.title2.weight(.bold))
+                    }
+
+                    if let body = readingMatterDisplayBody(for: page) {
+                        Text(body)
+                            .font(.body)
+                            .lineSpacing(8)
+                            .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
+                            .textSelection(.enabled)
+                    }
+
+                    Color.clear.frame(height: 160)
+                }
+                .padding()
+            }
+        } else {
+            StoryReaderUnavailableView(
+                title: "Reading Matter Missing",
+                message: "This reading matter page could not be loaded."
+            )
+        }
+    }
+
+    private var chapterScrollContent: some View {
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    storyTextView
+
+                    Color.clear.frame(height: 180)
+                        .id("BottomSpacer")
+                }
+                .padding()
+            }
+            .onChange(of: activeParagraphId) { _, newId in
+                if let id = newId {
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        scrollProxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.35))
                     }
                 }
             }
@@ -615,37 +856,35 @@ struct StorySessionView: View {
         return trimmed.isEmpty ? nil : trimmed
     }
 
-    @ViewBuilder
-    private var chapterHeaderView: some View {
-        if !storyBookChapterItems.isEmpty {
-            HStack {
-                Text("Chapter \(currentChapterPosition + 1) of \(storyBookChapterItems.count)")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.accentColor.opacity(0.1))
-                    .cornerRadius(4)
-                if let title = currentChapter?.titleTargetLanguage, !title.isEmpty {
-                    Text(title)
-                        .font(.subheadline)
-                        .italic()
-                }
-            }
-            .padding(.top, 4)
+    private func readingMatterDisplayTitle(for page: ReadingMatterPage) -> String? {
+        switch selectedLanguage {
+        case .target:
+            return readerMatterText(page.titleTarget)
+        case .native:
+            return readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget)
         }
+    }
+
+    private func readingMatterDisplayBody(for page: ReadingMatterPage) -> String? {
+        switch selectedLanguage {
+        case .target:
+            return readerMatterText(page.bodyTarget)
+        case .native:
+            return readerMatterText(page.bodyNative) ?? readerMatterText(page.bodyTarget)
+        }
+    }
+
+    private var chapterLanguageToggle: some View {
+        Picker("Language", selection: $selectedLanguage) {
+            Text(story.language.rawValue.uppercased()).tag(DisplayLanguage.target)
+            Text("EN").tag(DisplayLanguage.native)
+        }
+        .pickerStyle(.segmented)
+        .frame(width: 88)
     }
 
     @ViewBuilder
     private var storyTextView: some View {
-        if let currentChapter, !currentChapter.bodyTextEnglishForReading.isEmpty {
-            Picker("Language", selection: $selectedLanguage) {
-                ForEach(DisplayLanguage.allCases, id: \.self) { lang in
-                    Text(lang.rawValue).tag(lang)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
         if selectedLanguage == .target {
             VStack(alignment: .leading, spacing: 20) {
                 ForEach(storyParagraphs) { chunk in
@@ -673,56 +912,53 @@ struct StorySessionView: View {
     }
 
     @ViewBuilder
-    private var stickyPlayerView: some View {
-        if isDownloadingAudio {
-            HStack(spacing: 10) {
-                ProgressView().tint(.white)
-                Text("Downloading audio…")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                Spacer()
+    private var chapterReaderContent: some View {
+        Group {
+            if isShowingChapterIntro, let chapter = currentChapter {
+                ChapterInfoCardView(
+                    chapter: chapter,
+                    heroImage: heroImage,
+                    languageCode: story.languageRaw,
+                    selectedLanguage: $selectedLanguage,
+                    isPlaying: $isPlaying,
+                    onIntroFinished: { finishChapterIntro(andPlayBody: false) }
+                )
+                .id("chapter-intro-\(currentChapterIndex)")
+            } else {
+                chapterScrollContent
+                    .id("chapter-body-\(currentChapterIndex)")
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(Color.blue)
-            .cornerRadius(24, corners: [.topLeft, .topRight])
-            .shadow(radius: 10, y: -5)
-            .ignoresSafeArea(edges: .bottom)
-        } else if !storyBookChapterItems.isEmpty {
+        }
+        .transaction { transaction in
+            transaction.animation = nil
+        }
+    }
+
+    @ViewBuilder
+    private var stickyPlayerView: some View {
+        if !storyBookSpineItems.isEmpty {
             AudioPlayerBar(
                 isPlaying: $isPlaying,
                 sliderValue: $sliderValue,
-                duration: duration,
+                duration: max(duration, 1),
                 playbackRate: $playbackRate,
                 ambientVolume: $ambientVolume,
                 isAmbientPlaying: audioManager.isAmbientPlaying,
+                canSeek: isOnChapterSpineItem && !isShowingChapterIntro,
+                canControlPlayback: isOnChapterSpineItem,
+                isBuffering: isDownloadingAudio,
+                bufferingLabel: "Downloading audio…",
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
                 onSeek: seekTo,
                 onChangeRate: setRate,
-                onNextChapter: nextChapterIndex != nil ? {
-                    if isPlaying { togglePlay() }
-                    moveToChapter(nextChapterIndex)
-                    activeWordIndex = nil
-                    activeParagraphId = nil
-                    sliderValue = 0
-                    currentSceneClipIndex = 0
-                    setupAudio()
-                    showingChapterCard = true
-                } : nil,
-                onPreviousChapter: previousChapterIndex != nil ? {
-                    if isPlaying { togglePlay() }
-                    moveToChapter(previousChapterIndex)
-                    activeWordIndex = nil
-                    activeParagraphId = nil
-                    sliderValue = 0
-                    currentSceneClipIndex = 0
-                    setupAudio()
-                    showingChapterCard = true
-                } : nil,
+                onNextChapter: spineStepNavigationHandler(delta: 1),
+                onPreviousChapter: spineStepNavigationHandler(delta: -1),
                 onShowSpine: { showSpine = true }
             )
+            .disabled(isOnChapterSpineItem && isDownloadingAudio)
+            .id("story-book-footer")
             .ignoresSafeArea(edges: .bottom)
         }
     }
@@ -732,32 +968,86 @@ struct StorySessionView: View {
         return adapter.chapter(for: item)
     }
 
-    private var currentChapterPosition: Int {
-        storyBookChapterItems.firstIndex { chapterIndex(for: $0) == currentChapterIndex } ?? 0
-    }
-
-    private var nextChapterIndex: Int? {
-        chapterIndex(atChapterSpineOffset: 1)
-    }
-
-    private var previousChapterIndex: Int? {
-        chapterIndex(atChapterSpineOffset: -1)
-    }
-
     private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
         guard case .chapter(let index) = item else { return nil }
         return index
     }
 
-    private func chapterIndex(atChapterSpineOffset offset: Int) -> Int? {
-        let targetPosition = currentChapterPosition + offset
-        guard storyBookChapterItems.indices.contains(targetPosition) else { return nil }
-        return chapterIndex(for: storyBookChapterItems[targetPosition])
+    private var hasChapterIntroContent: Bool {
+        guard let chapter = currentChapter else { return false }
+        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        let hasText = !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return hasAudio || hasText
     }
 
-    private func moveToChapter(_ chapterIndex: Int?) {
-        guard let chapterIndex else { return }
-        currentChapterIndex = chapterIndex
+    private func finishChapterIntro(andPlayBody: Bool) {
+        isShowingChapterIntro = false
+        isPlaying = false
+        audioManager.streamFinished = false
+
+        Task { @MainActor in
+            if andPlayBody {
+                didPlayAudio = true
+                setupAudio(autoplay: true)
+                isPlaying = true
+                startAmbient()
+            } else {
+                setupAudio()
+            }
+        }
+    }
+
+    private func goToSpineIndex(_ index: Int?, showChapterCard: Bool) {
+        guard let index, storyBookSpineItems.indices.contains(index) else { return }
+
+        if isPlaying {
+            audioManager.pauseStream()
+            audioManager.pauseAmbient()
+            isPlaying = false
+        }
+
+        currentSpineIndex = index
+        activeWordIndex = nil
+        activeParagraphId = nil
+        sliderValue = 0
+        currentSceneClipIndex = 0
+        audioManager.streamFinished = false
+        isDownloadingAudio = false
+
+        switch storyBookSpineItems[index] {
+        case .chapter(let chapterIndex):
+            currentChapterIndex = chapterIndex
+            loadChapterImage()
+            audioManager.stopAudio()
+            if showChapterCard, chapterHasIntroContent(at: chapterIndex) {
+                isShowingChapterIntro = true
+            } else {
+                isShowingChapterIntro = false
+                setupAudio()
+            }
+        case .readingMatterPage, .cover:
+            audioManager.stopAudio()
+            isShowingChapterIntro = false
+            sliderValue = 0
+            duration = 0
+        case .scene:
+            audioManager.stopAudio()
+            isShowingChapterIntro = false
+        }
+    }
+
+    private func chapterHasIntroContent(at chapterIndex: Int) -> Bool {
+        guard story.chapters.indices.contains(chapterIndex) else { return false }
+        let chapter = story.chapters[chapterIndex]
+        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        let hasText = !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return hasAudio || hasText
+    }
+
+    private func shouldShowChapterCard(forSpineIndex index: Int) -> Bool {
+        guard storyBookSpineItems.indices.contains(index) else { return false }
+        if case .chapter = storyBookSpineItems[index] { return true }
+        return false
     }
 
     private var currentChapterClips: [StorySceneAudioClip] {
@@ -781,13 +1071,8 @@ struct StorySessionView: View {
             return
         }
 
-        if let nextChapterIndex {
-            currentChapterIndex = nextChapterIndex
-            currentSceneClipIndex = 0
-            activeWordIndex = nil
-            activeParagraphId = nil
-            sliderValue = 0
-            showingChapterCard = true
+        if let nextSpineIndex {
+            goToSpineIndex(nextSpineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: nextSpineIndex))
             return
         }
 
@@ -859,6 +1144,12 @@ struct StorySessionView: View {
                 }
             }
         }
+    }
+}
+
+private extension Collection {
+    subscript(safeStorySession index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 
@@ -1181,40 +1472,37 @@ struct HeroMediaView: View {
 }
 
 private struct StoryBookSpineSheet: View {
-    let chapterItems: [StoryReadingSpineItem]
-    let currentChapterIndex: Int
+    let spineItems: [StoryReadingSpineItem]
+    let currentSpineIndex: Int
     let adapter: StoryReaderDataAdapter
     let onSelect: (Int) -> Void
 
     var body: some View {
         NavigationStack {
-            List(chapterItems) { item in
-                if let chapter = adapter.chapter(for: item),
-                   let chapterIndex = chapterIndex(for: item) {
-                    Button {
-                        onSelect(chapterIndex)
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: chapterIndex == currentChapterIndex ? "text.book.closed.fill" : "text.book.closed")
-                                .frame(width: 24)
-                                .foregroundStyle(chapterIndex == currentChapterIndex ? Color.accentColor : .secondary)
+            List(Array(spineItems.enumerated()), id: \.element.id) { index, item in
+                Button {
+                    onSelect(index)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: icon(for: item))
+                            .frame(width: 24)
+                            .foregroundStyle(index == currentSpineIndex ? Color.accentColor : .secondary)
 
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(chapter.titleTargetLanguage.isEmpty ? "Chapter \(chapterIndex + 1)" : chapter.titleTargetLanguage)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                                Text("Chapter \(chapterIndex + 1)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(displayTitle(for: item))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                            Text("\(index + 1) of \(spineItems.count) · \(spineLabel(for: item))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
 
-                            Spacer()
+                        Spacer()
 
-                            if chapterIndex == currentChapterIndex {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(Color.accentColor)
-                            }
+                        if index == currentSpineIndex {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                 }
@@ -1224,9 +1512,52 @@ private struct StoryBookSpineSheet: View {
         }
     }
 
-    private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
-        guard case .chapter(let index) = item else { return nil }
-        return index
+    private func displayTitle(for item: StoryReadingSpineItem) -> String {
+        switch item {
+        case .cover:
+            return adapter.story.title
+        case .readingMatterPage:
+            if let page = adapter.readingMatterPage(for: item) {
+                let title = page.titleTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                if !title.isEmpty { return title }
+            }
+            return "Reading Matter"
+        case .chapter(let index):
+            if let chapter = adapter.chapter(for: item) {
+                let title = chapter.titleTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !title.isEmpty { return title }
+                return "Chapter \(index + 1)"
+            }
+            return "Chapter \(index + 1)"
+        case .scene:
+            return "Scene"
+        }
+    }
+
+    private func spineLabel(for item: StoryReadingSpineItem) -> String {
+        switch item {
+        case .cover:
+            return "Cover"
+        case .readingMatterPage:
+            return "Reading Matter"
+        case .chapter:
+            return "Chapter"
+        case .scene:
+            return "Scene"
+        }
+    }
+
+    private func icon(for item: StoryReadingSpineItem) -> String {
+        switch item {
+        case .cover:
+            return "book.closed"
+        case .readingMatterPage:
+            return "doc.text"
+        case .chapter:
+            return "text.book.closed"
+        case .scene:
+            return "photo"
+        }
     }
 }
 
@@ -1237,7 +1568,8 @@ struct AudioPlayerBar: View {
     @Binding var playbackRate: Float
     @Binding var ambientVolume: Float
     let isAmbientPlaying: Bool
-    var showsScrubber: Bool = true
+    var canSeek: Bool = true
+    var canControlPlayback: Bool = true
     var isBuffering: Bool = false
     var bufferingLabel: String = "Buffering…"
 
@@ -1284,32 +1616,34 @@ struct AudioPlayerBar: View {
                 .padding(.top, 4)
             }
 
-            if showsScrubber {
-                HStack(spacing: 8) {
-                    Text(formatTime(sliderValue))
-                        .font(.caption2.monospacedDigit())
-                        .foregroundColor(.secondary)
-                    
-                    Slider(value: Binding(
-                        get: { sliderValue },
-                        set: { newValue in
-                            sliderValue = newValue
-                            onSeek(newValue)
-                        }
-                    ), in: 0...duration)
-                    
-                    Text(formatTime(duration))
-                        .font(.caption2.monospacedDigit())
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
+            HStack(spacing: 8) {
+                Text(formatTime(sliderValue))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundColor(.secondary)
+
+                Slider(value: Binding(
+                    get: { sliderValue },
+                    set: { newValue in
+                        guard canSeek else { return }
+                        sliderValue = newValue
+                        onSeek(newValue)
+                    }
+                ), in: 0...duration)
+                .disabled(!canSeek)
+
+                Text(formatTime(duration))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundColor(.secondary)
             }
+            .padding(.horizontal)
+            .opacity(canSeek ? 1 : 0.55)
             
             StoryPlaybackControls(
                 isPlaying: isPlaying,
                 playbackRate: playbackRate,
                 canGoPrevious: onPreviousChapter != nil,
                 canGoNext: onNextChapter != nil,
+                canPlayPause: canControlPlayback,
                 onPlayPause: onPlayPause,
                 onPrevious: { onPreviousChapter?() },
                 onNext: { onNextChapter?() },
@@ -1318,8 +1652,8 @@ struct AudioPlayerBar: View {
             )
             .padding(.horizontal)
         }
-        .padding(.top, showsScrubber ? 20 : 12)
-        .padding(.bottom, showsScrubber ? 20 : 12)
+        .padding(.top, 20)
+        .padding(.bottom, 20)
         .background(
             Rectangle()
                 .fill(.thinMaterial)
@@ -1342,6 +1676,7 @@ struct StoryPlaybackControls: View {
     let playbackRate: Float
     let canGoPrevious: Bool
     let canGoNext: Bool
+    var canPlayPause: Bool = true
     let onPlayPause: () -> Void
     let onPrevious: () -> Void
     let onNext: () -> Void
@@ -1360,9 +1695,10 @@ struct StoryPlaybackControls: View {
             circleButton(
                 systemName: isPlaying ? "pause.fill" : "play.fill",
                 diameter: 52,
-                isEnabled: true,
+                isEnabled: canPlayPause,
                 action: onPlayPause
             )
+            .disabled(!canPlayPause)
 
             circleButton(
                 systemName: "forward.end.fill",
@@ -1371,20 +1707,21 @@ struct StoryPlaybackControls: View {
             )
             .disabled(!canGoNext)
 
-            Menu {
-                Button("0.75x") { onChangeRate(0.75) }
-                Button("1.0x") { onChangeRate(1.0) }
-                Button("1.25x") { onChangeRate(1.25) }
-                Button("1.5x") { onChangeRate(1.5) }
-            } label: {
-                Text("\(String(format: "%.1f", playbackRate))x")
-                    .font(.caption.weight(.bold))
-                    .monospacedDigit()
-                    .foregroundStyle(.white)
-                    .frame(width: 52, height: 44)
-                    .background(Color.accentColor)
-                    .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.16), radius: 6, y: 3)
+            Group {
+                if canPlayPause {
+                    Menu {
+                        Button("0.75x") { onChangeRate(0.75) }
+                        Button("1.0x") { onChangeRate(1.0) }
+                        Button("1.25x") { onChangeRate(1.25) }
+                        Button("1.5x") { onChangeRate(1.5) }
+                    } label: {
+                        playbackRateLabel
+                    }
+                } else {
+                    playbackRateLabel
+                        .opacity(0.45)
+                        .allowsHitTesting(false)
+                }
             }
 
             if let onShowSpine {
@@ -1395,6 +1732,17 @@ struct StoryPlaybackControls: View {
                 )
             }
         }
+    }
+
+    private var playbackRateLabel: some View {
+        Text("\(String(format: "%.1f", playbackRate))x")
+            .font(.caption.weight(.bold))
+            .monospacedDigit()
+            .foregroundStyle(.white)
+            .frame(width: 52, height: 44)
+            .background(Color.accentColor)
+            .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.16), radius: 6, y: 3)
     }
 
     private func circleButton(

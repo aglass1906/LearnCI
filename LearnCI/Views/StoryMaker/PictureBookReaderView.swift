@@ -19,6 +19,7 @@ struct PictureBookReaderView: View {
     @State private var clips: [StorySceneAudioClip]
     @State private var spreadIndexToClipIndex: [Int: Int]
     @State private var clipIndexToSpreadIndex: [Int: Int]
+    @State private var selectedLanguage: StorySessionView.DisplayLanguage = .target
 
     private var audioManager = AudioManager.shared
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -128,9 +129,12 @@ struct PictureBookReaderView: View {
                 compactReaderHeader
 
                 if spreads.indices.contains(currentSpreadIndex) {
-                    PictureBookSpreadView(spread: spreads[currentSpreadIndex])
-                        .id(spreads[currentSpreadIndex].id)
-                        .transition(.opacity)
+                    PictureBookSpreadView(
+                        spread: spreads[currentSpreadIndex],
+                        selectedLanguage: selectedLanguage
+                    )
+                    .id("\(spreads[currentSpreadIndex].id)-\(selectedLanguage.rawValue)")
+                    .transition(.opacity)
                 }
             }
 
@@ -163,7 +167,10 @@ struct PictureBookReaderView: View {
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
 
-                if let subtitle = spread?.headerSubtitle {
+                if let subtitle = spread?.headerSubtitle(
+                    story: story,
+                    language: selectedLanguage
+                ) {
                     Text(subtitle)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -171,6 +178,8 @@ struct PictureBookReaderView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            pictureBookLanguageToggle
 
             Text("\(currentSpreadIndex + 1)/\(spreads.count)")
                 .font(.caption.weight(.semibold))
@@ -180,6 +189,15 @@ struct PictureBookReaderView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(Color(.systemBackground))
+    }
+
+    private var pictureBookLanguageToggle: some View {
+        Picker("Language", selection: $selectedLanguage) {
+            Text(story.language.rawValue.uppercased()).tag(StorySessionView.DisplayLanguage.target)
+            Text("EN").tag(StorySessionView.DisplayLanguage.native)
+        }
+        .pickerStyle(.segmented)
+        .frame(width: 88)
     }
 
     @ViewBuilder
@@ -201,7 +219,7 @@ struct PictureBookReaderView: View {
                 playbackRate: $playbackRate,
                 ambientVolume: .constant(0),
                 isAmbientPlaying: false,
-                showsScrubber: audioManager.streamPlayer != nil,
+                canSeek: audioManager.streamPlayer != nil,
                 onPlayPause: togglePlay,
                 onSkipForward: {},
                 onSkipBackward: {},
@@ -376,11 +394,13 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
                     title: story.title,
                     subtitle: "\(story.language.displayName) · Level \(story.level)",
                     body: nil,
+                    readingMatterPage: nil,
                     scene: nil,
                     panel: nil,
                     layoutPanels: [],
@@ -397,11 +417,13 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
                     title: title,
                     subtitle: nil,
                     body: page.bodyTarget?.nilIfEmptyForPictureBook,
+                    readingMatterPage: page,
                     scene: nil,
                     panel: nil,
                     layoutPanels: [],
@@ -419,11 +441,13 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
                     sceneTitle: sceneTitle,
                     title: chapterTitle,
                     subtitle: nil,
                     body: scene.captionTarget?.nilIfEmptyForPictureBook,
+                    readingMatterPage: nil,
                     scene: scene,
                     panel: panel(for: item, in: story.storyLayout),
                     layoutPanels: layoutPanels(for: item, story: story, adapter: adapter),
@@ -489,11 +513,13 @@ struct PictureBookSpreadModel: Identifiable {
     let spineItem: StoryReadingSpineItem
     let spreadIndex: Int
     let storyTitle: String
+    let chapterIndex: Int?
     let chapterTitle: String?
     let sceneTitle: String?
     let title: String?
     let subtitle: String?
     let body: String?
+    let readingMatterPage: ReadingMatterPage?
     let scene: StoryScene?
     let panel: PanelLayout?
     let layoutPanels: [PictureBookPanelModel]
@@ -520,19 +546,61 @@ struct PictureBookSpreadModel: Identifiable {
             ?? spineLabel
     }
 
-    var headerSubtitle: String? {
+    func headerSubtitle(
+        story: Story,
+        language: StorySessionView.DisplayLanguage
+    ) -> String? {
         switch spineItem {
         case .cover:
             return nil
         case .readingMatterPage:
-            return title?.nilIfEmptyForPictureBook ?? spineLabel
+            return displayMatterTitle(language: language) ?? spineLabel
         case .chapter:
             return title?.nilIfEmptyForPictureBook ?? spineLabel
-        case .scene:
-            return [chapterTitle, sceneTitle]
+        case .scene(let chapterIndex, _):
+            let chapter = story.chapters[safeForPictureBook: chapterIndex]
+            let resolvedChapterTitle: String? = {
+                guard let chapter else { return chapterTitle }
+                switch language {
+                case .target:
+                    return chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                case .native:
+                    let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return english.nilIfEmptyForPictureBook ?? chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                }
+            }()
+            return [resolvedChapterTitle, sceneTitle]
                 .compactMap { $0?.nilIfEmptyForPictureBook }
                 .joined(separator: " / ")
                 .nilIfEmptyForPictureBook
+        }
+    }
+
+    func displayBody(language: StorySessionView.DisplayLanguage) -> String? {
+        switch spineItem {
+        case .readingMatterPage:
+            guard let page = readingMatterPage else { return body }
+            switch language {
+            case .target:
+                return page.bodyTarget?.nilIfEmptyForPictureBook
+            case .native:
+                return page.bodyNative?.nilIfEmptyForPictureBook ?? page.bodyTarget?.nilIfEmptyForPictureBook
+            }
+        case .scene:
+            guard let scene else { return body }
+            return scene.pictureBookPreviewText(english: language == .native)
+        default:
+            return body
+        }
+    }
+
+    func displayMatterTitle(language: StorySessionView.DisplayLanguage) -> String? {
+        guard let page = readingMatterPage else { return title?.nilIfEmptyForPictureBook }
+        switch language {
+        case .target:
+            return page.titleTarget?.nilIfEmptyForPictureBook
+        case .native:
+            return page.titleNative?.nilIfEmptyForPictureBook ?? page.titleTarget?.nilIfEmptyForPictureBook
         }
     }
 
@@ -632,6 +700,7 @@ private struct PictureBookSpineSheet: View {
 
 private struct PictureBookSpreadView: View {
     let spread: PictureBookSpreadModel
+    let selectedLanguage: StorySessionView.DisplayLanguage
 
     var body: some View {
         GeometryReader { geometry in
@@ -664,7 +733,8 @@ private struct PictureBookSpreadView: View {
 
         return ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: spacing) {
-                if !spread.isScene, let title = spread.sceneTitle ?? spread.title {
+                if !spread.isScene,
+                   let title = spread.displayMatterTitle(language: selectedLanguage) ?? spread.title {
                     Text(title)
                         .font(.title3.weight(.bold))
                         .foregroundStyle(.primary)
@@ -672,23 +742,15 @@ private struct PictureBookSpreadView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if let body = spread.body {
+                if let body = spread.displayBody(language: selectedLanguage) {
                     Text(body)
                         .font(.body.weight(.regular))
                         .lineSpacing(6)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(
+                            spread.isScene || selectedLanguage == .target ? .primary : .secondary
+                        )
                         .frame(width: contentWidth, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
-                }
-
-                if let scene = spread.scene {
-                    ForEach(scene.dialogues.prefix(4)) { dialogue in
-                        Text("\(dialogue.character): \(dialogue.text)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .frame(width: contentWidth, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
                 }
             }
             .padding(.top, 14)
@@ -800,20 +862,11 @@ private struct PictureBookSpreadView: View {
                         .minimumScaleFactor(0.8)
                 }
 
-                if let body = spread.body {
+                if let body = spread.displayBody(language: selectedLanguage) {
                     Text(body)
                         .font(.title3.weight(.semibold))
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
-                }
-
-                if let scene = spread.scene {
-                    ForEach(scene.dialogues.prefix(4)) { dialogue in
-                        Text("\(dialogue.character): \(dialogue.text)")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.92))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
                 }
             }
             .foregroundStyle(.white)
@@ -909,6 +962,42 @@ private extension StoryScene {
         captionTarget?.nilIfEmptyForPictureBook
             ?? scriptTargetLanguage?.components(separatedBy: .newlines).first?.nilIfEmptyForPictureBook
             ?? "Scene \(sceneIndex + 1)"
+    }
+
+    func pictureBookPreviewText(english: Bool) -> String? {
+        var lines: [String] = []
+
+        if english {
+            if let caption = captionNative?.nilIfEmptyForPictureBook {
+                lines.append(caption)
+            }
+            for dialogue in dialogues {
+                guard !dialogue.character.isEmpty else { continue }
+                let line = dialogue.textEnglish?.nilIfEmptyForPictureBook
+                    ?? dialogue.text.nilIfEmptyForPictureBook
+                guard let line else { continue }
+                lines.append("\(dialogue.character): \(line)")
+            }
+            if lines.isEmpty {
+                let script = scriptEnglish?.nilIfEmptyForPictureBook
+                    ?? scriptTargetLanguage?.nilIfEmptyForPictureBook
+                if let script { lines.append(script) }
+            }
+        } else {
+            if let caption = captionTarget?.nilIfEmptyForPictureBook {
+                lines.append(caption)
+            }
+            for dialogue in dialogues {
+                guard !dialogue.character.isEmpty,
+                      let line = dialogue.text.nilIfEmptyForPictureBook else { continue }
+                lines.append("\(dialogue.character): \(line)")
+            }
+            if lines.isEmpty, let script = scriptTargetLanguage?.nilIfEmptyForPictureBook {
+                lines.append(script)
+            }
+        }
+
+        return lines.isEmpty ? nil : lines.joined(separator: "\n")
     }
 }
 

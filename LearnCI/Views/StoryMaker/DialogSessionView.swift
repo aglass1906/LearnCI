@@ -2,47 +2,31 @@ import SwiftUI
 
 struct DialogSessionView: View {
     let story: Story
+    let chapterIndex: Int
+    @Binding var showEnglish: Bool
+    @Binding var playbackRate: Float
+    var onChapterDialogueComplete: () -> Void
 
-    @Environment(\.dismiss) private var dismiss
     @State private var items: [DialogStoryItem] = []
     @State private var sceneHeaderIndices: [Int] = []
     @State private var visibleCount = 1
-    @State private var showEnglish = false
     @State private var isDownloadingAudio = false
-    @State private var playbackRate: Float = 1.0
-
-    private var audioManager = AudioManager.shared
-
-    init(story: Story) {
-        self.story = story
-    }
 
     private var adapter: StoryReaderDataAdapter {
         StoryReaderDataAdapter(story: story)
     }
 
     var body: some View {
-        Group {
-            if let issue = adapter.requirementIssue(for: .dialogStory) {
-                StoryReaderUnavailableView(title: issue.title, message: issue.message)
-            } else {
-                dialogBody
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-        .onAppear {
-            buildItemsIfNeeded()
-        }
-        .mediaPlaybackLifecycle(
-            onUserLeave: { audioManager.stopAudio() },
-            onEnterBackground: { audioManager.updateNowPlayingInfo() }
-        )
-    }
-
-    private var dialogBody: some View {
         VStack(spacing: 0) {
-            header
             progressBar
+
+            if let image = currentSceneImage {
+                sceneImageView(image)
+                    .padding(.horizontal, 18)
+                    .padding(.top, 12)
+                    .transition(.opacity)
+                    .id(image.id)
+            }
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -52,7 +36,7 @@ struct DialogSessionView: View {
                                 for: displayedItem.item,
                                 isNewest: displayedItem.index == visibleCount - 1
                             )
-                                .id(displayedItem.item.id)
+                            .id(displayedItem.item.id)
                         }
                         Color.clear.frame(height: 18).id("dialog-bottom")
                     }
@@ -70,54 +54,13 @@ struct DialogSessionView: View {
 
             bottomBar
         }
-        .background(Color(.systemGroupedBackground))
-    }
-
-    private var header: some View {
-        HStack(spacing: 12) {
-            Button {
-                audioManager.stopAudio()
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.semibold))
-                    .frame(width: 42, height: 42)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(story.title)
-                    .font(.headline)
-                    .lineLimit(1)
-                Text("Dialog")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Menu {
-                Button("0.75x") { setRate(0.75) }
-                Button("1.0x") { setRate(1.0) }
-                Button("1.25x") { setRate(1.25) }
-                Button("1.5x") { setRate(1.5) }
-            } label: {
-                Text("\(String(format: "%.1f", playbackRate))x")
-                    .font(.caption.bold())
-                    .frame(width: 48, height: 36)
-            }
-
-            Button {
-                showEnglish.toggle()
-            } label: {
-                Text(showEnglish ? "EN" : story.languageRaw.uppercased())
-                    .font(.caption.bold())
-                    .frame(width: 44, height: 36)
-            }
-            .buttonStyle(.bordered)
+        .onAppear {
+            buildItemsIfNeeded()
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.thinMaterial)
+        .onChange(of: playbackRate) { _, newRate in
+            AudioManager.shared.setOneShotRate(newRate)
+        }
+        .animation(.easeOut(duration: 0.22), value: currentSceneOrdinal)
     }
 
     private var progressBar: some View {
@@ -175,10 +118,10 @@ struct DialogSessionView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     Button {
-                        audioManager.stopAudio()
-                        dismiss()
+                        AudioManager.shared.stopAudio()
+                        onChapterDialogueComplete()
                     } label: {
-                        Label("Done", systemImage: "checkmark.circle.fill")
+                        Label("Continue", systemImage: "arrow.right.circle.fill")
                             .font(.headline)
                     }
                     .buttonStyle(.borderedProminent)
@@ -195,14 +138,8 @@ struct DialogSessionView: View {
     private func view(for item: DialogStoryItem, isNewest: Bool) -> some View {
         let content = Group {
             switch item {
-            case .cover:
-                coverView
-            case .readingMatter(let page):
-                readingMatterView(page)
             case .sceneHeader(let header):
                 sceneHeaderView(header)
-            case .sceneImage(let image):
-                sceneImageView(image)
             case .bubble(let bubble):
                 DialogBubbleView(bubble: bubble, showEnglish: showEnglish)
             }
@@ -218,55 +155,6 @@ struct DialogSessionView: View {
         } else {
             content
         }
-    }
-
-    private var coverView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            AsyncImage(url: coverURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                case .failure:
-                    Color.accentColor.opacity(0.18)
-                case .empty:
-                    Color(.secondarySystemBackground).overlay { ProgressView() }
-                @unknown default:
-                    Color(.secondarySystemBackground)
-                }
-            }
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            Text(story.title)
-                .font(.system(size: 30, weight: .bold, design: .serif))
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("\(story.language.displayName) · Level \(story.level)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    private func readingMatterView(_ page: ReadingMatterPage) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let title = (showEnglish ? page.titleNative : page.titleTarget)?.nilIfEmptyDialogReader {
-                Text(title)
-                    .font(.headline)
-            }
-            if let body = (showEnglish ? page.bodyNative : page.bodyTarget)?.nilIfEmptyDialogReader {
-                Text(body)
-                    .font(.body)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func sceneHeaderView(_ header: DialogSceneHeader) -> some View {
@@ -285,6 +173,15 @@ struct DialogSessionView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var currentSceneImage: DialogSceneImage? {
+        guard sceneHeaderIndices.indices.contains(currentSceneOrdinal) else { return nil }
+        let headerIndex = sceneHeaderIndices[currentSceneOrdinal]
+        guard items.indices.contains(headerIndex),
+              case .sceneHeader(let header) = items[headerIndex],
+              let url = header.imageURL else { return nil }
+        return DialogSceneImage(id: header.id, url: url)
     }
 
     private func sceneImageView(_ image: DialogSceneImage) -> some View {
@@ -335,25 +232,16 @@ struct DialogSessionView: View {
         return sceneHeaderIndices.lastIndex { $0 < visibleCount } ?? 0
     }
 
-    private var coverURL: URL? {
-        if let remoteCoverPath = story.remoteCoverPath?.nilIfEmptyDialogReader {
-            return AppConfig.chapterCoverURL(remoteCoverPath)
-        }
-        if let coverArt = story.coverArt?.nilIfEmptyDialogReader {
-            return AppConfig.chapterCoverURL(coverArt)
-        }
-        return story.chapters.first.flatMap { chapter in
-            chapter.coverUrl?.nilIfEmptyDialogReader.flatMap(AppConfig.chapterCoverURL)
-        }
-    }
-
     private func buildItemsIfNeeded() {
         guard items.isEmpty else { return }
         var builder = DialogStoryBuilder(story: story, adapter: adapter)
-        let result = builder.makeItems()
+        let result = builder.makeItems(forChapter: chapterIndex)
         items = result.items
         sceneHeaderIndices = result.sceneHeaderIndices
         visibleCount = result.items.isEmpty ? 0 : 1
+        if result.items.isEmpty {
+            onChapterDialogueComplete()
+        }
     }
 
     private func advanceOne(scrollProxy: ScrollViewProxy) {
@@ -376,7 +264,7 @@ struct DialogSessionView: View {
 
     private func goToScene(_ ordinal: Int) {
         guard sceneHeaderIndices.indices.contains(ordinal) else { return }
-        audioManager.stopAudio()
+        AudioManager.shared.stopAudio()
         let sceneStart = sceneHeaderIndices[ordinal]
         withAnimation(.easeOut(duration: 0.18)) {
             visibleCount = visibleCountAfterEnteringScene(at: sceneStart)
@@ -390,8 +278,6 @@ struct DialogSessionView: View {
         switch items[currentCount] {
         case .sceneHeader:
             return visibleCountAfterEnteringScene(at: currentCount)
-        case .sceneImage:
-            return visibleCountThroughFirstBubble(startingAt: currentCount)
         default:
             return min(items.count, currentCount + 1)
         }
@@ -435,8 +321,8 @@ struct DialogSessionView: View {
 
     private func playLocal(url: URL, clip: StorySceneAudioClip) {
         do {
-            try audioManager.playOneShot(url: url, rate: playbackRate)
-            audioManager.updateNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
+            try AudioManager.shared.playOneShot(url: url, rate: playbackRate)
+            AudioManager.shared.updateNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
         } catch {
             print("[DialogSession] Failed to play dialog audio: \(error)")
         }
@@ -469,48 +355,35 @@ struct DialogSessionView: View {
             await MainActor.run { isDownloadingAudio = false }
         }
     }
-
-    private func setRate(_ rate: Float) {
-        playbackRate = rate
-        audioManager.setOneShotRate(rate)
-    }
 }
 
-private enum DialogStoryItem: Identifiable {
-    case cover
-    case readingMatter(ReadingMatterPage)
+enum DialogStoryItem: Identifiable {
     case sceneHeader(DialogSceneHeader)
-    case sceneImage(DialogSceneImage)
     case bubble(DialogBubble)
 
     var id: String {
         switch self {
-        case .cover:
-            return "cover"
-        case .readingMatter(let page):
-            return "matter-\(page.id)"
         case .sceneHeader(let header):
             return header.id
-        case .sceneImage(let image):
-            return image.id
         case .bubble(let bubble):
             return bubble.id
         }
     }
 }
 
-private struct DialogSceneHeader {
+struct DialogSceneHeader {
     let id: String
     let ordinal: Int
     let chapterTitle: String
+    let imageURL: URL?
 }
 
-private struct DialogSceneImage {
+struct DialogSceneImage {
     let id: String
     let url: URL
 }
 
-private struct DialogBubble {
+struct DialogBubble {
     let id: String
     let character: String
     let text: String
@@ -521,18 +394,17 @@ private struct DialogBubble {
     let audioClip: StorySceneAudioClip?
 }
 
-private struct DialogStoryBuildResult {
+struct DialogStoryBuildResult {
     let items: [DialogStoryItem]
     let sceneHeaderIndices: [Int]
 }
 
-private struct DialogStoryBuilder {
+struct DialogStoryBuilder {
     let story: Story
     let adapter: StoryReaderDataAdapter
 
     private var characterStyles: [String: (color: Color, rightAligned: Bool)] = [:]
     private var characterOrder = 0
-    private var sceneOrdinal = 0
 
     private let palette: [Color] = [
         .cyan, .orange, .purple, .green, .deepOrangeDialogReader, .pink, .red
@@ -543,47 +415,35 @@ private struct DialogStoryBuilder {
         self.adapter = adapter
     }
 
-    mutating func makeItems() -> DialogStoryBuildResult {
+    mutating func makeItems(forChapter chapterIndex: Int) -> DialogStoryBuildResult {
         var builtItems: [DialogStoryItem] = []
         var headerIndices: [Int] = []
+        var sceneOrdinal = 0
 
         for spineItem in adapter.items(for: .dialogStory) {
-            switch spineItem {
-            case .cover:
-                builtItems.append(.cover)
-            case .readingMatterPage:
-                if let page = adapter.readingMatterPage(for: spineItem) {
-                    builtItems.append(.readingMatter(page))
-                }
-            case .chapter:
-                continue
-            case .scene(let chapterIndex, let sceneIndex):
-                guard let scene = adapter.scene(for: spineItem),
-                      let chapter = story.chapters[safeDialogReader: chapterIndex] else { continue }
+            guard case .scene(let itemChapterIndex, let sceneIndex) = spineItem,
+                  itemChapterIndex == chapterIndex else { continue }
 
-                headerIndices.append(builtItems.count)
-                builtItems.append(.sceneHeader(DialogSceneHeader(
-                    id: "scene-header-\(chapterIndex)-\(sceneIndex)",
-                    ordinal: sceneOrdinal,
-                    chapterTitle: chapter.titleTargetLanguage.nilIfEmptyDialogReader ?? "Chapter \(chapterIndex + 1)"
-                )))
+            guard let scene = adapter.scene(for: spineItem),
+                  let chapter = story.chapters[safeDialogReader: chapterIndex] else { continue }
 
-                if let imageURL = adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex) {
-                    builtItems.append(.sceneImage(DialogSceneImage(
-                        id: "scene-image-\(chapterIndex)-\(sceneIndex)",
-                        url: imageURL
-                    )))
-                }
+            headerIndices.append(builtItems.count)
+            builtItems.append(.sceneHeader(DialogSceneHeader(
+                id: "scene-header-\(chapterIndex)-\(sceneIndex)",
+                ordinal: sceneOrdinal,
+                chapterTitle: chapter.titleTargetLanguage.nilIfEmptyDialogReader ?? "Chapter \(chapterIndex + 1)",
+                imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex)
+            )))
 
-                appendDialogueItems(
-                    scene: scene,
-                    chapter: chapter,
-                    chapterIndex: chapterIndex,
-                    sceneIndex: sceneIndex,
-                    builtItems: &builtItems
-                )
-                sceneOrdinal += 1
-            }
+            appendDialogueItems(
+                scene: scene,
+                chapter: chapter,
+                chapterIndex: chapterIndex,
+                sceneIndex: sceneIndex,
+                sceneOrdinal: sceneOrdinal,
+                builtItems: &builtItems
+            )
+            sceneOrdinal += 1
         }
 
         return DialogStoryBuildResult(items: builtItems, sceneHeaderIndices: headerIndices)
@@ -594,6 +454,7 @@ private struct DialogStoryBuilder {
         chapter: StoryChapter,
         chapterIndex: Int,
         sceneIndex: Int,
+        sceneOrdinal: Int,
         builtItems: inout [DialogStoryItem]
     ) {
         let dialogues = resolvedDialogues(for: scene)

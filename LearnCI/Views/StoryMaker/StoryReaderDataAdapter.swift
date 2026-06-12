@@ -352,10 +352,82 @@ struct StoryReaderDataAdapter {
     }
 
     func sceneImageURL(scene: StoryScene, chapterIndex: Int) -> URL? {
-        if let imageUrl = scene.imageUrl?.trimmedNilIfEmpty {
-            return AppConfig.chapterCoverURL(imageUrl)
+        if let imageUrl = scene.imageUrl?.trimmedNilIfEmpty,
+           let url = AppConfig.chapterCoverURL(imageUrl) {
+            return url
+        }
+        if let path = Self.breakdownSceneImagePath(
+            story: story,
+            chapterIndex: chapterIndex,
+            sceneIndex: scene.sceneIndex
+        ), let url = AppConfig.chapterCoverURL(path) {
+            return url
         }
         return chapterImageURL(forChapterAt: chapterIndex)
+    }
+
+    private static func breakdownSceneImagePath(
+        story: Story,
+        chapterIndex: Int,
+        sceneIndex: Int
+    ) -> String? {
+        if let path = breakdownSceneImagePath(
+            story: story,
+            chapterIndex: chapterIndex,
+            sceneIndexOneBased: sceneIndex + 1
+        ) {
+            return path
+        }
+        return breakdownSceneImagePath(
+            story: story,
+            chapterIndex: chapterIndex,
+            sceneIndexOneBased: sceneIndex
+        )
+    }
+
+    private static func breakdownSceneImagePath(
+        story: Story,
+        chapterIndex: Int,
+        sceneIndexOneBased: Int
+    ) -> String? {
+        if let json = story.sceneBreakdownJSON,
+           let data = json.data(using: .utf8),
+           let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let chapters = root["chapters"] as? [[String: Any]],
+           chapters.indices.contains(chapterIndex),
+           let scenes = chapters[chapterIndex]["scenes"] as? [[String: Any]] {
+            for sceneRow in scenes {
+                let rowIndex = (sceneRow["sceneIndex"] as? NSNumber)?.intValue ?? 0
+                guard rowIndex == sceneIndexOneBased else { continue }
+
+                let assetID = [
+                    sceneRow["asset_id"] as? String,
+                    sceneRow["assetId"] as? String
+                ]
+                    .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .first { !$0.isEmpty }
+                    ?? "af_sc_\(chapterIndex)_\(sceneIndexOneBased)"
+
+                if let path = assetForgeMasterPath(story: story, assetID: assetID) {
+                    return path
+                }
+                if let path = (sceneRow["sceneImagePath"] as? String)?.trimmedNilIfEmpty {
+                    return path
+                }
+            }
+        }
+
+        return assetForgeMasterPath(
+            story: story,
+            assetID: "af_sc_\(chapterIndex)_\(sceneIndexOneBased)"
+        )
+    }
+
+    private static func assetForgeMasterPath(story: Story, assetID: String) -> String? {
+        guard let assetForgeJSON = story.assetForgeJSON,
+              let data = assetForgeJSON.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
+        return masterImagePath(in: root, matchingAssetID: assetID)
     }
 
     private static func assetForgeChapterImagePath(story: Story, chapterIndex: Int) -> String? {
@@ -363,8 +435,7 @@ struct StoryReaderDataAdapter {
               let data = assetForgeJSON.data(using: .utf8),
               let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
 
-        let targetAssetID = "af_ch_\(chapterIndex)"
-        if let path = masterImagePath(in: root, matchingAssetID: targetAssetID) {
+        if let path = assetForgeMasterPath(story: story, assetID: "af_ch_\(chapterIndex)") {
             return path
         }
         if let chapters = root as? [String: Any],

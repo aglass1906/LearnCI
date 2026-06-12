@@ -2,7 +2,14 @@
 
 ## Overview
 
-The dialog story player (`DialogStoryPresenter`) renders a story as a sequential, tap-to-reveal chat feed — similar to Duolingo's dialogue exercises. Each character's line appears as a positioned speech bubble with a portrait avatar and optional audio. The entire experience is driven by a single state variable, `_visibleCount`, which controls how many items in a flat list are rendered at any given time.
+The dialog story player uses a **two-layer flow** on iOS (`DialogStoryFlowView` + `DialogSessionView`):
+
+1. **Spine wrapper** — full-screen steps for cover, front/back reading matter, and chapter intros (before/after/between chapters).
+2. **Dialogue feed** — tap-to-reveal chat bubbles for scene dialogue only (`DialogSessionView`, one chapter at a time).
+
+Flutter's `DialogStoryPresenter` still uses a single flat list; iOS separates spine pages from the message screen.
+
+Each character's line appears as a positioned speech bubble with a portrait avatar and optional audio. Dialogue progression is driven by `_visibleCount` / `visibleCount`, which controls how many bubble items are rendered at any given time.
 
 ---
 
@@ -44,27 +51,41 @@ The atomic unit of the dialog player. Lives inside `StoryScene.dialogues[]`.
 
 The presenter builds one flat `List<_Item>` once on `initState` and never rebuilds it. A `ListView.builder` renders the first `_visibleCount` entries.
 
-### Item types
+### Item types (dialogue feed only)
 
 ```
-_CoverItem          — story cover spread (one per story)
-_ReadingMatterItem  — front/back matter pages from READ stage
 _SceneHeader        — per-scene block: chapter badge + storyboard image
 _BubbleItem         — one dialogue line: character, text, color, side, portrait
 ```
 
-### Build order
+Cover, reading matter, and chapter intro are **not** dialogue-feed items on iOS; they are separate full-screen spine steps in `DialogStoryFlowView`.
 
-The presenter walks the **reading spine** produced by `computeStoryReadingSpine()`, which yields steps typed by kind. Dialog stories respond to:
+### Spine flow (iOS)
+
+`StoryReadingSpine` with mode `.dialogStory` interleaves per chapter:
 
 ```
-cover               → _CoverItem
-metaReadingMatter   → _ReadingMatterItem
+cover
+front reading matter pages
+for each chapter:
+  chapter marker     → full-screen chapter intro (or skip if empty)
+  scene items        → embedded dialogue feed for that chapter
+back reading matter pages
+```
+
+### Dialogue build order
+
+`DialogStoryBuilder.makeItems(forChapter:)` walks scene spine items for one chapter:
+
+```
 scene               → _SceneHeader
+                      + optional scene image
                       + one _BubbleItem per SceneDialogue
 ```
 
-The index of every `_SceneHeader` in the list is saved in `_sceneHeaderIndices[]` for scene navigation.
+The index of every `_SceneHeader` in the list is saved in `sceneHeaderIndices[]` for scene navigation.
+
+A shared header in `DialogStoryFlowView` provides the EN/target language toggle across spine steps and the dialogue feed.
 
 ### Dialogue source selection
 

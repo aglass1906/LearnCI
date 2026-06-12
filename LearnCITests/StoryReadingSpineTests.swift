@@ -66,7 +66,7 @@ final class StoryReadingSpineTests: XCTestCase {
 
         XCTAssertEqual(
             StoryReadingSpine.make(for: story, mode: .dialogStory).items.map(\.id),
-            ["cover", "matter-0-about", "chapter-0", "chapter-1", "scene-0-0", "scene-0-1", "scene-1-0", "matter-1-credits"]
+            ["cover", "matter-0-about", "chapter-0", "scene-0-0", "scene-0-1", "chapter-1", "scene-1-0", "matter-1-credits"]
         )
     }
 
@@ -103,7 +103,7 @@ final class StoryReadingSpineTests: XCTestCase {
 
         XCTAssertEqual(
             StoryReadingSpine.make(for: story, mode: .dialogStory).items.map(\.id),
-            ["cover", "matter-0-about", "chapter-0", "chapter-1", "scene-0-0", "scene-0-1", "scene-1-0", "matter-1-reader-guide", "matter-2-credits"]
+            ["cover", "matter-0-about", "chapter-0", "scene-0-0", "scene-0-1", "chapter-1", "scene-1-0", "matter-1-reader-guide", "matter-2-credits"]
         )
     }
 

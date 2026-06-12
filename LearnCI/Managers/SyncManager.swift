@@ -51,6 +51,7 @@ struct StoryDTO: Codable {
     let asset_forge_json: JSONBlob?
     let ci_profile_json: JSONBlob?
     let bible_json: JSONBlob?
+    let scene_breakdown_json: JSONBlob?
 }
 
 /// Supabase JSONB columns may arrive as already-parsed JSON objects/arrays or
@@ -1059,6 +1060,7 @@ struct CoachingCheckInDTO: Codable {
                 existing.assetForgeJSON = dto.asset_forge_json?.jsonString
                 existing.ciProfileJSON = dto.ci_profile_json?.jsonString
                 existing.bibleJSON = dto.bible_json?.jsonString
+                existing.sceneBreakdownJSON = dto.scene_breakdown_json?.jsonString
             } else {
                 // Insert New
                 var cJSON: String?
@@ -1094,6 +1096,7 @@ struct CoachingCheckInDTO: Codable {
                     assetForgeJSON: dto.asset_forge_json?.jsonString,
                     ciProfileJSON: dto.ci_profile_json?.jsonString,
                     bibleJSON: dto.bible_json?.jsonString,
+                    sceneBreakdownJSON: dto.scene_breakdown_json?.jsonString,
                     language: Language(rawValue: dto.language) ?? .spanish,
                     level: dto.level,
                     createdAt: dto.created_at

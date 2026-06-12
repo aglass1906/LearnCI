@@ -263,9 +263,58 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertLessThanOrEqual(unitFrame.maxY, 544)
     }
 
+    func testSpineTitlesPreferSceneBreakdownTitle() throws {
+        let breakdown = """
+        {"chapters":[{"scenes":[{"title":"Market Morning"},{"title":"The Chase"}]}]}
+        """
+        let story = try makeStory(layout: nil, sceneBreakdownJSON: breakdown)
+        let adapter = StoryReaderDataAdapter(story: story)
+
+        let sceneItem = StoryReadingSpineItem.scene(chapterIndex: 0, sceneIndex: 1)
+        XCTAssertEqual(
+            StoryReadingSpineTitles.spinePrimaryTitle(for: sceneItem, story: story, adapter: adapter),
+            "The Chase"
+        )
+        XCTAssertEqual(
+            StoryReadingSpineTitles.spineContextLabel(for: sceneItem, story: story, adapter: adapter),
+            "Ch 1 · Capitulo Uno · Scene 2"
+        )
+    }
+
+    func testSpineTitlesUseChapterTitleForStoryBookChapter() throws {
+        let story = try makeStory(layout: nil)
+        let adapter = StoryReaderDataAdapter(story: story)
+        let chapterItem = StoryReadingSpineItem.chapter(index: 1)
+
+        XCTAssertEqual(
+            StoryReadingSpineTitles.spinePrimaryTitle(for: chapterItem, story: story, adapter: adapter),
+            "Capitulo Dos"
+        )
+        XCTAssertEqual(
+            StoryReadingSpineTitles.spineContextLabel(for: chapterItem, story: story, adapter: adapter),
+            "Chapter 2 of 2 · Capitulo Dos"
+        )
+    }
+
+    func testPictureBookSpreadsExposeSpineTitles() throws {
+        let breakdown = """
+        {"chapters":[{"scenes":[{"title":"Opening"},{"title":"Discovery"}]}]}
+        """
+        let story = try makeStory(layout: nil, sceneBreakdownJSON: breakdown)
+        let spreads = PictureBookRenderer.makeSpreads(
+            story: story,
+            adapter: StoryReaderDataAdapter(story: story)
+        )
+        let sceneSpread = try XCTUnwrap(spreads.first { $0.id == "scene-0-1" })
+
+        XCTAssertEqual(sceneSpread.spinePrimaryTitle, "Discovery")
+        XCTAssertEqual(sceneSpread.spineContextLabel, "Ch 1 · Capitulo Uno · Scene 2")
+    }
+
     private func makeStory(
         layout: StoryLayout?,
-        readingMatterPages: [ReadingMatterPage]? = nil
+        readingMatterPages: [ReadingMatterPage]? = nil,
+        sceneBreakdownJSON: String? = nil
     ) throws -> Story {
         let chapters = [
             StoryChapter(
@@ -304,6 +353,7 @@ final class StoryReadingSpineTests: XCTestCase {
             chaptersJSON: try encode(chapters),
             layoutJSON: try layout.map(encode),
             readingMatterPagesJSON: try encode(readingMatterPages ?? defaultReadingMatterPages),
+            sceneBreakdownJSON: sceneBreakdownJSON,
             language: .spanish,
             level: 1
         )

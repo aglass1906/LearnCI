@@ -397,6 +397,8 @@ struct PictureBookRenderer {
                     chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
+                    spinePrimaryTitle: story.title,
+                    spineContextLabel: "Cover",
                     title: story.title,
                     subtitle: "\(story.language.displayName) · Level \(story.level)",
                     body: nil,
@@ -420,6 +422,8 @@ struct PictureBookRenderer {
                     chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
+                    spinePrimaryTitle: StoryReadingSpineTitles.readingMatterTitle(for: page),
+                    spineContextLabel: "Reading Matter",
                     title: title,
                     subtitle: nil,
                     body: page.bodyTarget?.nilIfEmptyForPictureBook,
@@ -432,10 +436,20 @@ struct PictureBookRenderer {
                 )
             case .chapter:
                 return nil
-            case .scene(let chapterIndex, _):
+            case .scene(let chapterIndex, let sceneIndex):
                 guard let scene = adapter.scene(for: item) else { return nil }
-                let chapterTitle = story.chapters[safeForPictureBook: chapterIndex]?.titleTargetLanguage.nilIfEmptyForPictureBook
-                let sceneTitle = scene.titleForPictureBook
+                let chapter = story.chapters[safeForPictureBook: chapterIndex]
+                let chapterTitle = chapter?.titleTargetLanguage.nilIfEmptyForPictureBook
+                let breakdownTitle = StoryReadingSpineTitles.sceneTitleFromBreakdown(
+                    story: story,
+                    chapterIndex: chapterIndex,
+                    sceneIndex: sceneIndex
+                )
+                let sceneTitle = StoryReadingSpineTitles.sceneTitle(
+                    from: scene,
+                    sceneIndex: sceneIndex,
+                    breakdownTitle: breakdownTitle
+                )
                 return PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
@@ -444,6 +458,12 @@ struct PictureBookRenderer {
                     chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
                     sceneTitle: sceneTitle,
+                    spinePrimaryTitle: sceneTitle,
+                    spineContextLabel: StoryReadingSpineTitles.sceneContextLabel(
+                        chapter: chapter,
+                        chapterIndex: chapterIndex,
+                        sceneIndex: sceneIndex
+                    ),
                     title: chapterTitle,
                     subtitle: nil,
                     body: scene.captionTarget?.nilIfEmptyForPictureBook,
@@ -516,6 +536,8 @@ struct PictureBookSpreadModel: Identifiable {
     let chapterIndex: Int?
     let chapterTitle: String?
     let sceneTitle: String?
+    let spinePrimaryTitle: String
+    let spineContextLabel: String
     let title: String?
     let subtitle: String?
     let body: String?
@@ -526,26 +548,6 @@ struct PictureBookSpreadModel: Identifiable {
     let audioClip: StorySceneAudioClip?
     let imageURL: URL?
 
-    var spineLabel: String {
-        switch spineItem {
-        case .cover:
-            return "Cover"
-        case .readingMatterPage:
-            return "Reading Matter"
-        case .chapter:
-            return "Chapter"
-        case .scene:
-            return "Scene"
-        }
-    }
-
-    var displayTitle: String {
-        sceneTitle?.nilIfEmptyForPictureBook
-            ?? title?.nilIfEmptyForPictureBook
-            ?? body?.nilIfEmptyForPictureBook
-            ?? spineLabel
-    }
-
     func headerSubtitle(
         story: Story,
         language: StorySessionView.DisplayLanguage
@@ -554,9 +556,9 @@ struct PictureBookSpreadModel: Identifiable {
         case .cover:
             return nil
         case .readingMatterPage:
-            return displayMatterTitle(language: language) ?? spineLabel
+            return displayMatterTitle(language: language) ?? spineContextLabel
         case .chapter:
-            return title?.nilIfEmptyForPictureBook ?? spineLabel
+            return title?.nilIfEmptyForPictureBook ?? spineContextLabel
         case .scene(let chapterIndex, _):
             let chapter = story.chapters[safeForPictureBook: chapterIndex]
             let resolvedChapterTitle: String? = {
@@ -661,11 +663,15 @@ private struct PictureBookSpineSheet: View {
                             .foregroundStyle(index == currentSpreadIndex ? Color.accentColor : .secondary)
 
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(spread.displayTitle)
+                            Text(spread.spinePrimaryTitle)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
-                            Text("\(index + 1) of \(spreads.count) · \(spread.spineLabel)")
+                            Text(StoryReadingSpineTitles.spinePositionLabel(
+                                index: index,
+                                total: spreads.count,
+                                context: spread.spineContextLabel
+                            ))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -958,12 +964,6 @@ private extension String {
 }
 
 private extension StoryScene {
-    var titleForPictureBook: String? {
-        captionTarget?.nilIfEmptyForPictureBook
-            ?? scriptTargetLanguage?.components(separatedBy: .newlines).first?.nilIfEmptyForPictureBook
-            ?? "Scene \(sceneIndex + 1)"
-    }
-
     func pictureBookPreviewText(english: Bool) -> String? {
         var lines: [String] = []
 

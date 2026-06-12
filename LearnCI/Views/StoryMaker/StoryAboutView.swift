@@ -779,41 +779,11 @@ private struct BookSpineSheet: View {
     }
 
     private func title(for item: StoryReadingSpineItem) -> String {
-        switch item {
-        case .cover:
-            return "Cover"
-        case .readingMatterPage:
-            return "Reading Matter"
-        case .chapter(let index):
-            guard let chapter = adapter.chapter(for: .chapter(index: index)) else {
-                return "Chapter \(index + 1)"
-            }
-            return chapter.titleTargetLanguage.isEmpty ? "Chapter \(index + 1)" : chapter.titleTargetLanguage
-        case .scene(_, let sceneIndex):
-            return "Scene \(sceneIndex + 1)"
-        }
+        StoryReadingSpineTitles.spinePrimaryTitle(for: item, story: story, adapter: adapter)
     }
 
     private func detail(for item: StoryReadingSpineItem) -> String? {
-        switch item {
-        case .cover:
-            return story.title
-        case .readingMatterPage:
-            guard let page = adapter.readingMatterPage(for: item) else { return nil }
-            let title = page.titleTarget?.nilIfEmptySpineSheet ?? page.titleNative?.nilIfEmptySpineSheet ?? page.id
-            let placement = page.placement?.nilIfEmptySpineSheet ?? "placement unset"
-            return "\(title) · \(placement)"
-        case .chapter(let index):
-            guard let chapter = adapter.chapter(for: .chapter(index: index)) else { return nil }
-            let type = chapter.isPrologue ? "Prologue" : chapter.isEpilogue ? "Epilogue" : "Chapter"
-            return "\(type) \(index + 1) · \(chapter.scenes.count) scenes"
-        case .scene(let chapterIndex, _):
-            guard let scene = adapter.scene(for: item) else { return nil }
-            let lines = scene.dialogues.count
-            let hasImage = adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex) != nil
-            let hasAudio = scene.audioUrl?.nilIfEmptySpineSheet != nil
-            return "Chapter \(chapterIndex + 1) · \(lines) dialog lines · image \(hasImage ? "yes" : "no") · audio \(hasAudio ? "yes" : "no")"
-        }
+        StoryReadingSpineTitles.spineContextLabel(for: item, story: story, adapter: adapter)
     }
 
     private func icon(for item: StoryReadingSpineItem) -> String {

@@ -48,6 +48,7 @@ final class Story: Identifiable {
     var assetForgeJSON: String? // JSON string of visual asset registry
     var ciProfileJSON: String? // JSON string of CiProfile (pipeline PROFILE stage)
     var bibleJSON: String? // JSON string of Story Bible (pipeline LORE stage)
+    var sceneBreakdownJSON: String? // JSON string of scene breakdown (pipeline SCENES stage)
 
     // Computed property to easy decoding of word timings
     @Transient var wordTimings: [WordTiming] {
@@ -149,6 +150,7 @@ final class Story: Identifiable {
          assetForgeJSON: String? = nil,
          ciProfileJSON: String? = nil,
          bibleJSON: String? = nil,
+         sceneBreakdownJSON: String? = nil,
          language: Language,
          level: Int,
          createdAt: Date = Date(),
@@ -180,6 +182,7 @@ final class Story: Identifiable {
         self.assetForgeJSON = assetForgeJSON
         self.ciProfileJSON = ciProfileJSON
         self.bibleJSON = bibleJSON
+        self.sceneBreakdownJSON = sceneBreakdownJSON
         self.languageRaw = language.rawValue
         self.levelRaw = String(level)
         self.createdAt = createdAt

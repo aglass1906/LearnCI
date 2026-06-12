@@ -1489,11 +1489,23 @@ private struct StoryBookSpineSheet: View {
                             .foregroundStyle(index == currentSpineIndex ? Color.accentColor : .secondary)
 
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(displayTitle(for: item))
+                            Text(StoryReadingSpineTitles.spinePrimaryTitle(
+                                for: item,
+                                story: adapter.story,
+                                adapter: adapter
+                            ))
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
-                            Text("\(index + 1) of \(spineItems.count) · \(spineLabel(for: item))")
+                            Text(StoryReadingSpineTitles.spinePositionLabel(
+                                index: index,
+                                total: spineItems.count,
+                                context: StoryReadingSpineTitles.spineContextLabel(
+                                    for: item,
+                                    story: adapter.story,
+                                    adapter: adapter
+                                )
+                            ))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -1509,41 +1521,6 @@ private struct StoryBookSpineSheet: View {
             }
             .navigationTitle("Story Spine")
             .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-
-    private func displayTitle(for item: StoryReadingSpineItem) -> String {
-        switch item {
-        case .cover:
-            return adapter.story.title
-        case .readingMatterPage:
-            if let page = adapter.readingMatterPage(for: item) {
-                let title = page.titleTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                if !title.isEmpty { return title }
-            }
-            return "Reading Matter"
-        case .chapter(let index):
-            if let chapter = adapter.chapter(for: item) {
-                let title = chapter.titleTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !title.isEmpty { return title }
-                return "Chapter \(index + 1)"
-            }
-            return "Chapter \(index + 1)"
-        case .scene:
-            return "Scene"
-        }
-    }
-
-    private func spineLabel(for item: StoryReadingSpineItem) -> String {
-        switch item {
-        case .cover:
-            return "Cover"
-        case .readingMatterPage:
-            return "Reading Matter"
-        case .chapter:
-            return "Chapter"
-        case .scene:
-            return "Scene"
         }
     }
 

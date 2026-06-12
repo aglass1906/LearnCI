@@ -518,6 +518,160 @@ struct StoryReadingSpine {
     }
 }
 
+enum StoryReadingSpineTitles {
+    static func readingMatterTitle(for page: ReadingMatterPage, preferNative: Bool = true) -> String {
+        if preferNative, let title = page.titleNative?.spineTrimmedNilIfEmpty {
+            return title
+        }
+        if let title = page.titleTarget?.spineTrimmedNilIfEmpty {
+            return title
+        }
+        return page.id
+    }
+
+    static func chapterTitle(for chapter: StoryChapter, index: Int) -> String {
+        if let title = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty {
+            return title
+        }
+        if chapter.isPrologue { return "Prologue" }
+        if chapter.isEpilogue { return "Epilogue" }
+        return "Chapter \(index + 1)"
+    }
+
+    static func chapterKindLabel(
+        for chapter: StoryChapter,
+        index: Int,
+        regularChapterCount: Int
+    ) -> String {
+        let titlePart = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? ""
+        if chapter.isPrologue { return "Prologue\(titlePart)" }
+        if chapter.isEpilogue { return "Epilogue\(titlePart)" }
+        return "Chapter \(chapter.chapterNumber) of \(regularChapterCount)\(titlePart)"
+    }
+
+    static func chapterPrefix(for chapter: StoryChapter, index: Int) -> String {
+        let titlePart = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? ""
+        if chapter.isPrologue { return "Prologue\(titlePart) · " }
+        if chapter.isEpilogue { return "Epilogue\(titlePart) · " }
+        return "Ch \(index + 1)\(titlePart) · "
+    }
+
+    static func sceneTitleFromBreakdown(story: Story, chapterIndex: Int, sceneIndex: Int) -> String? {
+        guard let json = story.sceneBreakdownJSON,
+              let data = json.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let chapters = root["chapters"] as? [[String: Any]],
+              chapters.indices.contains(chapterIndex),
+              let scenes = chapters[chapterIndex]["scenes"] as? [[String: Any]],
+              scenes.indices.contains(sceneIndex) else {
+            return nil
+        }
+
+        let scene = scenes[sceneIndex]
+        if let title = scene["title"] as? String, let trimmed = title.spineTrimmedNilIfEmpty {
+            return trimmed
+        }
+        if let purpose = scene["purpose"] as? String, let trimmed = purpose.spineTrimmedNilIfEmpty {
+            return trimmed
+        }
+        if let beats = scene["beats"] as? [Any], let first = beats.first {
+            let beat = "\(first)".spineTrimmedNilIfEmpty
+            if let beat { return beat }
+        }
+        return nil
+    }
+
+    static func sceneTitle(
+        from scene: StoryScene,
+        sceneIndex: Int,
+        breakdownTitle: String? = nil
+    ) -> String {
+        if let breakdownTitle = breakdownTitle?.spineTrimmedNilIfEmpty {
+            return breakdownTitle
+        }
+        if let caption = scene.captionTarget?.spineTrimmedNilIfEmpty, caption.count <= 80 {
+            return caption
+        }
+        if let firstLine = scene.scriptTargetLanguage?
+            .components(separatedBy: .newlines)
+            .first?
+            .spineTrimmedNilIfEmpty {
+            return truncate(firstLine, maxLength: 80)
+        }
+        return "Scene \(sceneIndex + 1)"
+    }
+
+    static func sceneContextLabel(
+        chapter: StoryChapter?,
+        chapterIndex: Int,
+        sceneIndex: Int
+    ) -> String {
+        guard let chapter else { return "Scene \(sceneIndex + 1)" }
+        return "\(chapterPrefix(for: chapter, index: chapterIndex))Scene \(sceneIndex + 1)"
+    }
+
+    static func spinePrimaryTitle(
+        for item: StoryReadingSpineItem,
+        story: Story,
+        adapter: StoryReaderDataAdapter
+    ) -> String {
+        switch item {
+        case .cover:
+            return story.title
+        case .readingMatterPage:
+            if let page = adapter.readingMatterPage(for: item) {
+                return readingMatterTitle(for: page)
+            }
+            return "Reading Matter"
+        case .chapter(let index):
+            if let chapter = adapter.chapter(for: item) {
+                return chapterTitle(for: chapter, index: index)
+            }
+            return "Chapter \(index + 1)"
+        case .scene(let chapterIndex, let sceneIndex):
+            if let scene = adapter.scene(for: item) {
+                let breakdown = sceneTitleFromBreakdown(
+                    story: story,
+                    chapterIndex: chapterIndex,
+                    sceneIndex: sceneIndex
+                )
+                return sceneTitle(from: scene, sceneIndex: sceneIndex, breakdownTitle: breakdown)
+            }
+            return "Scene \(sceneIndex + 1)"
+        }
+    }
+
+    static func spineContextLabel(
+        for item: StoryReadingSpineItem,
+        story: Story,
+        adapter: StoryReaderDataAdapter
+    ) -> String {
+        switch item {
+        case .cover:
+            return "Cover"
+        case .readingMatterPage:
+            return "Reading Matter"
+        case .chapter(let chapterIndex):
+            guard let chapter = adapter.chapter(for: item) else { return "Chapter" }
+            let regularCount = story.chapters.filter { !$0.isPrologue && !$0.isEpilogue }.count
+            return chapterKindLabel(for: chapter, index: chapterIndex, regularChapterCount: regularCount)
+        case .scene(let chapterIndex, let sceneIndex):
+            let chapter = story.chapters[safeSpineTitle: chapterIndex]
+            return sceneContextLabel(chapter: chapter, chapterIndex: chapterIndex, sceneIndex: sceneIndex)
+        }
+    }
+
+    static func spinePositionLabel(index: Int, total: Int, context: String) -> String {
+        "\(index + 1) of \(total) · \(context)"
+    }
+
+    private static func truncate(_ value: String, maxLength: Int) -> String {
+        guard value.count > maxLength else { return value }
+        let end = value.index(value.startIndex, offsetBy: max(0, maxLength - 1))
+        return String(value[..<end]) + "…"
+    }
+}
+
 private extension ReadingMatterPage {
     var isBackMatter: Bool {
         let placementKey = placement?.readingMatterPlacementKey ?? ""
@@ -553,5 +707,16 @@ private extension ReadingMatterPage {
 private extension String {
     var readingMatterPlacementKey: String {
         lowercased().filter { $0.isLetter || $0.isNumber }
+    }
+
+    var spineTrimmedNilIfEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+private extension Collection {
+    subscript(safeSpineTitle index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

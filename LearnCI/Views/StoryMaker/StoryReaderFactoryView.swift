@@ -10,7 +10,7 @@ struct StoryReaderFactoryView: View {
         case .audioStory:
             AudioBookReaderView(story: story)
         case .dialogStory:
-            DialogSessionView(story: story)
+            DialogStoryFlowView(story: story)
         case .comicBook:
             ComicBookReaderView(story: story)
         case .pictureBook:

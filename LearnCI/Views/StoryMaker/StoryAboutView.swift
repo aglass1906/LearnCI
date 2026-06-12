@@ -161,23 +161,6 @@ struct StoryAboutView: View {
                             }
                         }
 
-                        if story.preferences.storyType == .dialogStory {
-                            // Dialog Mode
-                            NavigationLink(destination: DialogSessionView(story: story)) {
-                                HStack {
-                                    Image(systemName: "mic.fill")
-                                    Text("Dialog Playback Mode")
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.orange)
-                                .cornerRadius(12)
-                            }
-
-                        }
-
                         // Take Quiz
                         NavigationLink(destination: StoryQuizView(story: story)) {
                             HStack {

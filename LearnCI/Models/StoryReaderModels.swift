@@ -461,9 +461,18 @@ struct StoryReadingSpine {
         switch mode {
         case .storyBook:
             items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
-        case .audioBook, .dialogStory:
+        case .audioBook:
             items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
             items.append(contentsOf: sceneItems(for: story, useLayoutOrder: false))
+        case .dialogStory:
+            for chapterIndex in story.chapters.indices {
+                items.append(.chapter(index: chapterIndex))
+                items.append(contentsOf: sceneItems(
+                    for: story,
+                    chapterIndex: chapterIndex,
+                    useLayoutOrder: false
+                ))
+            }
         case .pictureBook, .comicBook:
             items.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
         }
@@ -490,20 +499,31 @@ struct StoryReadingSpine {
     }
 
     private static func sceneItems(for story: Story, useLayoutOrder: Bool) -> [StoryReadingSpineItem] {
+        sceneItems(for: story, chapterIndex: nil, useLayoutOrder: useLayoutOrder)
+    }
+
+    private static func sceneItems(
+        for story: Story,
+        chapterIndex: Int?,
+        useLayoutOrder: Bool
+    ) -> [StoryReadingSpineItem] {
         if useLayoutOrder {
             let panels = story.storyLayout?.flatSequence ?? []
-            let layoutItems = panels.map {
-                StoryReadingSpineItem.scene(chapterIndex: $0.chapterIndex, sceneIndex: $0.sceneIndex)
-            }
+            let layoutItems = panels
+                .filter { chapterIndex == nil || $0.chapterIndex == chapterIndex }
+                .map {
+                    StoryReadingSpineItem.scene(chapterIndex: $0.chapterIndex, sceneIndex: $0.sceneIndex)
+                }
             if !layoutItems.isEmpty {
                 return uniqueSceneItems(layoutItems)
             }
         }
 
-        let chapterOrderedItems = story.chapters.indices.flatMap { chapterIndex in
-            story.chapters[chapterIndex].scenes
+        let chapterIndices = chapterIndex.map { [$0] } ?? Array(story.chapters.indices)
+        let chapterOrderedItems = chapterIndices.flatMap { index in
+            story.chapters[index].scenes
                 .sorted { $0.sceneIndex < $1.sceneIndex }
-                .map { StoryReadingSpineItem.scene(chapterIndex: chapterIndex, sceneIndex: $0.sceneIndex) }
+                .map { StoryReadingSpineItem.scene(chapterIndex: index, sceneIndex: $0.sceneIndex) }
         }
         return uniqueSceneItems(chapterOrderedItems)
     }

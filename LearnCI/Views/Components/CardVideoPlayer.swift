@@ -13,9 +13,7 @@ struct CardVideoPlayer: View {
             .onAppear {
                 setupPlayer()
             }
-            .onDisappear {
-                player?.pause()
-            }
+            .mediaPlaybackLifecycle(onUserLeave: { player?.pause() })
             .onChange(of: url) { _, newUrl in
                 replacePlayerItem(with: newUrl)
             }
@@ -29,9 +27,8 @@ struct CardVideoPlayer: View {
     private func setupPlayer() {
         // Stop any competing audio (TTS, background music)
         audioManager.stopAudio()
-        
-        // The audio session configuration is handled by VideoPlayerController
-        
+        audioManager.activatePlaybackSession()
+
         if player == nil {
             // Async creation to allow view hierarchy to settle
             DispatchQueue.main.async {
@@ -81,8 +78,7 @@ struct VideoPlayerController: UIViewControllerRepresentable {
     var audioManager: AudioManager
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
-        // Critical: Configure session BEFORE controller setup
-        audioManager.configureAudioSession()
+        audioManager.activatePlaybackSession()
         
         let controller = AVPlayerViewController()
         controller.player = player

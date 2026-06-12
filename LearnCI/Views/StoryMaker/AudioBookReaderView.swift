@@ -98,10 +98,13 @@ struct AudioBookReaderView: View {
             }
         }
         .onAppear(perform: prepareReaderIfNeeded)
-        .onDisappear {
-            cancelSleepTimer()
-            audioManager.stopAudio()
-        }
+        .mediaPlaybackLifecycle(
+            onUserLeave: {
+                cancelSleepTimer()
+                audioManager.stopAudio()
+            },
+            onEnterBackground: { updateNowPlayingMetadata() }
+        )
         .onChange(of: currentClipIndex) { _, _ in
             syncSelectionToCurrentClip()
             refreshChapterDuration()

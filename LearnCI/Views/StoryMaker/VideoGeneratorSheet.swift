@@ -167,8 +167,8 @@ struct VideoGeneratorSheet: View {
 }
 
 // MARK: - VideoPlayerView
-// Wraps AVQueuePlayer + AVPlayerLooper for gapless looping, muted ambient video playback.
-// Audio session is set to .ambient so it mixes with the story audio player on real devices.
+// Wraps AVQueuePlayer + AVPlayerLooper for gapless looping, muted hero video playback.
+// Does not touch AVAudioSession — story/podcast audio stays on AudioManager's .playback session.
 
 struct LoopingVideoPlayerView: View {
     let url: URL
@@ -179,14 +179,10 @@ struct LoopingVideoPlayerView: View {
     var body: some View {
         VideoPlayerLayer(player: player)
             .onAppear { setupPlayer() }
-            .onDisappear { tearDown() }
+            .mediaPlaybackLifecycle(onUserLeave: tearDown)
     }
 
     private func setupPlayer() {
-        // Configure audio session for ambient (mixes with other audio, works on device)
-        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: .mixWithOthers)
-        try? AVAudioSession.sharedInstance().setActive(true)
-
         let item = AVPlayerItem(url: url)
         let avPlayer = AVQueuePlayer()
         avPlayer.isMuted = true

@@ -167,9 +167,10 @@ struct StorySessionView: View {
                 loadChapterImage()
             }
         }
-        .onDisappear {
-            cleanupSession()
-        }
+        .mediaPlaybackLifecycle(
+            onUserLeave: cleanupSession,
+            onEnterBackground: { audioManager.updateStreamNowPlayingInfo() }
+        )
         .onChange(of: currentChapterIndex) { _, _ in
             loadChapterImage()
         }

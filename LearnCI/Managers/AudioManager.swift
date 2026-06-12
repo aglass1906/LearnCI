@@ -626,6 +626,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
                     self.streamDuration = CMTimeGetSeconds(dur)
                 }
             }
+
+            if self.isStreaming {
+                self.updateStreamNowPlayingInfo()
+            }
         }
 
         if startAt > 0 {
@@ -663,6 +667,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamPlayer?.pause()
         isStreaming = false
         streamIsBuffering = false
+        updateStreamNowPlayingInfo()
     }
 
     func seekStream(to seconds: Double) {

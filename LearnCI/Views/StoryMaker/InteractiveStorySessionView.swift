@@ -149,10 +149,13 @@ struct InteractiveStorySessionView: View {
         .onReceive(timer) { _ in
             checkAutoPause()
         }
-        .onDisappear {
-            audioManager.stopAudio()
-            isPlaying = false
-        }
+        .mediaPlaybackLifecycle(
+            onUserLeave: {
+                audioManager.stopAudio()
+                isPlaying = false
+            },
+            onEnterBackground: { audioManager.updateStreamNowPlayingInfo() }
+        )
     }
     
     private func speakerColor(for speaker: String) -> Color {

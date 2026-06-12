@@ -33,9 +33,10 @@ struct DialogSessionView: View {
         .onAppear {
             buildItemsIfNeeded()
         }
-        .onDisappear {
-            audioManager.stopAudio()
-        }
+        .mediaPlaybackLifecycle(
+            onUserLeave: { audioManager.stopAudio() },
+            onEnterBackground: { audioManager.updateNowPlayingInfo() }
+        )
     }
 
     private var dialogBody: some View {

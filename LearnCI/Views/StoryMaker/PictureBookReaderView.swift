@@ -79,9 +79,10 @@ struct PictureBookReaderView: View {
             }
             .presentationDetents([.medium, .large])
         }
-        .onDisappear {
-            audioManager.stopAudio()
-        }
+        .mediaPlaybackLifecycle(
+            onUserLeave: { audioManager.stopAudio() },
+            onEnterBackground: { audioManager.updateStreamNowPlayingInfo() }
+        )
         .onReceive(timer) { _ in
             guard !clips.isEmpty else { return }
 

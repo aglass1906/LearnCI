@@ -105,29 +105,6 @@ struct DashboardView: View {
                 }
 
                 .task(id: authManager.currentUser) {
-                    // Create default profile if missing (Self-healing for fresh app install)
-                    // We also ensure we have a valid currentUser value to avoid creating profiles for 'nil' (unauth)
-                    // although the query filters by nil if unauth.
-                    
-                    if userProfile == nil {
-                         print("DEBUG: No profile found on Dashboard for user \(authManager.currentUser ?? "nil"). Creating default.")
-                         if let userID = authManager.currentUser {
-                             let newProfile = UserProfile(userID: userID)
-                             // Sync with auth data
-                             newProfile.fullName = authManager.currentUserFullName
-                             newProfile.email = authManager.currentUserEmail
-                             newProfile.avatarUrl = authManager.currentUserAvatar
-                             if let googleName = authManager.currentUserFullName {
-                                 newProfile.name = googleName
-                             }
-                             
-                             modelContext.insert(newProfile)
-                             try? modelContext.save()
-                             print("DEBUG: Created new profile for \(userID)")
-                         }
-                    }
-
-                    // Proceed with Word of Day using the (now potentially created) profile
                     if let profile = profiles.first, wordOfDay == nil {
                         isLoadingWordOfDay = true
                         if let result = await dataManager.fetchWordOfDay(language: profile.currentLanguage, level: profile.currentLevel) {

@@ -3,6 +3,14 @@ import SwiftData
 import Supabase
 import Observation
 
+private enum SyncError: LocalizedError {
+    case notAuthenticated
+
+    var errorDescription: String? {
+        "You must be signed in to sync your profile."
+    }
+}
+
 @Observable
 class SyncManager {
     var isSyncing: Bool = false
@@ -275,6 +283,16 @@ struct CoachingCheckInDTO: Codable {
     }
 
     @MainActor
+    func syncCurrentProfile(modelContext: ModelContext) async throws {
+        guard let userID = authManager.currentUser else {
+            throw SyncError.notAuthenticated
+        }
+
+        try adoptAnonymousProfile(context: modelContext, userID: userID)
+        try await syncProfile(context: modelContext, userID: userID)
+    }
+
+    @MainActor
     private func syncDailyFeedback(context: ModelContext, userID: String) async throws {
         let descriptor = FetchDescriptor<DailyFeedback>(
             predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
@@ -425,7 +443,7 @@ struct CoachingCheckInDTO: Codable {
         try context.save()
     }
     
-    /// Migrates any local data with `nil` userID OR mismatching userID to the current logged-in user.
+    /// Claims only genuinely anonymous local data for the current user.
     private func adoptAnonymousData(context: ModelContext, userID: String) throws {
         // Debug: List all profiles to see what's going on
         let allProfiles = try context.fetch(FetchDescriptor<UserProfile>())
@@ -435,24 +453,16 @@ struct CoachingCheckInDTO: Codable {
         }
         
         // 1. Adopt Anonymous Profile Only
-        // We only want to claim "Guest" data (userID == nil).
-        // If a profile has a DIFFERENT userID, it belongs to someone else (e.g. previous logout).
-        // DO NOT STEAL IT.
-        let profileDescriptor = FetchDescriptor<UserProfile>(predicate: #Predicate { $0.userID == nil })
-        let anonymousProfiles = try context.fetch(profileDescriptor)
+        let adoptedProfile = try adoptAnonymousProfile(context: context, userID: userID)
         
-        for profile in anonymousProfiles {
-            print("Adopting anonymous profile '\(profile.name)' for user \(userID)")
-            profile.userID = userID
-        }
+        // 2. Adopt only guest activities. Activities with another user ID belong
+        // to that account and must never be reassigned during sign-in.
+        let activityDescriptor = FetchDescriptor<UserActivity>(predicate: #Predicate { $0.userID == nil })
+        let anonymousActivities = try context.fetch(activityDescriptor)
         
-        // 2. Adopt Activities (Any activity that isn't mine)
-        let activityDescriptor = FetchDescriptor<UserActivity>(predicate: #Predicate { $0.userID != userID })
-        let otherActivities = try context.fetch(activityDescriptor)
-        
-        if !otherActivities.isEmpty {
-            print("Adopting \(otherActivities.count) activities (mixed owners) for user \(userID)")
-            for activity in otherActivities {
+        if !anonymousActivities.isEmpty {
+            print("Adopting \(anonymousActivities.count) anonymous activities for user \(userID)")
+            for activity in anonymousActivities {
                 activity.userID = userID
                 activity.isSynced = false // Ensure they get pushed
             }
@@ -482,9 +492,24 @@ struct CoachingCheckInDTO: Codable {
             }
         }
         
-        if !anonymousProfiles.isEmpty || !otherActivities.isEmpty || !orphanStories.isEmpty {
+        if adoptedProfile || !anonymousActivities.isEmpty || !orphanStories.isEmpty {
             try context.save()
         }
+    }
+
+    private func adoptAnonymousProfile(context: ModelContext, userID: String) throws -> Bool {
+        let descriptor = FetchDescriptor<UserProfile>(predicate: #Predicate { $0.userID == nil })
+        let anonymousProfiles = try context.fetch(descriptor)
+
+        for profile in anonymousProfiles {
+            print("Adopting anonymous profile '\(profile.name)' for user \(userID)")
+            profile.userID = userID
+        }
+
+        if !anonymousProfiles.isEmpty {
+            try context.save()
+        }
+        return !anonymousProfiles.isEmpty
     }
     
     @MainActor
@@ -539,6 +564,7 @@ struct CoachingCheckInDTO: Codable {
             name: profile.name,
             current_language: profile.currentLanguageRaw,
             current_level: profile.currentLevelRaw,
+            proficiency_level: profile.proficiencyLevel,
             daily_goal_minutes: profile.dailyGoalMinutes,
             daily_card_goal: profile.dailyCardGoal,
             is_public: profile.isPublic,
@@ -552,7 +578,9 @@ struct CoachingCheckInDTO: Codable {
             tts_rate: profile.ttsRate,
             default_game_mode: profile.defaultGamePresetRaw,
             last_game_type: profile.lastGameTypeRaw,
-            tts_voice_gender: profile.ttsVoiceGender
+            tts_voice_gender: profile.ttsVoiceGender,
+            onboarding_version: profile.onboardingVersion,
+            onboarding_completed_at: profile.onboardingCompletedAt
         )
         
         // Upsert to Supabase
@@ -723,6 +751,9 @@ struct CoachingCheckInDTO: Codable {
             }
             if let lang = dto.current_language { profile.currentLanguageRaw = lang }
             if let lvl = dto.current_level { profile.currentLevelRaw = lvl }
+            if let proficiency = dto.proficiency_level {
+                profile.proficiencyLevel = min(max(proficiency, 1), 6)
+            }
             profile.dailyGoalMinutes = dto.daily_goal_minutes
             if let dc = dto.daily_card_goal { profile.dailyCardGoal = dc }
             profile.isPublic = dto.is_public
@@ -733,6 +764,8 @@ struct CoachingCheckInDTO: Codable {
             if let dgm = dto.default_game_mode { profile.defaultGamePresetRaw = dgm }
             if let lgt = dto.last_game_type { profile.lastGameTypeRaw = lgt }
             if let tvg = dto.tts_voice_gender { profile.ttsVoiceGender = tvg }
+            profile.onboardingVersion = dto.onboarding_version ?? 0
+            profile.onboardingCompletedAt = dto.onboarding_completed_at
             
             // CRITICAL: Overwrite the 'bumped' updatedAt with the actual server timestamp 
             // to avoid a push-loop on the next sync.
@@ -758,11 +791,14 @@ struct CoachingCheckInDTO: Codable {
             )
             // Fill in other optional fields
             newProfile.isPublic = dto.is_public
+            newProfile.proficiencyLevel = min(max(dto.proficiency_level ?? LevelManager.shared.normalize(newProfile.currentLevel), 1), 6)
             newProfile.fullName = dto.full_name
             newProfile.location = dto.location
             newProfile.avatarUrl = dto.avatar_url
             newProfile.updatedAt = dto.updated_at
             newProfile.email = authManager.currentUserEmail
+            newProfile.onboardingVersion = dto.onboarding_version ?? 0
+            newProfile.onboardingCompletedAt = dto.onboarding_completed_at
             
             context.insert(newProfile)
         }
@@ -1402,6 +1438,7 @@ struct ProfileUploadDTO: Encodable {
     let name: String
     let current_language: String
     let current_level: String
+    let proficiency_level: Int
     let daily_goal_minutes: Int
     let daily_card_goal: Int?
     let is_public: Bool
@@ -1416,6 +1453,8 @@ struct ProfileUploadDTO: Encodable {
     let default_game_mode: String?
     let last_game_type: String?
     let tts_voice_gender: String?
+    let onboarding_version: Int
+    let onboarding_completed_at: Date?
 }
 
 struct ProfileDTO: Codable, Identifiable {
@@ -1424,6 +1463,7 @@ struct ProfileDTO: Codable, Identifiable {
     let name: String?
     let current_language: String?
     let current_level: String?
+    let proficiency_level: Int?
     let daily_goal_minutes: Int
     let daily_card_goal: Int?
     let is_public: Bool
@@ -1439,6 +1479,8 @@ struct ProfileDTO: Codable, Identifiable {
     let default_game_mode: String?
     let last_game_type: String?
     let tts_voice_gender: String?
+    let onboarding_version: Int?
+    let onboarding_completed_at: Date?
     
     /// Display name with fallback for null names
     var displayName: String {

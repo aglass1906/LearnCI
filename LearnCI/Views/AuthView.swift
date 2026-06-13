@@ -2,345 +2,397 @@ import SwiftUI
 
 struct AuthView: View {
     @Environment(AuthManager.self) private var authManager
-    
-    @State private var mode: AuthMode = .signUp
-    @State private var name: String = ""
-    @State private var email: String = ""
-    @State private var password: String = ""
-    @State private var confirmPassword: String = ""
-    @State private var phone: String = ""
-    @State private var isLoading = false
+
+    @State private var email = ""
+    @State private var isSendingCode = false
     @State private var errorMessage: String?
-    @State private var showOTPView = false
-    @State private var showEmailConfirmation = false
-    @State private var showForgotPassword = false
-    @State private var registeredEmail = ""
-    @State private var isPasswordVisible = false
-    
-    enum AuthMode {
-        case signUp
-        case signIn
-    }
-    
+    @State private var pendingEmail: String?
+    @State private var showPasswordAuth = false
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 30) {
-                    Spacer()
-                        .frame(height: 40)
-                    
-                    VStack(spacing: 12) {
-                        Image(systemName: "person.3.fill")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.linearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        
-                        Text(mode == .signUp ? "Join the Community" : "Welcome Back")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        
-                        Text(mode == .signUp ? "Sync your progress and learn with others." : "Sign in to continue your journey.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Auth Mode Toggle
-                    Picker("Mode", selection: $mode) {
-                        Text("Sign Up").tag(AuthMode.signUp)
-                        Text("Sign In").tag(AuthMode.signIn)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    
-                    // Form Fields
-                    VStack(spacing: 16) {
-                        if mode == .signUp {
-                            TextField("Full Name", text: $name)
-                                .textFieldStyle(.roundedBorder)
-                                .padding(.horizontal)
-                                .autocorrectionDisabled()
-                        }
-                        
-                        TextField("Email Address", text: $email)
-                            .textFieldStyle(.roundedBorder)
-                            .padding(.horizontal)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .autocorrectionDisabled()
-                        
-                        HStack {
-                            if isPasswordVisible {
-                                TextField("Password", text: $password)
-                                    .textFieldStyle(.roundedBorder)
-                            } else {
-                                SecureField("Password", text: $password)
-                                    .textFieldStyle(.roundedBorder)
-                            }
-                        }
-                        .overlay(alignment: .trailing) {
-                            Button(action: { isPasswordVisible.toggle() }) {
-                                Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                                    .foregroundColor(.secondary)
-                                    .padding(.trailing, 8)
-                            }
-                        }
-                        .padding(.horizontal)
-                        
+            ZStack {
+                LinearGradient(
+                    colors: [.indigo.opacity(0.95), .purple.opacity(0.9), .pink.opacity(0.75)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                        if mode == .signUp {
-                            HStack {
-                                if isPasswordVisible {
-                                    TextField("Confirm Password", text: $confirmPassword)
-                                        .textFieldStyle(.roundedBorder)
-                                } else {
-                                    SecureField("Confirm Password", text: $confirmPassword)
-                                        .textFieldStyle(.roundedBorder)
-                                }
-                            }
-                            .padding(.horizontal)
+                ScrollView {
+                    VStack(spacing: 28) {
+                        Spacer(minLength: 36)
+
+                        VStack(spacing: 14) {
+                            Image(systemName: "sparkles.rectangle.stack.fill")
+                                .font(.system(size: 70))
+                                .foregroundStyle(.white, .yellow)
+
+                            Text("Start Your Learning Journey")
+                                .font(.largeTitle.bold())
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.white)
+
+                            Text("No password required. We’ll email you a secure code and sign-in link.")
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.white.opacity(0.85))
                         }
-                        
-                        if mode == .signIn {
-                            HStack {
-                                Spacer()
-                                Button("Forgot Password?") {
-                                    showForgotPassword = true
-                                }
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                                .padding(.trailing)
+
+                        VStack(spacing: 16) {
+                            TextField("Email address", text: $email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .padding()
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                                .submitLabel(.continue)
+                                .onSubmit(sendCode)
+
+                            if let errorMessage {
+                                Text(errorMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                        }
-                        
-                        if mode == .signUp {
-                            TextField("Phone (Optional)", text: $phone)
-                                .textFieldStyle(.roundedBorder)
-                                .padding(.horizontal)
-                                .keyboardType(.phonePad)
-                                .onChange(of: phone) { _, newValue in
-                                    // Auto-prepend +1 if user starts typing without it
-                                    if !newValue.isEmpty && !newValue.hasPrefix("+") {
-                                        phone = "+1" + newValue
+
+                            Button(action: sendCode) {
+                                Group {
+                                    if isSendingCode {
+                                        ProgressView().tint(.indigo)
+                                    } else {
+                                        Label("Continue with Email", systemImage: "envelope.fill")
+                                            .fontWeight(.semibold)
                                     }
                                 }
-                            
-                            Text("Just enter your 10-digit number (we'll add +1)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal)
-                        }
-                        
-                        if let error = errorMessage {
-                            Text(error)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                        }
-                        
-                        Button(action: handlePrimaryAction) {
-                            if isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Text(mode == .signUp ? "Create Account" : "Sign In")
-                                    .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
                             }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isFormValid ? Color.blue : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .disabled(!isFormValid || isLoading)
-                        .padding(.horizontal)
-                        
-                        Text("Or")
-                            .foregroundColor(.secondary)
-                        
-                        Button(action: {
-                            authManager.signInWithGoogle()
-                        }) {
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.indigo)
+                            .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                            .disabled(!isEmailValid || isSendingCode)
+                            .opacity(isEmailValid ? 1 : 0.65)
+
                             HStack {
-                                Image(systemName: "g.circle.fill")
-                                Text("Continue with Google")
+                                Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.3))
+                                Text("or").font(.caption).foregroundStyle(.white.opacity(0.8))
+                                Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.3))
                             }
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .foregroundColor(.primary)
-                            .cornerRadius(12)
+
+                            Button {
+                                authManager.signInWithGoogle()
+                            } label: {
+                                Label("Continue with Google", systemImage: "g.circle.fill")
+                                    .fontWeight(.semibold)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.primary)
+                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+
+                            Button("Use Password Instead") {
+                                showPasswordAuth = true
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
                         }
-                        .padding(.horizontal)
+                        .padding(22)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28))
+
+                        Text("By continuing, you agree to our Terms of Service.")
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.7))
                     }
-                    
-                    Spacer()
-                    
-                    Text("By continuing, you agree to our Terms of Service.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .padding(.bottom)
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 32)
                 }
             }
-            .navigationDestination(isPresented: $showOTPView) {
-                OTPVerificationView(phone: phone)
+            .navigationDestination(item: $pendingEmail) { email in
+                EmailCodeVerificationView(email: email)
             }
-            .sheet(isPresented: $showEmailConfirmation) {
-                EmailConfirmationView(email: registeredEmail)
-            }
-            .sheet(isPresented: $showForgotPassword) {
-                ForgotPasswordSheet()
+            .sheet(isPresented: $showPasswordAuth) {
+                PasswordAuthView()
             }
         }
     }
-    
-    private var isFormValid: Bool {
-        if mode == .signUp {
-            return !name.isEmpty && 
-                   !email.isEmpty && 
-                   password.count >= 8 &&
-                   password == confirmPassword
-        } else {
-            return !email.isEmpty && !password.isEmpty
-        }
+
+    private var normalizedEmail: String {
+        email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
-    
-    private func handlePrimaryAction() {
-        isLoading = true
+
+    private var isEmailValid: Bool {
+        normalizedEmail.contains("@") && normalizedEmail.contains(".")
+    }
+
+    private func sendCode() {
+        guard isEmailValid, !isSendingCode else { return }
+        isSendingCode = true
         errorMessage = nil
-        
+
         Task {
             do {
-                if mode == .signUp {
-                    try await authManager.signUp(
-                        email: email,
-                        password: password,
-                        phone: phone,
-                        fullName: name
-                    )
-                    // Show email confirmation message
-                    await MainActor.run {
-                        registeredEmail = email
-                        showEmailConfirmation = true
-                        isLoading = false
-                        
-                        // Clear form
-                        name = ""
-                        email = ""
-                        // Clear form
-                        name = ""
-                        email = ""
-                        password = ""
-                        confirmPassword = ""
-                        phone = ""
-                    }
-                } else {
-                    try await authManager.signInWithEmail(
-                        email: email,
-                        password: password
-                    )
-                    await MainActor.run {
-                        isLoading = false
-                    }
-                }
+                try await authManager.sendEmailSignIn(email: normalizedEmail)
+                pendingEmail = normalizedEmail
             } catch {
-                await MainActor.run {
-                    isLoading = false
-                    errorMessage = error.localizedDescription
-                }
+#if DEBUG
+                print("Email sign-in request failed: \(String(reflecting: error))")
+#endif
+                errorMessage = emailDeliveryMessage(for: error)
             }
+            isSendingCode = false
+        }
+    }
+
+    private func emailDeliveryMessage(for error: Error) -> String {
+        let message = error.localizedDescription.lowercased()
+        if message.contains("rate limit") {
+            return "Too many email attempts. Please wait a minute and try again."
+        }
+        if message.contains("confirmation email") {
+            return "The email provider could not deliver this message. Please try again. If it continues, check the Supabase Auth logs for the SMTP response."
+        }
+        return error.localizedDescription
+    }
+}
+
+struct EmailCodeVerificationView: View {
+    @Environment(AuthManager.self) private var authManager
+    @Environment(\.dismiss) private var dismiss
+
+    let email: String
+
+    @State private var code = ""
+    @State private var isVerifying = false
+    @State private var isResending = false
+    @State private var errorMessage: String?
+    @State private var resendSeconds = 60
+
+    var body: some View {
+        VStack(spacing: 26) {
+            Spacer()
+
+            Image(systemName: "envelope.badge.shield.half.filled")
+                .font(.system(size: 68))
+                .foregroundStyle(.indigo, .purple)
+
+            VStack(spacing: 8) {
+                Text("Check Your Email")
+                    .font(.largeTitle.bold())
+                Text("Enter the eight-digit code sent to")
+                    .foregroundStyle(.secondary)
+                Text(email)
+                    .font(.headline)
+            }
+            .multilineTextAlignment(.center)
+
+            TextField("00000000", text: $code)
+                .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .tracking(10)
+                .multilineTextAlignment(.center)
+                .padding()
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal)
+                .onChange(of: code) { _, newValue in
+                    code = String(newValue.filter(\.isNumber).prefix(8))
+                    if code.count == 8 {
+                        verifyCode()
+                    }
+                }
+
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button(action: verifyCode) {
+                Group {
+                    if isVerifying {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text("Verify Code").fontWeight(.semibold)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            }
+            .buttonStyle(.plain)
+            .background(.indigo, in: RoundedRectangle(cornerRadius: 16))
+            .foregroundStyle(.white)
+            .disabled(code.count != 8 || isVerifying)
+            .padding(.horizontal)
+
+            Text("You can also tap the sign-in link in the same email.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button(resendSeconds > 0 ? "Resend in \(resendSeconds)s" : "Resend Code") {
+                resendCode()
+            }
+            .disabled(resendSeconds > 0 || isResending)
+
+            Button("Use a Different Email") {
+                dismiss()
+            }
+            .foregroundStyle(.secondary)
+
+            Spacer()
+        }
+        .padding()
+        .navigationBarBackButtonHidden()
+        .task {
+            while resendSeconds > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                resendSeconds -= 1
+            }
+        }
+    }
+
+    private func verifyCode() {
+        guard code.count == 8, !isVerifying else { return }
+        isVerifying = true
+        errorMessage = nil
+
+        Task {
+            do {
+                try await authManager.verifyEmailCode(email: email, token: code)
+            } catch {
+                errorMessage = "That code is invalid or expired. Request a new one and try again."
+                isVerifying = false
+            }
+        }
+    }
+
+    private func resendCode() {
+        isResending = true
+        errorMessage = nil
+        Task {
+            do {
+                try await authManager.sendEmailSignIn(email: email)
+                code = ""
+                resendSeconds = 60
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isResending = false
         }
     }
 }
 
-// MARK: - Email Confirmation View
-struct EmailConfirmationView: View {
-    @Environment(\.dismiss) private var dismiss
+private struct PasswordAuthView: View {
     @Environment(AuthManager.self) private var authManager
-    let email: String
-    
-    @State private var isResending = false
-    @State private var resendMessage: String?
-    
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var isSignUp = false
+    @State private var name = ""
+    @State private var email = ""
+    @State private var password = ""
+    @State private var confirmPassword = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var showForgotPassword = false
+    @State private var showConfirmation = false
+
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
-            
-            VStack(spacing: 16) {
-                Image(systemName: "envelope.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.blue)
-                
-                Text("Check Your Email")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                VStack(spacing: 8) {
-                    Text("We sent a verification link to:")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Text(email)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
+        NavigationStack {
+            Form {
+                Picker("Mode", selection: $isSignUp) {
+                    Text("Sign In").tag(false)
+                    Text("Sign Up").tag(true)
                 }
-                
-                Text("Click the link in the email to verify your account, then return here to sign in.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                .pickerStyle(.segmented)
+
+                if isSignUp {
+                    TextField("Full name", text: $name)
+                        .textContentType(.name)
+                }
+
+                TextField("Email address", text: $email)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+
+                SecureField("Password", text: $password)
+                    .textContentType(isSignUp ? .newPassword : .password)
+
+                if isSignUp {
+                    SecureField("Confirm password", text: $confirmPassword)
+                        .textContentType(.newPassword)
+                }
+
+                if let errorMessage {
+                    Text(errorMessage).foregroundStyle(.red)
+                }
+
+                Button(isSignUp ? "Create Account" : "Sign In") {
+                    submit()
+                }
+                .disabled(!isValid || isLoading)
+
+                if !isSignUp {
+                    Button("Forgot Password?") {
+                        showForgotPassword = true
+                    }
+                }
             }
-            
-            Spacer()
-            
-            if let message = resendMessage {
-                Text(message)
-                    .font(.caption)
-                    .foregroundColor(message.contains("Error") ? .red : .green)
+            .navigationTitle(isSignUp ? "Create Account" : "Password Sign In")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
             }
-            
-            Button("Resend Verification Email") {
-                resendEmail()
+            .sheet(isPresented: $showForgotPassword) {
+                ForgotPasswordSheet()
             }
-            .disabled(isResending)
-            .font(.subheadline)
-            
-            Button(action: { dismiss() }) {
-                Text("Got it")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+            .alert("Check Your Email", isPresented: $showConfirmation) {
+                Button("Done") { dismiss() }
+            } message: {
+                Text("Use the verification message sent to \(email), then return to sign in.")
             }
-            .padding(.horizontal)
-            .padding(.bottom, 40)
         }
-        .padding()
     }
-    
-    private func resendEmail() {
-        isResending = true
-        resendMessage = nil
-        
+
+    private var isValid: Bool {
+        if isSignUp {
+            return !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && email.contains("@")
+                && password.count >= 8
+                && password == confirmPassword
+        }
+        return email.contains("@") && !password.isEmpty
+    }
+
+    private func submit() {
+        guard isValid, !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
         Task {
             do {
-                try await authManager.resendVerificationEmail(email: email)
-                await MainActor.run {
-                    resendMessage = "Email resent successfully"
-                    isResending = false
+                if isSignUp {
+                    try await authManager.signUp(
+                        email: email,
+                        password: password,
+                        phone: "",
+                        fullName: name
+                    )
+                    showConfirmation = true
+                } else {
+                    try await authManager.signInWithEmail(email: email, password: password)
+                    dismiss()
                 }
             } catch {
-                await MainActor.run {
-                    resendMessage = "Error: \(error.localizedDescription)"
-                    isResending = false
-                }
+                errorMessage = error.localizedDescription
             }
+            isLoading = false
         }
     }
 }

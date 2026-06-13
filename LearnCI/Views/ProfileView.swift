@@ -64,14 +64,6 @@ struct ProfileView: View {
                     .fontWeight(.bold)
                 }
             }
-            .task(id: authManager.currentUser) {
-               ensureProfileExists()
-            }
-            .onChange(of: syncManager.hasInitialSyncCompleted) { _, completed in
-                if completed {
-                    ensureProfileExists()
-                }
-            }
             .alert("Reset All Profiles?", isPresented: $showDeleteConfirmation) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete All", role: .destructive) {
@@ -109,27 +101,6 @@ struct ProfileView: View {
         }
     }
     
-    func ensureProfileExists() {
-        // Wait for sync to complete before creating a default profile
-        // This prevents overwriting server data with a blank profile
-        guard syncManager.hasInitialSyncCompleted else { return }
-        
-        if profiles.isEmpty {
-            // Create profile associated with current user
-            if let userID = authManager.currentUser {
-                let newProfile = UserProfile(userID: userID)
-                newProfile.fullName = authManager.currentUserFullName
-                newProfile.email = authManager.currentUserEmail
-                newProfile.avatarUrl = authManager.currentUserAvatar
-                if let googleName = authManager.currentUserFullName {
-                    newProfile.name = googleName // Default display name to full name
-                }
-                
-                modelContext.insert(newProfile)
-            }
-        }
-    }
-
     @ViewBuilder
     private func settingsSection(profile: UserProfile) -> some View {
         Section {

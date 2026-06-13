@@ -3,6 +3,8 @@ import SwiftData
 
 @Model
 final class UserProfile {
+    static let currentOnboardingVersion = 1
+
     var id: UUID
     var userID: String? // Supabase Auth ID
     var name: String
@@ -16,6 +18,8 @@ final class UserProfile {
     var isPublic: Bool = false
     var totalMinutes: Int = 0
     var updatedAt: Date = Date()
+    var onboardingVersion: Int = 0
+    var onboardingCompletedAt: Date?
     
     // New Profile Fields
     var email: String?
@@ -56,6 +60,10 @@ final class UserProfile {
     var currentLevel: LearningLevel {
         get { LearningLevel(rawValue: currentLevelRaw) ?? .superBeginner }
         set { levelRawUpdate(newValue) }
+    }
+
+    var hasCompletedOnboarding: Bool {
+        onboardingVersion >= Self.currentOnboardingVersion
     }
     
     var defaultGamePreset: GameConfiguration.Preset {
@@ -171,5 +179,31 @@ final class UserProfile {
 
     func bumpUpdate() {
         updatedAt = Date()
+    }
+
+    func completeOnboarding(
+        name: String,
+        language: Language,
+        proficiencyLevel: Int,
+        dailyGoalMinutes: Int,
+        completedAt: Date = Date()
+    ) {
+        self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        currentLanguageRaw = language.rawValue
+        self.proficiencyLevel = min(max(proficiencyLevel, 1), 6)
+        currentLevelRaw = Self.learningLevel(for: self.proficiencyLevel).rawValue
+        self.dailyGoalMinutes = dailyGoalMinutes
+        onboardingVersion = Self.currentOnboardingVersion
+        onboardingCompletedAt = completedAt
+        updatedAt = completedAt
+    }
+
+    static func learningLevel(for proficiencyLevel: Int) -> LearningLevel {
+        switch proficiencyLevel {
+        case ...1: return .superBeginner
+        case 2: return .beginner
+        case 3...4: return .intermediate
+        default: return .advanced
+        }
     }
 }

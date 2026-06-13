@@ -46,6 +46,7 @@ class AuthManager {
     
     let supabase: SupabaseClient
     var isPasswordResetRequired = false
+    private let emailAuthRedirectURL = URL(string: "learnci://auth/callback")!
 
     init() {
         self.supabase = SupabaseClient(
@@ -247,25 +248,28 @@ class AuthManager {
             avatarURL: avatarUrl
         )
     }
-    
+
     @MainActor
-    func verifyOTP(phone: String, token: String) async throws {
-        let session = try await supabase.auth.verifyOTP(
-            phone: phone,
+    func sendEmailSignIn(email: String) async throws {
+        try await supabase.auth.signInWithOTP(
+            email: email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+            redirectTo: emailAuthRedirectURL,
+            shouldCreateUser: true
+        )
+    }
+
+    @MainActor
+    func verifyEmailCode(email: String, token: String) async throws {
+        let response = try await supabase.auth.verifyOTP(
+            email: email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
             token: token,
-            type: .sms
+            type: .email,
+            redirectTo: emailAuthRedirectURL
         )
-        
-        let metadata = session.user.userMetadata
-        let fullName = metadata["full_name"]?.value as? String
-        let avatarUrl = metadata["avatar_url"]?.value as? String
-        
-        self.state = .authenticated(
-            userID: session.user.id.uuidString,
-            email: session.user.email,
-            fullName: fullName,
-            avatarURL: avatarUrl
-        )
+
+        if case .session(let session) = response {
+            updateAuthenticatedState(from: session)
+        }
     }
     
     @MainActor
@@ -302,6 +306,17 @@ class AuthManager {
         }
         
         supabase.handle(url)
+    }
+
+    @MainActor
+    private func updateAuthenticatedState(from session: Session) {
+        let metadata = session.user.userMetadata
+        state = .authenticated(
+            userID: session.user.id.uuidString,
+            email: session.user.email,
+            fullName: metadata["full_name"]?.value as? String,
+            avatarURL: metadata["avatar_url"]?.value as? String
+        )
     }
 
     // MARK: - Crypto Helpers for Nonce

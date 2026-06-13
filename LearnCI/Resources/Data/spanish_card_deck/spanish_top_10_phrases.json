@@ -133,9 +133,9 @@
         },
         {
             "id": "es_t10p_9",
-            "wordTarget": "Si",
+            "wordTarget": "Sí",
             "wordNative": "Yes",
-            "sentenceTarget": "Si, quiero ir.",
+            "sentenceTarget": "Sí, quiero ir.",
             "sentenceNative": "Yes, I want to go.",
             "audioWordFile": "es_si_es_t10p_9_word.mp3",
             "audioSentenceFile": "es_si_es_t10p_9_sentence.mp3",

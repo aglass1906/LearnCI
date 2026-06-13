@@ -74,9 +74,9 @@
         },
         {
             "id": "es_sb_c5",
-            "wordTarget": "Si",
+            "wordTarget": "Sí",
             "wordNative": "Yes",
-            "sentenceTarget": "Si, me gusta mucho.",
+            "sentenceTarget": "Sí, me gusta mucho.",
             "sentenceNative": "Yes, I like it a lot.",
             "audioWordFile": "es_si_es_sb_c5_word.mp3",
             "audioSentenceFile": "es_si_es_sb_c5_sentence.mp3",

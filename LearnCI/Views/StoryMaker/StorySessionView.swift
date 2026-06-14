@@ -917,9 +917,11 @@ struct StorySessionView: View {
 
                 Color.clear.frame(height: Layout.bottomScrollSpacer)
             }
+            .padding(.horizontal, Layout.horizontalPadding)
+            .padding(.top, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             loadStoryCoverImage()
         }
@@ -929,65 +931,24 @@ struct StorySessionView: View {
     private var currentReadingMatterPageView: some View {
         if let item = currentSpineItem,
            let page = adapter.readingMatterPage(for: item) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    readingMatterHeroSection
-
-                    if let title = readingMatterDisplayTitle(for: page) {
-                        Text(title)
-                            .font(.title2.weight(.bold))
-                    }
-
-                    readingMatterBodyView(for: page)
-
-                    Color.clear.frame(height: Layout.bottomScrollSpacer)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
+            StoryBookReadingMatterPageView(
+                heroImage: readingMatterHeroImage,
+                imageURL: adapter.readingMatterImageURL(for: item),
+                title: readingMatterDisplayTitle(for: page),
+                bodyText: readingMatterDisplayBody(for: page),
+                isUsingGeneratedAudio: isReadingMatterUsingGeneratedAudio,
+                playbackTime: sliderValue,
+                wordTimings: page.wordTimingsForPlayback(preferNative: selectedLanguage == .native),
+                useNativeLanguage: selectedLanguage == .native,
+                horizontalContentPadding: Layout.horizontalPadding,
+                bottomSpacer: Layout.bottomScrollSpacer
+            )
         } else {
             StoryReaderUnavailableView(
                 title: "Reading Matter Missing",
                 message: "This reading matter page could not be loaded."
             )
         }
-    }
-
-    @ViewBuilder
-    private var readingMatterHeroSection: some View {
-        if let item = currentSpineItem {
-            Group {
-                if let readingMatterHeroImage {
-                    Image(uiImage: readingMatterHeroImage)
-                        .resizable()
-                        .scaledToFill()
-                } else if let url = adapter.readingMatterImageURL(for: item) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image.resizable().scaledToFill()
-                        case .failure, .empty:
-                            readingMatterHeroPlaceholder
-                        @unknown default:
-                            readingMatterHeroPlaceholder
-                        }
-                    }
-                } else {
-                    readingMatterHeroPlaceholder
-                }
-            }
-            .frame(height: 220)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-
-    private var readingMatterHeroPlaceholder: some View {
-        LinearGradient(
-            colors: [.accentColor, .accentColor.opacity(0.6)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 
     @ViewBuilder
@@ -1017,40 +978,6 @@ struct StorySessionView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    @ViewBuilder
-    private func readingMatterBodyView(for page: ReadingMatterPage) -> some View {
-        if selectedLanguage == .target,
-           isReadingMatterUsingGeneratedAudio,
-           let body = readingMatterDisplayBody(for: page) {
-            let timings = page.wordTimingsForPlayback(preferNative: false)
-            if !timings.isEmpty {
-                TimedTextView(
-                    segment: StorySegmentTiming(
-                        speaker: "",
-                        text: body,
-                        startTime: 0,
-                        endTime: .greatestFiniteMagnitude,
-                        timings: timings
-                    ),
-                    currentTime: sliderValue,
-                    includesPadding: false
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                Text(body)
-                    .font(.body)
-                    .lineSpacing(8)
-                    .textSelection(.enabled)
-            }
-        } else if let body = readingMatterDisplayBody(for: page) {
-            Text(body)
-                .font(.body)
-                .lineSpacing(8)
-                .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
-                .textSelection(.enabled)
-        }
-    }
-
     private var chapterScrollContent: some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
@@ -1060,9 +987,11 @@ struct StorySessionView: View {
                     Color.clear.frame(height: 180)
                         .id("BottomSpacer")
                 }
+                .padding(.horizontal, Layout.horizontalPadding)
+                .padding(.top, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .onChange(of: activeParagraphId) { _, newId in
                 if let id = newId {
                     withAnimation(.easeInOut(duration: 0.5)) {
@@ -1677,6 +1606,101 @@ private extension Collection {
 }
 
 // MARK: - Paragraph Subview
+
+private struct StoryBookReadingMatterPageView: View {
+    let heroImage: UIImage?
+    let imageURL: URL?
+    let title: String?
+    let bodyText: String?
+    let isUsingGeneratedAudio: Bool
+    let playbackTime: Double
+    let wordTimings: [WordTiming]
+    let useNativeLanguage: Bool
+    let horizontalContentPadding: CGFloat
+    let bottomSpacer: CGFloat
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                heroSection
+
+                if let title {
+                    Text(title)
+                        .font(.title2.weight(.bold))
+                }
+
+                bodySection
+
+                Color.clear.frame(height: bottomSpacer)
+            }
+            .padding(.horizontal, horizontalContentPadding)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    @ViewBuilder
+    private var heroSection: some View {
+        Group {
+            if let heroImage {
+                Image(uiImage: heroImage)
+                    .resizable()
+                    .scaledToFill()
+            } else if let imageURL {
+                AsyncImage(url: imageURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure, .empty:
+                        heroPlaceholder
+                    @unknown default:
+                        heroPlaceholder
+                    }
+                }
+            } else {
+                heroPlaceholder
+            }
+        }
+        .frame(height: 220)
+        .frame(maxWidth: .infinity)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var heroPlaceholder: some View {
+        LinearGradient(
+            colors: [.accentColor, .accentColor.opacity(0.6)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    @ViewBuilder
+    private var bodySection: some View {
+        if let bodyText {
+            if !useNativeLanguage, isUsingGeneratedAudio, !wordTimings.isEmpty {
+                TimedTextView(
+                    segment: StorySegmentTiming(
+                        speaker: "",
+                        text: bodyText,
+                        startTime: 0,
+                        endTime: .greatestFiniteMagnitude,
+                        timings: wordTimings
+                    ),
+                    currentTime: playbackTime,
+                    includesPadding: false
+                )
+            } else {
+                Text(bodyText)
+                    .font(.body)
+                    .lineSpacing(8)
+                    .foregroundStyle(useNativeLanguage ? .secondary : .primary)
+                    .textSelection(.enabled)
+            }
+        }
+    }
+}
+
 struct ParagraphView: View {
     let chunk: StorySessionView.ParagraphChunk
     let activeWordIndex: Int?

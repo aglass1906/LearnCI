@@ -67,9 +67,11 @@ struct ChapterInfoCardView: View {
 
                 Color.clear.frame(height: 180)
             }
+            .padding(.horizontal, horizontalContentPadding)
+            .padding(.top, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .contentMargins(.horizontal, horizontalContentPadding, for: .scrollContent)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             didCompleteIntro = false
         }

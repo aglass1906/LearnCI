@@ -12,7 +12,6 @@ struct ChapterInfoCardView: View {
     @Binding var selectedLanguage: StorySessionView.DisplayLanguage
     @Binding var isPlaying: Bool
     let onIntroFinished: () -> Void
-    var horizontalContentPadding: CGFloat = 16
 
     @Environment(AuthManager.self) private var authManager
 
@@ -26,50 +25,58 @@ struct ChapterInfoCardView: View {
     let introTimer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ZStack(alignment: .bottom) {
-                    if let img = heroImage {
-                        Image(uiImage: img)
-                            .resizable()
-                            .scaledToFill()
+        GeometryReader { geo in
+            let horizontalPadding: CGFloat = 16
+            let proseWidth = max(1, geo.size.width - horizontalPadding * 2)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ZStack(alignment: .bottom) {
+                        if let img = heroImage {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 220)
+                                .clipped()
+                        } else {
+                            LinearGradient(
+                                colors: [.accentColor, .accentColor.opacity(0.6)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                             .frame(height: 220)
-                            .clipped()
-                    } else {
-                        LinearGradient(
-                            colors: [.accentColor, .accentColor.opacity(0.6)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .frame(height: 220)
+                        }
                     }
+                    .frame(width: proseWidth, height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    Text(chapterNumberLabel)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.accentColor.opacity(0.12))
+                        .clipShape(Capsule())
+
+                    Text(displayTitle)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .frame(width: proseWidth, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    introTextView(proseWidth: proseWidth)
+
+                    Text("Characters: NARRATOR")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 8)
+
+                    Color.clear.frame(height: 180)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Text(chapterNumberLabel)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.accentColor)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.accentColor.opacity(0.12))
-                    .clipShape(Capsule())
-
-                Text(displayTitle)
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                introTextView
-
-                Text("Characters: NARRATOR")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.top, 8)
-
-                Color.clear.frame(height: 180)
+                .frame(width: proseWidth, alignment: .leading)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, 8)
             }
-            .padding(.horizontal, horizontalContentPadding)
-            .padding(.top, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
@@ -136,7 +143,7 @@ struct ChapterInfoCardView: View {
     }
 
     @ViewBuilder
-    private var introTextView: some View {
+    private func introTextView(proseWidth: CGFloat) -> some View {
         if let intro = displayIntroText {
             if selectedLanguage == .target,
                let timings = chapter.chapterIntroWordTimings, !timings.isEmpty,
@@ -152,7 +159,8 @@ struct ChapterInfoCardView: View {
                     currentTime: introCurrentTime,
                     includesPadding: false
                 )
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(width: proseWidth, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
             } else {
                 let parts = intro.components(separatedBy: "\n\n")
                 if let quote = parts.first {
@@ -161,6 +169,8 @@ struct ChapterInfoCardView: View {
                         .italic()
                         .foregroundStyle(.secondary)
                         .padding(.leading, 12)
+                        .frame(width: proseWidth, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
                         .overlay(
                             Rectangle()
                                 .fill(Color.accentColor)
@@ -172,6 +182,8 @@ struct ChapterInfoCardView: View {
                     Text(parts.dropFirst().joined(separator: "\n\n"))
                         .font(.body)
                         .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
+                        .frame(width: proseWidth, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 8)
                 }
             }

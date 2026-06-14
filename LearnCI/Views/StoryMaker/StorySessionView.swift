@@ -5,11 +5,16 @@ import Combine
 import SwiftData
 import MediaPlayer
 
-struct StorySessionView: View {
-    private enum Layout {
-        static let horizontalPadding: CGFloat = 16
-        static let bottomScrollSpacer: CGFloat = 160
+private enum StoryBookLayout {
+    static let horizontalPadding: CGFloat = 16
+    static let bottomScrollSpacer: CGFloat = 160
+
+    static func readableContentWidth(in containerWidth: CGFloat) -> CGFloat {
+        max(1, containerWidth - horizontalPadding * 2)
     }
+}
+
+struct StorySessionView: View {
 
     let story: Story
     @Environment(AudioManager.self) private var audioManager
@@ -157,7 +162,7 @@ struct StorySessionView: View {
                         )
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
 
             stickyPlayerView
@@ -904,24 +909,18 @@ struct StorySessionView: View {
     }
 
     private var coverPageView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                storyBookCoverSection
+        StoryBookInsetScrollView(bottomSpacer: StoryBookLayout.bottomScrollSpacer) {
+            storyBookCoverSection
 
-                Text(story.title)
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+            Text(story.title)
+                .font(.system(size: 32, weight: .bold, design: .serif))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Text("\(story.language.displayName) · Level \(story.level)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Color.clear.frame(height: Layout.bottomScrollSpacer)
-            }
-            .padding(.horizontal, Layout.horizontalPadding)
-            .padding(.top, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Text("\(story.language.displayName) · Level \(story.level)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             loadStoryCoverImage()
         }
@@ -940,8 +939,7 @@ struct StorySessionView: View {
                 playbackTime: sliderValue,
                 wordTimings: page.wordTimingsForPlayback(preferNative: selectedLanguage == .native),
                 useNativeLanguage: selectedLanguage == .native,
-                horizontalContentPadding: Layout.horizontalPadding,
-                bottomSpacer: Layout.bottomScrollSpacer
+                bottomSpacer: StoryBookLayout.bottomScrollSpacer
             )
         } else {
             StoryReaderUnavailableView(
@@ -980,25 +978,29 @@ struct StorySessionView: View {
 
     private var chapterScrollContent: some View {
         ScrollViewReader { scrollProxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    storyTextView
+            GeometryReader { geo in
+                let proseWidth = StoryBookLayout.readableContentWidth(in: geo.size.width)
 
-                    Color.clear.frame(height: 180)
-                        .id("BottomSpacer")
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        storyTextView
+
+                        Color.clear.frame(height: 180)
+                            .id("BottomSpacer")
+                    }
+                    .frame(width: proseWidth, alignment: .leading)
+                    .padding(.horizontal, StoryBookLayout.horizontalPadding)
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, Layout.horizontalPadding)
-                .padding(.top, 8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .onChange(of: activeParagraphId) { _, newId in
-                if let id = newId {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        scrollProxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.35))
+                .onChange(of: activeParagraphId) { _, newId in
+                    if let id = newId {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            scrollProxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.35))
+                        }
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
@@ -1325,8 +1327,7 @@ struct StorySessionView: View {
                     languageCode: story.languageRaw,
                     selectedLanguage: $selectedLanguage,
                     isPlaying: $isPlaying,
-                    onIntroFinished: { finishChapterIntro(andPlayBody: false) },
-                    horizontalContentPadding: Layout.horizontalPadding
+                    onIntroFinished: { finishChapterIntro(andPlayBody: false) }
                 )
                 .id("chapter-intro-\(currentChapterIndex)")
             } else {
@@ -1607,6 +1608,29 @@ private extension Collection {
 
 // MARK: - Paragraph Subview
 
+private struct StoryBookInsetScrollView<Content: View>: View {
+    var spacing: CGFloat = 16
+    let bottomSpacer: CGFloat
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        GeometryReader { geo in
+            let proseWidth = StoryBookLayout.readableContentWidth(in: geo.size.width)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: spacing) {
+                    content()
+                    Color.clear.frame(height: bottomSpacer)
+                }
+                .frame(width: proseWidth, alignment: .leading)
+                .padding(.horizontal, StoryBookLayout.horizontalPadding)
+                .padding(.top, 8)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+}
+
 private struct StoryBookReadingMatterPageView: View {
     let heroImage: UIImage?
     let imageURL: URL?
@@ -1616,32 +1640,37 @@ private struct StoryBookReadingMatterPageView: View {
     let playbackTime: Double
     let wordTimings: [WordTiming]
     let useNativeLanguage: Bool
-    let horizontalContentPadding: CGFloat
     let bottomSpacer: CGFloat
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                heroSection
+        GeometryReader { geo in
+            let proseWidth = StoryBookLayout.readableContentWidth(in: geo.size.width)
 
-                if let title {
-                    Text(title)
-                        .font(.title2.weight(.bold))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    heroSection(proseWidth: proseWidth)
+
+                    if let title {
+                        Text(title)
+                            .font(.title2.weight(.bold))
+                            .frame(width: proseWidth, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    bodySection(proseWidth: proseWidth)
+
+                    Color.clear.frame(height: bottomSpacer)
                 }
-
-                bodySection
-
-                Color.clear.frame(height: bottomSpacer)
+                .frame(width: proseWidth, alignment: .leading)
+                .padding(.horizontal, StoryBookLayout.horizontalPadding)
+                .padding(.top, 8)
             }
-            .padding(.horizontal, horizontalContentPadding)
-            .padding(.top, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     @ViewBuilder
-    private var heroSection: some View {
+    private func heroSection(proseWidth: CGFloat) -> some View {
         Group {
             if let heroImage {
                 Image(uiImage: heroImage)
@@ -1662,8 +1691,7 @@ private struct StoryBookReadingMatterPageView: View {
                 heroPlaceholder
             }
         }
-        .frame(height: 220)
-        .frame(maxWidth: .infinity)
+        .frame(width: proseWidth, height: 220)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -1676,7 +1704,7 @@ private struct StoryBookReadingMatterPageView: View {
     }
 
     @ViewBuilder
-    private var bodySection: some View {
+    private func bodySection(proseWidth: CGFloat) -> some View {
         if let bodyText {
             if !useNativeLanguage, isUsingGeneratedAudio, !wordTimings.isEmpty {
                 TimedTextView(
@@ -1690,12 +1718,16 @@ private struct StoryBookReadingMatterPageView: View {
                     currentTime: playbackTime,
                     includesPadding: false
                 )
+                .frame(width: proseWidth, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
             } else {
                 Text(bodyText)
                     .font(.body)
                     .lineSpacing(8)
                     .foregroundStyle(useNativeLanguage ? .secondary : .primary)
                     .textSelection(.enabled)
+                    .frame(width: proseWidth, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

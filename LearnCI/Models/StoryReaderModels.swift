@@ -405,6 +405,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     var titleNative: String?
     var bodyTarget: String?
     var bodyNative: String?
+    var imageUrl: String?
     var audioUrl: String?
     var nativeAudioUrl: String?
     var wordTimings: [WordTiming]?
@@ -416,6 +417,10 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         case titleNative
         case bodyTarget
         case bodyNative
+        case imageUrl = "image_url"
+        case imageUrlCamel = "imageUrl"
+        case coverUrl = "cover_url"
+        case coverUrlCamel = "coverUrl"
         case audioUrl = "audio_url"
         case audioUrlCamel = "audioUrl"
         case targetAudioUrl = "target_audio_url"
@@ -435,6 +440,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         titleNative: String? = nil,
         bodyTarget: String? = nil,
         bodyNative: String? = nil,
+        imageUrl: String? = nil,
         audioUrl: String? = nil,
         nativeAudioUrl: String? = nil,
         wordTimings: [WordTiming]? = nil,
@@ -446,6 +452,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         self.titleNative = titleNative
         self.bodyTarget = bodyTarget
         self.bodyNative = bodyNative
+        self.imageUrl = imageUrl
         self.audioUrl = audioUrl
         self.nativeAudioUrl = nativeAudioUrl
         self.wordTimings = wordTimings
@@ -460,6 +467,10 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         titleNative = try? container.decode(String.self, forKey: .titleNative)
         bodyTarget = try? container.decode(String.self, forKey: .bodyTarget)
         bodyNative = try? container.decode(String.self, forKey: .bodyNative)
+        imageUrl = (try? container.decode(String.self, forKey: .imageUrl))
+            ?? (try? container.decode(String.self, forKey: .imageUrlCamel))
+            ?? (try? container.decode(String.self, forKey: .coverUrl))
+            ?? (try? container.decode(String.self, forKey: .coverUrlCamel))
         audioUrl = (try? container.decode(String.self, forKey: .audioUrl))
             ?? (try? container.decode(String.self, forKey: .audioUrlCamel))
             ?? (try? container.decode(String.self, forKey: .targetAudioUrl))
@@ -480,6 +491,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(titleNative, forKey: .titleNative)
         try container.encodeIfPresent(bodyTarget, forKey: .bodyTarget)
         try container.encodeIfPresent(bodyNative, forKey: .bodyNative)
+        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
         try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
         try container.encodeIfPresent(nativeAudioUrl, forKey: .nativeAudioUrl)
         try container.encodeIfPresent(wordTimings, forKey: .wordTimings)
@@ -500,6 +512,36 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
 
     func hasGeneratedAudio(preferNative: Bool) -> Bool {
         audioUrlForPlayback(preferNative: preferNative) != nil
+    }
+
+    var isBackMatter: Bool {
+        let placementKey = placement?.readingMatterPlacementKey ?? ""
+        if placementKey.contains("front") || placementKey.contains("about") || placementKey.contains("intro") {
+            return false
+        }
+        if placementKey.contains("back")
+            || placementKey.contains("appendix")
+            || placementKey.contains("after")
+            || placementKey.contains("end")
+            || placementKey.contains("post")
+            || placementKey.contains("credit") {
+            return true
+        }
+
+        let identityKey = [
+            id,
+            titleTarget,
+            titleNative
+        ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+            .readingMatterPlacementKey
+
+        return identityKey.contains("back")
+            || identityKey.contains("appendix")
+            || identityKey.contains("credit")
+            || identityKey.contains("afterword")
+            || identityKey.contains("glossary")
     }
 
     private static func trimmedNonEmpty(_ value: String?) -> String? {
@@ -782,38 +824,6 @@ enum StoryReadingSpineTitles {
         guard value.count > maxLength else { return value }
         let end = value.index(value.startIndex, offsetBy: max(0, maxLength - 1))
         return String(value[..<end]) + "…"
-    }
-}
-
-private extension ReadingMatterPage {
-    var isBackMatter: Bool {
-        let placementKey = placement?.readingMatterPlacementKey ?? ""
-        if placementKey.contains("front") || placementKey.contains("about") || placementKey.contains("intro") {
-            return false
-        }
-        if placementKey.contains("back")
-            || placementKey.contains("appendix")
-            || placementKey.contains("after")
-            || placementKey.contains("end")
-            || placementKey.contains("post")
-            || placementKey.contains("credit") {
-            return true
-        }
-
-        let identityKey = [
-            id,
-            titleTarget,
-            titleNative
-        ]
-            .compactMap { $0 }
-            .joined(separator: " ")
-            .readingMatterPlacementKey
-
-        return identityKey.contains("back")
-            || identityKey.contains("appendix")
-            || identityKey.contains("credit")
-            || identityKey.contains("afterword")
-            || identityKey.contains("glossary")
     }
 }
 

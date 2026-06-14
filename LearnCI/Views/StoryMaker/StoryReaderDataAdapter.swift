@@ -111,8 +111,24 @@ struct StoryReaderDataAdapter {
             startOffset: 0,
             title: title,
             caption: body ?? "",
-            imageURL: nil
+            imageURL: readingMatterImageURL(for: page)
         )
+    }
+
+    func readingMatterImageURL(for item: StoryReadingSpineItem) -> URL? {
+        guard let page = readingMatterPage(for: item) else { return nil }
+        return readingMatterImageURL(for: page)
+    }
+
+    func readingMatterImageURL(for page: ReadingMatterPage) -> URL? {
+        if let imagePath = page.imageUrl?.trimmedNilIfEmpty,
+           let url = AppConfig.chapterCoverURL(imagePath) {
+            return url
+        }
+
+        guard !story.chapters.isEmpty else { return nil }
+        let chapterIndex = page.isBackMatter ? story.chapters.count - 1 : 0
+        return chapterImageURL(forChapterAt: chapterIndex)
     }
 
     func scene(for item: StoryReadingSpineItem) -> StoryScene? {

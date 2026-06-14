@@ -28,6 +28,7 @@ struct StorySessionView: View {
     @State private var showSpine = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
+    @State private var readingMatterHeroImage: UIImage? = nil
     
     // Auto-Scroll State
     @State private var activeWordIndex: Int? = nil
@@ -170,6 +171,9 @@ struct StorySessionView: View {
             }
             if isOnChapterSpineItem {
                 loadChapterImage()
+            }
+            if isOnReadingMatterSpineItem {
+                loadReadingMatterImage()
             }
         }
         .mediaPlaybackLifecycle(
@@ -767,6 +771,8 @@ struct StorySessionView: View {
 
     private var readingMatterSpineHeader: some View {
         HStack(spacing: 10) {
+            readingMatterHeaderThumbnail
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(story.title)
                     .font(.subheadline.weight(.semibold))
@@ -879,6 +885,8 @@ struct StorySessionView: View {
            let page = adapter.readingMatterPage(for: item) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    readingMatterHeroSection
+
                     if let title = readingMatterDisplayTitle(for: page) {
                         Text(title)
                             .font(.title2.weight(.bold))
@@ -896,6 +904,70 @@ struct StorySessionView: View {
                 message: "This reading matter page could not be loaded."
             )
         }
+    }
+
+    @ViewBuilder
+    private var readingMatterHeroSection: some View {
+        if let item = currentSpineItem {
+            Group {
+                if let readingMatterHeroImage {
+                    Image(uiImage: readingMatterHeroImage)
+                        .resizable()
+                        .scaledToFill()
+                } else if let url = adapter.readingMatterImageURL(for: item) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFill()
+                        case .failure, .empty:
+                            readingMatterHeroPlaceholder
+                        @unknown default:
+                            readingMatterHeroPlaceholder
+                        }
+                    }
+                } else {
+                    readingMatterHeroPlaceholder
+                }
+            }
+            .frame(height: 220)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private var readingMatterHeroPlaceholder: some View {
+        LinearGradient(
+            colors: [.accentColor, .accentColor.opacity(0.6)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    @ViewBuilder
+    private var readingMatterHeaderThumbnail: some View {
+        Group {
+            if let readingMatterHeroImage {
+                Image(uiImage: readingMatterHeroImage)
+                    .resizable()
+                    .scaledToFill()
+            } else if let item = currentSpineItem,
+                      let url = adapter.readingMatterImageURL(for: item) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure, .empty:
+                        chapterHeaderThumbnailPlaceholder
+                    @unknown default:
+                        chapterHeaderThumbnailPlaceholder
+                    }
+                }
+            } else {
+                chapterHeaderThumbnailPlaceholder
+            }
+        }
+        .frame(width: 44, height: 44)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     @ViewBuilder
@@ -1373,6 +1445,7 @@ struct StorySessionView: View {
 
         switch storyBookSpineItems[index] {
         case .chapter(let chapterIndex):
+            readingMatterHeroImage = nil
             currentChapterIndex = chapterIndex
             loadChapterImage()
             audioManager.stopAudio()
@@ -1382,7 +1455,15 @@ struct StorySessionView: View {
                 isShowingChapterIntro = false
                 setupAudio()
             }
-        case .readingMatterPage, .cover:
+        case .readingMatterPage:
+            isReadingMatterUsingGeneratedAudio = false
+            audioManager.stopAudio()
+            isShowingChapterIntro = false
+            sliderValue = 0
+            duration = 0
+            loadReadingMatterImage()
+        case .cover:
+            readingMatterHeroImage = nil
             isReadingMatterUsingGeneratedAudio = false
             audioManager.stopAudio()
             isShowingChapterIntro = false
@@ -1446,6 +1527,20 @@ struct StorySessionView: View {
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data, let uiImage = UIImage(data: data) {
                 DispatchQueue.main.async { heroImage = uiImage }
+            }
+        }.resume()
+    }
+
+    private func loadReadingMatterImage() {
+        guard let item = currentSpineItem,
+              let url = adapter.readingMatterImageURL(for: item) else {
+            readingMatterHeroImage = nil
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data, let uiImage = UIImage(data: data) {
+                DispatchQueue.main.async { readingMatterHeroImage = uiImage }
             }
         }.resume()
     }

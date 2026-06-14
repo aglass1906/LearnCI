@@ -55,6 +55,30 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(clip.urlString, "user/story/about.m4a")
     }
 
+    func testReadingMatterImageURLFallsBackToFirstChapterCover() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro"
+                )
+            ]
+        )
+        story.chapters[0].coverUrl = "covers/chapter_1.jpg"
+        let adapter = StoryReaderDataAdapter(story: story)
+        let item = StoryReadingSpineItem.readingMatterPage(index: 0, id: "about")
+        let page = try XCTUnwrap(adapter.readingMatterPage(for: item))
+
+        XCTAssertNil(page.imageUrl)
+        XCTAssertEqual(
+            adapter.readingMatterImageURL(for: item)?.absoluteString,
+            AppConfig.chapterCoverURL("covers/chapter_1.jpg")?.absoluteString
+        )
+    }
+
     func testStoryBookSpinePlacesBackMatterAfterChapters() throws {
         let story = try makeStory(
             layout: nil,

@@ -13,6 +13,7 @@ final class StorySupplementalAudioPlayback {
     }
 
     private(set) var activeContent: Content = .none
+    private(set) var isPlaying = false
     private(set) var isUsingGeneratedAudio = false
     private(set) var isLoading = false
     private(set) var currentTime: Double = 0
@@ -91,40 +92,42 @@ final class StorySupplementalAudioPlayback {
         }
     }
 
-    func syncPlayback(isPlaying: inout Bool, speakableText: String?) {
-        if isPlaying {
+    func syncPlayback(shouldPlay: Bool, speakableText: String?) {
+        if shouldPlay {
             if isUsingGeneratedAudio, let audioManager, audioManager.streamPlayer != nil {
                 if !audioManager.isStreaming {
                     audioManager.playStream()
+                    isPlaying = true
                 }
                 return
             }
             if synthesizer.isPaused {
                 synthesizer.continueSpeaking()
+                isPlaying = true
                 return
             }
             if synthesizer.isSpeaking {
                 return
             }
             if hasGeneratedAudio(preferNative: preferNative) || speakableText != nil {
-                togglePlay(isPlaying: &isPlaying, speakableText: speakableText)
+                togglePlay(speakableText: speakableText)
             }
         } else {
-            pause(isPlaying: &isPlaying)
+            pause()
         }
     }
 
-    func togglePlay(isPlaying: inout Bool, speakableText: String?) {
+    func togglePlay(speakableText: String?) {
         if hasGeneratedAudio(preferNative: preferNative) {
-            toggleGeneratedAudio(isPlaying: &isPlaying)
+            toggleGeneratedAudio()
             return
         }
 
         guard let speakableText, !speakableText.isEmpty else { return }
 
         if isPlaying {
-            isPlaying = false
             pauseSpeech()
+            isPlaying = false
             return
         }
 
@@ -134,10 +137,10 @@ final class StorySupplementalAudioPlayback {
             return
         }
 
-        startSpeech(text: speakableText, isPlaying: &isPlaying)
+        startSpeech(text: speakableText)
     }
 
-    func pause(isPlaying: inout Bool) {
+    func pause() {
         isPlaying = false
         if isUsingGeneratedAudio {
             audioManager?.pauseStream()
@@ -157,6 +160,7 @@ final class StorySupplementalAudioPlayback {
             audioManager?.stopStream()
         }
 
+        isPlaying = false
         isUsingGeneratedAudio = false
         isLoading = false
         resetTimingState()
@@ -178,30 +182,35 @@ final class StorySupplementalAudioPlayback {
         audioManager?.updateStreamNowPlayingInfo()
     }
 
-    func syncStreamState(isPlaying: inout Bool) {
-        guard isUsingGeneratedAudio, let audioManager else { return }
+    func syncStreamState() {
+        if isUsingGeneratedAudio, let audioManager {
+            if audioManager.streamFinished {
+                audioManager.streamFinished = false
+                isPlaying = false
+                onFinished?()
+                return
+            }
 
-        if audioManager.streamFinished {
-            audioManager.streamFinished = false
-            isPlaying = false
-            onFinished?()
+            guard audioManager.streamPlayer != nil else { return }
+
+            currentTime = audioManager.streamCurrentTime
+            let streamDuration = audioManager.streamDuration
+            if streamDuration > 0 {
+                duration = max(duration, streamDuration)
+            }
+            isPlaying = audioManager.isStreaming
+            updateWordHighlight(at: currentTime)
             return
         }
 
-        guard audioManager.streamPlayer != nil else { return }
-
-        currentTime = audioManager.streamCurrentTime
-        let streamDuration = audioManager.streamDuration
-        if streamDuration > 0 {
-            duration = max(duration, streamDuration)
+        if synthesizer.isSpeaking, !synthesizer.isPaused {
+            isPlaying = true
         }
-        isPlaying = audioManager.isStreaming
-        updateWordHighlight(at: currentTime)
     }
 
     // MARK: - Generated audio
 
-    private func toggleGeneratedAudio(isPlaying: inout Bool) {
+    private func toggleGeneratedAudio() {
         guard let audioManager else { return }
 
         if isUsingGeneratedAudio, audioManager.streamPlayer != nil {
@@ -243,7 +252,10 @@ final class StorySupplementalAudioPlayback {
 
             await MainActor.run {
                 isLoading = false
-                guard let playbackURL else { return }
+                guard let playbackURL else {
+                    isPlaying = false
+                    return
+                }
 
                 audioManager.streamAudio(url: playbackURL, startAt: startAt)
                 let timedDuration = wordTimings.last?.end
@@ -255,7 +267,9 @@ final class StorySupplementalAudioPlayback {
                     artist: story.title,
                     artworkImage: nil
                 )
-                audioManager.playStream()
+                if isPlaying {
+                    audioManager.playStream()
+                }
             }
         }
     }
@@ -279,7 +293,7 @@ final class StorySupplementalAudioPlayback {
 
     // MARK: - TTS
 
-    private func startSpeech(text: String, isPlaying: inout Bool) {
+    private func startSpeech(text: String) {
         stopSpeechOnly()
 
         let utterance = AVSpeechUtterance(string: text)

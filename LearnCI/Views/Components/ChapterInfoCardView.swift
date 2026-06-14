@@ -97,14 +97,20 @@ struct ChapterInfoCardView: View {
                 preferNative: newValue == .native
             )
             if wasPlaying {
-                playback.togglePlay(isPlaying: &isPlaying, speakableText: speakableIntroText)
+                playback.syncPlayback(shouldPlay: true, speakableText: speakableIntroText)
             }
         }
         .onChange(of: isPlaying) { _, playing in
-            playback.syncPlayback(isPlaying: &isPlaying, speakableText: speakableIntroText)
+            playback.syncPlayback(shouldPlay: playing, speakableText: speakableIntroText)
+            if isPlaying != playback.isPlaying {
+                isPlaying = playback.isPlaying
+            }
         }
         .onReceive(introTimer) { _ in
-            playback.syncStreamState(isPlaying: &isPlaying)
+            playback.syncStreamState()
+            if isPlaying != playback.isPlaying {
+                isPlaying = playback.isPlaying
+            }
         }
     }
 

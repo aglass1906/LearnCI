@@ -60,7 +60,10 @@ struct DialogStoryFlowView: View {
         )
         .onReceive(readingMatterTimer) { _ in
             guard case .readingMatterPage = currentSpineItem else { return }
-            readingMatterPlayback.syncStreamState(isPlaying: &isReadingMatterPlaying)
+            readingMatterPlayback.syncStreamState()
+            if isReadingMatterPlaying != readingMatterPlayback.isPlaying {
+                isReadingMatterPlaying = readingMatterPlayback.isPlaying
+            }
         }
     }
 
@@ -174,9 +177,12 @@ struct DialogStoryFlowView: View {
                     Button {
                         isReadingMatterPlaying.toggle()
                         readingMatterPlayback.syncPlayback(
-                            isPlaying: &isReadingMatterPlaying,
+                            shouldPlay: isReadingMatterPlaying,
                             speakableText: currentReadingMatterSpeakableText
                         )
+                        if isReadingMatterPlaying != readingMatterPlayback.isPlaying {
+                            isReadingMatterPlaying = readingMatterPlayback.isPlaying
+                        }
                     } label: {
                         Label(
                             isReadingMatterPlaying ? "Pause" : "Play",
@@ -356,9 +362,10 @@ struct DialogStoryFlowView: View {
                 )
                 if wasPlaying {
                     readingMatterPlayback.syncPlayback(
-                        isPlaying: &isReadingMatterPlaying,
+                        shouldPlay: true,
                         speakableText: currentReadingMatterSpeakableText
                     )
+                    isReadingMatterPlaying = readingMatterPlayback.isPlaying
                 }
             }
         } else {

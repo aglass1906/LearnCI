@@ -489,7 +489,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     func audioUrlForPlayback(preferNative: Bool) -> String? {
         let preferred = preferNative ? nativeAudioUrl : audioUrl
         let fallback = preferNative ? audioUrl : nativeAudioUrl
-        return preferred?.trimmedNilIfEmpty ?? fallback?.trimmedNilIfEmpty
+        return Self.trimmedNonEmpty(preferred) ?? Self.trimmedNonEmpty(fallback)
     }
 
     func wordTimingsForPlayback(preferNative: Bool) -> [WordTiming] {
@@ -500,6 +500,11 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
 
     func hasGeneratedAudio(preferNative: Bool) -> Bool {
         audioUrlForPlayback(preferNative: preferNative) != nil
+    }
+
+    private static func trimmedNonEmpty(_ value: String?) -> String? {
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

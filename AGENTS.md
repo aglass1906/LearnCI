@@ -110,3 +110,15 @@ Documented in `Documentation/Game_Flow_Lifecycle.md`. Entry: `GameConfigurationV
 ## Supabase MCP
 
 `.mcp.json` configures Supabase MCP server for direct DB access from Codex. Use `mcp__supabase__execute_sql` for queries and `mcp__supabase__apply_migration` for schema changes.
+
+## Cloud Agent Handoff
+
+When a cloud agent finishes a feature, **always end the summary with a copy-paste git sync block** so the user can pull the work locally. Use the exact branch name that was pushed:
+
+```bash
+git fetch origin
+git checkout <branch-name>
+git pull origin <branch-name>
+```
+
+Include the PR link when one was created. See `docs/local-dev.md` for the full local workflow.

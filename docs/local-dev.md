@@ -10,6 +10,41 @@ cd /path/to/LearnCI
 
 ---
 
+## Sync locally after cloud work (copy-paste)
+
+When a cloud agent finishes a feature, copy this block and replace `<branch-name>` with the branch from the agent's summary:
+
+```bash
+git fetch origin
+git checkout <branch-name>
+git pull origin <branch-name>
+```
+
+Optional — review what changed before building:
+
+```bash
+git log --oneline main..HEAD
+git diff --stat main...HEAD
+```
+
+Optional — open the PR in the browser (replace `<number>`):
+
+```bash
+gh pr view <number> --web
+```
+
+### Current example (story playback + local-dev docs)
+
+```bash
+git fetch origin
+git checkout cursor/story-playback-chapter-intro-reading-matter-af71
+git pull origin cursor/story-playback-chapter-intro-reading-matter-af71
+```
+
+PR: https://github.com/aglass1906/LearnCI/pull/5
+
+---
+
 ## Prerequisites
 
 | Tool | Purpose |

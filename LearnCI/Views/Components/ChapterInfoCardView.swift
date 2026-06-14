@@ -12,6 +12,7 @@ struct ChapterInfoCardView: View {
     @Binding var selectedLanguage: StorySessionView.DisplayLanguage
     @Binding var isPlaying: Bool
     let onIntroFinished: () -> Void
+    var horizontalContentPadding: CGFloat = 16
 
     @Environment(AuthManager.self) private var authManager
 
@@ -66,8 +67,9 @@ struct ChapterInfoCardView: View {
 
                 Color.clear.frame(height: 180)
             }
-            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .contentMargins(.horizontal, horizontalContentPadding, for: .scrollContent)
         .onAppear {
             didCompleteIntro = false
         }
@@ -145,7 +147,8 @@ struct ChapterInfoCardView: View {
                         endTime: .greatestFiniteMagnitude,
                         timings: timings
                     ),
-                    currentTime: introCurrentTime
+                    currentTime: introCurrentTime,
+                    includesPadding: false
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {

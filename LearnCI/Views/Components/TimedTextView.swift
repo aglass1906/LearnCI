@@ -6,13 +6,14 @@ import SwiftUI
 struct TimedTextView: View {
     let segment: StorySegmentTiming
     let currentTime: Double /// The current stream time in seconds
+    var includesPadding: Bool = true
 
     var body: some View {
         Text(attributedParagraph)
             .multilineTextAlignment(.leading)
             .lineSpacing(6)
             .fixedSize(horizontal: false, vertical: true)
-            .padding()
+            .padding(includesPadding ? 16 : 0)
             .animation(.easeInOut(duration: 0.1), value: currentTime)
     }
 

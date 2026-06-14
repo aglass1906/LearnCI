@@ -6,6 +6,11 @@ import SwiftData
 import MediaPlayer
 
 struct StorySessionView: View {
+    private enum Layout {
+        static let horizontalPadding: CGFloat = 16
+        static let bottomScrollSpacer: CGFloat = 160
+    }
+
     let story: Story
     @Environment(AudioManager.self) private var audioManager
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
@@ -910,10 +915,11 @@ struct StorySessionView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                Color.clear.frame(height: 160)
+                Color.clear.frame(height: Layout.bottomScrollSpacer)
             }
-            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
         .onAppear {
             loadStoryCoverImage()
         }
@@ -934,10 +940,11 @@ struct StorySessionView: View {
 
                     readingMatterBodyView(for: page)
 
-                    Color.clear.frame(height: 160)
+                    Color.clear.frame(height: Layout.bottomScrollSpacer)
                 }
-                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
         } else {
             StoryReaderUnavailableView(
                 title: "Reading Matter Missing",
@@ -1025,7 +1032,8 @@ struct StorySessionView: View {
                         endTime: .greatestFiniteMagnitude,
                         timings: timings
                     ),
-                    currentTime: sliderValue
+                    currentTime: sliderValue,
+                    includesPadding: false
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -1052,8 +1060,9 @@ struct StorySessionView: View {
                     Color.clear.frame(height: 180)
                         .id("BottomSpacer")
                 }
-                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .contentMargins(.horizontal, Layout.horizontalPadding, for: .scrollContent)
             .onChange(of: activeParagraphId) { _, newId in
                 if let id = newId {
                     withAnimation(.easeInOut(duration: 0.5)) {
@@ -1387,7 +1396,8 @@ struct StorySessionView: View {
                     languageCode: story.languageRaw,
                     selectedLanguage: $selectedLanguage,
                     isPlaying: $isPlaying,
-                    onIntroFinished: { finishChapterIntro(andPlayBody: false) }
+                    onIntroFinished: { finishChapterIntro(andPlayBody: false) },
+                    horizontalContentPadding: Layout.horizontalPadding
                 )
                 .id("chapter-intro-\(currentChapterIndex)")
             } else {

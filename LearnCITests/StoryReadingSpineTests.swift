@@ -55,6 +55,66 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(clip.urlString, "user/story/about.m4a")
     }
 
+    func testAudioBookPlaybackClipsIncludeReadingMatterBeforeChapters() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro",
+                    audioUrl: "user/story/about.m4a"
+                )
+            ]
+        )
+        story.chapters[0].chapterIntroAudioUrl = "user/story/ch0_intro.m4a"
+        story.chapters[0].scenes[0].audioUrl = "user/story/ch0_sc0.mp3"
+
+        let adapter = StoryReaderDataAdapter(story: story)
+        let clips = adapter.audioBookPlaybackClips()
+
+        XCTAssertTrue(try XCTUnwrap(clips.first).isReadingMatter)
+        XCTAssertTrue(clips.contains(where: \.isChapterIntro))
+        XCTAssertTrue(clips.contains(where: { $0.chapterIndex == 0 && !$0.isChapterIntro && !$0.isReadingMatter }))
+    }
+
+    func testPictureBookPlaybackClipsIncludeReadingMatterAndChapterIntro() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro",
+                    audioUrl: "user/story/about.m4a"
+                )
+            ]
+        )
+        story.chapters[0].chapterIntroAudioUrl = "user/story/ch0_intro.m4a"
+        story.chapters[0].scenes[0].audioUrl = "user/story/ch0_sc0.mp3"
+
+        let adapter = StoryReaderDataAdapter(story: story)
+        let clips = adapter.pictureBookPlaybackClips()
+
+        XCTAssertTrue(try XCTUnwrap(clips.first).isReadingMatter)
+        XCTAssertTrue(clips.contains(where: \.isChapterIntro))
+        XCTAssertTrue(clips.contains(where: { $0.chapterIndex == 0 && $0.sceneIndex == 0 }))
+    }
+
+    func testChapterIntroAudioClipUsesIntroPath() throws {
+        let story = try makeStory(layout: nil)
+        story.chapters[0].chapterIntroAudioUrl = "user/story/ch0_intro.m4a"
+        story.chapters[0].chapterIntroText = "Welcome"
+
+        let adapter = StoryReaderDataAdapter(story: story)
+        let clip = try XCTUnwrap(adapter.chapterIntroAudioClip(forChapterAt: 0))
+
+        XCTAssertTrue(clip.isChapterIntro)
+        XCTAssertEqual(clip.urlString, "user/story/ch0_intro.m4a")
+    }
+
     func testReadingMatterImageURLFallsBackToFirstChapterCover() throws {
         let story = try makeStory(
             layout: nil,

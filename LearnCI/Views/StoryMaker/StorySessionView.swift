@@ -1322,7 +1322,9 @@ struct StorySessionView: View {
         Group {
             if isShowingChapterIntro, let chapter = currentChapter {
                 ChapterInfoCardView(
+                    story: story,
                     chapter: chapter,
+                    chapterIndex: currentChapterIndex,
                     heroImage: heroImage,
                     languageCode: story.languageRaw,
                     selectedLanguage: $selectedLanguage,

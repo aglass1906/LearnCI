@@ -1,25 +1,20 @@
 import SwiftUI
 import AVFoundation
 import Combine
-import Supabase
 
 /// Chapter intro content shown before chapter body playback.
 /// Play/pause is driven by the shared story footer via [isPlaying].
 struct ChapterInfoCardView: View {
+    let story: Story
     let chapter: StoryChapter
+    let chapterIndex: Int
     let heroImage: UIImage?
     let languageCode: String
     @Binding var selectedLanguage: StorySessionView.DisplayLanguage
     @Binding var isPlaying: Bool
     let onIntroFinished: () -> Void
 
-    @Environment(AuthManager.self) private var authManager
-
-    @State private var synthesizer = AVSpeechSynthesizer()
-    @State private var introPlayer: AVPlayer?
-    @State private var introCurrentTime: Double = 0
-    @State private var isLoadingAudio: Bool = false
-    @State private var introEndObserver: NSObjectProtocol?
+    @State private var playback = StorySupplementalAudioPlayback()
     @State private var didCompleteIntro = false
 
     let introTimer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
@@ -81,18 +76,40 @@ struct ChapterInfoCardView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             didCompleteIntro = false
+            playback.bind(story: story)
+            playback.onFinished = finishIntro
+            playback.prepareChapterIntro(
+                chapterIndex: chapterIndex,
+                chapter: chapter,
+                preferNative: selectedLanguage == .native
+            )
         }
         .onDisappear {
             didCompleteIntro = true
-            stopIntroAudio()
+            playback.stop()
+        }
+        .onChange(of: selectedLanguage) { _, newValue in
+            let wasPlaying = isPlaying
+            playback.stop()
+            playback.prepareChapterIntro(
+                chapterIndex: chapterIndex,
+                chapter: chapter,
+                preferNative: newValue == .native
+            )
+            if wasPlaying {
+                playback.togglePlay(isPlaying: &isPlaying, speakableText: speakableIntroText)
+            }
         }
         .onChange(of: isPlaying) { _, playing in
-            syncPlayback(with: playing)
+            playback.syncPlayback(isPlaying: &isPlaying, speakableText: speakableIntroText)
         }
         .onReceive(introTimer) { _ in
-            guard let player = introPlayer else { return }
-            introCurrentTime = CMTimeGetSeconds(player.currentTime())
+            playback.syncStreamState(isPlaying: &isPlaying)
         }
+    }
+
+    var hasIntroContent: Bool {
+        hasIntroAudio || hasIntroText
     }
 
     private var hasIntroAudio: Bool {
@@ -102,10 +119,6 @@ struct ChapterInfoCardView: View {
 
     private var hasIntroText: Bool {
         !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-    }
-
-    var hasIntroContent: Bool {
-        hasIntroAudio || hasIntroText
     }
 
     private var chapterNumberLabel: String {
@@ -142,21 +155,33 @@ struct ChapterInfoCardView: View {
         return trimmed.isEmpty ? nil : trimmed
     }
 
+    private var speakableIntroText: String? {
+        var parts: [String] = []
+        if !displayTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            parts.append(displayTitle)
+        }
+        if let intro = displayIntroText {
+            parts.append(intro)
+        }
+        let text = parts.joined(separator: ". ")
+        return text.isEmpty ? nil : text
+    }
+
     @ViewBuilder
     private func introTextView(proseWidth: CGFloat) -> some View {
         if let intro = displayIntroText {
-            if selectedLanguage == .target,
-               let timings = chapter.chapterIntroWordTimings, !timings.isEmpty,
-               chapter.chapterIntroAudioUrl != nil {
+            if playback.isUsingGeneratedAudio,
+               !playback.wordTimings.isEmpty,
+               hasIntroAudio {
                 TimedTextView(
                     segment: StorySegmentTiming(
                         speaker: "",
                         text: intro,
                         startTime: 0,
                         endTime: .greatestFiniteMagnitude,
-                        timings: timings
+                        timings: playback.wordTimings
                     ),
-                    currentTime: introCurrentTime,
+                    currentTime: playback.currentTime,
                     includesPadding: false
                 )
                 .frame(width: proseWidth, alignment: .leading)
@@ -190,165 +215,11 @@ struct ChapterInfoCardView: View {
         }
     }
 
-    private func syncPlayback(with playing: Bool) {
-        if playing {
-            startIntroPlaybackIfNeeded()
-        } else {
-            pauseIntroAudio()
-        }
-    }
-
-    private func startIntroPlaybackIfNeeded() {
-        if introPlayer != nil {
-            introPlayer?.play()
-            return
-        }
-        if synthesizer.isSpeaking || synthesizer.isPaused {
-            if synthesizer.isPaused {
-                synthesizer.continueSpeaking()
-            }
-            return
-        }
-        if hasIntroAudio {
-            startIntroPlayer()
-        } else if hasIntroText {
-            startTTS()
-        } else {
-            finishIntro()
-        }
-    }
-
-    private func startIntroPlayer() {
-        guard let path = chapter.chapterIntroAudioUrl, !path.isEmpty else {
-            finishIntro()
-            return
-        }
-
-        isLoadingAudio = true
-        Task {
-            do {
-                let data = try await authManager.supabase.storage
-                    .from("audio-stories")
-                    .download(path: path)
-
-                let ext = path.hasSuffix(".mp3") ? "mp3" : "m4a"
-                let tmpURL = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("chapter_intro_\(UUID().uuidString).\(ext)")
-                try data.write(to: tmpURL)
-
-                await MainActor.run {
-                    activateIntroPlayer(url: tmpURL)
-                }
-                return
-            } catch {
-                print("[ChapterInfoCard] download() failed: \(error) — trying signed URL")
-            }
-
-            do {
-                let signedURL = try await authManager.supabase.storage
-                    .from("audio-stories")
-                    .createSignedURL(path: path, expiresIn: 3600)
-
-                await MainActor.run {
-                    activateIntroPlayer(url: signedURL)
-                }
-                return
-            } catch {
-                print("[ChapterInfoCard] createSignedURL() failed: \(error) — falling back to TTS")
-            }
-
-            await MainActor.run {
-                isLoadingAudio = false
-                if hasIntroText {
-                    startTTS()
-                } else {
-                    finishIntro()
-                }
-            }
-        }
-    }
-
-    private func activateIntroPlayer(url: URL) {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
-
-        let player = AVPlayer(url: url)
-        introPlayer = player
-        isLoadingAudio = false
-        registerIntroEndObserver(for: player)
-        player.play()
-    }
-
-    private func registerIntroEndObserver(for player: AVPlayer) {
-        if let introEndObserver {
-            NotificationCenter.default.removeObserver(introEndObserver)
-        }
-        introEndObserver = NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: player.currentItem,
-            queue: .main
-        ) { _ in
-            finishIntro()
-        }
-    }
-
-    private func pauseIntroAudio() {
-        introPlayer?.pause()
-        if synthesizer.isSpeaking {
-            synthesizer.pauseSpeaking(at: .word)
-        }
-    }
-
-    private func stopIntroAudio() {
-        if let introEndObserver {
-            NotificationCenter.default.removeObserver(introEndObserver)
-            self.introEndObserver = nil
-        }
-        introPlayer?.pause()
-        introPlayer = nil
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
-    }
-
     private func finishIntro() {
         guard !didCompleteIntro else { return }
         didCompleteIntro = true
-        stopIntroAudio()
+        playback.stop()
         isPlaying = false
         onIntroFinished()
-    }
-
-    private func bcp47Code(for code: String) -> String {
-        switch code {
-        case "es": return "es-MX"
-        case "ja": return "ja-JP"
-        case "ko": return "ko-KR"
-        case "fr": return "fr-FR"
-        case "vi": return "vi-VN"
-        case "en": return "en-US"
-        default:   return code
-        }
-    }
-
-    private func startTTS() {
-        var utteranceText = chapter.titleTargetLanguage
-        if let intro = chapter.chapterIntroText, !intro.isEmpty {
-            utteranceText += ". " + intro
-        }
-
-        let utterance = AVSpeechUtterance(string: utteranceText)
-        utterance.voice = AVSpeechSynthesisVoice(language: bcp47Code(for: languageCode))
-        utterance.rate = 0.5
-
-        synthesizer.speak(utterance)
-        DispatchQueue.main.asyncAfter(deadline: .now() + estimatedSpeechDuration(for: utteranceText)) {
-            guard isPlaying else { return }
-            finishIntro()
-        }
-    }
-
-    private func estimatedSpeechDuration(for text: String) -> TimeInterval {
-        max(2.0, Double(text.count) * 0.06)
     }
 }

@@ -214,6 +214,10 @@ struct StoryReaderDataAdapter {
         return scene.spokenTranscriptText(preferences: story.preferences)
     }
 
+    func chapterIntroAudioClip(forChapterAt chapterIndex: Int) -> StorySceneAudioClip? {
+        chapterPlaybackClips(forChapter: chapterIndex).first(where: \.isChapterIntro)
+    }
+
     func chapterPlaybackClips(forChapter chapterIndex: Int) -> [StorySceneAudioClip] {
         guard story.chapters.indices.contains(chapterIndex) else { return [] }
         let chapter = story.chapters[chapterIndex]
@@ -246,13 +250,56 @@ struct StoryReaderDataAdapter {
         return clips
     }
 
-    func audioBookPlaybackClips() -> [StorySceneAudioClip] {
+    func audioBookPlaybackClips(preferNative: Bool = false) -> [StorySceneAudioClip] {
         var result: [StorySceneAudioClip] = []
         var seenChapters = Set<Int>()
 
         for item in spine(for: .audioBook).items {
-            guard case .chapter(let chapterIndex) = item, seenChapters.insert(chapterIndex).inserted else { continue }
-            result.append(contentsOf: chapterPlaybackClips(forChapter: chapterIndex))
+            switch item {
+            case .readingMatterPage(let pageIndex, _):
+                guard let page = readingMatterPage(for: item),
+                      let clip = readingMatterAudioClip(
+                        pageIndex: pageIndex,
+                        page: page,
+                        preferNative: preferNative
+                      ) else { continue }
+                result.append(clip)
+            case .chapter(let chapterIndex):
+                guard seenChapters.insert(chapterIndex).inserted else { continue }
+                result.append(contentsOf: chapterPlaybackClips(forChapter: chapterIndex))
+            case .cover, .scene:
+                continue
+            }
+        }
+        return result
+    }
+
+    /// Picture-book playback order: reading matter, chapter intro (before first scene), then scenes.
+    func pictureBookPlaybackClips(preferNative: Bool = false) -> [StorySceneAudioClip] {
+        var result: [StorySceneAudioClip] = []
+        var chapterIntrosAdded = Set<Int>()
+
+        for item in spine(for: .pictureBook).items {
+            switch item {
+            case .readingMatterPage(let pageIndex, _):
+                guard let page = readingMatterPage(for: item),
+                      let clip = readingMatterAudioClip(
+                        pageIndex: pageIndex,
+                        page: page,
+                        preferNative: preferNative
+                      ) else { continue }
+                result.append(clip)
+            case .scene(let chapterIndex, _):
+                if chapterIntrosAdded.insert(chapterIndex).inserted,
+                   let introClip = chapterIntroAudioClip(forChapterAt: chapterIndex) {
+                    result.append(introClip)
+                }
+                if let clip = audioClip(for: item) {
+                    result.append(clip)
+                }
+            case .cover, .chapter:
+                continue
+            }
         }
         return result
     }

@@ -108,12 +108,34 @@ struct PictureBookReaderView: View {
             let adapter = StoryReaderDataAdapter(story: story)
             let issue = adapter.requirementIssue(for: .pictureBook)
             let loadedSpreads = issue == nil ? PictureBookRenderer.makeSpreads(story: story, adapter: adapter) : []
-            let loadedClips = issue == nil ? adapter.audioClips(for: .pictureBook) : []
-            let maps = Self.makeClipMaps(spreads: loadedSpreads, clips: loadedClips)
+            let loadedClips = issue == nil ? adapter.pictureBookPlaybackClips() : []
 
             loadingIssue = issue
-            spreads = loadedSpreads
             clips = loadedClips
+            spreads = loadedSpreads.enumerated().map { index, spread in
+                PictureBookSpreadModel(
+                    id: spread.id,
+                    spineItem: spread.spineItem,
+                    spreadIndex: index,
+                    storyTitle: spread.storyTitle,
+                    chapterIndex: spread.chapterIndex,
+                    chapterTitle: spread.chapterTitle,
+                    sceneTitle: spread.sceneTitle,
+                    spinePrimaryTitle: spread.spinePrimaryTitle,
+                    spineContextLabel: spread.spineContextLabel,
+                    title: spread.title,
+                    subtitle: spread.subtitle,
+                    body: spread.body,
+                    readingMatterPage: spread.readingMatterPage,
+                    scene: spread.scene,
+                    panel: spread.panel,
+                    layoutPanels: spread.layoutPanels,
+                    audioClip: spread.audioClip,
+                    imageURL: spread.imageURL,
+                    isChapterIntro: spread.isChapterIntro
+                )
+            }
+            let maps = Self.makeClipMaps(spreads: spreads, clips: loadedClips)
             spreadIndexToClipIndex = maps.spreadToClip
             clipIndexToSpreadIndex = maps.clipToSpread
             currentSpreadIndex = 0
@@ -131,6 +153,7 @@ struct PictureBookReaderView: View {
 
                 if spreads.indices.contains(currentSpreadIndex) {
                     PictureBookSpreadView(
+                        story: story,
                         spread: spreads[currentSpreadIndex],
                         selectedLanguage: selectedLanguage
                     )
@@ -246,7 +269,7 @@ struct PictureBookReaderView: View {
         case .readingMatterPage:
             return "Reading Matter"
         case .chapter:
-            return "Chapter"
+            return spread?.isChapterIntro == true ? "Chapter Intro" : "Chapter"
         case .scene:
             return "Scene"
         }
@@ -383,17 +406,34 @@ struct PictureBookReaderView: View {
 
 struct PictureBookRenderer {
     static func makeSpreads(story: Story, adapter: StoryReaderDataAdapter) -> [PictureBookSpreadModel] {
-        let clipsBySceneID = Dictionary(uniqueKeysWithValues: adapter.audioClips(for: .pictureBook).map {
-            (StoryReadingSpineItem.scene(chapterIndex: $0.chapterIndex, sceneIndex: $0.sceneIndex).id, $0)
-        })
+        let clipsByID = Dictionary(uniqueKeysWithValues: adapter.pictureBookPlaybackClips().map { ($0.id, $0) })
+        var chapterIntrosAdded = Set<Int>()
 
-        return adapter.items(for: .pictureBook).enumerated().compactMap { spreadIndex, item in
-            switch item {
-            case .cover:
-                return PictureBookSpreadModel(
+        return adapter.items(for: .pictureBook).flatMap { item -> [PictureBookSpreadModel] in
+            makeSpreads(
+                for: item,
+                story: story,
+                adapter: adapter,
+                clipsByID: clipsByID,
+                chapterIntrosAdded: &chapterIntrosAdded
+            )
+        }
+    }
+
+    private static func makeSpreads(
+        for item: StoryReadingSpineItem,
+        story: Story,
+        adapter: StoryReaderDataAdapter,
+        clipsByID: [String: StorySceneAudioClip],
+        chapterIntrosAdded: inout Set<Int>
+    ) -> [PictureBookSpreadModel] {
+        switch item {
+        case .cover:
+            return [
+                PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
-                    spreadIndex: spreadIndex,
+                    spreadIndex: 0,
                     storyTitle: story.title,
                     chapterIndex: nil,
                     chapterTitle: nil,
@@ -408,17 +448,22 @@ struct PictureBookRenderer {
                     panel: nil,
                     layoutPanels: [],
                     audioClip: nil,
-                    imageURL: coverURL(for: story)
+                    imageURL: coverURL(for: story),
+                    isChapterIntro: false
                 )
-            case .readingMatterPage:
-                guard let page = adapter.readingMatterPage(for: item) else { return nil }
-                let title = page.titleTarget?.nilIfEmptyForPictureBook
-                    ?? page.titleNative?.nilIfEmptyForPictureBook
-                    ?? page.id.nilIfEmptyForPictureBook
-                return PictureBookSpreadModel(
+            ]
+        case .readingMatterPage:
+            guard let page = adapter.readingMatterPage(for: item),
+                  case .readingMatterPage(let pageIndex, _) = item else { return [] }
+            let title = page.titleTarget?.nilIfEmptyForPictureBook
+                ?? page.titleNative?.nilIfEmptyForPictureBook
+                ?? page.id.nilIfEmptyForPictureBook
+            let clipID = "matter-\(pageIndex)-\(page.id)"
+            return [
+                PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
-                    spreadIndex: spreadIndex,
+                    spreadIndex: 0,
                     storyTitle: story.title,
                     chapterIndex: nil,
                     chapterTitle: nil,
@@ -432,29 +477,62 @@ struct PictureBookRenderer {
                     scene: nil,
                     panel: nil,
                     layoutPanels: [],
-                    audioClip: nil,
-                    imageURL: coverURL(for: story)
+                    audioClip: clipsByID[clipID],
+                    imageURL: adapter.readingMatterImageURL(for: page),
+                    isChapterIntro: false
                 )
-            case .chapter:
-                return nil
-            case .scene(let chapterIndex, let sceneIndex):
-                guard let scene = adapter.scene(for: item) else { return nil }
-                let chapter = story.chapters[safeForPictureBook: chapterIndex]
-                let chapterTitle = chapter?.titleTargetLanguage.nilIfEmptyForPictureBook
-                let breakdownTitle = StoryReadingSpineTitles.sceneTitleFromBreakdown(
-                    story: story,
-                    chapterIndex: chapterIndex,
-                    sceneIndex: sceneIndex
+            ]
+        case .chapter:
+            return []
+        case .scene(let chapterIndex, let sceneIndex):
+            var spreads: [PictureBookSpreadModel] = []
+            if chapterIntrosAdded.insert(chapterIndex).inserted,
+               let chapter = story.chapters[safeForPictureBook: chapterIndex],
+               chapter.hasChapterIntroContent,
+               let introClip = adapter.chapterIntroAudioClip(forChapterAt: chapterIndex) {
+                spreads.append(
+                    PictureBookSpreadModel(
+                        id: "chapter-intro-\(chapterIndex)",
+                        spineItem: .chapter(index: chapterIndex),
+                        spreadIndex: 0,
+                        storyTitle: story.title,
+                        chapterIndex: chapterIndex,
+                        chapterTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                        sceneTitle: nil,
+                        spinePrimaryTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook ?? "Chapter \(chapterIndex + 1)",
+                        spineContextLabel: "Chapter Intro",
+                        title: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                        subtitle: nil,
+                        body: chapter.chapterIntroText?.nilIfEmptyForPictureBook,
+                        readingMatterPage: nil,
+                        scene: nil,
+                        panel: nil,
+                        layoutPanels: [],
+                        audioClip: introClip,
+                        imageURL: adapter.chapterImageURL(forChapterAt: chapterIndex),
+                        isChapterIntro: true
+                    )
                 )
-                let sceneTitle = StoryReadingSpineTitles.sceneTitle(
-                    from: scene,
-                    sceneIndex: sceneIndex,
-                    breakdownTitle: breakdownTitle
-                )
-                return PictureBookSpreadModel(
+            }
+
+            guard let scene = adapter.scene(for: item) else { return spreads }
+            let chapter = story.chapters[safeForPictureBook: chapterIndex]
+            let chapterTitle = chapter?.titleTargetLanguage.nilIfEmptyForPictureBook
+            let breakdownTitle = StoryReadingSpineTitles.sceneTitleFromBreakdown(
+                story: story,
+                chapterIndex: chapterIndex,
+                sceneIndex: sceneIndex
+            )
+            let sceneTitle = StoryReadingSpineTitles.sceneTitle(
+                from: scene,
+                sceneIndex: sceneIndex,
+                breakdownTitle: breakdownTitle
+            )
+            spreads.append(
+                PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
-                    spreadIndex: spreadIndex,
+                    spreadIndex: 0,
                     storyTitle: story.title,
                     chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
@@ -472,10 +550,12 @@ struct PictureBookRenderer {
                     scene: scene,
                     panel: panel(for: item, in: story.storyLayout),
                     layoutPanels: layoutPanels(for: item, story: story, adapter: adapter),
-                    audioClip: clipsBySceneID[item.id],
-                    imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex)
+                    audioClip: adapter.audioClip(for: item),
+                    imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex),
+                    isChapterIntro: false
                 )
-            }
+            )
+            return spreads
         }
     }
 
@@ -548,6 +628,7 @@ struct PictureBookSpreadModel: Identifiable {
     let layoutPanels: [PictureBookPanelModel]
     let audioClip: StorySceneAudioClip?
     let imageURL: URL?
+    let isChapterIntro: Bool
 
     func headerSubtitle(
         story: Story,
@@ -559,7 +640,7 @@ struct PictureBookSpreadModel: Identifiable {
         case .readingMatterPage:
             return displayMatterTitle(language: language) ?? spineContextLabel
         case .chapter:
-            return title?.nilIfEmptyForPictureBook ?? spineContextLabel
+            return isChapterIntro ? "Chapter Intro" : (title?.nilIfEmptyForPictureBook ?? spineContextLabel)
         case .scene(let chapterIndex, _):
             let chapter = story.chapters[safeForPictureBook: chapterIndex]
             let resolvedChapterTitle: String? = {
@@ -579,7 +660,17 @@ struct PictureBookSpreadModel: Identifiable {
         }
     }
 
-    func displayBody(language: StorySessionView.DisplayLanguage) -> String? {
+    func displayBody(story: Story, language: StorySessionView.DisplayLanguage) -> String? {
+        if isChapterIntro, let chapterIndex,
+           let chapter = story.chapters[safeForPictureBook: chapterIndex] {
+            switch language {
+            case .target:
+                return chapter.chapterIntroText?.nilIfEmptyForPictureBook
+            case .native:
+                return chapter.chapterIntroTextEnglish?.nilIfEmptyForPictureBook
+                    ?? chapter.chapterIntroText?.nilIfEmptyForPictureBook
+            }
+        }
         switch spineItem {
         case .readingMatterPage:
             guard let page = readingMatterPage else { return body }
@@ -598,6 +689,9 @@ struct PictureBookSpreadModel: Identifiable {
     }
 
     func displayMatterTitle(language: StorySessionView.DisplayLanguage) -> String? {
+        if isChapterIntro {
+            return title?.nilIfEmptyForPictureBook ?? "Chapter Intro"
+        }
         guard let page = readingMatterPage else { return title?.nilIfEmptyForPictureBook }
         switch language {
         case .target:
@@ -706,6 +800,7 @@ private struct PictureBookSpineSheet: View {
 }
 
 private struct PictureBookSpreadView: View {
+    let story: Story
     let spread: PictureBookSpreadModel
     let selectedLanguage: StorySessionView.DisplayLanguage
 
@@ -714,15 +809,19 @@ private struct PictureBookSpreadView: View {
             let safeFrame = geometry.frame(in: .local)
             Color(.systemBackground)
                 .overlay {
-                    switch spread.spineItem {
-                    case .cover:
-                        coverLayout(in: safeFrame)
-                    case .readingMatterPage:
+                    if spread.isChapterIntro {
                         readingMatterLayout(in: safeFrame)
-                    case .scene:
-                        sceneLayout(in: safeFrame)
-                    case .chapter:
-                        EmptyView()
+                    } else {
+                        switch spread.spineItem {
+                        case .cover:
+                            coverLayout(in: safeFrame)
+                        case .readingMatterPage:
+                            readingMatterLayout(in: safeFrame)
+                        case .scene:
+                            sceneLayout(in: safeFrame)
+                        case .chapter:
+                            EmptyView()
+                        }
                     }
                 }
         }
@@ -749,7 +848,7 @@ private struct PictureBookSpreadView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if let body = spread.displayBody(language: selectedLanguage) {
+                if let body = spread.displayBody(story: story, language: selectedLanguage) {
                     Text(body)
                         .font(.body.weight(.regular))
                         .lineSpacing(6)
@@ -869,7 +968,7 @@ private struct PictureBookSpreadView: View {
                         .minimumScaleFactor(0.8)
                 }
 
-                if let body = spread.displayBody(language: selectedLanguage) {
+                if let body = spread.displayBody(story: story, language: selectedLanguage) {
                     Text(body)
                         .font(.title3.weight(.semibold))
                         .lineSpacing(4)

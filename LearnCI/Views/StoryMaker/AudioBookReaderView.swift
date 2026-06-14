@@ -119,8 +119,13 @@ struct AudioBookReaderView: View {
             advanceAfterClipFinished()
         }
         .onChange(of: audioManager.streamCurrentTime) { _, time in
-            guard audioManager.streamPlayer != nil, currentChapterIndex != nil else { return }
-            sliderValue = currentClipStartOffset + time
+            guard audioManager.streamPlayer != nil else { return }
+            if currentChapterIndex != nil {
+                sliderValue = currentClipStartOffset + time
+            } else if clips[safeAudioBook: currentClipIndex]?.isReadingMatter == true {
+                sliderValue = time
+                duration = max(duration, audioManager.streamDuration, 1)
+            }
             updateNowPlayingMetadata()
         }
         .onReceive(sleepTimerTicker) { _ in
@@ -251,7 +256,8 @@ struct AudioBookReaderView: View {
                 )
 
             case .readingMatterPage:
-                guard let page = adapter.readingMatterPage(for: item) else { return nil }
+                guard let page = adapter.readingMatterPage(for: item),
+                      case .readingMatterPage(let pageIndex, _) = item else { return nil }
                 let title = page.titleTarget?.nilIfEmptyAudioBook
                     ?? page.titleNative?.nilIfEmptyAudioBook
                     ?? "Reading Matter"
@@ -262,15 +268,16 @@ struct AudioBookReaderView: View {
                     guard !trimmed.isEmpty else { return nil }
                     return trimmed.count <= 120 ? trimmed : String(trimmed.prefix(120)) + "…"
                 }()
+                let clipIndex = clips.firstIndex(where: { $0.id == "matter-\(pageIndex)-\(page.id)" })
                 return AudioBookNavItem(
                     id: item.id,
                     spineItem: item,
                     kind: .readingMatter,
                     title: title,
                     subtitle: subtitle,
-                    imageURL: coverURL,
+                    imageURL: adapter.readingMatterImageURL(for: item) ?? coverURL,
                     chapterIndex: nil,
-                    firstClipIndex: nil
+                    firstClipIndex: clipIndex
                 )
 
             case .chapter(let index):
@@ -561,14 +568,14 @@ struct AudioBookReaderView: View {
                 playbackRate: $playbackRate,
                 ambientVolume: .constant(0),
                 isAmbientPlaying: false,
-                canSeek: selectedNavItem?.kind == .chapter && !isBufferingPlayback,
+                canSeek: (selectedNavItem?.kind == .chapter || selectedNavItem?.kind == .readingMatter) && !isBufferingPlayback,
                 canControlPlayback: !isBufferingPlayback,
                 isBuffering: isBufferingPlayback,
                 bufferingLabel: loadingAudioLabel ?? "Loading audio…",
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
-                onSeek: seekToChapterTime,
+                onSeek: selectedNavItem?.kind == .readingMatter ? seekSupplementalTime : seekToChapterTime,
                 onChangeRate: setRate,
                 onNextChapter: nextClipAction,
                 onPreviousChapter: previousClipAction,
@@ -605,9 +612,17 @@ struct AudioBookReaderView: View {
     }
 
     private func isNowPlaying(_ item: AudioBookNavItem) -> Bool {
-        guard item.kind == .chapter, let chapterIndex = item.chapterIndex else { return false }
         guard isPlaying else { return false }
-        return currentChapterIndex == chapterIndex
+        switch item.kind {
+        case .chapter:
+            guard let chapterIndex = item.chapterIndex else { return false }
+            return currentChapterIndex == chapterIndex
+        case .readingMatter:
+            guard let clipIndex = item.firstClipIndex else { return false }
+            return currentClipIndex == clipIndex
+        case .cover:
+            return false
+        }
     }
 
     private func bootstrapSelection() {
@@ -620,6 +635,13 @@ struct AudioBookReaderView: View {
     }
 
     private func syncSelectionToCurrentClip() {
+        guard clips.indices.contains(currentClipIndex) else { return }
+        let clip = clips[currentClipIndex]
+        if clip.isReadingMatter,
+           let item = navItems.first(where: { $0.kind == .readingMatter && $0.firstClipIndex == currentClipIndex }) {
+            selectedNavItemID = item.id
+            return
+        }
         guard let chapterIndex = currentChapterIndex,
               let item = navItems.first(where: { $0.kind == .chapter && $0.chapterIndex == chapterIndex }) else { return }
         selectedNavItemID = item.id
@@ -628,11 +650,11 @@ struct AudioBookReaderView: View {
     private func selectNavItem(_ item: AudioBookNavItem) {
         selectedNavItemID = item.id
         switch item.kind {
-        case .chapter:
+        case .chapter, .readingMatter:
             if let clipIndex = item.firstClipIndex {
                 playClip(at: clipIndex, autoplay: true)
             }
-        case .cover, .readingMatter:
+        case .cover:
             if audioManager.isStreaming {
                 audioManager.pauseStream()
                 isPlaying = false
@@ -641,37 +663,50 @@ struct AudioBookReaderView: View {
     }
 
     private func togglePlay() {
-        guard selectedNavItem?.kind == .chapter || currentChapterIndex != nil else {
-            if let firstChapter = navItems.first(where: { $0.kind == .chapter }),
-               let clipIndex = firstChapter.firstClipIndex {
-                selectNavItem(firstChapter)
+        if selectedNavItem?.kind == .readingMatter || selectedNavItem?.kind == .chapter {
+            if audioManager.streamPlayer == nil, let clipIndex = selectedNavItem?.firstClipIndex ?? (currentChapterIndex != nil ? currentClipIndex : nil) {
                 playClip(at: clipIndex, autoplay: true)
+                return
+            }
+
+            if audioManager.isStreaming {
+                audioManager.pauseStream()
+                isPlaying = false
+            } else {
+                audioManager.playStream()
+                isPlaying = true
             }
             return
         }
 
-        if audioManager.streamPlayer == nil {
-            playClip(at: currentClipIndex, autoplay: true)
-            return
-        }
-
-        if audioManager.isStreaming {
-            audioManager.pauseStream()
-            isPlaying = false
-        } else {
-            audioManager.playStream()
-            isPlaying = true
+        if let firstChapter = navItems.first(where: { $0.kind == .chapter }),
+           let clipIndex = firstChapter.firstClipIndex {
+            selectNavItem(firstChapter)
+            playClip(at: clipIndex, autoplay: true)
         }
     }
 
     private func skipForward() {
+        if selectedNavItem?.kind == .readingMatter {
+            seekSupplementalTime(min(sliderValue + 15, duration))
+            return
+        }
         guard selectedNavItem?.kind == .chapter else { return }
         seekToChapterTime(min(sliderValue + 15, duration))
     }
 
     private func skipBackward() {
+        if selectedNavItem?.kind == .readingMatter {
+            seekSupplementalTime(max(sliderValue - 15, 0))
+            return
+        }
         guard selectedNavItem?.kind == .chapter else { return }
         seekToChapterTime(max(sliderValue - 15, 0))
+    }
+
+    private func seekSupplementalTime(_ time: Double) {
+        audioManager.seekStream(to: time)
+        sliderValue = time
     }
 
     private func seekToChapterTime(_ chapterTime: Double) {
@@ -711,6 +746,8 @@ struct AudioBookReaderView: View {
         let clip = clips[index]
         if clip.isChapterIntro {
             loadingAudioLabel = "Chapter \(clip.chapterIndex + 1) · Intro"
+        } else if clip.isReadingMatter {
+            loadingAudioLabel = "Reading Matter"
         } else {
             loadingAudioLabel = "Chapter \(clip.chapterIndex + 1) · Scene \(clip.sceneIndex + 1)"
         }
@@ -733,8 +770,13 @@ struct AudioBookReaderView: View {
     private func startPlayback(url: URL, clip: StorySceneAudioClip, autoplay: Bool, startAt: Double = 0) {
         audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
-        refreshChapterDuration()
-        sliderValue = currentClipStartOffset + startAt
+        if clip.isReadingMatter {
+            duration = max(clip.duration ?? 0, audioManager.streamDuration, 1)
+            sliderValue = startAt
+        } else {
+            refreshChapterDuration()
+            sliderValue = currentClipStartOffset + startAt
+        }
         updateNowPlayingMetadata(clip: clip)
         if autoplay {
             audioManager.playStream()
@@ -922,7 +964,8 @@ struct AudioBookReaderView: View {
 
     private var currentChapterIndex: Int? {
         guard clips.indices.contains(currentClipIndex) else { return nil }
-        return clips[currentClipIndex].chapterIndex
+        let chapterIndex = clips[currentClipIndex].chapterIndex
+        return chapterIndex >= 0 ? chapterIndex : nil
     }
 
 }

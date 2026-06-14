@@ -12,6 +12,10 @@ struct DialogStoryFlowView: View {
     @State private var flowPhase: FlowPhase = .spine
     @State private var chapterHeroImage: UIImage?
     @State private var isChapterIntroPlaying = false
+    @State private var readingMatterPlayback = StorySupplementalAudioPlayback()
+    @State private var isReadingMatterPlaying = false
+
+    private let readingMatterTimer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     private enum FlowPhase: Equatable {
         case spine
@@ -48,9 +52,16 @@ struct DialogStoryFlowView: View {
             reconcileSpinePosition()
         }
         .mediaPlaybackLifecycle(
-            onUserLeave: { AudioManager.shared.stopAudio() },
+            onUserLeave: {
+                readingMatterPlayback.stop()
+                AudioManager.shared.stopAudio()
+            },
             onEnterBackground: { AudioManager.shared.updateNowPlayingInfo() }
         )
+        .onReceive(readingMatterTimer) { _ in
+            guard case .readingMatterPage = currentSpineItem else { return }
+            readingMatterPlayback.syncStreamState(isPlaying: &isReadingMatterPlaying)
+        }
     }
 
     private var flowBody: some View {
@@ -158,6 +169,33 @@ struct DialogStoryFlowView: View {
         if flowPhase == .spine {
             if spineIndex >= spineItems.count {
                 EmptyView()
+            } else if case .readingMatterPage = currentSpineItem, currentReadingMatterCanPlay {
+                HStack(spacing: 12) {
+                    Button {
+                        isReadingMatterPlaying.toggle()
+                        readingMatterPlayback.syncPlayback(
+                            isPlaying: &isReadingMatterPlaying,
+                            speakableText: currentReadingMatterSpeakableText
+                        )
+                    } label: {
+                        Label(
+                            isReadingMatterPlaying ? "Pause" : "Play",
+                            systemImage: isReadingMatterPlaying ? "pause.fill" : "play.fill"
+                        )
+                    }
+                    .buttonStyle(.bordered)
+
+                    Spacer()
+
+                    Button(spineContinueTitle) {
+                        readingMatterPlayback.stop()
+                        isReadingMatterPlaying = false
+                        advanceSpineStep()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding(16)
+                .background(.thinMaterial)
             } else if case .chapter(let index) = currentSpineItem, chapterHasIntroContent(at: index) {
                 HStack(spacing: 12) {
                     Button {
@@ -260,6 +298,7 @@ struct DialogStoryFlowView: View {
     @ViewBuilder
     private var dialogReadingMatterPage: some View {
         if let item = currentSpineItem,
+           case .readingMatterPage(let pageIndex, _) = item,
            let page = adapter.readingMatterPage(for: item) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -268,15 +307,59 @@ struct DialogStoryFlowView: View {
                             .font(.title2.weight(.bold))
                     }
                     if let body = readingMatterBody(for: page) {
-                        Text(body)
-                            .font(.body)
-                            .lineSpacing(8)
-                            .foregroundStyle(showEnglish ? .secondary : .primary)
-                            .textSelection(.enabled)
+                        if readingMatterPlayback.isUsingGeneratedAudio,
+                           !readingMatterPlayback.wordTimings.isEmpty,
+                           !showEnglish {
+                            TimedTextView(
+                                segment: StorySegmentTiming(
+                                    speaker: "",
+                                    text: body,
+                                    startTime: 0,
+                                    endTime: .greatestFiniteMagnitude,
+                                    timings: readingMatterPlayback.wordTimings
+                                ),
+                                currentTime: readingMatterPlayback.currentTime,
+                                includesPadding: false
+                            )
+                        } else {
+                            Text(body)
+                                .font(.body)
+                                .lineSpacing(8)
+                                .foregroundStyle(showEnglish ? .secondary : .primary)
+                                .textSelection(.enabled)
+                        }
                     }
                     Color.clear.frame(height: 80)
                 }
                 .padding()
+            }
+            .onAppear {
+                readingMatterPlayback.bind(story: story)
+                readingMatterPlayback.prepareReadingMatter(
+                    pageIndex: pageIndex,
+                    page: page,
+                    preferNative: showEnglish
+                )
+            }
+            .onDisappear {
+                readingMatterPlayback.stop()
+                isReadingMatterPlaying = false
+            }
+            .onChange(of: displayLanguage) { _, _ in
+                let wasPlaying = isReadingMatterPlaying
+                readingMatterPlayback.stop()
+                readingMatterPlayback.bind(story: story)
+                readingMatterPlayback.prepareReadingMatter(
+                    pageIndex: pageIndex,
+                    page: page,
+                    preferNative: showEnglish
+                )
+                if wasPlaying {
+                    readingMatterPlayback.syncPlayback(
+                        isPlaying: &isReadingMatterPlaying,
+                        speakableText: currentReadingMatterSpeakableText
+                    )
+                }
             }
         } else {
             StoryReaderUnavailableView(
@@ -290,7 +373,9 @@ struct DialogStoryFlowView: View {
         Group {
             if let chapter = story.chapters[safeDialogFlow: chapterIndex] {
                 ChapterInfoCardView(
+                    story: story,
                     chapter: chapter,
+                    chapterIndex: chapterIndex,
                     heroImage: chapterHeroImage,
                     languageCode: story.languageRaw,
                     selectedLanguage: $displayLanguage,
@@ -349,6 +434,22 @@ struct DialogStoryFlowView: View {
             return page.bodyNative?.dialogFlowTrimmedNil ?? page.bodyTarget?.dialogFlowTrimmedNil
         }
         return page.bodyTarget?.dialogFlowTrimmedNil
+    }
+
+    private var currentReadingMatterCanPlay: Bool {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return false }
+        return page.hasGeneratedAudio(preferNative: showEnglish) || currentReadingMatterSpeakableText != nil
+    }
+
+    private var currentReadingMatterSpeakableText: String? {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return nil }
+        var parts: [String] = []
+        if let title = readingMatterTitle(for: page) { parts.append(title) }
+        if let body = readingMatterBody(for: page) { parts.append(body) }
+        let text = parts.joined(separator: ". ")
+        return text.isEmpty ? nil : text
     }
 
     private func chapterSubtitle(for index: Int) -> String {

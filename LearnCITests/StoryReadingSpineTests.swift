@@ -12,6 +12,49 @@ final class StoryReadingSpineTests: XCTestCase {
         )
     }
 
+    func testReadingMatterPageDecodesGeneratedAudioFields() throws {
+        let json = """
+        [{
+          "id": "dedication",
+          "titleTarget": "Dedicatoria",
+          "bodyTarget": "Para ti",
+          "audio_url": "user/story/matter_dedication.m4a",
+          "word_timings": [{ "word": "Para", "start": 0.0, "end": 0.4 }],
+          "native_audio_url": "user/story/matter_dedication_en.m4a"
+        }]
+        """
+        let pages = try JSONDecoder().decode([ReadingMatterPage].self, from: Data(json.utf8))
+        let page = try XCTUnwrap(pages.first)
+
+        XCTAssertEqual(page.audioUrl, "user/story/matter_dedication.m4a")
+        XCTAssertEqual(page.nativeAudioUrl, "user/story/matter_dedication_en.m4a")
+        XCTAssertEqual(page.wordTimings?.count, 1)
+        XCTAssertTrue(page.hasGeneratedAudio(preferNative: false))
+        XCTAssertTrue(page.hasGeneratedAudio(preferNative: true))
+    }
+
+    func testReadingMatterAudioClipUsesGeneratedAudioPath() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro",
+                    audioUrl: "user/story/about.m4a"
+                )
+            ]
+        )
+        let adapter = StoryReaderDataAdapter(story: story)
+        let item = StoryReadingSpineItem.readingMatterPage(index: 0, id: "about")
+        let page = try XCTUnwrap(adapter.readingMatterPage(for: item))
+        let clip = try XCTUnwrap(adapter.readingMatterAudioClip(pageIndex: 0, page: page, preferNative: false))
+
+        XCTAssertTrue(clip.isReadingMatter)
+        XCTAssertEqual(clip.urlString, "user/story/about.m4a")
+    }
+
     func testStoryBookSpinePlacesBackMatterAfterChapters() throws {
         let story = try makeStory(
             layout: nil,

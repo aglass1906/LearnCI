@@ -12,7 +12,8 @@ struct StorySceneAudioClip: Identifiable, Equatable {
     let caption: String
     let imageURL: URL?
 
-    var isChapterIntro: Bool { sceneIndex < 0 }
+    var isChapterIntro: Bool { sceneIndex == -1 }
+    var isReadingMatter: Bool { sceneIndex == -2 }
 }
 
 enum StoryReaderRequirementIssue: Equatable {
@@ -87,6 +88,31 @@ struct StoryReaderDataAdapter {
         guard case .readingMatterPage(let index, let id) = item else { return nil }
         guard let page = story.readingMatterPages[safeReaderData: index] else { return nil }
         return page.id == id ? page : nil
+    }
+
+    func readingMatterAudioClip(
+        pageIndex: Int,
+        page: ReadingMatterPage,
+        preferNative: Bool
+    ) -> StorySceneAudioClip? {
+        guard let urlString = page.audioUrlForPlayback(preferNative: preferNative) else { return nil }
+        let title = StoryReadingSpineTitles.readingMatterTitle(for: page)
+        let body = preferNative
+            ? (page.bodyNative?.trimmedNilIfEmpty ?? page.bodyTarget?.trimmedNilIfEmpty)
+            : page.bodyTarget?.trimmedNilIfEmpty
+        let timedDuration = page.wordTimingsForPlayback(preferNative: preferNative).last?.end
+        return StorySceneAudioClip(
+            id: "matter-\(pageIndex)-\(page.id)",
+            chapterIndex: -1,
+            sceneIndex: -2,
+            sceneOrdinal: pageIndex,
+            urlString: urlString,
+            duration: timedDuration,
+            startOffset: 0,
+            title: title,
+            caption: body ?? "",
+            imageURL: nil
+        )
     }
 
     func scene(for item: StoryReadingSpineItem) -> StoryScene? {

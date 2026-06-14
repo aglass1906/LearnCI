@@ -40,9 +40,10 @@ struct StorySessionView: View {
     // Chapter intro vs body within the same chapter spine step.
     @State private var isShowingChapterIntro: Bool = false
 
-    // Reading matter TTS when no pre-generated audio exists.
+    // Reading matter playback: generated audio when present, otherwise TTS.
     @State private var readingMatterSynthesizer = AVSpeechSynthesizer()
     @State private var readingMatterSpeechFinishTask: DispatchWorkItem?
+    @State private var isReadingMatterUsingGeneratedAudio = false
 
     // Comprehension Quiz
     @State private var navigateToQuiz: Bool = false
@@ -248,6 +249,11 @@ struct StorySessionView: View {
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
+            if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
+                updateReadingMatterStreamState()
+                return
+            }
+
             guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
 
             if audioManager.streamFinished {
@@ -402,7 +408,7 @@ struct StorySessionView: View {
     }
     
     private func cleanupSession() {
-        stopReadingMatterSpeech()
+        stopReadingMatterPlayback()
         audioManager.stopAmbient()
         audioManager.stopAudio()
         
@@ -465,6 +471,10 @@ struct StorySessionView: View {
     }
     
     private func skipForward() {
+        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
+            seekReadingMatter(to: min(max(duration, 1), sliderValue + 10))
+            return
+        }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         let newTime = sliderValue + 10
         let maxDur = max(duration, 10.0)
@@ -474,6 +484,10 @@ struct StorySessionView: View {
     }
     
     private func skipBackward() {
+        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
+            seekReadingMatter(to: max(0, sliderValue - 10))
+            return
+        }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         let newTime = sliderValue - 10
         let safeTime = max(0, newTime)
@@ -482,6 +496,10 @@ struct StorySessionView: View {
     }
     
     private func seekTo(_ value: Double) {
+        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
+            seekReadingMatter(to: value)
+            return
+        }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
         guard let target = adapter.clipIndex(forChapter: currentChapterIndex, localTime: value) else { return }
         if target.index == currentSceneClipIndex {
@@ -608,7 +626,21 @@ struct StorySessionView: View {
         guard isOnReadingMatterSpineItem,
               let item = currentSpineItem,
               let page = adapter.readingMatterPage(for: item) else { return false }
-        return readingMatterSpeakableText(for: page) != nil
+        return page.hasGeneratedAudio(preferNative: selectedLanguage == .native)
+            || readingMatterSpeakableText(for: page) != nil
+    }
+
+    private var currentReadingMatterPageHasGeneratedAudio: Bool {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return false }
+        return page.hasGeneratedAudio(preferNative: selectedLanguage == .native)
+    }
+
+    private var canSeekCurrentSpinePlayback: Bool {
+        if isShowingChapterIntro { return false }
+        if isOnChapterSpineItem { return true }
+        if isOnReadingMatterSpineItem, currentReadingMatterPageHasGeneratedAudio { return true }
+        return false
     }
 
     private var canControlCurrentSpinePlayback: Bool {
@@ -852,13 +884,7 @@ struct StorySessionView: View {
                             .font(.title2.weight(.bold))
                     }
 
-                    if let body = readingMatterDisplayBody(for: page) {
-                        Text(body)
-                            .font(.body)
-                            .lineSpacing(8)
-                            .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
-                            .textSelection(.enabled)
-                    }
+                    readingMatterBodyView(for: page)
 
                     Color.clear.frame(height: 160)
                 }
@@ -869,6 +895,39 @@ struct StorySessionView: View {
                 title: "Reading Matter Missing",
                 message: "This reading matter page could not be loaded."
             )
+        }
+    }
+
+    @ViewBuilder
+    private func readingMatterBodyView(for page: ReadingMatterPage) -> some View {
+        if selectedLanguage == .target,
+           isReadingMatterUsingGeneratedAudio,
+           let body = readingMatterDisplayBody(for: page) {
+            let timings = page.wordTimingsForPlayback(preferNative: false)
+            if !timings.isEmpty {
+                TimedTextView(
+                    segment: StorySegmentTiming(
+                        speaker: "",
+                        text: body,
+                        startTime: 0,
+                        endTime: .greatestFiniteMagnitude,
+                        timings: timings
+                    ),
+                    currentTime: sliderValue
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text(body)
+                    .font(.body)
+                    .lineSpacing(8)
+                    .textSelection(.enabled)
+            }
+        } else if let body = readingMatterDisplayBody(for: page) {
+            Text(body)
+                .font(.body)
+                .lineSpacing(8)
+                .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
+                .textSelection(.enabled)
         }
     }
 
@@ -930,10 +989,16 @@ struct StorySessionView: View {
 
     private func toggleReadingMatterPlayback() {
         guard let item = currentSpineItem,
-              let page = adapter.readingMatterPage(for: item),
-              let text = readingMatterSpeakableText(for: page) else { return }
+              let page = adapter.readingMatterPage(for: item) else { return }
 
         didPlayAudio = true
+
+        if page.hasGeneratedAudio(preferNative: selectedLanguage == .native) {
+            toggleReadingMatterGeneratedAudio(for: item, page: page)
+            return
+        }
+
+        guard let text = readingMatterSpeakableText(for: page) else { return }
 
         if isPlaying {
             isPlaying = false
@@ -950,6 +1015,156 @@ struct StorySessionView: View {
         }
 
         startReadingMatterSpeech(text: text)
+    }
+
+    private func toggleReadingMatterGeneratedAudio(for item: StoryReadingSpineItem, page: ReadingMatterPage) {
+        guard case .readingMatterPage(let pageIndex, _) = item else { return }
+
+        if isReadingMatterUsingGeneratedAudio, audioManager.streamPlayer != nil {
+            if audioManager.isStreaming {
+                audioManager.pauseStream()
+                audioManager.pauseAmbient()
+                isPlaying = false
+            } else {
+                audioManager.playStream()
+                audioManager.resumeAmbient()
+                isPlaying = true
+            }
+            audioManager.updateStreamNowPlayingInfo()
+            return
+        }
+
+        setupReadingMatterAudio(pageIndex: pageIndex, page: page, autoplay: true)
+    }
+
+    private func setupReadingMatterAudio(
+        pageIndex: Int,
+        page: ReadingMatterPage,
+        autoplay: Bool = false,
+        startAt: Double = 0
+    ) {
+        guard let clip = adapter.readingMatterAudioClip(
+            pageIndex: pageIndex,
+            page: page,
+            preferNative: selectedLanguage == .native
+        ) else { return }
+
+        stopReadingMatterSpeech()
+        isReadingMatterUsingGeneratedAudio = true
+        activeWordIndex = nil
+
+        let localURL = adapter.localAudioURL(for: clip)
+        if let cachedURL = adapter.cachedAudioURL(for: clip) {
+            playReadingMatterAudio(url: cachedURL, clip: clip, page: page, startAt: startAt, autoplay: autoplay)
+            return
+        }
+
+        isDownloadingAudio = true
+        Task {
+            await downloadAndPlayReadingMatterAudio(
+                clip: clip,
+                page: page,
+                localURL: localURL,
+                startAt: startAt,
+                autoplay: autoplay
+            )
+        }
+    }
+
+    private func playReadingMatterAudio(
+        url: URL,
+        clip: StorySceneAudioClip,
+        page: ReadingMatterPage,
+        startAt: Double = 0,
+        autoplay: Bool = false
+    ) {
+        audioManager.streamAudio(url: url, startAt: startAt)
+        audioManager.setStreamRate(playbackRate)
+        let timedDuration = page.wordTimingsForPlayback(preferNative: selectedLanguage == .native).last?.end
+        duration = max(timedDuration ?? 0, audioManager.streamDuration, 1)
+        sliderValue = startAt
+        updateReadingMatterWordHighlight(time: startAt)
+        audioManager.updateStreamNowPlayingInfo(
+            title: clip.title,
+            artist: story.title,
+            artworkImage: heroImage
+        )
+        if autoplay {
+            startAmbient()
+            audioManager.playStream()
+            isPlaying = true
+        }
+    }
+
+    private func downloadAndPlayReadingMatterAudio(
+        clip: StorySceneAudioClip,
+        page: ReadingMatterPage,
+        localURL: URL,
+        startAt: Double = 0,
+        autoplay: Bool = false
+    ) async {
+        guard let url = StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else {
+            await MainActor.run { isDownloadingAudio = false }
+            return
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200, data.count > 1000 else {
+                await MainActor.run { isDownloadingAudio = false }
+                return
+            }
+
+            let isWAV = data.prefix(4) == Data([0x52, 0x49, 0x46, 0x46])
+            let correctExt = isWAV ? "wav" : "mp3"
+            let correctURL = localURL.deletingPathExtension().appendingPathExtension(correctExt)
+            try data.write(to: correctURL)
+
+            await MainActor.run {
+                isDownloadingAudio = false
+                playReadingMatterAudio(url: correctURL, clip: clip, page: page, startAt: startAt, autoplay: autoplay)
+            }
+        } catch {
+            await MainActor.run { isDownloadingAudio = false }
+        }
+    }
+
+    private func updateReadingMatterStreamState() {
+        if audioManager.streamFinished {
+            audioManager.streamFinished = false
+            isPlaying = false
+            return
+        }
+
+        guard audioManager.streamPlayer != nil else { return }
+
+        sliderValue = audioManager.streamCurrentTime
+        let streamDur = audioManager.streamDuration
+        if streamDur > 0 {
+            duration = max(duration, streamDur)
+        }
+        isPlaying = audioManager.isStreaming
+        updateReadingMatterWordHighlight(time: sliderValue)
+
+        if let streamPlayer = audioManager.streamPlayer,
+           abs(streamPlayer.rate - playbackRate) > 0.1,
+           streamPlayer.rate != 0 {
+            playbackRate = streamPlayer.rate
+        }
+    }
+
+    private func updateReadingMatterWordHighlight(time: Double) {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return }
+        let timings = page.wordTimingsForPlayback(preferNative: selectedLanguage == .native)
+        activeWordIndex = timings.firstIndex(where: { time >= $0.start && time <= $0.end })
+    }
+
+    private func seekReadingMatter(to value: Double) {
+        audioManager.seekStream(to: value)
+        sliderValue = value
+        updateReadingMatterWordHighlight(time: value)
+        audioManager.updateStreamNowPlayingInfo()
     }
 
     private func startReadingMatterSpeech(text: String) {
@@ -975,14 +1190,25 @@ struct StorySessionView: View {
         )
     }
 
+    private func stopReadingMatterPlayback() {
+        stopReadingMatterSpeech()
+        if isReadingMatterUsingGeneratedAudio {
+            audioManager.stopAudio()
+            isReadingMatterUsingGeneratedAudio = false
+        }
+        activeWordIndex = nil
+        if isOnReadingMatterSpineItem {
+            isPlaying = false
+            sliderValue = 0
+            duration = 0
+        }
+    }
+
     private func stopReadingMatterSpeech() {
         readingMatterSpeechFinishTask?.cancel()
         readingMatterSpeechFinishTask = nil
         if readingMatterSynthesizer.isSpeaking || readingMatterSynthesizer.isPaused {
             readingMatterSynthesizer.stopSpeaking(at: .immediate)
-        }
-        if isOnReadingMatterSpineItem {
-            isPlaying = false
         }
     }
 
@@ -1072,7 +1298,7 @@ struct StorySessionView: View {
                 playbackRate: $playbackRate,
                 ambientVolume: $ambientVolume,
                 isAmbientPlaying: audioManager.isAmbientPlaying,
-                canSeek: isOnChapterSpineItem && !isShowingChapterIntro,
+                canSeek: canSeekCurrentSpinePlayback,
                 canControlPlayback: canControlCurrentSpinePlayback,
                 playbackContextLabel: playerContextLabel,
                 isBuffering: isDownloadingAudio,
@@ -1129,7 +1355,7 @@ struct StorySessionView: View {
     private func goToSpineIndex(_ index: Int?, showChapterCard: Bool) {
         guard let index, storyBookSpineItems.indices.contains(index) else { return }
 
-        stopReadingMatterSpeech()
+        stopReadingMatterPlayback()
 
         if isPlaying {
             audioManager.pauseStream()
@@ -1157,6 +1383,7 @@ struct StorySessionView: View {
                 setupAudio()
             }
         case .readingMatterPage, .cover:
+            isReadingMatterUsingGeneratedAudio = false
             audioManager.stopAudio()
             isShowingChapterIntro = false
             sliderValue = 0

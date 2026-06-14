@@ -405,6 +405,10 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     var titleNative: String?
     var bodyTarget: String?
     var bodyNative: String?
+    var audioUrl: String?
+    var nativeAudioUrl: String?
+    var wordTimings: [WordTiming]?
+    var nativeWordTimings: [WordTiming]?
 
     enum CodingKeys: String, CodingKey {
         case id, placement
@@ -412,6 +416,90 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         case titleNative
         case bodyTarget
         case bodyNative
+        case audioUrl = "audio_url"
+        case audioUrlCamel = "audioUrl"
+        case targetAudioUrl = "target_audio_url"
+        case targetAudioUrlCamel = "targetAudioUrl"
+        case nativeAudioUrl = "native_audio_url"
+        case nativeAudioUrlCamel = "nativeAudioUrl"
+        case wordTimings = "word_timings"
+        case wordTimingsCamel = "wordTimings"
+        case nativeWordTimings = "native_word_timings"
+        case nativeWordTimingsCamel = "nativeWordTimings"
+    }
+
+    init(
+        id: String,
+        placement: String? = nil,
+        titleTarget: String? = nil,
+        titleNative: String? = nil,
+        bodyTarget: String? = nil,
+        bodyNative: String? = nil,
+        audioUrl: String? = nil,
+        nativeAudioUrl: String? = nil,
+        wordTimings: [WordTiming]? = nil,
+        nativeWordTimings: [WordTiming]? = nil
+    ) {
+        self.id = id
+        self.placement = placement
+        self.titleTarget = titleTarget
+        self.titleNative = titleNative
+        self.bodyTarget = bodyTarget
+        self.bodyNative = bodyNative
+        self.audioUrl = audioUrl
+        self.nativeAudioUrl = nativeAudioUrl
+        self.wordTimings = wordTimings
+        self.nativeWordTimings = nativeWordTimings
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        placement = try? container.decode(String.self, forKey: .placement)
+        titleTarget = try? container.decode(String.self, forKey: .titleTarget)
+        titleNative = try? container.decode(String.self, forKey: .titleNative)
+        bodyTarget = try? container.decode(String.self, forKey: .bodyTarget)
+        bodyNative = try? container.decode(String.self, forKey: .bodyNative)
+        audioUrl = (try? container.decode(String.self, forKey: .audioUrl))
+            ?? (try? container.decode(String.self, forKey: .audioUrlCamel))
+            ?? (try? container.decode(String.self, forKey: .targetAudioUrl))
+            ?? (try? container.decode(String.self, forKey: .targetAudioUrlCamel))
+        nativeAudioUrl = (try? container.decode(String.self, forKey: .nativeAudioUrl))
+            ?? (try? container.decode(String.self, forKey: .nativeAudioUrlCamel))
+        wordTimings = (try? container.decode([WordTiming].self, forKey: .wordTimings))
+            ?? (try? container.decode([WordTiming].self, forKey: .wordTimingsCamel))
+        nativeWordTimings = (try? container.decode([WordTiming].self, forKey: .nativeWordTimings))
+            ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(placement, forKey: .placement)
+        try container.encodeIfPresent(titleTarget, forKey: .titleTarget)
+        try container.encodeIfPresent(titleNative, forKey: .titleNative)
+        try container.encodeIfPresent(bodyTarget, forKey: .bodyTarget)
+        try container.encodeIfPresent(bodyNative, forKey: .bodyNative)
+        try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
+        try container.encodeIfPresent(nativeAudioUrl, forKey: .nativeAudioUrl)
+        try container.encodeIfPresent(wordTimings, forKey: .wordTimings)
+        try container.encodeIfPresent(nativeWordTimings, forKey: .nativeWordTimings)
+    }
+
+    func audioUrlForPlayback(preferNative: Bool) -> String? {
+        let preferred = preferNative ? nativeAudioUrl : audioUrl
+        let fallback = preferNative ? audioUrl : nativeAudioUrl
+        return preferred?.trimmedNilIfEmpty ?? fallback?.trimmedNilIfEmpty
+    }
+
+    func wordTimingsForPlayback(preferNative: Bool) -> [WordTiming] {
+        let preferred = preferNative ? nativeWordTimings : wordTimings
+        let fallback = preferNative ? wordTimings : nativeWordTimings
+        return preferred ?? fallback ?? []
+    }
+
+    func hasGeneratedAudio(preferNative: Bool) -> Bool {
+        audioUrlForPlayback(preferNative: preferNative) != nil
     }
 }
 

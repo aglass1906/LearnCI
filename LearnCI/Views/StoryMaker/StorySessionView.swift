@@ -608,17 +608,57 @@ struct StorySessionView: View {
 
     // MARK: - Text Chunking & Auto-Scroll
 
-    private var coverSection: some View {
-        HeroMediaView(
-            story: story,
-            image: $heroImage,
-            isGeneratingVideo: false,
-            videoStatus: nil,
-            videoError: nil,
-            onGenerateVideo: {}
-        )
-        .frame(height: 300)
-        .clipped()
+    private var storyBookCoverSection: some View {
+        Group {
+            if let heroImage {
+                Image(uiImage: heroImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+            } else if let url = storyCoverURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                    case .failure, .empty:
+                        coverImagePlaceholder
+                    @unknown default:
+                        coverImagePlaceholder
+                    }
+                }
+            } else {
+                coverImagePlaceholder
+            }
+        }
+    }
+
+    private var coverImagePlaceholder: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color(.systemGray5))
+            .overlay {
+                Image(systemName: "book.closed")
+                    .font(.largeTitle)
+                    .foregroundStyle(.secondary)
+            }
+            .aspectRatio(2 / 3, contentMode: .fit)
+            .frame(maxWidth: .infinity)
+    }
+
+    private var storyCoverURL: URL? {
+        if let remotePath = story.remoteCoverPath?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !remotePath.isEmpty,
+           let url = AppConfig.chapterCoverURL(remotePath) {
+            return url
+        }
+        if let coverArt = story.coverArt?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !coverArt.isEmpty,
+           let url = AppConfig.chapterCoverURL(coverArt) {
+            return url
+        }
+        return nil
     }
 
     private var isOnReadingMatterSpineItem: Bool {
@@ -861,9 +901,7 @@ struct StorySessionView: View {
     private var coverPageView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                coverSection
-                    .frame(height: 340)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                storyBookCoverSection
 
                 Text(story.title)
                     .font(.system(size: 32, weight: .bold, design: .serif))
@@ -876,7 +914,9 @@ struct StorySessionView: View {
             }
             .padding()
         }
-        .ignoresSafeArea(edges: .top)
+        .onAppear {
+            loadStoryCoverImage()
+        }
     }
 
     @ViewBuilder
@@ -1469,6 +1509,7 @@ struct StorySessionView: View {
             isShowingChapterIntro = false
             sliderValue = 0
             duration = 0
+            loadStoryCoverImage()
         case .scene:
             audioManager.stopAudio()
             isShowingChapterIntro = false
@@ -1518,6 +1559,25 @@ struct StorySessionView: View {
         isPlaying = false
         if !navigateToQuiz {
             navigateToQuiz = true
+        }
+    }
+
+    private func loadStoryCoverImage() {
+        if let url = storyCoverURL {
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data, let uiImage = UIImage(data: data) {
+                    DispatchQueue.main.async { heroImage = uiImage }
+                }
+            }.resume()
+            return
+        }
+
+        if let filename = story.coverArt {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(filename)
+            if let data = try? Data(contentsOf: url), let uiImage = UIImage(data: data) {
+                heroImage = uiImage
+            }
         }
     }
 

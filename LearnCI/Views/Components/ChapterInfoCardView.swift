@@ -98,9 +98,15 @@ struct ChapterInfoCardView: View {
     }
 
     private var chapterNumberLabel: String {
-        if chapter.isPrologue { return "Prologue" }
-        if chapter.isEpilogue { return "Epilogue" }
-        return "Chapter \(chapter.chapterNumber)"
+        let chapterLabel: String
+        if chapter.isPrologue {
+            chapterLabel = "Prologue"
+        } else if chapter.isEpilogue {
+            chapterLabel = "Epilogue"
+        } else {
+            chapterLabel = "Chapter \(chapter.chapterNumber)"
+        }
+        return "Chapter Intro · \(chapterLabel)"
     }
 
     private var displayTitle: String {

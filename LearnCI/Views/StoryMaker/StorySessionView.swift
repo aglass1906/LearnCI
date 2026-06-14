@@ -40,6 +40,10 @@ struct StorySessionView: View {
     // Chapter intro vs body within the same chapter spine step.
     @State private var isShowingChapterIntro: Bool = false
 
+    // Reading matter TTS when no pre-generated audio exists.
+    @State private var readingMatterSynthesizer = AVSpeechSynthesizer()
+    @State private var readingMatterSpeechFinishTask: DispatchWorkItem?
+
     // Comprehension Quiz
     @State private var navigateToQuiz: Bool = false
     @State private var isGeneratingQuiz: Bool = false
@@ -398,6 +402,7 @@ struct StorySessionView: View {
     }
     
     private func cleanupSession() {
+        stopReadingMatterSpeech()
         audioManager.stopAmbient()
         audioManager.stopAudio()
         
@@ -423,6 +428,11 @@ struct StorySessionView: View {
     }
     
     private func togglePlay() {
+        if isOnReadingMatterSpineItem {
+            toggleReadingMatterPlayback()
+            return
+        }
+
         guard isOnChapterSpineItem else { return }
         didPlayAudio = true
 
@@ -594,6 +604,27 @@ struct StorySessionView: View {
         return false
     }
 
+    private var isOnPlayableReadingMatter: Bool {
+        guard isOnReadingMatterSpineItem,
+              let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item) else { return false }
+        return readingMatterSpeakableText(for: page) != nil
+    }
+
+    private var canControlCurrentSpinePlayback: Bool {
+        isOnChapterSpineItem || isOnPlayableReadingMatter
+    }
+
+    private var playerContextLabel: String? {
+        if isShowingChapterIntro {
+            return isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
+        }
+        if isOnPlayableReadingMatter {
+            return isPlaying ? "Reading Matter · Now Playing" : "Reading Matter"
+        }
+        return nil
+    }
+
     private var storyBookSpineHeader: some View {
         Group {
             if isOnChapterSpineItem {
@@ -757,7 +788,11 @@ struct StorySessionView: View {
                 let title = selectedLanguage == .native
                     ? (readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget))
                     : readerMatterText(page.titleTarget)
-                return title ?? "Reading Matter"
+                let base = title ?? "Reading Matter"
+                if isPlaying, isOnReadingMatterSpineItem {
+                    return "\(base) · Now Playing"
+                }
+                return base
             }
             return "Reading Matter"
         case .chapter(let index):
@@ -768,10 +803,16 @@ struct StorySessionView: View {
                         : chapter.titleEnglish)
                     : chapter.titleTargetLanguage
                 let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-                if trimmed.isEmpty {
-                    return "Chapter \(index + 1)"
+                let chapterLabel = trimmed.isEmpty ? "Chapter \(index + 1)" : "Chapter \(index + 1) · \(trimmed)"
+                if isShowingChapterIntro {
+                    let introPrefix = isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
+                    return "\(introPrefix) · \(chapterLabel)"
                 }
-                return "Chapter \(index + 1) · \(trimmed)"
+                return chapterLabel
+            }
+            if isShowingChapterIntro {
+                let introPrefix = isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
+                return "\(introPrefix) · Chapter \(index + 1)"
             }
             return "Chapter \(index + 1)"
         case .scene:
@@ -875,6 +916,92 @@ struct StorySessionView: View {
         }
     }
 
+    private func readingMatterSpeakableText(for page: ReadingMatterPage) -> String? {
+        var parts: [String] = []
+        if let title = readingMatterDisplayTitle(for: page) {
+            parts.append(title)
+        }
+        if let body = readingMatterDisplayBody(for: page) {
+            parts.append(body)
+        }
+        let text = parts.joined(separator: ". ")
+        return text.isEmpty ? nil : text
+    }
+
+    private func toggleReadingMatterPlayback() {
+        guard let item = currentSpineItem,
+              let page = adapter.readingMatterPage(for: item),
+              let text = readingMatterSpeakableText(for: page) else { return }
+
+        didPlayAudio = true
+
+        if isPlaying {
+            isPlaying = false
+            if readingMatterSynthesizer.isSpeaking {
+                readingMatterSynthesizer.pauseSpeaking(at: .word)
+            }
+            return
+        }
+
+        if readingMatterSynthesizer.isPaused {
+            readingMatterSynthesizer.continueSpeaking()
+            isPlaying = true
+            return
+        }
+
+        startReadingMatterSpeech(text: text)
+    }
+
+    private func startReadingMatterSpeech(text: String) {
+        stopReadingMatterSpeech()
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(
+            language: speechLanguageCode(for: selectedLanguage == .native ? "en" : story.languageRaw)
+        )
+        utterance.rate = 0.5
+
+        readingMatterSynthesizer.speak(utterance)
+        isPlaying = true
+
+        let finishTask = DispatchWorkItem {
+            guard isPlaying else { return }
+            isPlaying = false
+        }
+        readingMatterSpeechFinishTask = finishTask
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + estimatedSpeechDuration(for: text),
+            execute: finishTask
+        )
+    }
+
+    private func stopReadingMatterSpeech() {
+        readingMatterSpeechFinishTask?.cancel()
+        readingMatterSpeechFinishTask = nil
+        if readingMatterSynthesizer.isSpeaking || readingMatterSynthesizer.isPaused {
+            readingMatterSynthesizer.stopSpeaking(at: .immediate)
+        }
+        if isOnReadingMatterSpineItem {
+            isPlaying = false
+        }
+    }
+
+    private func speechLanguageCode(for code: String) -> String {
+        switch code {
+        case "es": return "es-MX"
+        case "ja": return "ja-JP"
+        case "ko": return "ko-KR"
+        case "fr": return "fr-FR"
+        case "vi": return "vi-VN"
+        case "en": return "en-US"
+        default: return code
+        }
+    }
+
+    private func estimatedSpeechDuration(for text: String) -> TimeInterval {
+        max(2.0, Double(text.count) * 0.06)
+    }
+
     private var chapterLanguageToggle: some View {
         Picker("Language", selection: $selectedLanguage) {
             Text(story.language.rawValue.uppercased()).tag(DisplayLanguage.target)
@@ -946,7 +1073,8 @@ struct StorySessionView: View {
                 ambientVolume: $ambientVolume,
                 isAmbientPlaying: audioManager.isAmbientPlaying,
                 canSeek: isOnChapterSpineItem && !isShowingChapterIntro,
-                canControlPlayback: isOnChapterSpineItem,
+                canControlPlayback: canControlCurrentSpinePlayback,
+                playbackContextLabel: playerContextLabel,
                 isBuffering: isDownloadingAudio,
                 bufferingLabel: "Downloading audio…",
                 onPlayPause: togglePlay,
@@ -1000,6 +1128,8 @@ struct StorySessionView: View {
 
     private func goToSpineIndex(_ index: Int?, showChapterCard: Bool) {
         guard let index, storyBookSpineItems.indices.contains(index) else { return }
+
+        stopReadingMatterSpeech()
 
         if isPlaying {
             audioManager.pauseStream()
@@ -1548,6 +1678,7 @@ struct AudioPlayerBar: View {
     let isAmbientPlaying: Bool
     var canSeek: Bool = true
     var canControlPlayback: Bool = true
+    var playbackContextLabel: String? = nil
     var isBuffering: Bool = false
     var bufferingLabel: String = "Buffering…"
 
@@ -1576,6 +1707,14 @@ struct AudioPlayerBar: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
                 .padding(.top, 4)
+            }
+
+            if let playbackContextLabel {
+                Text(playbackContextLabel)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal)
             }
 
             // Ambient volume row — only visible while ambient audio is active

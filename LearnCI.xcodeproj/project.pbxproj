@@ -35,9 +35,9 @@
 		131E058E2F1D4FD9009547EB /* Images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Images; path = LearnCI/Resources/Images; sourceTree = "<group>"; };
 		135AAB3C2F083F93002207B5 /* LearnCI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnCI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AGT000000000000000000002 /* StoryReadingSpineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryReadingSpineTests.swift; sourceTree = "<group>"; };
+		AGT000000000000000000003 /* LearnCITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AGT00000000000000000000F /* DialogStoryBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogStoryBuilderTests.swift; sourceTree = "<group>"; };
 		AGT000000000000000000011 /* UserProfileOnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileOnboardingTests.swift; sourceTree = "<group>"; };
-		AGT000000000000000000003 /* LearnCITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */

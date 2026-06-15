@@ -6,6 +6,7 @@ struct UserHeader: View {
     @Environment(\.modelContext) private var modelContext
     @Binding var showProfile: Bool
     @Binding var currentTab: AppTab
+    var onSelectTab: (AppTab) -> Void
     
     @State private var showAboutCI = false
     @State private var showFavorites = false
@@ -30,22 +31,22 @@ struct UserHeader: View {
             HStack(spacing: 12) {
                 Menu {
                     Button {
-                        currentTab = .dashboard
+                        onSelectTab(.dashboard)
                     } label: {
                         Label("Home", systemImage: "house.fill")
                     }
                     Button {
-                        currentTab = .learn
+                        onSelectTab(.learn)
                     } label: {
                         Label("Learn / Games", systemImage: "gamecontroller.fill")
                     }
                     Button {
-                        currentTab = .discovery
+                        onSelectTab(.discovery)
                     } label: {
                         Label("Input", systemImage: "brain.head.profile.fill")
                     }
                     Button {
-                        currentTab = .history
+                        onSelectTab(.history)
                     } label: {
                         Label("Insights", systemImage: "chart.line.uptrend.xyaxis")
                     }
@@ -120,7 +121,7 @@ struct UserHeader: View {
                 
                 // Today's Minutes (Click to view History)
                 Button {
-                    currentTab = .history
+                    onSelectTab(.history)
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "clock.fill")
@@ -172,6 +173,10 @@ struct UserHeader: View {
 }
 
 #Preview {
-    UserHeader(showProfile: .constant(false), currentTab: .constant(.dashboard))
-        .environment(AuthManager())
+    UserHeader(
+        showProfile: .constant(false),
+        currentTab: .constant(.dashboard),
+        onSelectTab: { _ in }
+    )
+    .environment(AuthManager())
 }

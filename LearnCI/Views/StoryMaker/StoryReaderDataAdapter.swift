@@ -214,6 +214,10 @@ struct StoryReaderDataAdapter {
         return scene.spokenTranscriptText(preferences: story.preferences)
     }
 
+    func chapterIntroAudioClip(forChapterAt chapterIndex: Int) -> StorySceneAudioClip? {
+        chapterPlaybackClips(forChapter: chapterIndex).first(where: \.isChapterIntro)
+    }
+
     func chapterPlaybackClips(forChapter chapterIndex: Int) -> [StorySceneAudioClip] {
         guard story.chapters.indices.contains(chapterIndex) else { return [] }
         let chapter = story.chapters[chapterIndex]

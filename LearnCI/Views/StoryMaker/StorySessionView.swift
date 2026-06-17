@@ -2142,6 +2142,13 @@ struct AudioPlayerBar: View {
     var onSkipNextChapter: (() -> Void)? = nil
     var onShowSpine: (() -> Void)? = nil
 
+    @State private var isScrubbing = false
+    @State private var scrubberPreviewValue: Double = 0
+
+    private var displayedSliderValue: Double {
+        isScrubbing ? scrubberPreviewValue : sliderValue
+    }
+
     var body: some View {
         VStack(spacing: 12) {
             if isBuffering {
@@ -2184,18 +2191,28 @@ struct AudioPlayerBar: View {
             }
 
             HStack(spacing: 8) {
-                Text(formatTime(sliderValue))
+                Text(formatTime(displayedSliderValue))
                     .font(.caption2.monospacedDigit())
                     .foregroundColor(.secondary)
 
                 Slider(value: Binding(
-                    get: { sliderValue },
+                    get: { displayedSliderValue },
                     set: { newValue in
                         guard canSeek else { return }
-                        sliderValue = newValue
-                        onSeek(newValue)
+                        scrubberPreviewValue = min(max(0, newValue), duration)
                     }
-                ), in: 0...duration)
+                ), in: 0...duration) { editing in
+                    guard canSeek else { return }
+                    if editing {
+                        scrubberPreviewValue = sliderValue
+                        isScrubbing = true
+                    } else {
+                        let seekValue = min(max(0, scrubberPreviewValue), duration)
+                        sliderValue = seekValue
+                        isScrubbing = false
+                        onSeek(seekValue)
+                    }
+                }
                 .disabled(!canSeek)
 
                 Text(formatTime(duration))

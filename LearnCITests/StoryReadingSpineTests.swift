@@ -56,8 +56,20 @@ final class StoryReadingSpineTests: XCTestCase {
     }
 
     func testReadingMatterImageURLFallsBackToFirstChapterCover() throws {
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                coverUrl: "covers/chapter_1.jpg",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", captionNative: "Scene one", audioUrl: "a/scene_0.mp3")
+                ]
+            )
+        ]
         let story = try makeStory(
             layout: nil,
+            chapters: chapters,
             readingMatterPages: [
                 ReadingMatterPage(
                     id: "about",
@@ -67,7 +79,6 @@ final class StoryReadingSpineTests: XCTestCase {
                 )
             ]
         )
-        story.chapters[0].coverUrl = "covers/chapter_1.jpg"
         let adapter = StoryReaderDataAdapter(story: story)
         let item = StoryReadingSpineItem.readingMatterPage(index: 0, id: "about")
         let page = try XCTUnwrap(adapter.readingMatterPage(for: item))
@@ -181,6 +192,36 @@ final class StoryReadingSpineTests: XCTestCase {
             StoryReadingSpine.make(for: story, mode: .audioBook).items.map(\.id),
             ["cover", "matter-0-about", "chapter-0", "chapter-1", "scene-0-0", "scene-0-1", "scene-1-0"]
         )
+    }
+
+    func testChapterTimelineMapsScrubTimesToSceneClipOffsets() throws {
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Uno", audioUrl: "a/scene_0.mp3", audioDurationMs: 4_000),
+                    StoryScene(sceneIndex: 1, captionTarget: "Dos", audioUrl: "a/scene_1.mp3", audioDurationMs: 6_000)
+                ]
+            )
+        ]
+        let adapter = StoryReaderDataAdapter(story: try makeStory(layout: nil, chapters: chapters))
+
+        XCTAssertEqual(adapter.audioClips(forChapter: 0).map(\.startOffset), [0, 4])
+        XCTAssertEqual(adapter.duration(forChapter: 0), 10)
+
+        let firstClip = try XCTUnwrap(adapter.clipIndex(forChapter: 0, localTime: 3.5))
+        XCTAssertEqual(firstClip.index, 0)
+        XCTAssertEqual(firstClip.offset, 3.5)
+
+        let secondClip = try XCTUnwrap(adapter.clipIndex(forChapter: 0, localTime: 4.0))
+        XCTAssertEqual(secondClip.index, 1)
+        XCTAssertEqual(secondClip.offset, 0)
+
+        let clampedTail = try XCTUnwrap(adapter.clipIndex(forChapter: 0, localTime: 12.0))
+        XCTAssertEqual(clampedTail.index, 1)
+        XCTAssertEqual(clampedTail.offset, 8)
     }
 
     func testPictureBookSpinePrefersLayoutFlatSequence() throws {
@@ -380,10 +421,11 @@ final class StoryReadingSpineTests: XCTestCase {
 
     private func makeStory(
         layout: StoryLayout?,
+        chapters: [StoryChapter]? = nil,
         readingMatterPages: [ReadingMatterPage]? = nil,
         sceneBreakdownJSON: String? = nil
     ) throws -> Story {
-        let chapters = [
+        let defaultChapters = [
             StoryChapter(
                 chapterNumber: 1,
                 titleTargetLanguage: "Capitulo Uno",
@@ -417,7 +459,7 @@ final class StoryReadingSpineTests: XCTestCase {
             userID: "test-user",
             title: "Test Story",
             targetLanguageText: "",
-            chaptersJSON: try encode(chapters),
+            chaptersJSON: try encode(chapters ?? defaultChapters),
             layoutJSON: try layout.map(encode),
             readingMatterPagesJSON: try encode(readingMatterPages ?? defaultReadingMatterPages),
             sceneBreakdownJSON: sceneBreakdownJSON,

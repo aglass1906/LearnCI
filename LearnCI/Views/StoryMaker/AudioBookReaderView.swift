@@ -23,9 +23,11 @@ struct AudioBookReaderView: View {
     @State private var lockScreenArtwork: UIImage?
     @State private var sleepTimerMode: AudioBookSleepTimerMode = .inactive
     @State private var sleepTimerEndDate: Date?
+    @State private var supplementalPlayback = StorySupplementalAudioPlayback()
 
     @Bindable private var audioManager = AudioManager.shared
     private let sleepTimerTicker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private let supplementalTicker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     init(story: Story) {
         self.story = story
@@ -64,11 +66,14 @@ struct AudioBookReaderView: View {
            let item = navItems.first(where: { $0.id == selectedNavItemID }) {
             return item
         }
-        if let chapterIndex = currentChapterIndex,
-           let item = navItems.first(where: { $0.kind == .chapter && $0.chapterIndex == chapterIndex }) {
-            return item
-        }
         return navItems.first
+    }
+
+    private var firstFrontReadingMatterItem: AudioBookNavItem? {
+        guard let firstChapterIndex = navItems.firstIndex(where: { $0.kind == .chapter }) else {
+            return navItems.first(where: { $0.kind == .readingMatter })
+        }
+        return navItems[..<firstChapterIndex].first(where: { $0.kind == .readingMatter })
     }
 
     private var storyCoverImageURL: URL? {
@@ -101,10 +106,20 @@ struct AudioBookReaderView: View {
         .mediaPlaybackLifecycle(
             onUserLeave: {
                 cancelSleepTimer()
+                supplementalPlayback.stop()
                 audioManager.stopAudio()
             },
             onEnterBackground: { updateNowPlayingMetadata() }
         )
+        .onReceive(supplementalTicker) { _ in
+            guard isOnReadingMatterSelection else { return }
+            supplementalPlayback.syncStreamState()
+            sliderValue = supplementalPlayback.currentTime
+            if supplementalPlayback.duration > 0 {
+                duration = supplementalPlayback.duration
+            }
+            isPlaying = supplementalPlayback.isPlaying
+        }
         .onChange(of: currentClipIndex) { _, _ in
             syncSelectionToCurrentClip()
             refreshChapterDuration()
@@ -113,12 +128,14 @@ struct AudioBookReaderView: View {
         }
         .onChange(of: selectedNavItemID) { _, _ in
             loadLockScreenArtwork()
+            prepareSupplementalForSelectedNavItem()
         }
         .onChange(of: audioManager.streamFinished) { _, finished in
             guard finished else { return }
             advanceAfterClipFinished()
         }
         .onChange(of: audioManager.streamCurrentTime) { _, time in
+            guard !isOnReadingMatterSelection else { return }
             guard audioManager.streamPlayer != nil, currentChapterIndex != nil else { return }
             sliderValue = currentClipStartOffset + time
             updateNowPlayingMetadata()
@@ -128,6 +145,7 @@ struct AudioBookReaderView: View {
             fireSleepTimer()
         }
         .onChange(of: audioManager.streamDuration) { _, streamDuration in
+            guard !isOnReadingMatterSelection else { return }
             guard streamDuration > 0, let chapterIndex = currentChapterIndex else { return }
             let resolvedDuration = readerAdapter.duration(
                 forChapter: chapterIndex,
@@ -141,6 +159,12 @@ struct AudioBookReaderView: View {
             }
         }
         .onChange(of: audioManager.isStreaming) { _, streaming in
+            if isOnReadingMatterSelection {
+                if supplementalPlayback.isUsingGeneratedAudio {
+                    isPlaying = streaming
+                }
+                return
+            }
             isPlaying = streaming
         }
         .sheet(isPresented: $showTranscript) {
@@ -216,6 +240,10 @@ struct AudioBookReaderView: View {
                 sceneCountByChapter = sceneCounts
                 isPreparingReader = false
                 bootstrapSelection()
+                prepareSupplementalForSelectedNavItem()
+                if isOnReadingMatterSelection {
+                    startReadingMatterPlayback()
+                }
                 loadLockScreenArtwork()
             }
 
@@ -557,27 +585,172 @@ struct AudioBookReaderView: View {
             AudioPlayerBar(
                 isPlaying: $isPlaying,
                 sliderValue: $sliderValue,
-                duration: max(duration, 1),
+                duration: max(playerBarDuration, 1),
                 playbackRate: $playbackRate,
                 ambientVolume: .constant(0),
                 isAmbientPlaying: false,
-                canSeek: selectedNavItem?.kind == .chapter && !isBufferingPlayback,
-                canControlPlayback: !isBufferingPlayback,
-                isBuffering: isBufferingPlayback,
+                canSeek: playerBarCanSeek,
+                canControlPlayback: playerBarCanControl,
+                playbackContextLabel: playerBarContextLabel,
+                isBuffering: playerBarIsBuffering,
                 bufferingLabel: loadingAudioLabel ?? "Loading audio…",
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
-                onSeek: seekToChapterTime,
+                onSeek: seekPlayback,
                 onChangeRate: setRate,
-                onNextChapter: nextClipAction,
-                onPreviousChapter: previousClipAction,
+                onNextChapter: nextPlaybackAction,
+                onPreviousChapter: previousPlaybackAction,
                 onSkipPreviousChapter: skipToPreviousChapterAction,
                 onSkipNextChapter: skipToNextChapterAction,
                 onShowSpine: { showTracklist = true }
             )
-            .disabled(isBufferingPlayback)
+            .disabled(playerBarIsBuffering)
         }
+    }
+
+    private var isOnReadingMatterSelection: Bool {
+        selectedNavItem?.kind == .readingMatter
+    }
+
+    private var playerBarDuration: Double {
+        isOnReadingMatterSelection ? supplementalPlayback.duration : duration
+    }
+
+    private var playerBarCanSeek: Bool {
+        if isOnReadingMatterSelection {
+            return supplementalPlayback.canSeek
+        }
+        return selectedNavItem?.kind == .chapter && !isBufferingPlayback
+    }
+
+    private var playerBarCanControl: Bool {
+        if isOnReadingMatterSelection {
+            return currentReadingMatterCanPlay
+        }
+        return !isBufferingPlayback
+    }
+
+    private var playerBarIsBuffering: Bool {
+        if isOnReadingMatterSelection {
+            return supplementalPlayback.isLoading
+        }
+        return isBufferingPlayback
+    }
+
+    private var playerBarContextLabel: String? {
+        guard isOnReadingMatterSelection, currentReadingMatterCanPlay else { return nil }
+        return supplementalPlayback.isPlaying ? "Reading Matter · Now Playing" : "Reading Matter"
+    }
+
+    private var currentReadingMatterCanPlay: Bool {
+        guard let item = selectedNavItem,
+              let page = readerAdapter.readingMatterPage(for: item.spineItem) else { return false }
+        return page.hasGeneratedAudio(preferNative: false) || readingMatterSpeakableText(for: page) != nil
+    }
+
+    private func readingMatterSpeakableText(for page: ReadingMatterPage) -> String? {
+        var parts: [String] = []
+        if let title = page.titleTarget?.nilIfEmptyAudioBook ?? page.titleNative?.nilIfEmptyAudioBook {
+            parts.append(title)
+        }
+        if let body = page.bodyTarget?.nilIfEmptyAudioBook ?? page.bodyNative?.nilIfEmptyAudioBook {
+            parts.append(body)
+        }
+        let text = parts.joined(separator: ". ")
+        return text.isEmpty ? nil : text
+    }
+
+    private func prepareSupplementalForSelectedNavItem() {
+        supplementalPlayback.onFinished = nil
+        guard isOnReadingMatterSelection,
+              let item = selectedNavItem,
+              let page = readerAdapter.readingMatterPage(for: item.spineItem),
+              case .readingMatterPage(let pageIndex, _) = item.spineItem else {
+            supplementalPlayback.stop()
+            return
+        }
+
+        supplementalPlayback.bind(story: story, audioManager: audioManager)
+        supplementalPlayback.setRate(playbackRate)
+        supplementalPlayback.prepareReadingMatter(
+            pageIndex: pageIndex,
+            page: page,
+            preferNative: false
+        )
+        supplementalPlayback.onFinished = {
+            advanceAfterReadingMatterFinished()
+        }
+    }
+
+    private func startReadingMatterPlayback() {
+        guard isOnReadingMatterSelection,
+              let page = selectedNavItem.flatMap({ readerAdapter.readingMatterPage(for: $0.spineItem) }) else { return }
+
+        audioManager.stopAudio()
+        supplementalPlayback.syncPlayback(
+            shouldPlay: true,
+            speakableText: readingMatterSpeakableText(for: page)
+        )
+        isPlaying = supplementalPlayback.isPlaying
+    }
+
+    private func advanceAfterReadingMatterFinished() {
+        guard let currentID = selectedNavItemID,
+              let index = navItems.firstIndex(where: { $0.id == currentID }),
+              index < navItems.count - 1 else {
+            isPlaying = false
+            return
+        }
+
+        let nextItem = navItems[index + 1]
+        selectNavItem(nextItem, autoplay: true)
+    }
+
+    private func stopSupplementalPlayback() {
+        supplementalPlayback.stop()
+        if isOnReadingMatterSelection {
+            isPlaying = false
+            sliderValue = 0
+            duration = 0
+        }
+    }
+
+    private var nextPlaybackAction: (() -> Void)? {
+        if isOnReadingMatterSelection || selectedNavItem?.kind == .cover {
+            return nextNavItemAction
+        }
+        return nextClipAction
+    }
+
+    private var previousPlaybackAction: (() -> Void)? {
+        if isOnReadingMatterSelection || selectedNavItem?.kind == .cover {
+            return previousNavItemAction
+        }
+        return previousClipAction
+    }
+
+    private var nextNavItemAction: (() -> Void)? {
+        guard let currentID = selectedNavItemID,
+              let index = navItems.firstIndex(where: { $0.id == currentID }),
+              index < navItems.count - 1 else { return nil }
+        return { selectNavItem(navItems[index + 1]) }
+    }
+
+    private var previousNavItemAction: (() -> Void)? {
+        guard let currentID = selectedNavItemID,
+              let index = navItems.firstIndex(where: { $0.id == currentID }),
+              index > 0 else { return nil }
+        return { selectNavItem(navItems[index - 1]) }
+    }
+
+    private func seekPlayback(_ value: Double) {
+        if isOnReadingMatterSelection, supplementalPlayback.canSeek {
+            supplementalPlayback.seek(to: value)
+            sliderValue = value
+            return
+        }
+        seekToChapterTime(value)
     }
 
     private var nextClipAction: (() -> Void)? {
@@ -605,71 +778,116 @@ struct AudioBookReaderView: View {
     }
 
     private func isNowPlaying(_ item: AudioBookNavItem) -> Bool {
+        if item.kind == .readingMatter {
+            return isPlaying && selectedNavItem?.id == item.id
+        }
         guard item.kind == .chapter, let chapterIndex = item.chapterIndex else { return false }
         guard isPlaying else { return false }
         return currentChapterIndex == chapterIndex
     }
 
     private func bootstrapSelection() {
-        if let chapterIndex = currentChapterIndex,
-           let item = navItems.first(where: { $0.kind == .chapter && $0.chapterIndex == chapterIndex }) {
-            selectedNavItemID = item.id
+        if let firstMatter = firstFrontReadingMatterItem {
+            selectedNavItemID = firstMatter.id
+        } else if let cover = navItems.first(where: { $0.kind == .cover }) {
+            selectedNavItemID = cover.id
         } else {
             selectedNavItemID = navItems.first?.id
         }
     }
 
     private func syncSelectionToCurrentClip() {
+        guard supplementalPlayback.activeContent == .none else { return }
         guard let chapterIndex = currentChapterIndex,
               let item = navItems.first(where: { $0.kind == .chapter && $0.chapterIndex == chapterIndex }) else { return }
         selectedNavItemID = item.id
     }
 
-    private func selectNavItem(_ item: AudioBookNavItem) {
+    private func selectNavItem(_ item: AudioBookNavItem, autoplay: Bool = false) {
         selectedNavItemID = item.id
         switch item.kind {
         case .chapter:
+            stopSupplementalPlayback()
             if let clipIndex = item.firstClipIndex {
                 playClip(at: clipIndex, autoplay: true)
             }
-        case .cover, .readingMatter:
+        case .readingMatter:
+            audioManager.stopAudio()
+            isPlaying = false
+            sliderValue = 0
+            duration = 0
+            prepareSupplementalForSelectedNavItem()
+            if autoplay {
+                startReadingMatterPlayback()
+            }
+        case .cover:
+            stopSupplementalPlayback()
             if audioManager.isStreaming {
                 audioManager.pauseStream()
                 isPlaying = false
             }
+            if autoplay {
+                beginPlaybackFromCover()
+            }
+        }
+    }
+
+    private func beginPlaybackFromCover() {
+        if let firstMatter = firstFrontReadingMatterItem {
+            selectNavItem(firstMatter, autoplay: true)
+            return
+        }
+        if let firstChapter = navItems.first(where: { $0.kind == .chapter }) {
+            selectNavItem(firstChapter)
         }
     }
 
     private func togglePlay() {
-        guard selectedNavItem?.kind == .chapter || currentChapterIndex != nil else {
-            if let firstChapter = navItems.first(where: { $0.kind == .chapter }),
-               let clipIndex = firstChapter.firstClipIndex {
-                selectNavItem(firstChapter)
-                playClip(at: clipIndex, autoplay: true)
+        switch selectedNavItem?.kind {
+        case .readingMatter:
+            let shouldPlay = !supplementalPlayback.isPlaying
+            supplementalPlayback.syncPlayback(
+                shouldPlay: shouldPlay,
+                speakableText: selectedNavItem.flatMap { readerAdapter.readingMatterPage(for: $0.spineItem) }
+                    .flatMap { readingMatterSpeakableText(for: $0) }
+            )
+            isPlaying = supplementalPlayback.isPlaying
+
+        case .cover:
+            beginPlaybackFromCover()
+
+        case .chapter:
+            if audioManager.streamPlayer == nil {
+                playClip(at: currentClipIndex, autoplay: true)
+                return
             }
-            return
-        }
+            if audioManager.isStreaming {
+                audioManager.pauseStream()
+                isPlaying = false
+            } else {
+                audioManager.playStream()
+                isPlaying = true
+            }
 
-        if audioManager.streamPlayer == nil {
-            playClip(at: currentClipIndex, autoplay: true)
-            return
-        }
-
-        if audioManager.isStreaming {
-            audioManager.pauseStream()
-            isPlaying = false
-        } else {
-            audioManager.playStream()
-            isPlaying = true
+        case .none:
+            beginPlaybackFromCover()
         }
     }
 
     private func skipForward() {
+        if isOnReadingMatterSelection, supplementalPlayback.canSeek {
+            seekPlayback(min(sliderValue + 15, max(supplementalPlayback.duration, 1)))
+            return
+        }
         guard selectedNavItem?.kind == .chapter else { return }
         seekToChapterTime(min(sliderValue + 15, duration))
     }
 
     private func skipBackward() {
+        if isOnReadingMatterSelection, supplementalPlayback.canSeek {
+            seekPlayback(max(0, sliderValue - 15))
+            return
+        }
         guard selectedNavItem?.kind == .chapter else { return }
         seekToChapterTime(max(sliderValue - 15, 0))
     }
@@ -707,6 +925,7 @@ struct AudioBookReaderView: View {
 
     private func playClip(at index: Int, autoplay: Bool, startAt: Double = 0) {
         guard clips.indices.contains(index) else { return }
+        stopSupplementalPlayback()
         currentClipIndex = index
         let clip = clips[index]
         if clip.isChapterIntro {
@@ -917,7 +1136,11 @@ struct AudioBookReaderView: View {
 
     private func setRate(_ rate: Float) {
         playbackRate = rate
-        audioManager.setStreamRate(rate)
+        if isOnReadingMatterSelection {
+            supplementalPlayback.setRate(rate)
+        } else {
+            audioManager.setStreamRate(rate)
+        }
     }
 
     private var currentChapterIndex: Int? {

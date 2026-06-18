@@ -51,10 +51,8 @@ struct StorySessionView: View {
     // Chapter intro vs body within the same chapter spine step.
     @State private var isShowingChapterIntro: Bool = false
 
-    // Reading matter playback: generated audio when present, otherwise TTS.
-    @State private var readingMatterSynthesizer = AVSpeechSynthesizer()
-    @State private var readingMatterSpeechFinishTask: DispatchWorkItem?
-    @State private var isReadingMatterUsingGeneratedAudio = false
+    // Shared spine supplemental playback for reading matter and chapter intros.
+    @State private var supplementalPlayback = StorySupplementalAudioPlayback()
 
     // Comprehension Quiz
     @State private var navigateToQuiz: Bool = false
@@ -271,8 +269,21 @@ struct StorySessionView: View {
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
-            if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
-                updateReadingMatterStreamState()
+            if isOnSupplementalSpineItem {
+                supplementalPlayback.syncStreamState()
+                sliderValue = supplementalPlayback.currentTime
+                if supplementalPlayback.duration > 0 {
+                    duration = supplementalPlayback.duration
+                }
+                isPlaying = supplementalPlayback.isPlaying
+                if isOnReadingMatterSpineItem {
+                    activeWordIndex = supplementalPlayback.activeWordIndex
+                }
+                if let streamPlayer = audioManager.streamPlayer,
+                   abs(streamPlayer.rate - playbackRate) > 0.1,
+                   streamPlayer.rate != 0 {
+                    playbackRate = streamPlayer.rate
+                }
                 return
             }
 
@@ -430,7 +441,7 @@ struct StorySessionView: View {
     }
     
     private func cleanupSession() {
-        stopReadingMatterPlayback()
+        stopSupplementalPlayback()
         audioManager.stopAmbient()
         audioManager.stopAudio()
         
@@ -456,24 +467,17 @@ struct StorySessionView: View {
     }
     
     private func togglePlay() {
-        if isOnReadingMatterSpineItem {
-            toggleReadingMatterPlayback()
+        if isOnSupplementalSpineItem {
+            if isShowingChapterIntro, !hasChapterIntroContent {
+                finishChapterIntro(andPlayBody: true)
+                return
+            }
+            toggleSupplementalPlayback()
             return
         }
 
         guard isOnChapterSpineItem else { return }
         didPlayAudio = true
-
-        if isShowingChapterIntro {
-            if isPlaying {
-                isPlaying = false
-            } else if hasChapterIntroContent {
-                isPlaying = true
-            } else {
-                finishChapterIntro(andPlayBody: true)
-            }
-            return
-        }
 
         if audioManager.streamPlayer == nil {
             setupAudio(autoplay: true)
@@ -493,8 +497,8 @@ struct StorySessionView: View {
     }
     
     private func skipForward() {
-        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
-            seekReadingMatter(to: min(max(duration, 1), sliderValue + 10))
+        if isOnSupplementalSpineItem, supplementalPlayback.canSeek {
+            seekSupplementalPlayback(to: min(max(duration, 1), sliderValue + 10))
             return
         }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
@@ -506,8 +510,8 @@ struct StorySessionView: View {
     }
     
     private func skipBackward() {
-        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
-            seekReadingMatter(to: max(0, sliderValue - 10))
+        if isOnSupplementalSpineItem, supplementalPlayback.canSeek {
+            seekSupplementalPlayback(to: max(0, sliderValue - 10))
             return
         }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
@@ -518,8 +522,8 @@ struct StorySessionView: View {
     }
     
     private func seekTo(_ value: Double) {
-        if isOnReadingMatterSpineItem, isReadingMatterUsingGeneratedAudio {
-            seekReadingMatter(to: value)
+        if isOnSupplementalSpineItem, supplementalPlayback.canSeek {
+            seekSupplementalPlayback(to: value)
             return
         }
         guard isOnChapterSpineItem, !isShowingChapterIntro else { return }
@@ -537,7 +541,11 @@ struct StorySessionView: View {
     
     private func setRate(_ rate: Float) {
         playbackRate = rate
-        audioManager.setStreamRate(rate)
+        if isOnSupplementalSpineItem {
+            supplementalPlayback.setRate(rate)
+        } else {
+            audioManager.setStreamRate(rate)
+        }
         if isPlaying {
             audioManager.updateStreamNowPlayingInfo()
         }
@@ -779,6 +787,12 @@ struct StorySessionView: View {
         return nil
     }
 
+    private var isOnSupplementalSpineItem: Bool {
+        if isOnReadingMatterSpineItem { return true }
+        if isOnChapterSpineItem, isShowingChapterIntro { return true }
+        return false
+    }
+
     private var isOnReadingMatterSpineItem: Bool {
         if case .readingMatterPage = currentSpineItem { return true }
         return false
@@ -799,14 +813,17 @@ struct StorySessionView: View {
     }
 
     private var canSeekCurrentSpinePlayback: Bool {
-        if isShowingChapterIntro { return false }
+        if isOnSupplementalSpineItem { return supplementalPlayback.canSeek }
         if isOnChapterSpineItem { return true }
-        if isOnReadingMatterSpineItem, currentReadingMatterPageHasGeneratedAudio { return true }
         return false
     }
 
     private var canControlCurrentSpinePlayback: Bool {
-        isOnChapterSpineItem || isOnPlayableReadingMatter
+        if isOnSupplementalSpineItem {
+            if isShowingChapterIntro { return hasChapterIntroContent }
+            return isOnPlayableReadingMatter
+        }
+        return isOnChapterSpineItem
     }
 
     private var playerContextLabel: String? {
@@ -1045,12 +1062,22 @@ struct StorySessionView: View {
                 imageURL: adapter.readingMatterImageURL(for: item),
                 title: readingMatterDisplayTitle(for: page),
                 bodyText: readingMatterDisplayBody(for: page),
-                isUsingGeneratedAudio: isReadingMatterUsingGeneratedAudio,
-                playbackTime: sliderValue,
-                wordTimings: page.wordTimingsForPlayback(preferNative: selectedLanguage == .native),
+                isUsingGeneratedAudio: supplementalPlayback.isUsingGeneratedAudio,
+                playbackTime: supplementalPlayback.currentTime,
+                wordTimings: supplementalPlayback.wordTimings,
                 useNativeLanguage: selectedLanguage == .native,
                 bottomSpacer: StoryBookLayout.bottomScrollSpacer
             )
+            .onAppear {
+                prepareSupplementalPlaybackForCurrentSpineItem()
+            }
+            .onChange(of: selectedLanguage) { _, _ in
+                let wasPlaying = isPlaying
+                prepareSupplementalPlaybackForCurrentSpineItem()
+                if wasPlaying {
+                    toggleSupplementalPlayback(forcePlay: true)
+                }
+            }
         } else {
             StoryReaderUnavailableView(
                 title: "Reading Matter Missing",
@@ -1149,245 +1176,82 @@ struct StorySessionView: View {
         return text.isEmpty ? nil : text
     }
 
-    private func toggleReadingMatterPlayback() {
-        guard let item = currentSpineItem,
-              let page = adapter.readingMatterPage(for: item) else { return }
-
+    private func toggleSupplementalPlayback(forcePlay: Bool = false) {
         didPlayAudio = true
-
-        if page.hasGeneratedAudio(preferNative: selectedLanguage == .native) {
-            toggleReadingMatterGeneratedAudio(for: item, page: page)
-            return
-        }
-
-        guard let text = readingMatterSpeakableText(for: page) else { return }
-
-        if isPlaying {
-            isPlaying = false
-            if readingMatterSynthesizer.isSpeaking {
-                readingMatterSynthesizer.pauseSpeaking(at: .word)
-            }
-            return
-        }
-
-        if readingMatterSynthesizer.isPaused {
-            readingMatterSynthesizer.continueSpeaking()
-            isPlaying = true
-            return
-        }
-
-        startReadingMatterSpeech(text: text)
-    }
-
-    private func toggleReadingMatterGeneratedAudio(for item: StoryReadingSpineItem, page: ReadingMatterPage) {
-        guard case .readingMatterPage(let pageIndex, _) = item else { return }
-
-        if isReadingMatterUsingGeneratedAudio, audioManager.streamPlayer != nil {
-            if audioManager.isStreaming {
-                audioManager.pauseStream()
-                audioManager.pauseAmbient()
-                isPlaying = false
-            } else {
-                audioManager.playStream()
-                audioManager.resumeAmbient()
-                isPlaying = true
-            }
-            audioManager.updateStreamNowPlayingInfo()
-            return
-        }
-
-        setupReadingMatterAudio(pageIndex: pageIndex, page: page, autoplay: true)
-    }
-
-    private func setupReadingMatterAudio(
-        pageIndex: Int,
-        page: ReadingMatterPage,
-        autoplay: Bool = false,
-        startAt: Double = 0
-    ) {
-        guard let clip = adapter.readingMatterAudioClip(
-            pageIndex: pageIndex,
-            page: page,
-            preferNative: selectedLanguage == .native
-        ) else { return }
-
-        stopReadingMatterSpeech()
-        isReadingMatterUsingGeneratedAudio = true
-        activeWordIndex = nil
-
-        let localURL = adapter.localAudioURL(for: clip)
-        if let cachedURL = adapter.cachedAudioURL(for: clip) {
-            playReadingMatterAudio(url: cachedURL, clip: clip, page: page, startAt: startAt, autoplay: autoplay)
-            return
-        }
-
-        isDownloadingAudio = true
-        Task {
-            await downloadAndPlayReadingMatterAudio(
-                clip: clip,
-                page: page,
-                localURL: localURL,
-                startAt: startAt,
-                autoplay: autoplay
-            )
-        }
-    }
-
-    private func playReadingMatterAudio(
-        url: URL,
-        clip: StorySceneAudioClip,
-        page: ReadingMatterPage,
-        startAt: Double = 0,
-        autoplay: Bool = false
-    ) {
-        audioManager.streamAudio(url: url, startAt: startAt)
-        audioManager.setStreamRate(playbackRate)
-        let timedDuration = page.wordTimingsForPlayback(preferNative: selectedLanguage == .native).last?.end
-        duration = max(timedDuration ?? 0, audioManager.streamDuration, 1)
-        sliderValue = startAt
-        updateReadingMatterWordHighlight(time: startAt)
-        audioManager.updateStreamNowPlayingInfo(
-            title: clip.title,
-            artist: story.title,
-            artworkImage: heroImage
+        let shouldPlay = forcePlay || !isPlaying
+        supplementalPlayback.syncPlayback(
+            shouldPlay: shouldPlay,
+            speakableText: currentSupplementalSpeakableText
         )
-        if autoplay {
+        isPlaying = supplementalPlayback.isPlaying
+
+        if shouldPlay, isOnReadingMatterSpineItem, supplementalPlayback.isUsingGeneratedAudio {
             startAmbient()
-            audioManager.playStream()
-            isPlaying = true
+        }
+        if !shouldPlay {
+            audioManager.pauseAmbient()
         }
     }
 
-    private func downloadAndPlayReadingMatterAudio(
-        clip: StorySceneAudioClip,
-        page: ReadingMatterPage,
-        localURL: URL,
-        startAt: Double = 0,
-        autoplay: Bool = false
-    ) async {
-        guard let url = StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else {
-            await MainActor.run { isDownloadingAudio = false }
-            return
-        }
-
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200, data.count > 1000 else {
-                await MainActor.run { isDownloadingAudio = false }
-                return
-            }
-
-            let isWAV = data.prefix(4) == Data([0x52, 0x49, 0x46, 0x46])
-            let correctExt = isWAV ? "wav" : "mp3"
-            let correctURL = localURL.deletingPathExtension().appendingPathExtension(correctExt)
-            try data.write(to: correctURL)
-
-            await MainActor.run {
-                isDownloadingAudio = false
-                playReadingMatterAudio(url: correctURL, clip: clip, page: page, startAt: startAt, autoplay: autoplay)
-            }
-        } catch {
-            await MainActor.run { isDownloadingAudio = false }
-        }
-    }
-
-    private func updateReadingMatterStreamState() {
-        if audioManager.streamFinished {
-            audioManager.streamFinished = false
-            isPlaying = false
-            return
-        }
-
-        guard audioManager.streamPlayer != nil else { return }
-
-        sliderValue = audioManager.streamCurrentTime
-        let streamDur = audioManager.streamDuration
-        if streamDur > 0 {
-            duration = max(duration, streamDur)
-        }
-        isPlaying = audioManager.isStreaming
-        updateReadingMatterWordHighlight(time: sliderValue)
-
-        if let streamPlayer = audioManager.streamPlayer,
-           abs(streamPlayer.rate - playbackRate) > 0.1,
-           streamPlayer.rate != 0 {
-            playbackRate = streamPlayer.rate
-        }
-    }
-
-    private func updateReadingMatterWordHighlight(time: Double) {
-        guard let item = currentSpineItem,
-              let page = adapter.readingMatterPage(for: item) else { return }
-        let timings = page.wordTimingsForPlayback(preferNative: selectedLanguage == .native)
-        activeWordIndex = timings.firstIndex(where: { time >= $0.start && time <= $0.end })
-    }
-
-    private func seekReadingMatter(to value: Double) {
-        audioManager.seekStream(to: value)
+    private func seekSupplementalPlayback(to value: Double) {
+        supplementalPlayback.seek(to: value)
         sliderValue = value
-        updateReadingMatterWordHighlight(time: value)
-        audioManager.updateStreamNowPlayingInfo()
     }
 
-    private func startReadingMatterSpeech(text: String) {
-        stopReadingMatterSpeech()
-
-        let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(
-            language: speechLanguageCode(for: selectedLanguage == .native ? "en" : story.languageRaw)
-        )
-        utterance.rate = 0.5
-
-        readingMatterSynthesizer.speak(utterance)
-        isPlaying = true
-
-        let finishTask = DispatchWorkItem {
-            guard isPlaying else { return }
-            isPlaying = false
-        }
-        readingMatterSpeechFinishTask = finishTask
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + estimatedSpeechDuration(for: text),
-            execute: finishTask
-        )
-    }
-
-    private func stopReadingMatterPlayback() {
-        stopReadingMatterSpeech()
-        if isReadingMatterUsingGeneratedAudio {
-            audioManager.stopAudio()
-            isReadingMatterUsingGeneratedAudio = false
-        }
+    private func stopSupplementalPlayback() {
+        supplementalPlayback.stop()
         activeWordIndex = nil
-        if isOnReadingMatterSpineItem {
+        if isOnSupplementalSpineItem {
             isPlaying = false
             sliderValue = 0
             duration = 0
         }
     }
 
-    private func stopReadingMatterSpeech() {
-        readingMatterSpeechFinishTask?.cancel()
-        readingMatterSpeechFinishTask = nil
-        if readingMatterSynthesizer.isSpeaking || readingMatterSynthesizer.isPaused {
-            readingMatterSynthesizer.stopSpeaking(at: .immediate)
+    private var currentSupplementalSpeakableText: String? {
+        if isOnReadingMatterSpineItem,
+           let item = currentSpineItem,
+           let page = adapter.readingMatterPage(for: item) {
+            return readingMatterSpeakableText(for: page)
         }
+
+        if isShowingChapterIntro, let chapter = currentChapter {
+            return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
+                chapter: chapter,
+                preferNative: selectedLanguage == .native
+            )
+        }
+
+        return nil
     }
 
-    private func speechLanguageCode(for code: String) -> String {
-        switch code {
-        case "es": return "es-MX"
-        case "ja": return "ja-JP"
-        case "ko": return "ko-KR"
-        case "fr": return "fr-FR"
-        case "vi": return "vi-VN"
-        case "en": return "en-US"
-        default: return code
-        }
-    }
+    private func prepareSupplementalPlaybackForCurrentSpineItem() {
+        supplementalPlayback.bind(story: story, audioManager: audioManager)
+        supplementalPlayback.setRate(playbackRate)
+        supplementalPlayback.onFinished = nil
 
-    private func estimatedSpeechDuration(for text: String) -> TimeInterval {
-        max(2.0, Double(text.count) * 0.06)
+        if let item = currentSpineItem,
+           case .readingMatterPage(let pageIndex, _) = item,
+           let page = adapter.readingMatterPage(for: item) {
+            supplementalPlayback.prepareReadingMatter(
+                pageIndex: pageIndex,
+                page: page,
+                preferNative: selectedLanguage == .native
+            )
+            return
+        }
+
+        if isShowingChapterIntro,
+           let chapter = currentChapter {
+            supplementalPlayback.prepareChapterIntro(
+                chapterIndex: currentChapterIndex,
+                chapter: chapter,
+                preferNative: selectedLanguage == .native
+            )
+            supplementalPlayback.onFinished = {
+                finishChapterIntro(andPlayBody: false)
+            }
+        }
     }
 
     private var chapterLanguageToggle: some View {
@@ -1434,12 +1298,20 @@ struct StorySessionView: View {
                 ChapterInfoCardView(
                     chapter: chapter,
                     heroImage: heroImage,
-                    languageCode: story.languageRaw,
                     selectedLanguage: $selectedLanguage,
-                    isPlaying: $isPlaying,
-                    onIntroFinished: { finishChapterIntro(andPlayBody: false) }
+                    playbackTime: supplementalPlayback.currentTime
                 )
                 .id("chapter-intro-\(currentChapterIndex)")
+                .onAppear {
+                    prepareSupplementalPlaybackForCurrentSpineItem()
+                }
+                .onChange(of: selectedLanguage) { _, _ in
+                    let wasPlaying = isPlaying
+                    prepareSupplementalPlaybackForCurrentSpineItem()
+                    if wasPlaying {
+                        toggleSupplementalPlayback(forcePlay: true)
+                    }
+                }
             } else {
                 chapterScrollContent
                     .id("chapter-body-\(currentChapterIndex)")
@@ -1463,7 +1335,7 @@ struct StorySessionView: View {
                 canSeek: canSeekCurrentSpinePlayback,
                 canControlPlayback: canControlCurrentSpinePlayback,
                 playbackContextLabel: playerContextLabel,
-                isBuffering: isDownloadingAudio,
+                isBuffering: isOnSupplementalSpineItem ? supplementalPlayback.isLoading : isDownloadingAudio,
                 bufferingLabel: "Downloading audio…",
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
@@ -1474,7 +1346,7 @@ struct StorySessionView: View {
                 onPreviousChapter: spineStepNavigationHandler(delta: -1),
                 onShowSpine: { showSpine = true }
             )
-            .disabled(isOnChapterSpineItem && isDownloadingAudio)
+            .disabled((isOnSupplementalSpineItem && supplementalPlayback.isLoading) || (isOnChapterSpineItem && isDownloadingAudio))
             .id("story-book-footer")
             .ignoresSafeArea(edges: .bottom)
         }
@@ -1498,6 +1370,8 @@ struct StorySessionView: View {
     }
 
     private func finishChapterIntro(andPlayBody: Bool) {
+        supplementalPlayback.onFinished = nil
+        supplementalPlayback.stop(resetContent: false)
         isShowingChapterIntro = false
         isPlaying = false
         audioManager.streamFinished = false
@@ -1517,7 +1391,7 @@ struct StorySessionView: View {
     private func goToSpineIndex(_ index: Int?, showChapterCard: Bool) {
         guard let index, storyBookSpineItems.indices.contains(index) else { return }
 
-        stopReadingMatterPlayback()
+        stopSupplementalPlayback()
 
         if isPlaying {
             audioManager.pauseStream()
@@ -1541,20 +1415,20 @@ struct StorySessionView: View {
             audioManager.stopAudio()
             if showChapterCard, chapterHasIntroContent(at: chapterIndex) {
                 isShowingChapterIntro = true
+                prepareSupplementalPlaybackForCurrentSpineItem()
             } else {
                 isShowingChapterIntro = false
                 setupAudio()
             }
         case .readingMatterPage:
-            isReadingMatterUsingGeneratedAudio = false
             audioManager.stopAudio()
             isShowingChapterIntro = false
             sliderValue = 0
             duration = 0
             loadReadingMatterImage()
+            prepareSupplementalPlaybackForCurrentSpineItem()
         case .cover:
             readingMatterHeroImage = nil
-            isReadingMatterUsingGeneratedAudio = false
             audioManager.stopAudio()
             isShowingChapterIntro = false
             sliderValue = 0

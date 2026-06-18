@@ -12,11 +12,10 @@ struct DialogStoryFlowView: View {
     @State private var playbackRate: Float = 1.0
     @State private var flowPhase: FlowPhase = .spine
     @State private var chapterHeroImage: UIImage?
-    @State private var isChapterIntroPlaying = false
-    @State private var readingMatterPlayback = StorySupplementalAudioPlayback()
-    @State private var isReadingMatterPlaying = false
+    @State private var supplementalPlayback = StorySupplementalAudioPlayback()
+    @State private var sliderValue: Double = 0
 
-    private let readingMatterTimer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    private let spinePlaybackTimer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     private enum FlowPhase: Equatable {
         case spine
@@ -54,17 +53,15 @@ struct DialogStoryFlowView: View {
         }
         .mediaPlaybackLifecycle(
             onUserLeave: {
-                readingMatterPlayback.stop()
+                supplementalPlayback.stop()
                 AudioManager.shared.stopAudio()
             },
             onEnterBackground: { AudioManager.shared.updateNowPlayingInfo() }
         )
-        .onReceive(readingMatterTimer) { _ in
-            guard case .readingMatterPage = currentSpineItem else { return }
-            readingMatterPlayback.syncStreamState()
-            if isReadingMatterPlaying != readingMatterPlayback.isPlaying {
-                isReadingMatterPlaying = readingMatterPlayback.isPlaying
-            }
+        .onReceive(spinePlaybackTimer) { _ in
+            guard flowPhase == .spine, isOnSupplementalSpineItem else { return }
+            supplementalPlayback.syncStreamState()
+            sliderValue = supplementalPlayback.currentTime
         }
     }
 
@@ -173,57 +170,8 @@ struct DialogStoryFlowView: View {
         if flowPhase == .spine {
             if spineIndex >= spineItems.count {
                 EmptyView()
-            } else if case .readingMatterPage = currentSpineItem, currentReadingMatterCanPlay {
-                HStack(spacing: 12) {
-                    Button {
-                        isReadingMatterPlaying.toggle()
-                        readingMatterPlayback.syncPlayback(
-                            shouldPlay: isReadingMatterPlaying,
-                            speakableText: currentReadingMatterSpeakableText
-                        )
-                        if isReadingMatterPlaying != readingMatterPlayback.isPlaying {
-                            isReadingMatterPlaying = readingMatterPlayback.isPlaying
-                        }
-                    } label: {
-                        Label(
-                            isReadingMatterPlaying ? "Pause" : "Play",
-                            systemImage: isReadingMatterPlaying ? "pause.fill" : "play.fill"
-                        )
-                    }
-                    .buttonStyle(.bordered)
-
-                    Spacer()
-
-                    Button(spineContinueTitle) {
-                        readingMatterPlayback.stop()
-                        isReadingMatterPlaying = false
-                        advanceSpineStep()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(16)
-                .background(.thinMaterial)
-            } else if case .chapter(let index) = currentSpineItem, chapterHasIntroContent(at: index) {
-                HStack(spacing: 12) {
-                    Button {
-                        isChapterIntroPlaying.toggle()
-                    } label: {
-                        Label(
-                            isChapterIntroPlaying ? "Pause" : "Play Intro",
-                            systemImage: isChapterIntroPlaying ? "pause.fill" : "play.fill"
-                        )
-                    }
-                    .buttonStyle(.bordered)
-
-                    Spacer()
-
-                    Button(spineContinueTitle) {
-                        advanceSpineStep()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(16)
-                .background(.thinMaterial)
+            } else if showsSpineAudioPlayer {
+                spineAudioPlayerBar
             } else {
                 HStack {
                     Spacer()
@@ -239,6 +187,72 @@ struct DialogStoryFlowView: View {
         }
     }
 
+    private var showsSpineAudioPlayer: Bool {
+        if case .readingMatterPage = currentSpineItem { return true }
+        if case .chapter(let index) = currentSpineItem, chapterHasIntroContent(at: index) { return true }
+        return false
+    }
+
+    private var isOnSupplementalSpineItem: Bool {
+        if case .readingMatterPage = currentSpineItem { return true }
+        if case .chapter(let index) = currentSpineItem, chapterHasIntroContent(at: index) { return true }
+        return false
+    }
+
+    private var spineAudioPlayerBar: some View {
+        AudioPlayerBar(
+            isPlaying: Binding(
+                get: { supplementalPlayback.isPlaying },
+                set: { shouldPlay in
+                    supplementalPlayback.syncPlayback(
+                        shouldPlay: shouldPlay,
+                        speakableText: currentSupplementalSpeakableText
+                    )
+                }
+            ),
+            sliderValue: $sliderValue,
+            duration: max(supplementalPlayback.duration, 1),
+            playbackRate: $playbackRate,
+            ambientVolume: .constant(0),
+            isAmbientPlaying: false,
+            canSeek: supplementalPlayback.canSeek,
+            canControlPlayback: canControlSpinePlayback,
+            playbackContextLabel: spinePlaybackContextLabel,
+            isBuffering: supplementalPlayback.isLoading,
+            bufferingLabel: "Loading audio…",
+            onPlayPause: toggleSpinePlayback,
+            onSkipForward: skipSpineForward,
+            onSkipBackward: skipSpineBackward,
+            onSeek: seekSpinePlayback,
+            onChangeRate: setSpinePlaybackRate,
+            onNextChapter: spineStepNavigationHandler(delta: 1),
+            onPreviousChapter: spineStepNavigationHandler(delta: -1)
+        )
+        .disabled(supplementalPlayback.isLoading)
+        .ignoresSafeArea(edges: .bottom)
+    }
+
+    private var canControlSpinePlayback: Bool {
+        if case .readingMatterPage = currentSpineItem {
+            return currentReadingMatterCanPlay
+        }
+        if case .chapter(let index) = currentSpineItem {
+            return chapterHasIntroContent(at: index)
+        }
+        return false
+    }
+
+    private var spinePlaybackContextLabel: String? {
+        if case .readingMatterPage = currentSpineItem {
+            guard currentReadingMatterCanPlay else { return nil }
+            return supplementalPlayback.isPlaying ? "Reading Matter · Now Playing" : "Reading Matter"
+        }
+        if case .chapter(let index) = currentSpineItem, chapterHasIntroContent(at: index) {
+            return supplementalPlayback.isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
+        }
+        return nil
+    }
+
     private var spineContinueTitle: String {
         if case .chapter = currentSpineItem {
             return "Start Dialogue"
@@ -247,6 +261,98 @@ struct DialogStoryFlowView: View {
             return "Done"
         }
         return "Continue"
+    }
+
+    private func spineStepNavigationHandler(delta: Int) -> (() -> Void)? {
+        if delta > 0 {
+            return { advanceSpineStep() }
+        }
+        guard spineIndex > 0 else { return nil }
+        return { goToPreviousSpineStep() }
+    }
+
+    private func toggleSpinePlayback() {
+        let shouldPlay = !supplementalPlayback.isPlaying
+        supplementalPlayback.syncPlayback(
+            shouldPlay: shouldPlay,
+            speakableText: currentSupplementalSpeakableText
+        )
+    }
+
+    private func skipSpineForward() {
+        guard supplementalPlayback.canSeek else { return }
+        seekSpinePlayback(min(sliderValue + 10, max(supplementalPlayback.duration, 1)))
+    }
+
+    private func skipSpineBackward() {
+        guard supplementalPlayback.canSeek else { return }
+        seekSpinePlayback(max(0, sliderValue - 10))
+    }
+
+    private func seekSpinePlayback(_ value: Double) {
+        supplementalPlayback.seek(to: value)
+        sliderValue = value
+    }
+
+    private func setSpinePlaybackRate(_ rate: Float) {
+        playbackRate = rate
+        supplementalPlayback.setRate(rate)
+    }
+
+    private func stopSpinePlayback() {
+        supplementalPlayback.stop()
+        sliderValue = 0
+    }
+
+    private var currentSupplementalSpeakableText: String? {
+        if case .readingMatterPage = currentSpineItem {
+            return currentReadingMatterSpeakableText
+        }
+        if case .chapter(let index) = currentSpineItem,
+           let chapter = story.chapters[safeDialogFlow: index] {
+            return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
+                chapter: chapter,
+                preferNative: showEnglish
+            )
+        }
+        return nil
+    }
+
+    private func prepareSupplementalPlaybackForCurrentSpineItem() {
+        supplementalPlayback.bind(story: story)
+        supplementalPlayback.setRate(playbackRate)
+        supplementalPlayback.onFinished = nil
+
+        if let item = currentSpineItem,
+           case .readingMatterPage(let pageIndex, _) = item,
+           let page = adapter.readingMatterPage(for: item) {
+            supplementalPlayback.prepareReadingMatter(
+                pageIndex: pageIndex,
+                page: page,
+                preferNative: showEnglish
+            )
+            return
+        }
+
+        if case .chapter(let index) = currentSpineItem,
+           let chapter = story.chapters[safeDialogFlow: index],
+           chapterHasIntroContent(at: index) {
+            supplementalPlayback.prepareChapterIntro(
+                chapterIndex: index,
+                chapter: chapter,
+                preferNative: showEnglish
+            )
+        }
+    }
+
+    private func goToPreviousSpineStep() {
+        stopSpinePlayback()
+        AudioManager.shared.stopAudio()
+
+        guard spineIndex > 0 else { return }
+        spineIndex -= 1
+        flowPhase = .spine
+        reconcileSpinePosition()
     }
 
     private var phaseSubtitle: String {
@@ -314,8 +420,8 @@ struct DialogStoryFlowView: View {
                             .font(.title2.weight(.bold))
                     }
                     if let body = readingMatterBody(for: page) {
-                        if readingMatterPlayback.isUsingGeneratedAudio,
-                           !readingMatterPlayback.wordTimings.isEmpty,
+                        if supplementalPlayback.isUsingGeneratedAudio,
+                           !supplementalPlayback.wordTimings.isEmpty,
                            !showEnglish {
                             TimedTextView(
                                 segment: StorySegmentTiming(
@@ -323,9 +429,9 @@ struct DialogStoryFlowView: View {
                                     text: body,
                                     startTime: 0,
                                     endTime: .greatestFiniteMagnitude,
-                                    timings: readingMatterPlayback.wordTimings
+                                    timings: supplementalPlayback.wordTimings
                                 ),
-                                currentTime: readingMatterPlayback.currentTime,
+                                currentTime: supplementalPlayback.currentTime,
                                 includesPadding: false
                             )
                         } else {
@@ -350,32 +456,19 @@ struct DialogStoryFlowView: View {
                 .padding()
             }
             .onAppear {
-                readingMatterPlayback.bind(story: story)
-                readingMatterPlayback.prepareReadingMatter(
-                    pageIndex: pageIndex,
-                    page: page,
-                    preferNative: showEnglish
-                )
+                prepareSupplementalPlaybackForCurrentSpineItem()
             }
             .onDisappear {
-                readingMatterPlayback.stop()
-                isReadingMatterPlaying = false
+                supplementalPlayback.stop()
             }
             .onChange(of: displayLanguage) { _, _ in
-                let wasPlaying = isReadingMatterPlaying
-                readingMatterPlayback.stop()
-                readingMatterPlayback.bind(story: story)
-                readingMatterPlayback.prepareReadingMatter(
-                    pageIndex: pageIndex,
-                    page: page,
-                    preferNative: showEnglish
-                )
+                let wasPlaying = supplementalPlayback.isPlaying
+                prepareSupplementalPlaybackForCurrentSpineItem()
                 if wasPlaying {
-                    readingMatterPlayback.syncPlayback(
+                    supplementalPlayback.syncPlayback(
                         shouldPlay: true,
                         speakableText: currentReadingMatterSpeakableText
                     )
-                    isReadingMatterPlaying = readingMatterPlayback.isPlaying
                 }
             }
         } else {
@@ -392,13 +485,22 @@ struct DialogStoryFlowView: View {
                 ChapterInfoCardView(
                     chapter: chapter,
                     heroImage: chapterHeroImage,
-                    languageCode: story.languageRaw,
                     selectedLanguage: $displayLanguage,
-                    isPlaying: $isChapterIntroPlaying,
-                    onIntroFinished: {}
+                    playbackTime: supplementalPlayback.currentTime
                 )
                 .onAppear {
                     loadChapterHeroImage(for: chapter)
+                    prepareSupplementalPlaybackForCurrentSpineItem()
+                }
+                .onChange(of: displayLanguage) { _, _ in
+                    let wasPlaying = supplementalPlayback.isPlaying
+                    prepareSupplementalPlaybackForCurrentSpineItem()
+                    if wasPlaying {
+                        supplementalPlayback.syncPlayback(
+                            shouldPlay: true,
+                            speakableText: currentSupplementalSpeakableText
+                        )
+                    }
                 }
             } else {
                 StoryReaderUnavailableView(
@@ -516,9 +618,7 @@ struct DialogStoryFlowView: View {
     }
 
     private func advanceSpineStep() {
-        isChapterIntroPlaying = false
-        readingMatterPlayback.stop()
-        isReadingMatterPlaying = false
+        stopSpinePlayback()
         AudioManager.shared.stopAudio()
 
         guard let item = currentSpineItem else {
@@ -542,7 +642,7 @@ struct DialogStoryFlowView: View {
     }
 
     private func beginDialogue(for chapterIndex: Int) {
-        isChapterIntroPlaying = false
+        stopSpinePlayback()
         AudioManager.shared.stopAudio()
         flowPhase = .dialogue(chapterIndex: chapterIndex)
     }

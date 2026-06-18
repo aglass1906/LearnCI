@@ -35,6 +35,11 @@ final class StorySupplementalAudioPlayback {
 
     private var synthesizer = AVSpeechSynthesizer()
     private var speechFinishTask: DispatchWorkItem?
+    private var playbackRate: Float = 1.0
+
+    var isActive: Bool {
+        activeContent != .none
+    }
 
     func bind(story: Story, audioManager: AudioManager = .shared) {
         self.story = story
@@ -182,6 +187,14 @@ final class StorySupplementalAudioPlayback {
         audioManager?.updateStreamNowPlayingInfo()
     }
 
+    func setRate(_ rate: Float) {
+        playbackRate = rate
+        audioManager?.setStreamRate(rate)
+        if isUsingGeneratedAudio {
+            audioManager?.updateStreamNowPlayingInfo()
+        }
+    }
+
     func syncStreamState() {
         if isUsingGeneratedAudio, let audioManager {
             if audioManager.streamFinished {
@@ -258,6 +271,7 @@ final class StorySupplementalAudioPlayback {
                 }
 
                 audioManager.streamAudio(url: playbackURL, startAt: startAt)
+                audioManager.setStreamRate(playbackRate)
                 let timedDuration = wordTimings.last?.end
                 duration = max(timedDuration ?? 0, audioManager.streamDuration, 1)
                 currentTime = startAt

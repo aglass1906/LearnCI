@@ -750,14 +750,22 @@ private struct PictureBookSpreadView: View {
                 }
 
                 if let body = spread.displayBody(language: selectedLanguage) {
-                    Text(body)
-                        .font(.body.weight(.regular))
-                        .lineSpacing(6)
-                        .foregroundStyle(
-                            spread.isScene || selectedLanguage == .target ? .primary : .secondary
+                    if selectedLanguage == .target {
+                        TappableStoryText(
+                            text: body,
+                            font: .body.weight(.regular),
+                            lineSpacing: 6,
+                            foregroundColor: .primary
                         )
                         .frame(width: contentWidth, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(body)
+                            .font(.body.weight(.regular))
+                            .lineSpacing(6)
+                            .foregroundStyle(.secondary)
+                            .frame(width: contentWidth, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             .padding(.top, 14)
@@ -870,10 +878,19 @@ private struct PictureBookSpreadView: View {
                 }
 
                 if let body = spread.displayBody(language: selectedLanguage) {
-                    Text(body)
-                        .font(.title3.weight(.semibold))
-                        .lineSpacing(4)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if selectedLanguage == .target {
+                        TappableStoryText(
+                            text: body,
+                            font: .title3.weight(.semibold),
+                            lineSpacing: 4,
+                            foregroundColor: .white
+                        )
+                    } else {
+                        Text(body)
+                            .font(.title3.weight(.semibold))
+                            .lineSpacing(4)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             .foregroundStyle(.white)

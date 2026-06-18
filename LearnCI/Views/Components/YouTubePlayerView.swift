@@ -19,6 +19,9 @@ struct YouTubePlayerView: UIViewRepresentable {
     @Binding private var pauseRequest: Bool?
     @Binding private var seekAndPlayRequest: Double?
 
+    var initialPlaybackTime: Double = 0
+    var initialPlaybackRate: Float = 1
+    var shouldResumePlayback: Bool = false
     var onPlaybackSnapshot: ((YouTubePlayerPlaybackSnapshot) -> Void)?
 
     init(
@@ -30,6 +33,9 @@ struct YouTubePlayerView: UIViewRepresentable {
         playRequest: Binding<Bool?> = .constant(nil),
         pauseRequest: Binding<Bool?> = .constant(nil),
         seekAndPlayRequest: Binding<Double?> = .constant(nil),
+        initialPlaybackTime: Double = 0,
+        initialPlaybackRate: Float = 1,
+        shouldResumePlayback: Bool = false,
         onPlaybackSnapshot: ((YouTubePlayerPlaybackSnapshot) -> Void)? = nil
     ) {
         self.videoID = videoID
@@ -40,6 +46,9 @@ struct YouTubePlayerView: UIViewRepresentable {
         self._playRequest = playRequest
         self._pauseRequest = pauseRequest
         self._seekAndPlayRequest = seekAndPlayRequest
+        self.initialPlaybackTime = initialPlaybackTime
+        self.initialPlaybackRate = initialPlaybackRate
+        self.shouldResumePlayback = shouldResumePlayback
         self.onPlaybackSnapshot = onPlaybackSnapshot
     }
 
@@ -66,6 +75,10 @@ struct YouTubePlayerView: UIViewRepresentable {
         // Prevent reloading if the video is already loaded
         if context.coordinator.currentVideoID != videoID {
             context.coordinator.currentVideoID = videoID
+            let restoredTime = max(0, initialPlaybackTime)
+            let restoredRate = max(0.25, min(initialPlaybackRate, 2.0))
+            let shouldPlayOnRestore = shouldResumePlayback ? "true" : "false"
+            let autoplayAttribute = shouldResumePlayback ? " autoplay" : ""
 
             if let videoURL = videoURL, let url = URL(string: videoURL) {
                 // Render HTML5 Video Player
@@ -80,13 +93,17 @@ video { width: 100%; height: 100%; object-fit: contain; }
 </style>
 </head>
 <body>
-<video id="player" controls playsinline autoplay>
+<video id="player" controls playsinline\(autoplayAttribute)>
 <source src="\(videoURL)" type="video/mp4">
 Your browser does not support the video tag.
 </video>
 <script>
 var video = document.getElementById('player');
 var snapshotTimer = null;
+var initialPlaybackTime = \(restoredTime);
+var initialPlaybackRate = \(restoredRate);
+var shouldResumePlayback = \(shouldPlayOnRestore);
+var didApplyInitialPlaybackState = false;
 
 function postSnapshot() {
 window.webkit.messageHandlers.playbackHandler.postMessage({
@@ -126,9 +143,24 @@ stopSnapshotTimer();
 postSnapshot();
 });
 video.addEventListener('timeupdate', postSnapshot);
-video.addEventListener('loadedmetadata', postSnapshot);
+video.addEventListener('loadedmetadata', function() {
+applyInitialPlaybackState();
+postSnapshot();
+});
 video.addEventListener('ratechange', postSnapshot);
 video.addEventListener('seeked', postSnapshot);
+
+function applyInitialPlaybackState() {
+if (didApplyInitialPlaybackState) { return; }
+didApplyInitialPlaybackState = true;
+video.playbackRate = initialPlaybackRate;
+if (initialPlaybackTime > 0.25) {
+video.currentTime = initialPlaybackTime;
+}
+if (shouldResumePlayback) {
+setTimeout(function() { video.play(); }, 80);
+}
+}
 
 function seekToTime(seconds) {
 video.currentTime = seconds;
@@ -188,6 +220,10 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 var player;
 var snapshotTimer = null;
+var initialPlaybackTime = \(restoredTime);
+var initialPlaybackRate = \(restoredRate);
+var shouldResumePlayback = \(shouldPlayOnRestore);
+var didApplyInitialPlaybackState = false;
 function onYouTubeIframeAPIReady() {
 player = new YT.Player('player', {
 height: '100%',
@@ -208,6 +244,7 @@ events: {
 }
 
 function onPlayerReady() {
+applyInitialPlaybackState();
 postSnapshot();
 }
 
@@ -243,6 +280,23 @@ startSnapshotTimer();
 stopSnapshotTimer();
 }
 postSnapshot();
+}
+
+function applyInitialPlaybackState() {
+if (didApplyInitialPlaybackState || !player) { return; }
+didApplyInitialPlaybackState = true;
+if (player.setPlaybackRate) {
+player.setPlaybackRate(initialPlaybackRate);
+}
+if (initialPlaybackTime > 0.25 && player.seekTo) {
+player.seekTo(initialPlaybackTime, true);
+}
+if (shouldResumePlayback && player.playVideo) {
+setTimeout(function() {
+player.playVideo();
+postSnapshot();
+}, 120);
+}
 }
 
 function seekToTime(seconds) {

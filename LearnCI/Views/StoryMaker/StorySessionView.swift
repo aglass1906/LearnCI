@@ -140,6 +140,9 @@ struct StorySessionView: View {
                 readerBody
             }
         }
+        .environment(\.storyWordLookupAction) { request in
+            lookupWord(request.word, time: request.time, context: request.context)
+        }
     }
 
     private var readerBody: some View {
@@ -537,7 +540,7 @@ struct StorySessionView: View {
     
     // MARK: - Word Lookup
 
-    private func lookupWord(_ word: String, time: Double) {
+    private func lookupWord(_ word: String, time: Double?, context providedContext: String? = nil) {
         selectedWord = word
         selectedWordTime = time
         wordTranslation = nil
@@ -552,7 +555,7 @@ struct StorySessionView: View {
         }
 
         isTranslatingWord = true
-        let context = sentenceContaining(word: word)
+        let context = providedContext ?? sentenceContaining(word: word)
         Task {
             do {
                 let result = try await OpenAIService().translateWord(word, language: story.language.displayName, context: context)
@@ -564,9 +567,10 @@ struct StorySessionView: View {
                 }
             } catch {
                 await MainActor.run {
-                    wordTranslation = "Translation unavailable"
+                    wordTranslation = error.localizedDescription
                     wordPartOfSpeech = ""
                     isTranslatingWord = false
+                    Logger.error("Story word lookup failed for '\(word)': \(error.localizedDescription)", category: .general)
                 }
             }
         }
@@ -855,6 +859,8 @@ struct StorySessionView: View {
         if !chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
         if let intro = chapter.chapterIntroTextEnglish,
            !intro.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if let script = chapter.scriptEnglish,
+           !script.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
         return !chapter.bodyTextEnglishForReading.isEmpty
     }
 
@@ -1300,7 +1306,9 @@ struct StorySessionView: View {
                         timings: currentChapter?.bodyWordTimingsForPlayback ?? [],
                         wordMatches: wordMatches,
                         onSeek: seekTo,
-                        onWordTap: lookupWord
+                        onWordTap: { word, time in
+                            lookupWord(word, time: time)
+                        }
                     )
                     .id(chunk.id)
                 }
@@ -1721,13 +1729,23 @@ private struct StoryBookReadingMatterPageView: View {
                 .frame(width: proseWidth, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             } else {
-                Text(bodyText)
-                    .font(.body)
-                    .lineSpacing(8)
-                    .foregroundStyle(useNativeLanguage ? .secondary : .primary)
-                    .textSelection(.enabled)
+                if useNativeLanguage {
+                    Text(bodyText)
+                        .font(.body)
+                        .lineSpacing(8)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .frame(width: proseWidth, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    TappableStoryText(
+                        text: bodyText,
+                        font: .body,
+                        lineSpacing: 8,
+                        foregroundColor: .primary
+                    )
                     .frame(width: proseWidth, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
@@ -1739,7 +1757,7 @@ struct ParagraphView: View {
     let timings: [WordTiming]
     let wordMatches: [NSTextCheckingResult]
     let onSeek: (Double) -> Void
-    let onWordTap: (String, Double) -> Void
+    let onWordTap: (String, Double?) -> Void
 
     var body: some View {
         Text(attributedParagraph)
@@ -1749,9 +1767,11 @@ struct ParagraphView: View {
             .environment(\.openURL, OpenURLAction { url in
                 if url.scheme == "x-learnci-word",
                    let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                   let word = components.queryItems?.first(where: { $0.name == "word" })?.value,
-                   let tStr = components.queryItems?.first(where: { $0.name == "t" })?.value,
-                   let targetTime = Double(tStr) {
+                   let word = components.queryItems?.first(where: { $0.name == "word" })?.value {
+                    let targetTime = components.queryItems?
+                        .first(where: { $0.name == "t" })?
+                        .value
+                        .flatMap(Double.init)
                     onWordTap(word, targetTime)
                     return .handled
                 }
@@ -1769,14 +1789,11 @@ struct ParagraphView: View {
     private var attributedParagraph: AttributedString {
         var attrString = AttributedString(chunk.text)
 
-        if timings.isEmpty || chunk.text.isEmpty {
+        if chunk.text.isEmpty {
             return attrString
         }
 
         for (i, match) in wordMatches.enumerated() {
-            guard i < timings.count else { break }
-            let timing = timings[i]
-
             // Focus only on matches inside this chunk
             if NSLocationInRange(match.range.location, chunk.range) {
                 let localRange = NSRange(location: match.range.location - chunk.range.location, length: match.range.length)
@@ -1787,9 +1804,14 @@ struct ParagraphView: View {
 
                     let attrRange = lowerBound..<upperBound
 
-                    // Word lookup link (includes word text + timestamp)
-                    let encoded = timing.word.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? timing.word
-                    attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&t=\(timing.start)")
+                    let matchedWord = String(chunk.text[swiftRange])
+                    let encoded = matchedWord.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? matchedWord
+                    if i < timings.count {
+                        let timing = timings[i]
+                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&t=\(timing.start)")
+                    } else {
+                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)")
+                    }
 
                     // Highlight active
                     if i == activeWordIndex {

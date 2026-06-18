@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ProfileAISettingsView: View {
     @Bindable var profile: UserProfile
@@ -6,19 +7,34 @@ struct ProfileAISettingsView: View {
     @State private var openAISaved: Bool = false
     @State private var googleKey: String = ""
     @State private var googleSaved: Bool = false
+    @State private var pasteMessage: String?
     @AppStorage(VideoPromptModel.userDefaultsKey) private var videoPromptModel: String = VideoPromptModel.openAI.rawValue
+
+    private enum APIKeyField {
+        case openAI
+        case google
+    }
 
     var body: some View {
         Form {
             // MARK: OpenAI
             Section {
-                TextField("sk-...", text: $openAIKey)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
+                apiKeyEditor(text: $openAIKey, placeholder: "sk-...")
+
+                Button {
+                    pasteKey(UIPasteboard.general.string, into: .openAI, saveImmediately: true)
+                } label: {
+                    Label("Paste from Clipboard", systemImage: "doc.on.clipboard")
+                }
             } header: {
                 Text("OpenAI API Key")
             } footer: {
-                Text("Used for story text, audio, cover art, and comprehension quizzes. Stored on-device only.")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Used for story text, audio, cover art, and comprehension quizzes. Pasting saves immediately. Stored on-device only.")
+                    if let pasteMessage {
+                        Text(pasteMessage)
+                    }
+                }
             }
 
             Section {
@@ -32,10 +48,10 @@ struct ProfileAISettingsView: View {
                         }
                     }
                 }
-                .disabled(openAIKey.isEmpty)
+                .disabled(cleanKey(openAIKey).isEmpty)
 
                 Button("Clear Key", role: .destructive) {
-                    UserDefaults.standard.removeObject(forKey: "OpenAI_API_Key")
+                    OpenAIAPIKeyStorage.remove()
                     openAIKey = ""
                     openAISaved = false
                 }
@@ -43,13 +59,22 @@ struct ProfileAISettingsView: View {
 
             // MARK: Google / Veo
             Section {
-                TextField("AIza...", text: $googleKey)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
+                apiKeyEditor(text: $googleKey, placeholder: "AIza...")
+
+                Button {
+                    pasteKey(UIPasteboard.general.string, into: .google, saveImmediately: true)
+                } label: {
+                    Label("Paste from Clipboard", systemImage: "doc.on.clipboard")
+                }
             } header: {
                 Text("Google API Key")
             } footer: {
-                Text("Used for AI scene video generation (Veo 3). Charged at \(VideoStyle.ratePerSecond) — approx. \(VideoStyle.estimatedCostRange) per 8-second clip. Stored on-device only.")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Used for AI scene video generation (Veo 3). Charged at \(VideoStyle.ratePerSecond) — approx. \(VideoStyle.estimatedCostRange) per 8-second clip. Pasting saves immediately. Stored on-device only.")
+                    if let pasteMessage {
+                        Text(pasteMessage)
+                    }
+                }
             }
 
             Section {
@@ -63,7 +88,7 @@ struct ProfileAISettingsView: View {
                         }
                     }
                 }
-                .disabled(googleKey.isEmpty)
+                .disabled(cleanKey(googleKey).isEmpty)
 
                 Button("Clear Key", role: .destructive) {
                     UserDefaults.standard.removeObject(forKey: VeoService.userDefaultsKey)
@@ -89,7 +114,7 @@ struct ProfileAISettingsView: View {
         }
         .navigationTitle("AI Settings")
         .onAppear {
-            if let existing = UserDefaults.standard.string(forKey: "OpenAI_API_Key") {
+            if let existing = OpenAIAPIKeyStorage.apiKey {
                 openAIKey = existing
                 openAISaved = true
             }
@@ -98,15 +123,92 @@ struct ProfileAISettingsView: View {
                 googleSaved = true
             }
         }
+        .onChange(of: openAIKey) { _, _ in
+            openAISaved = OpenAIAPIKeyStorage.apiKey == cleanKey(openAIKey)
+        }
+        .onChange(of: googleKey) { _, _ in
+            googleSaved = UserDefaults.standard.string(forKey: VeoService.userDefaultsKey)?.trimmingCharacters(in: .whitespacesAndNewlines) == cleanKey(googleKey)
+        }
+    }
+
+    private func apiKeyEditor(text: Binding<String>, placeholder: String) -> some View {
+        ZStack(alignment: .topLeading) {
+            if text.wrappedValue.isEmpty {
+                Text(placeholder)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 8)
+            }
+
+            TextEditor(text: text)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .font(.system(.body, design: .monospaced))
+                .frame(minHeight: 72)
+                .scrollContentBackground(.hidden)
+                .textSelection(.enabled)
+        }
     }
 
     private func saveOpenAIKey() {
-        UserDefaults.standard.set(openAIKey, forKey: "OpenAI_API_Key")
+        let cleaned = cleanKey(openAIKey)
+        guard !cleaned.isEmpty else { return }
+        OpenAIAPIKeyStorage.save(cleaned)
+        openAIKey = cleaned
         openAISaved = true
     }
 
     private func saveGoogleKey() {
-        UserDefaults.standard.set(googleKey, forKey: VeoService.userDefaultsKey)
+        let cleaned = cleanKey(googleKey)
+        guard !cleaned.isEmpty else { return }
+        UserDefaults.standard.set(cleaned, forKey: VeoService.userDefaultsKey)
+        googleKey = cleaned
         googleSaved = true
+    }
+
+    private func pasteKey(_ value: String?, into field: APIKeyField, saveImmediately: Bool) {
+        let pasted = extractKey(from: value, for: field)
+        guard !pasted.isEmpty else {
+            pasteMessage = "Clipboard is empty or does not contain text."
+            return
+        }
+
+        switch field {
+        case .openAI:
+            openAIKey = pasted
+            if saveImmediately {
+                saveOpenAIKey()
+            }
+            pasteMessage = "OpenAI key pasted and saved."
+        case .google:
+            googleKey = pasted
+            if saveImmediately {
+                saveGoogleKey()
+            }
+            pasteMessage = "Google key pasted and saved."
+        }
+    }
+
+    private func cleanKey(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func extractKey(from value: String?, for field: APIKeyField) -> String {
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !trimmed.isEmpty else { return "" }
+
+        let pattern: String
+        switch field {
+        case .openAI:
+            pattern = #"sk-[A-Za-z0-9_-]+"#
+        case .google:
+            pattern = #"AIza[A-Za-z0-9_-]+"#
+        }
+
+        if let range = trimmed.range(of: pattern, options: .regularExpression) {
+            return String(trimmed[range])
+        }
+
+        return trimmed
     }
 }

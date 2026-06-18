@@ -7,6 +7,7 @@ struct TimedTextView: View {
     let segment: StorySegmentTiming
     let currentTime: Double /// The current stream time in seconds
     var includesPadding: Bool = true
+    @Environment(\.storyWordLookupAction) private var lookupAction
 
     var body: some View {
         Text(attributedParagraph)
@@ -15,6 +16,26 @@ struct TimedTextView: View {
             .fixedSize(horizontal: false, vertical: true)
             .padding(includesPadding ? 16 : 0)
             .animation(.easeInOut(duration: 0.1), value: currentTime)
+            .environment(\.openURL, OpenURLAction { url in
+                guard url.scheme == "x-learnci-word",
+                      let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                      let word = components.queryItems?.first(where: { $0.name == "word" })?.value else {
+                    return .systemAction
+                }
+
+                let time = components.queryItems?
+                    .first(where: { $0.name == "t" })?
+                    .value
+                    .flatMap(Double.init)
+                lookupAction?(
+                    StoryWordLookupRequest(
+                        word: word,
+                        time: time,
+                        context: sentenceContaining(word: word, in: segment.text)
+                    )
+                )
+                return .handled
+            })
     }
 
     // Computes the text styles based on the current time
@@ -42,6 +63,9 @@ struct TimedTextView: View {
                let upperBound = AttributedString.Index(swiftRange.upperBound, within: attrString) {
 
                 let attrRange = lowerBound..<upperBound
+                let word = String(segment.text[swiftRange])
+                let encodedWord = word.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? word
+                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&t=\(timing.start)")
 
                 // 150ms slack for smoother word-to-word transitions
                 let slack: Double = 0.150
@@ -55,6 +79,13 @@ struct TimedTextView: View {
         }
 
         return attrString
+    }
+
+    private func sentenceContaining(word: String, in text: String) -> String? {
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
+        return sentences
+            .first(where: { $0.localizedCaseInsensitiveContains(word) })?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

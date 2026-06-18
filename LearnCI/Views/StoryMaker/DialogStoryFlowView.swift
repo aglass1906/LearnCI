@@ -329,11 +329,20 @@ struct DialogStoryFlowView: View {
                                 includesPadding: false
                             )
                         } else {
-                            Text(body)
-                                .font(.body)
-                                .lineSpacing(8)
-                                .foregroundStyle(showEnglish ? .secondary : .primary)
-                                .textSelection(.enabled)
+                            if showEnglish {
+                                Text(body)
+                                    .font(.body)
+                                    .lineSpacing(8)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            } else {
+                                TappableStoryText(
+                                    text: body,
+                                    font: .body,
+                                    lineSpacing: 8,
+                                    foregroundColor: .primary
+                                )
+                            }
                         }
                     }
                     Color.clear.frame(height: 80)

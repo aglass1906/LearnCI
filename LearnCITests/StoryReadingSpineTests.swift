@@ -55,6 +55,65 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(clip.urlString, "user/story/about.m4a")
     }
 
+    func testChapterEnglishBodyFallsBackToSceneScriptEnglish() throws {
+        let chapter = StoryChapter(
+            chapterNumber: 1,
+            titleTargetLanguage: "Capitulo Uno",
+            titleEnglish: "Chapter One",
+            scenes: [
+                StoryScene(
+                    sceneIndex: 0,
+                    captionTarget: "Hola mundo",
+                    captionNative: nil,
+                    audioUrl: "a/scene_0.mp3",
+                    scriptEnglish: "Hello world"
+                )
+            ]
+        )
+
+        XCTAssertEqual(chapter.bodyTextEnglishForReading, "Hello world")
+    }
+
+    func testChapterEnglishBodyFallsBackToDialogueEnglish() throws {
+        let chapter = StoryChapter(
+            chapterNumber: 1,
+            titleTargetLanguage: "Capitulo Uno",
+            titleEnglish: "Chapter One",
+            scenes: [
+                StoryScene(
+                    sceneIndex: 0,
+                    captionTarget: "Dialogo",
+                    captionNative: nil,
+                    dialogues: [
+                        SceneDialogue(character: "LUZ", text: "Hola", textEnglish: "Hello")
+                    ],
+                    audioUrl: "a/scene_0.mp3"
+                )
+            ]
+        )
+
+        XCTAssertEqual(chapter.bodyTextEnglishForReading, "LUZ: Hello")
+    }
+
+    func testChapterEnglishBodyFallsBackToChapterScriptEnglish() throws {
+        let chapter = StoryChapter(
+            chapterNumber: 1,
+            titleTargetLanguage: "Capitulo Uno",
+            titleEnglish: "Chapter One",
+            scriptEnglish: "A complete chapter translation.",
+            scenes: [
+                StoryScene(
+                    sceneIndex: 0,
+                    captionTarget: "Hola mundo",
+                    captionNative: nil,
+                    audioUrl: "a/scene_0.mp3"
+                )
+            ]
+        )
+
+        XCTAssertEqual(chapter.bodyTextEnglishForReading, "A complete chapter translation.")
+    }
+
     func testReadingMatterImageURLFallsBackToFirstChapterCover() throws {
         let chapters = [
             StoryChapter(

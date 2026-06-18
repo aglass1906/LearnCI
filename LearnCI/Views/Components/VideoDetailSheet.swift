@@ -478,6 +478,9 @@ struct VideoDetailSheet: View {
             playRequest: $playRequest,
             pauseRequest: $pauseRequest,
             seekAndPlayRequest: $seekAndPlayRequest,
+            initialPlaybackTime: studyViewModel.playback.currentTime,
+            initialPlaybackRate: studyViewModel.playback.playbackRate,
+            shouldResumePlayback: studyViewModel.playback.isPlaying,
             onPlaybackSnapshot: handlePlaybackSnapshot
         )
         .cornerRadius(12)

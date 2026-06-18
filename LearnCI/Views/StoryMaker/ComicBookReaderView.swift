@@ -171,16 +171,23 @@ private struct ComicPanelView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 if !panel.caption.isEmpty {
-                    Text(panel.caption)
-                        .font(.caption.weight(.semibold))
+                    TappableStoryText(
+                        text: panel.caption,
+                        font: .caption.weight(.semibold),
+                        lineSpacing: 2,
+                        foregroundColor: .white
+                    )
                         .lineLimit(4)
                 }
 
                 ForEach(panel.scene.dialogues.prefix(2)) { dialogue in
-                    Text("\(dialogue.character): \(dialogue.text)")
-                        .font(.caption2)
+                    TappableStoryText(
+                        text: "\(dialogue.character): \(dialogue.text)",
+                        font: .caption2,
+                        lineSpacing: 1,
+                        foregroundColor: .white.opacity(0.9)
+                    )
                         .lineLimit(2)
-                        .foregroundStyle(.white.opacity(0.9))
                 }
             }
             .foregroundStyle(.white)
@@ -250,8 +257,7 @@ private struct ComicPanelDetailView: View {
                 }
 
                 if !panel.caption.isEmpty {
-                    Text(panel.caption)
-                        .font(.body)
+                    TappableStoryText(text: panel.caption, font: .body)
                 }
 
                 if !panel.scene.dialogues.isEmpty {
@@ -261,8 +267,7 @@ private struct ComicPanelDetailView: View {
                                 Text(dialogue.character)
                                     .font(.caption.weight(.bold))
                                     .foregroundStyle(.secondary)
-                                Text(dialogue.text)
-                                    .font(.body)
+                                TappableStoryText(text: dialogue.text, font: .body)
                             }
                             .padding(12)
                             .frame(maxWidth: .infinity, alignment: .leading)

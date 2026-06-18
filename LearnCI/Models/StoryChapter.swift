@@ -34,17 +34,23 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var bodyTextTargetForReading: String {
         return scenes
             .sorted { $0.sceneIndex < $1.sceneIndex }
-            .compactMap { $0.captionTarget }
+            .compactMap { $0.targetTextForReading }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .joined(separator: "\n\n")
     }
 
     var bodyTextEnglishForReading: String {
-        return scenes
+        let sceneText = scenes
             .sorted { $0.sceneIndex < $1.sceneIndex }
-            .compactMap { $0.captionNative }
+            .compactMap { $0.nativeTextForReading }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .joined(separator: "\n\n")
+
+        if !sceneText.isEmpty {
+            return sceneText
+        }
+
+        return scriptEnglish?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
     /// Short synopsis for preview / table-of-contents rows (plot summary, not intro or body).

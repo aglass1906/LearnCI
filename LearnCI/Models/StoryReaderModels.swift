@@ -136,6 +136,34 @@ struct StoryScene: Codable, Identifiable, Equatable {
         !(audioUrl ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    var targetTextForReading: String? {
+        if let caption = Self.trimmedNonEmpty(captionTarget) {
+            return caption
+        }
+        return captionAndDialogueTranscript(fallbackScript: true)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .nilIfEmptyStoryScene
+    }
+
+    var nativeTextForReading: String? {
+        if let caption = Self.trimmedNonEmpty(captionNative) {
+            return caption
+        }
+
+        var lines: [String] = []
+        for dialogue in dialogues {
+            let character = dialogue.character.trimmingCharacters(in: .whitespacesAndNewlines)
+            let text = dialogue.textEnglish?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard !character.isEmpty, !text.isEmpty else { continue }
+            lines.append("\(character): \(text)")
+        }
+        if !lines.isEmpty {
+            return lines.joined(separator: "\n")
+        }
+
+        return Self.trimmedNonEmpty(scriptEnglish)
+    }
+
     /// Timed segments for transcript highlighting (per-scene word timings).
     func transcriptSegments(preferences: StoryPreferences) -> [StorySegmentTiming] {
         let text = spokenTranscriptText(preferences: preferences)
@@ -179,6 +207,12 @@ struct StoryScene: Codable, Identifiable, Equatable {
         guard let value else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+private extension String {
+    var nilIfEmptyStoryScene: String? {
+        isEmpty ? nil : self
     }
 }
 

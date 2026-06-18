@@ -4,18 +4,21 @@ struct StoryReaderFactoryView: View {
     let story: Story
 
     var body: some View {
-        switch story.preferences.storyType {
-        case .storyBook, .standard:
-            StorySessionView(story: story)
-        case .audioStory:
-            AudioBookReaderView(story: story)
-        case .dialogStory:
-            DialogStoryFlowView(story: story)
-        case .comicBook:
-            ComicBookReaderView(story: story)
-        case .pictureBook:
-            PictureBookReaderView(story: story)
+        Group {
+            switch story.preferences.storyType {
+            case .storyBook, .standard:
+                StorySessionView(story: story)
+            case .audioStory:
+                AudioBookReaderView(story: story)
+            case .dialogStory:
+                DialogStoryFlowView(story: story)
+            case .comicBook:
+                ComicBookReaderView(story: story)
+            case .pictureBook:
+                PictureBookReaderView(story: story)
+            }
         }
+        .storyWordLookupHost(story: story)
     }
 }
 

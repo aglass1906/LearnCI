@@ -24,13 +24,24 @@ enum OpenAIServiceError: Error, LocalizedError {
 }
 
 enum OpenAIAPIKeyStorage {
+    private static let userDefaultsKey = "OpenAI_API_Key"
+
     static var apiKey: String? {
-        UserDefaults.standard.string(forKey: "OpenAI_API_Key")
+        UserDefaults.standard.string(forKey: userDefaultsKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static var isConfigured: Bool {
         guard let apiKey else { return false }
         return !apiKey.isEmpty
+    }
+
+    static func save(_ apiKey: String) {
+        UserDefaults.standard.set(apiKey.trimmingCharacters(in: .whitespacesAndNewlines), forKey: userDefaultsKey)
+    }
+
+    static func remove() {
+        UserDefaults.standard.removeObject(forKey: userDefaultsKey)
     }
 }
 
@@ -923,12 +934,35 @@ actor OpenAIService {
         let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
         guard let contentString = result.choices.first?.message.content,
               let contentData = contentString.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: contentData) as? [String: String],
-              let translation = json["translation"] else {
+              let json = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any],
+              let rawTranslation = json["translation"] else {
             throw OpenAIServiceError.decodingError
         }
 
-        return (translation, json["partOfSpeech"] ?? "")
+        let translation: String
+        if let value = rawTranslation as? String {
+            translation = value
+        } else if let values = rawTranslation as? [String] {
+            translation = values.joined(separator: ", ")
+        } else {
+            translation = String(describing: rawTranslation)
+        }
+
+        let partOfSpeech: String
+        if let value = json["partOfSpeech"] as? String {
+            partOfSpeech = value
+        } else if let value = json["part_of_speech"] as? String {
+            partOfSpeech = value
+        } else {
+            partOfSpeech = ""
+        }
+
+        let trimmedTranslation = translation.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTranslation.isEmpty else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        return (trimmedTranslation, partOfSpeech)
     }
 
     // Check if key exists

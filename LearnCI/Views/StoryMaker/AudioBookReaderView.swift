@@ -1334,11 +1334,20 @@ private struct AudioBookTranscriptSheet: View {
                         .padding(.horizontal, -16)
                 }
             } else {
-                Text(section.body)
-                    .font(.body)
-                    .lineSpacing(6)
-                    .foregroundStyle(section.isNowPlaying ? .primary : .secondary)
-                    .textSelection(.enabled)
+                if section.allowsWordLookup {
+                    TappableStoryText(
+                        text: section.body,
+                        font: .body,
+                        lineSpacing: 6,
+                        foregroundColor: section.isNowPlaying ? .primary : .secondary
+                    )
+                } else {
+                    Text(section.body)
+                        .font(.body)
+                        .lineSpacing(6)
+                        .foregroundStyle(section.isNowPlaying ? .primary : .secondary)
+                        .textSelection(.enabled)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1362,6 +1371,7 @@ private struct AudioBookTranscriptSheet: View {
         let body: String
         let segments: [StorySegmentTiming]
         let isNowPlaying: Bool
+        let allowsWordLookup: Bool
     }
 
     private var transcriptSections: [AudioBookTranscriptSection] {
@@ -1374,7 +1384,8 @@ private struct AudioBookTranscriptSheet: View {
                     heading: nil,
                     body: overview,
                     segments: [],
-                    isNowPlaying: false
+                    isNowPlaying: false,
+                    allowsWordLookup: false
                 )
             ]
 
@@ -1386,11 +1397,13 @@ private struct AudioBookTranscriptSheet: View {
                         heading: nil,
                         body: "No reading matter text available.",
                         segments: [],
-                        isNowPlaying: false
+                        isNowPlaying: false,
+                        allowsWordLookup: false
                     )
                 ]
             }
-            let body = page.bodyTarget?.nilIfEmptyAudioBook
+            let targetBody = page.bodyTarget?.nilIfEmptyAudioBook
+            let body = targetBody
                 ?? page.bodyNative?.nilIfEmptyAudioBook
                 ?? ""
             return [
@@ -1399,7 +1412,8 @@ private struct AudioBookTranscriptSheet: View {
                     heading: page.titleTarget,
                     body: body,
                     segments: [],
-                    isNowPlaying: false
+                    isNowPlaying: false,
+                    allowsWordLookup: targetBody != nil
                 )
             ]
 
@@ -1438,7 +1452,8 @@ private struct AudioBookTranscriptSheet: View {
                         heading: isIntroCurrent ? "Chapter Intro · Now Playing" : "Chapter Intro",
                         body: introText,
                         segments: introSegments,
-                        isNowPlaying: isIntroCurrent
+                        isNowPlaying: isIntroCurrent,
+                        allowsWordLookup: true
                     )
                 )
             }
@@ -1461,7 +1476,8 @@ private struct AudioBookTranscriptSheet: View {
                         heading: "Chapter",
                         body: body,
                         segments: isCurrent ? segments : [],
-                        isNowPlaying: isCurrent
+                        isNowPlaying: isCurrent,
+                        allowsWordLookup: true
                     )
                 ].filter { !$0.body.isEmpty }
             }
@@ -1480,7 +1496,8 @@ private struct AudioBookTranscriptSheet: View {
                     heading: heading,
                     body: text,
                     segments: isCurrent ? scene.transcriptSegments(preferences: story.preferences) : [],
-                    isNowPlaying: isCurrent
+                    isNowPlaying: isCurrent,
+                    allowsWordLookup: true
                 )
             })
 

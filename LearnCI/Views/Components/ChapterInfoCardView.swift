@@ -164,10 +164,21 @@ struct ChapterInfoCardView: View {
             } else {
                 let parts = intro.components(separatedBy: "\n\n")
                 if let quote = parts.first {
-                    Text(quote)
-                        .font(.title3)
-                        .italic()
-                        .foregroundStyle(.secondary)
+                    Group {
+                        if selectedLanguage == .target {
+                            TappableStoryText(
+                                text: quote,
+                                font: .title3.italic(),
+                                lineSpacing: 4,
+                                foregroundColor: .secondary
+                            )
+                        } else {
+                            Text(quote)
+                                .font(.title3)
+                                .italic()
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                         .padding(.leading, 12)
                         .frame(width: proseWidth, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -179,9 +190,22 @@ struct ChapterInfoCardView: View {
                         )
                 }
                 if parts.count > 1 {
-                    Text(parts.dropFirst().joined(separator: "\n\n"))
-                        .font(.body)
-                        .foregroundStyle(selectedLanguage == .native ? .secondary : .primary)
+                    let body = parts.dropFirst().joined(separator: "\n\n")
+                    Group {
+                        if selectedLanguage == .target {
+                            TappableStoryText(
+                                text: body,
+                                font: .body,
+                                lineSpacing: 6,
+                                foregroundColor: .primary
+                            )
+                        } else {
+                            Text(body)
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                         .frame(width: proseWidth, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 8)

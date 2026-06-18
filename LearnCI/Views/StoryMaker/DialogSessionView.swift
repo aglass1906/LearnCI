@@ -700,13 +700,24 @@ private struct DialogBubbleView: View {
                 .foregroundStyle(bubble.color)
                 .textCase(.uppercase)
 
-            Text(displayText)
-                .font(.body)
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(12)
-                .background(bubble.color.opacity(0.16))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+            Group {
+                if showEnglish {
+                    Text(displayText)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    TappableStoryText(
+                        text: displayText,
+                        font: .body,
+                        lineSpacing: 0,
+                        foregroundColor: .primary
+                    )
+                }
+            }
+            .padding(12)
+            .background(bubble.color.opacity(0.16))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .frame(maxWidth: UIScreen.main.bounds.width * 0.65, alignment: bubble.isRightAligned ? .trailing : .leading)
     }

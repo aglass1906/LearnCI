@@ -561,14 +561,11 @@ struct GameView: View {
     }
 
     private func configureSelectedGame() {
-        if selectedDeck == nil || selectedDeck?.supportedModes.contains(selectedGameType) == false {
-            selectedDeck = quickStartDeck(for: selectedGameType)
-                ?? dataManager
-                    .discoverDecks(language: sessionLanguage, proficiency: sessionLevel)
-                    .first { $0.supportedModes.contains(selectedGameType) }
+        if selectedDeck?.supportedModes.contains(selectedGameType) == false {
+            selectedDeck = nil
         }
 
-        setupStage = selectedDeck == nil ? .deckSelection : .sessionConfiguration
+        setupStage = .deckSelection
     }
 
     func setupConfiguration() {

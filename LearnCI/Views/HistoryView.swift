@@ -110,61 +110,66 @@ struct ActivityHistoryContent: View {
             )
         }.sorted { $0.minutes > $1.minutes }
     }
+
+    private var selectedTypeTitle: String {
+        selectedActivityType?.rawValue ?? "All Types"
+    }
+
+    private var selectedDateTitle: String {
+        guard selectedTimeRange == .custom else {
+            return selectedTimeRange.rawValue
+        }
+
+        return "\(startDate.formatted(date: .abbreviated, time: .omitted)) - \(endDate.formatted(date: .abbreviated, time: .omitted))"
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             // Filters
-            VStack(spacing: 12) {
-                HStack {
-                    Picker("Time Range", selection: $selectedTimeRange) {
-                        ForEach(HistoryView.TimeRange.allCases) { range in
-                            Text(range.rawValue).tag(range)
+            HStack(spacing: 12) {
+                Menu {
+                    Button {
+                        selectedActivityType = nil
+                    } label: {
+                        if selectedActivityType == nil {
+                            Label("All Types", systemImage: "checkmark")
+                        } else {
+                            Text("All Types")
                         }
                     }
-                    .pickerStyle(.segmented)
-                    
-                    Button(action: { showDateRangePicker = true }) {
-                        Image(systemName: "calendar")
-                            .font(.title3)
-                            .padding(8)
-                            .background(Color.blue.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.horizontal)
-                
-                if selectedTimeRange == .custom {
-                    HStack {
-                        Text(startDate.formatted(date: .abbreviated, time: .omitted))
-                        Image(systemName: "arrow.right")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(endDate.formatted(date: .abbreviated, time: .omitted))
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        FilterChip(title: "All Types", isSelected: selectedActivityType == nil) {
-                            selectedActivityType = nil
-                        }
-                        
-                        ForEach(ActivityType.allCases) { type in
-                            FilterChip(title: type.rawValue, isSelected: selectedActivityType == type) {
-                                selectedActivityType = type
+
+                    Divider()
+
+                    ForEach(ActivityType.allCases) { type in
+                        Button {
+                            selectedActivityType = type
+                        } label: {
+                            if selectedActivityType == type {
+                                Label(type.rawValue, systemImage: "checkmark")
+                            } else {
+                                Label(type.rawValue, systemImage: type.icon)
                             }
                         }
                     }
-                    .padding(.horizontal)
+                } label: {
+                    filterControl(
+                        title: selectedTypeTitle,
+                        systemImage: selectedActivityType?.icon ?? "square.grid.2x2",
+                        showsChevron: true
+                    )
+                }
+
+                Button {
+                    showDateRangePicker = true
+                } label: {
+                    filterControl(
+                        title: selectedDateTitle,
+                        systemImage: "calendar",
+                        showsChevron: false
+                    )
                 }
             }
+            .padding(.horizontal)
             .padding(.vertical)
             .background(Color(UIColor.systemGroupedBackground))
             
@@ -290,9 +295,11 @@ struct ActivityHistoryContent: View {
             AddActivityView()
         }
         .sheet(isPresented: $showDateRangePicker) {
-            DateRangePickerSheet(startDate: $startDate, endDate: $endDate) {
-                selectedTimeRange = .custom
-            }
+            DateRangePickerSheet(
+                selectedTimeRange: $selectedTimeRange,
+                startDate: $startDate,
+                endDate: $endDate
+            )
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -300,6 +307,36 @@ struct ActivityHistoryContent: View {
                     Image(systemName: "plus")
                 }
             }
+        }
+    }
+
+    private func filterControl(title: String, systemImage: String, showsChevron: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundStyle(.blue)
+
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+
+            Spacer(minLength: 4)
+
+            if showsChevron {
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .foregroundStyle(.primary)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.secondary.opacity(0.15))
         }
     }
     
@@ -312,55 +349,57 @@ struct ActivityHistoryContent: View {
 }
 
 struct DateRangePickerSheet: View {
+    @Binding var selectedTimeRange: HistoryView.TimeRange
     @Binding var startDate: Date
     @Binding var endDate: Date
     @Environment(\.dismiss) private var dismiss
-    let onApply: () -> Void
+
+    @State private var draftTimeRange: HistoryView.TimeRange
+    @State private var draftStartDate: Date
+    @State private var draftEndDate: Date
+
+    init(
+        selectedTimeRange: Binding<HistoryView.TimeRange>,
+        startDate: Binding<Date>,
+        endDate: Binding<Date>
+    ) {
+        _selectedTimeRange = selectedTimeRange
+        _startDate = startDate
+        _endDate = endDate
+        _draftTimeRange = State(initialValue: selectedTimeRange.wrappedValue)
+        _draftStartDate = State(initialValue: startDate.wrappedValue)
+        _draftEndDate = State(initialValue: endDate.wrappedValue)
+    }
     
     var body: some View {
         NavigationStack {
             Form {
-                Section("Quick Select") {
-                    HStack {
-                        Button("Last 30 Days") {
-                            startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-                            endDate = Date()
-                        }
-                        .buttonStyle(.bordered)
-                        
-                        Button("This Month") {
-                            let components = Calendar.current.dateComponents([.year, .month], from: Date())
-                            startDate = Calendar.current.date(from: components) ?? Date()
-                            endDate = Date()
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    
-                    Button("Last Month") {
-                        let calendar = Calendar.current
-                        var components = calendar.dateComponents([.year, .month], from: Date())
-                        components.month! -= 1
-                        startDate = calendar.date(from: components) ?? Date()
-                        
-                        if let range = calendar.range(of: .day, in: .month, for: startDate) {
-                            components.day = range.count
-                            endDate = calendar.date(from: components) ?? Date()
+                Section("Date Range") {
+                    ForEach(HistoryView.TimeRange.allCases) { range in
+                        Button {
+                            draftTimeRange = range
+                        } label: {
+                            HStack {
+                                Text(range.rawValue)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if draftTimeRange == range {
+                                    Image(systemName: "checkmark")
+                                        .fontWeight(.semibold)
+                                }
+                            }
                         }
                     }
-                    .buttonStyle(.bordered)
                 }
                 
-                Section("Custom Start Date") {
-                    DatePicker("Start Date", selection: $startDate, in: ...endDate, displayedComponents: .date)
-                        .datePickerStyle(.graphical)
-                }
-                
-                Section("Custom End Date") {
-                    DatePicker("End Date", selection: $endDate, in: startDate...Date(), displayedComponents: .date)
-                        .datePickerStyle(.graphical)
+                if draftTimeRange == .custom {
+                    Section("Custom Range") {
+                        DatePicker("Start Date", selection: $draftStartDate, in: ...draftEndDate, displayedComponents: .date)
+                        DatePicker("End Date", selection: $draftEndDate, in: draftStartDate...Date(), displayedComponents: .date)
+                    }
                 }
             }
-            .navigationTitle("Select Range")
+            .navigationTitle("Select Dates")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -369,34 +408,17 @@ struct DateRangePickerSheet: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Apply") {
-                        onApply()
+                    Button("Done") {
+                        selectedTimeRange = draftTimeRange
+                        startDate = draftStartDate
+                        endDate = draftEndDate
                         dismiss()
                     }
                     .fontWeight(.bold)
                 }
             }
         }
-        .presentationDetents([.large])
-    }
-}
-
-struct FilterChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.blue : Color.gray.opacity(0.2))
-                .foregroundColor(isSelected ? .white : .primary)
-                .cornerRadius(20)
-        }
+        .presentationDetents([.medium, .large])
     }
 }
 

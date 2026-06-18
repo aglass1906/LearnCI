@@ -3,6 +3,9 @@ import Combine
 
 struct AudioBookReaderView: View {
     let story: Story
+    private let initialNavIndex: Int
+    private let initialPlaybackPosition: Double?
+    private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @State private var isPreparingReader = true
     @State private var readerIssue: StoryReaderRequirementIssue?
@@ -24,13 +27,22 @@ struct AudioBookReaderView: View {
     @State private var sleepTimerMode: AudioBookSleepTimerMode = .inactive
     @State private var sleepTimerEndDate: Date?
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
+    @State private var lastSavedPlaybackSecond = -1
 
     @Bindable private var audioManager = AudioManager.shared
     private let sleepTimerTicker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private let supplementalTicker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
-    init(story: Story) {
+    init(
+        story: Story,
+        initialNavIndex: Int = 0,
+        initialPlaybackPosition: Double? = nil,
+        onProgressChange: ((StoryReaderProgressUpdate) -> Void)? = nil
+    ) {
         self.story = story
+        self.initialNavIndex = initialNavIndex
+        self.initialPlaybackPosition = initialPlaybackPosition
+        self.onProgressChange = onProgressChange
     }
 
     private var isBufferingPlayback: Bool {
@@ -119,6 +131,7 @@ struct AudioBookReaderView: View {
                 duration = supplementalPlayback.duration
             }
             isPlaying = supplementalPlayback.isPlaying
+            saveTimedReadingProgressIfNeeded(position: sliderValue)
         }
         .onChange(of: currentClipIndex) { _, _ in
             syncSelectionToCurrentClip()
@@ -129,6 +142,7 @@ struct AudioBookReaderView: View {
         .onChange(of: selectedNavItemID) { _, _ in
             loadLockScreenArtwork()
             prepareSupplementalForSelectedNavItem()
+            saveReadingProgress()
         }
         .onChange(of: audioManager.streamFinished) { _, finished in
             guard finished else { return }
@@ -138,6 +152,7 @@ struct AudioBookReaderView: View {
             guard !isOnReadingMatterSelection else { return }
             guard audioManager.streamPlayer != nil, currentChapterIndex != nil else { return }
             sliderValue = currentClipStartOffset + time
+            saveTimedReadingProgressIfNeeded(position: sliderValue)
             updateNowPlayingMetadata()
         }
         .onReceive(sleepTimerTicker) { _ in
@@ -241,6 +256,8 @@ struct AudioBookReaderView: View {
                 isPreparingReader = false
                 bootstrapSelection()
                 prepareSupplementalForSelectedNavItem()
+                prepareInitialPlaybackPositionIfNeeded()
+                saveReadingProgress()
                 if isOnReadingMatterSelection {
                     startReadingMatterPlayback()
                 }
@@ -787,6 +804,14 @@ struct AudioBookReaderView: View {
     }
 
     private func bootstrapSelection() {
+        if navItems.indices.contains(initialNavIndex) {
+            selectedNavItemID = navItems[initialNavIndex].id
+            if let clipIndex = navItems[initialNavIndex].firstClipIndex {
+                currentClipIndex = clipIndex
+            }
+            return
+        }
+
         if let firstMatter = firstFrontReadingMatterItem {
             selectedNavItemID = firstMatter.id
         } else if let cover = navItems.first(where: { $0.kind == .cover }) {
@@ -1148,6 +1173,46 @@ struct AudioBookReaderView: View {
         return clips[currentClipIndex].chapterIndex
     }
 
+    private func saveReadingProgress() {
+        guard let selectedNavItemID,
+              let index = navItems.firstIndex(where: { $0.id == selectedNavItemID }) else { return }
+        onProgressChange?(StoryReaderProgressUpdate(
+            index: index,
+            total: navItems.count,
+            chapterIndex: currentChapterIndex,
+            sceneIndex: currentSceneIndexForProgress,
+            position: sliderValue > 0 ? sliderValue : nil
+        ))
+    }
+
+    private var currentSceneIndexForProgress: Int? {
+        guard clips.indices.contains(currentClipIndex) else { return nil }
+        let clip = clips[currentClipIndex]
+        return clip.isChapterIntro ? nil : clip.sceneIndex
+    }
+
+    private func saveTimedReadingProgressIfNeeded(position: Double) {
+        let second = Int(position.rounded())
+        guard second != lastSavedPlaybackSecond else { return }
+        lastSavedPlaybackSecond = second
+        saveReadingProgress()
+    }
+
+    private func prepareInitialPlaybackPositionIfNeeded() {
+        guard let initialPlaybackPosition,
+              initialPlaybackPosition > 0,
+              let chapterIndex = currentChapterIndex,
+              let target = readerAdapter.clipIndex(
+                forChapter: chapterIndex,
+                localTime: initialPlaybackPosition,
+                includeIntro: true
+              ) else { return }
+
+        let chapterClips = readerAdapter.chapterPlaybackClips(forChapter: chapterIndex)
+        guard chapterClips.indices.contains(target.index),
+              let globalIndex = clips.firstIndex(where: { $0.id == chapterClips[target.index].id }) else { return }
+        playClip(at: globalIndex, autoplay: false, startAt: target.offset)
+    }
 }
 
 // MARK: - Loading

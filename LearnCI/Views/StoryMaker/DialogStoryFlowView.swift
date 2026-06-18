@@ -5,6 +5,9 @@ import Combine
 /// full-screen steps; scene dialogue in an embedded `DialogSessionView`.
 struct DialogStoryFlowView: View {
     let story: Story
+    private let initialSpineIndex: Int
+    private let initialPlaybackPosition: Double?
+    private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var spineIndex = 0
@@ -14,8 +17,22 @@ struct DialogStoryFlowView: View {
     @State private var chapterHeroImage: UIImage?
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
     @State private var sliderValue: Double = 0
+    @State private var lastSavedPlaybackSecond = -1
 
     private let spinePlaybackTimer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
+    init(
+        story: Story,
+        initialSpineIndex: Int = 0,
+        initialPlaybackPosition: Double? = nil,
+        onProgressChange: ((StoryReaderProgressUpdate) -> Void)? = nil
+    ) {
+        self.story = story
+        self.initialSpineIndex = initialSpineIndex
+        self.initialPlaybackPosition = initialPlaybackPosition
+        self.onProgressChange = onProgressChange
+        _spineIndex = State(initialValue: max(0, initialSpineIndex))
+    }
 
     private enum FlowPhase: Equatable {
         case spine
@@ -62,6 +79,10 @@ struct DialogStoryFlowView: View {
             guard flowPhase == .spine, isOnSupplementalSpineItem else { return }
             supplementalPlayback.syncStreamState()
             sliderValue = supplementalPlayback.currentTime
+            saveTimedReadingProgressIfNeeded(position: sliderValue)
+        }
+        .onChange(of: spineIndex) { _, _ in
+            saveReadingProgress()
         }
     }
 
@@ -598,6 +619,10 @@ struct DialogStoryFlowView: View {
 
     private func reconcileSpinePosition() {
         guard flowPhase == .spine else { return }
+        if !spineItems.indices.contains(spineIndex), !spineItems.isEmpty {
+            spineIndex = 0
+        }
+        saveReadingProgress()
 
         while spineIndex < spineItems.count {
             let item = spineItems[spineIndex]
@@ -644,6 +669,7 @@ struct DialogStoryFlowView: View {
     private func beginDialogue(for chapterIndex: Int) {
         stopSpinePlayback()
         AudioManager.shared.stopAudio()
+        saveReadingProgress()
         flowPhase = .dialogue(chapterIndex: chapterIndex)
     }
 
@@ -666,6 +692,43 @@ struct DialogStoryFlowView: View {
         }
 
         reconcileSpinePosition()
+    }
+
+    private func saveReadingProgress() {
+        guard spineItems.indices.contains(spineIndex) else { return }
+        onProgressChange?(StoryReaderProgressUpdate(
+            index: spineIndex,
+            total: spineItems.count,
+            chapterIndex: progressChapterIndex,
+            sceneIndex: progressSceneIndex,
+            position: sliderValue > 0 ? sliderValue : nil
+        ))
+    }
+
+    private func saveTimedReadingProgressIfNeeded(position: Double) {
+        let second = Int(position.rounded())
+        guard second != lastSavedPlaybackSecond else { return }
+        lastSavedPlaybackSecond = second
+        saveReadingProgress()
+    }
+
+    private var progressChapterIndex: Int? {
+        switch currentSpineItem {
+        case .chapter(let index), .scene(let index, _):
+            return index
+        default:
+            if case .dialogue(let chapterIndex) = flowPhase {
+                return chapterIndex
+            }
+            return nil
+        }
+    }
+
+    private var progressSceneIndex: Int? {
+        if case .scene(_, let sceneIndex) = currentSpineItem {
+            return sceneIndex
+        }
+        return nil
     }
 }
 

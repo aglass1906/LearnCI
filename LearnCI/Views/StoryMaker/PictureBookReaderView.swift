@@ -3,6 +3,9 @@ import Combine
 
 struct PictureBookReaderView: View {
     let story: Story
+    private let initialSpreadIndex: Int
+    private let initialPlaybackPosition: Double?
+    private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var currentSpreadIndex = 0
@@ -21,12 +24,23 @@ struct PictureBookReaderView: View {
     @State private var clipIndexToSpreadIndex: [Int: Int]
     @State private var selectedLanguage: StorySessionView.DisplayLanguage = .target
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
+    @State private var isAutoContinueEnabled = false
+    @State private var autoAdvanceToken = 0
+    @State private var lastSavedPlaybackSecond = -1
 
     private var audioManager = AudioManager.shared
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
-    init(story: Story) {
+    init(
+        story: Story,
+        initialSpreadIndex: Int = 0,
+        initialPlaybackPosition: Double? = nil,
+        onProgressChange: ((StoryReaderProgressUpdate) -> Void)? = nil
+    ) {
         self.story = story
+        self.initialSpreadIndex = initialSpreadIndex
+        self.initialPlaybackPosition = initialPlaybackPosition
+        self.onProgressChange = onProgressChange
         _spreads = State(initialValue: [])
         _clips = State(initialValue: [])
         _spreadIndexToClipIndex = State(initialValue: [:])
@@ -70,6 +84,13 @@ struct PictureBookReaderView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear(perform: loadBookIfNeeded)
+        .onChange(of: isAutoContinueEnabled) { _, enabled in
+            if enabled {
+                startAutoContinueForCurrentSpread()
+            } else {
+                cancelScheduledAutoAdvance()
+            }
+        }
         .sheet(isPresented: $showSpine) {
             PictureBookSpineSheet(
                 spreads: spreads,
@@ -82,6 +103,7 @@ struct PictureBookReaderView: View {
         }
         .mediaPlaybackLifecycle(
             onUserLeave: {
+                cancelScheduledAutoAdvance()
                 supplementalPlayback.stop()
                 audioManager.stopAudio()
             },
@@ -89,6 +111,7 @@ struct PictureBookReaderView: View {
         )
         .onChange(of: currentSpreadIndex) { _, _ in
             prepareSupplementalForCurrentSpread()
+            saveReadingProgress()
         }
         .onChange(of: selectedLanguage) { _, _ in
             guard isOnReadingMatterSpread else { return }
@@ -109,6 +132,7 @@ struct PictureBookReaderView: View {
                     duration = supplementalPlayback.duration
                 }
                 isPlaying = supplementalPlayback.isPlaying
+                saveTimedReadingProgressIfNeeded(position: sliderValue)
                 return
             }
 
@@ -125,6 +149,7 @@ struct PictureBookReaderView: View {
                     duration = audioManager.streamDuration
                 }
                 isPlaying = audioManager.isStreaming
+                saveTimedReadingProgressIfNeeded(position: sliderValue)
             }
         }
     }
@@ -144,10 +169,12 @@ struct PictureBookReaderView: View {
             clips = loadedClips
             spreadIndexToClipIndex = maps.spreadToClip
             clipIndexToSpreadIndex = maps.clipToSpread
-            currentSpreadIndex = 0
+            currentSpreadIndex = loadedSpreads.indices.contains(initialSpreadIndex) ? initialSpreadIndex : 0
             currentClipIndex = 0
             isLoadingBook = false
             prepareSupplementalForCurrentSpread()
+            prepareInitialPlaybackPositionIfNeeded()
+            saveReadingProgress()
         }
     }
 
@@ -212,6 +239,18 @@ struct PictureBookReaderView: View {
 
             pictureBookLanguageToggle
 
+            Button {
+                isAutoContinueEnabled.toggle()
+            } label: {
+                Image(systemName: isAutoContinueEnabled ? "play.circle.fill" : "play.circle")
+                    .font(.headline.weight(.semibold))
+                    .frame(width: 34, height: 34)
+                    .foregroundStyle(isAutoContinueEnabled ? Color.accentColor : .secondary)
+                    .background(.thinMaterial)
+                    .clipShape(Circle())
+            }
+            .accessibilityLabel(isAutoContinueEnabled ? "Turn Off Auto Continue" : "Turn On Auto Continue")
+
             Text("\(currentSpreadIndex + 1)/\(spreads.count)")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
@@ -261,7 +300,7 @@ struct PictureBookReaderView: View {
                 onSeek: seekTo,
                 onChangeRate: setRate,
                 onNextChapter: currentSpreadIndex < spreads.count - 1 ? {
-                    goToSpread(currentSpreadIndex + 1)
+                    goToSpread(currentSpreadIndex + 1, autoplay: isAutoContinueEnabled)
                 } : nil,
                 onPreviousChapter: currentSpreadIndex > 0 ? {
                     goToSpread(currentSpreadIndex - 1)
@@ -336,6 +375,9 @@ struct PictureBookReaderView: View {
             page: page,
             preferNative: preferNativeLanguage
         )
+        supplementalPlayback.onFinished = {
+            advanceAfterSupplementalFinished()
+        }
     }
 
     private func stopSupplementalPlayback() {
@@ -361,10 +403,11 @@ struct PictureBookReaderView: View {
         }
     }
 
-    private func goToSpread(_ index: Int) {
+    private func goToSpread(_ index: Int, autoplay: Bool? = nil) {
         guard spreads.indices.contains(index) else { return }
 
-        let wasPlaying = isPlaying
+        cancelScheduledAutoAdvance()
+        let shouldAutoplay = autoplay ?? isPlaying
         stopSupplementalPlayback()
         if !spreads[index].isScene {
             audioManager.stopAudio()
@@ -376,7 +419,7 @@ struct PictureBookReaderView: View {
 
         prepareSupplementalForCurrentSpread()
 
-        guard wasPlaying else { return }
+        guard shouldAutoplay else { return }
 
         if isOnReadingMatterSpread {
             supplementalPlayback.syncPlayback(
@@ -457,8 +500,9 @@ struct PictureBookReaderView: View {
         clips.isEmpty ? nil : 0
     }
 
-    private func playClip(at index: Int, autoplay: Bool) {
+    private func playClip(at index: Int, autoplay: Bool, startAt: Double = 0) {
         guard clips.indices.contains(index) else { return }
+        cancelScheduledAutoAdvance()
         stopSupplementalPlayback()
         currentClipIndex = index
         if let spreadIndex = clipIndexToSpreadIndex[index],
@@ -472,19 +516,19 @@ struct PictureBookReaderView: View {
         let localURL = adapter.localAudioURL(for: clip)
 
         if let cachedURL = adapter.cachedAudioURL(for: clip) {
-            playLocal(url: cachedURL, clip: clip, autoplay: autoplay)
+            playLocal(url: cachedURL, clip: clip, autoplay: autoplay, startAt: startAt)
             return
         }
 
         isDownloadingAudio = true
-        Task { await downloadAndPlay(clip: clip, localURL: localURL, autoplay: autoplay) }
+        Task { await downloadAndPlay(clip: clip, localURL: localURL, autoplay: autoplay, startAt: startAt) }
     }
 
-    private func playLocal(url: URL, clip: StorySceneAudioClip, autoplay: Bool) {
-        audioManager.streamAudio(url: url)
+    private func playLocal(url: URL, clip: StorySceneAudioClip, autoplay: Bool, startAt: Double = 0) {
+        audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
         duration = clip.duration ?? audioManager.streamDuration
-        sliderValue = 0
+        sliderValue = startAt
         audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
         if autoplay {
             audioManager.playStream()
@@ -492,7 +536,7 @@ struct PictureBookReaderView: View {
         }
     }
 
-    private func downloadAndPlay(clip: StorySceneAudioClip, localURL: URL, autoplay: Bool) async {
+    private func downloadAndPlay(clip: StorySceneAudioClip, localURL: URL, autoplay: Bool, startAt: Double = 0) async {
         guard let url = StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else {
             await MainActor.run { isDownloadingAudio = false }
             return
@@ -513,7 +557,7 @@ struct PictureBookReaderView: View {
 
             await MainActor.run {
                 isDownloadingAudio = false
-                playLocal(url: correctURL, clip: clip, autoplay: autoplay)
+                playLocal(url: correctURL, clip: clip, autoplay: autoplay, startAt: startAt)
             }
         } catch {
             await MainActor.run { isDownloadingAudio = false }
@@ -528,13 +572,108 @@ struct PictureBookReaderView: View {
                 if case .readingMatterPage = spreads[$0].spineItem { return true }
                 return false
             }) {
-                withAnimation(.easeOut(duration: 0.18)) {
-                    currentSpreadIndex = backMatterIndex
-                }
+                goToSpread(backMatterIndex, autoplay: isAutoContinueEnabled)
             }
             return
         }
         playClip(at: currentClipIndex + 1, autoplay: true)
+    }
+
+    private func startAutoContinueForCurrentSpread() {
+        cancelScheduledAutoAdvance()
+
+        if isOnReadingMatterSpread {
+            if currentReadingMatterCanPlay {
+                supplementalPlayback.syncPlayback(
+                    shouldPlay: true,
+                    speakableText: currentReadingMatterSpeakableText
+                )
+                isPlaying = supplementalPlayback.isPlaying
+            } else {
+                scheduleAutoAdvanceToNextSpread()
+            }
+            return
+        }
+
+        if currentSpread?.isScene == true {
+            if let clipIndex = spreadIndexToClipIndex[currentSpreadIndex] {
+                if currentClipIndex == clipIndex, audioManager.streamPlayer != nil {
+                    if !audioManager.isStreaming {
+                        audioManager.playStream()
+                        isPlaying = true
+                    }
+                } else {
+                    playClip(at: clipIndex, autoplay: true)
+                }
+            } else {
+                scheduleAutoAdvanceToNextSpread()
+            }
+            return
+        }
+
+        scheduleAutoAdvanceToNextSpread()
+    }
+
+    private func advanceAfterSupplementalFinished() {
+        guard isAutoContinueEnabled else {
+            isPlaying = false
+            return
+        }
+        guard currentSpreadIndex < spreads.count - 1 else {
+            isPlaying = false
+            return
+        }
+        goToSpread(currentSpreadIndex + 1, autoplay: true)
+    }
+
+    private func scheduleAutoAdvanceToNextSpread(delay: TimeInterval = 2.0) {
+        guard isAutoContinueEnabled, currentSpreadIndex < spreads.count - 1 else { return }
+        autoAdvanceToken += 1
+        let token = autoAdvanceToken
+        let nextIndex = currentSpreadIndex + 1
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard isAutoContinueEnabled, token == autoAdvanceToken else { return }
+            goToSpread(nextIndex, autoplay: true)
+        }
+    }
+
+    private func cancelScheduledAutoAdvance() {
+        autoAdvanceToken += 1
+    }
+
+    private func saveReadingProgress() {
+        guard spreads.indices.contains(currentSpreadIndex) else { return }
+        onProgressChange?(StoryReaderProgressUpdate(
+            index: currentSpreadIndex,
+            total: spreads.count,
+            chapterIndex: currentSpread?.chapterIndex,
+            sceneIndex: sceneIndex(for: currentSpread),
+            position: sliderValue > 0 ? sliderValue : nil
+        ))
+    }
+
+    private func saveTimedReadingProgressIfNeeded(position: Double) {
+        let second = Int(position.rounded())
+        guard second != lastSavedPlaybackSecond else { return }
+        lastSavedPlaybackSecond = second
+        saveReadingProgress()
+    }
+
+    private func prepareInitialPlaybackPositionIfNeeded() {
+        guard let initialPlaybackPosition,
+              initialPlaybackPosition > 0,
+              currentSpread?.isScene == true,
+              let clipIndex = spreadIndexToClipIndex[currentSpreadIndex] else { return }
+        playClip(at: clipIndex, autoplay: false, startAt: initialPlaybackPosition)
+    }
+
+    private func sceneIndex(for spread: PictureBookSpreadModel?) -> Int? {
+        guard let spread else { return nil }
+        if case .scene(_, let sceneIndex) = spread.spineItem {
+            return sceneIndex
+        }
+        return nil
     }
 }
 

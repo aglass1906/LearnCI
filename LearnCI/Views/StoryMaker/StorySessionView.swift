@@ -17,6 +17,9 @@ private enum StoryBookLayout {
 struct StorySessionView: View {
 
     let story: Story
+    private let initialSpineIndex: Int
+    private let initialPlaybackPosition: Double?
+    private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
     @Environment(AudioManager.self) private var audioManager
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
     @Environment(\.dismiss) private var dismiss
@@ -39,6 +42,8 @@ struct StorySessionView: View {
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     @State private var readingMatterHeroImage: UIImage? = nil
+    @State private var isAutoContinueEnabled = false
+    @State private var autoAdvanceToken = 0
     
     // Auto-Scroll State
     @State private var activeWordIndex: Int? = nil
@@ -73,6 +78,21 @@ struct StorySessionView: View {
     @State private var selectedWordRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
+    @State private var didApplyInitialPlaybackPosition = false
+    @State private var lastSavedPlaybackSecond = -1
+
+    init(
+        story: Story,
+        initialSpineIndex: Int = 0,
+        initialPlaybackPosition: Double? = nil,
+        onProgressChange: ((StoryReaderProgressUpdate) -> Void)? = nil
+    ) {
+        self.story = story
+        self.initialSpineIndex = initialSpineIndex
+        self.initialPlaybackPosition = initialPlaybackPosition
+        self.onProgressChange = onProgressChange
+        _currentSpineIndex = State(initialValue: max(0, initialSpineIndex))
+    }
     
     enum DisplayLanguage: String, CaseIterable {
         case target = "Target Language"
@@ -119,7 +139,7 @@ struct StorySessionView: View {
     private func spineStepNavigationHandler(delta: Int) -> (() -> Void)? {
         if delta > 0 {
             if isShowingChapterIntro {
-                return { finishChapterIntro(andPlayBody: false) }
+                return { finishChapterIntro(andPlayBody: self.isAutoContinueEnabled) }
             }
             guard let nextSpineIndex else { return nil }
             return {
@@ -181,8 +201,9 @@ struct StorySessionView: View {
         .onAppear {
             startTime = Date()
             ambientVolume = story.ambientVolume
+            reconcileCurrentSpinePosition()
             if isOnChapterSpineItem, !isShowingChapterIntro {
-                setupAudio()
+                setupInitialChapterAudioIfNeeded()
             }
             if isOnChapterSpineItem {
                 loadChapterImage()
@@ -192,11 +213,17 @@ struct StorySessionView: View {
             }
         }
         .mediaPlaybackLifecycle(
-            onUserLeave: cleanupSession,
+            onUserLeave: {
+                cancelScheduledAutoAdvance()
+                cleanupSession()
+            },
             onEnterBackground: { audioManager.updateStreamNowPlayingInfo() }
         )
         .onChange(of: currentChapterIndex) { _, _ in
             loadChapterImage()
+        }
+        .onChange(of: currentSpineIndex) { _, _ in
+            saveReadingProgress()
         }
         .onChange(of: ambientVolume) { _, newValue in
             audioManager.setAmbientVolume(newValue)
@@ -209,8 +236,6 @@ struct StorySessionView: View {
                     Button(action: { showStoryInfo = true }) {
                         Label("Story Info", systemImage: "info.circle")
                     }
-
-                    Divider()
 
                     Button(action: openQuiz) {
                         Label("Comprehension Quiz", systemImage: "checkmark.circle")
@@ -276,6 +301,7 @@ struct StorySessionView: View {
                     duration = supplementalPlayback.duration
                 }
                 isPlaying = supplementalPlayback.isPlaying
+                saveTimedReadingProgressIfNeeded(position: sliderValue)
                 if isOnReadingMatterSpineItem {
                     activeWordIndex = supplementalPlayback.activeWordIndex
                 }
@@ -316,6 +342,7 @@ struct StorySessionView: View {
                 }
                 
                 isPlaying = audioManager.isStreaming
+                saveTimedReadingProgressIfNeeded(position: sliderValue)
                 
                 // Update active word and paragraph
                 updateScrollState(time: sliderValue)
@@ -331,6 +358,13 @@ struct StorySessionView: View {
         .onChange(of: heroImage) { _, newImage in
             if let img = newImage {
                 audioManager.updateNowPlayingInfo(title: story.title, artist: "LearnCI Story", artworkImage: img)
+            }
+        }
+        .onChange(of: isAutoContinueEnabled) { _, enabled in
+            if enabled {
+                startAutoContinueForCurrentSpineItem()
+            } else {
+                cancelScheduledAutoAdvance()
             }
         }
     }
@@ -867,6 +901,8 @@ struct StorySessionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            autoContinueHeaderButton
+
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
                     .font(.caption.weight(.semibold))
@@ -897,6 +933,8 @@ struct StorySessionView: View {
             if currentChapterHasEnglishContent {
                 chapterLanguageToggle
             }
+
+            autoContinueHeaderButton
 
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
@@ -966,6 +1004,8 @@ struct StorySessionView: View {
                 chapterLanguageToggle
             }
 
+            autoContinueHeaderButton
+
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
                     .font(.caption.weight(.semibold))
@@ -973,6 +1013,20 @@ struct StorySessionView: View {
                     .monospacedDigit()
             }
         }
+    }
+
+    private var autoContinueHeaderButton: some View {
+        Button {
+            isAutoContinueEnabled.toggle()
+        } label: {
+            Image(systemName: isAutoContinueEnabled ? "play.circle.fill" : "play.circle")
+                .font(.headline.weight(.semibold))
+                .frame(width: 34, height: 34)
+                .foregroundStyle(isAutoContinueEnabled ? Color.accentColor : .secondary)
+                .background(.thinMaterial)
+                .clipShape(Circle())
+        }
+        .accessibilityLabel(isAutoContinueEnabled ? "Turn Off Auto Continue" : "Turn On Auto Continue")
     }
 
     private var currentChapterHasEnglishContent: Bool {
@@ -1238,6 +1292,9 @@ struct StorySessionView: View {
                 page: page,
                 preferNative: selectedLanguage == .native
             )
+            supplementalPlayback.onFinished = {
+                advanceAfterSupplementalFinished()
+            }
             return
         }
 
@@ -1249,7 +1306,7 @@ struct StorySessionView: View {
                 preferNative: selectedLanguage == .native
             )
             supplementalPlayback.onFinished = {
-                finishChapterIntro(andPlayBody: false)
+                finishChapterIntro(andPlayBody: isAutoContinueEnabled)
             }
         }
     }
@@ -1391,6 +1448,7 @@ struct StorySessionView: View {
     private func goToSpineIndex(_ index: Int?, showChapterCard: Bool) {
         guard let index, storyBookSpineItems.indices.contains(index) else { return }
 
+        cancelScheduledAutoAdvance()
         stopSupplementalPlayback()
 
         if isPlaying {
@@ -1416,9 +1474,16 @@ struct StorySessionView: View {
             if showChapterCard, chapterHasIntroContent(at: chapterIndex) {
                 isShowingChapterIntro = true
                 prepareSupplementalPlaybackForCurrentSpineItem()
+                if isAutoContinueEnabled {
+                    startAutoContinueForCurrentSpineItem()
+                }
             } else {
                 isShowingChapterIntro = false
-                setupAudio()
+                if isAutoContinueEnabled {
+                    setupAudio(autoplay: true)
+                } else {
+                    setupAudio()
+                }
             }
         case .readingMatterPage:
             audioManager.stopAudio()
@@ -1427,6 +1492,9 @@ struct StorySessionView: View {
             duration = 0
             loadReadingMatterImage()
             prepareSupplementalPlaybackForCurrentSpineItem()
+            if isAutoContinueEnabled {
+                startAutoContinueForCurrentSpineItem()
+            }
         case .cover:
             readingMatterHeroImage = nil
             audioManager.stopAudio()
@@ -1434,10 +1502,153 @@ struct StorySessionView: View {
             sliderValue = 0
             duration = 0
             loadStoryCoverImage()
+            if isAutoContinueEnabled {
+                scheduleAutoAdvanceToNextSpineItem()
+            }
         case .scene:
             audioManager.stopAudio()
             isShowingChapterIntro = false
         }
+
+        saveReadingProgress()
+    }
+
+    private func reconcileCurrentSpinePosition() {
+        guard storyBookSpineItems.indices.contains(currentSpineIndex) else {
+            currentSpineIndex = 0
+            return
+        }
+
+        switch storyBookSpineItems[currentSpineIndex] {
+        case .chapter(let chapterIndex):
+            currentChapterIndex = chapterIndex
+            if chapterHasIntroContent(at: chapterIndex) {
+                isShowingChapterIntro = true
+                prepareSupplementalPlaybackForCurrentSpineItem()
+            }
+        case .readingMatterPage:
+            isShowingChapterIntro = false
+            prepareSupplementalPlaybackForCurrentSpineItem()
+        case .cover, .scene:
+            isShowingChapterIntro = false
+        }
+
+        saveReadingProgress()
+    }
+
+    private func saveReadingProgress(position: Double? = nil) {
+        guard storyBookSpineItems.indices.contains(currentSpineIndex) else { return }
+        onProgressChange?(StoryReaderProgressUpdate(
+            index: currentSpineIndex,
+            total: storyBookSpineItems.count,
+            chapterIndex: progressChapterIndex,
+            sceneIndex: progressSceneIndex,
+            position: position
+        ))
+    }
+
+    private func saveTimedReadingProgressIfNeeded(position: Double) {
+        let second = Int(position.rounded())
+        guard second != lastSavedPlaybackSecond else { return }
+        lastSavedPlaybackSecond = second
+        saveReadingProgress(position: position)
+    }
+
+    private var progressChapterIndex: Int? {
+        switch currentSpineItem {
+        case .chapter(let index), .scene(let index, _):
+            return index
+        default:
+            return nil
+        }
+    }
+
+    private var progressSceneIndex: Int? {
+        if isOnChapterSpineItem,
+           currentChapterClips.indices.contains(currentSceneClipIndex),
+           !currentChapterClips[currentSceneClipIndex].isChapterIntro {
+            return currentChapterClips[currentSceneClipIndex].sceneIndex
+        }
+        if case .scene(_, let sceneIndex) = currentSpineItem {
+            return sceneIndex
+        }
+        return nil
+    }
+
+    private func setupInitialChapterAudioIfNeeded() {
+        guard !didApplyInitialPlaybackPosition,
+              let initialPlaybackPosition,
+              initialPlaybackPosition > 0,
+              let target = adapter.clipIndex(forChapter: currentChapterIndex, localTime: initialPlaybackPosition) else {
+            setupAudio()
+            return
+        }
+
+        didApplyInitialPlaybackPosition = true
+        setupAudio(
+            sceneClipIndex: target.index,
+            startAt: target.offset
+        )
+    }
+
+    private func startAutoContinueForCurrentSpineItem() {
+        cancelScheduledAutoAdvance()
+
+        if isOnSupplementalSpineItem {
+            if canControlCurrentSpinePlayback {
+                toggleSupplementalPlayback(forcePlay: true)
+            } else {
+                scheduleAutoAdvanceToNextSpineItem()
+            }
+            return
+        }
+
+        if isOnChapterSpineItem {
+            if audioManager.streamPlayer == nil {
+                setupAudio(autoplay: true)
+            } else if !audioManager.isStreaming {
+                audioManager.playStream()
+                isPlaying = true
+                startAmbient()
+            }
+            return
+        }
+
+        scheduleAutoAdvanceToNextSpineItem()
+    }
+
+    private func advanceAfterSupplementalFinished() {
+        guard isAutoContinueEnabled else {
+            isPlaying = false
+            return
+        }
+
+        if isShowingChapterIntro {
+            finishChapterIntro(andPlayBody: true)
+            return
+        }
+
+        guard let nextSpineIndex else {
+            isPlaying = false
+            return
+        }
+
+        goToSpineIndex(nextSpineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: nextSpineIndex))
+    }
+
+    private func scheduleAutoAdvanceToNextSpineItem(delay: TimeInterval = 2.0) {
+        guard isAutoContinueEnabled, let nextSpineIndex else { return }
+        autoAdvanceToken += 1
+        let token = autoAdvanceToken
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard isAutoContinueEnabled, token == autoAdvanceToken else { return }
+            goToSpineIndex(nextSpineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: nextSpineIndex))
+        }
+    }
+
+    private func cancelScheduledAutoAdvance() {
+        autoAdvanceToken += 1
     }
 
     private func chapterHasIntroContent(at chapterIndex: Int) -> Bool {

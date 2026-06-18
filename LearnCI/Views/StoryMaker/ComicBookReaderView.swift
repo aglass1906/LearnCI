@@ -2,9 +2,22 @@ import SwiftUI
 
 struct ComicBookReaderView: View {
     let story: Story
+    private let initialPageIndex: Int
+    private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @State private var currentPageIndex = 0
     @State private var selectedPanel: ComicPanelModel?
+
+    init(
+        story: Story,
+        initialPageIndex: Int = 0,
+        onProgressChange: ((StoryReaderProgressUpdate) -> Void)? = nil
+    ) {
+        self.story = story
+        self.initialPageIndex = initialPageIndex
+        self.onProgressChange = onProgressChange
+        _currentPageIndex = State(initialValue: max(0, initialPageIndex))
+    }
 
     private var adapter: StoryReaderDataAdapter {
         StoryReaderDataAdapter(story: story)
@@ -29,6 +42,13 @@ struct ComicBookReaderView: View {
         .sheet(item: $selectedPanel) { panel in
             ComicPanelDetailView(panel: panel)
                 .presentationDetents([.medium, .large])
+        }
+        .onAppear {
+            reconcileInitialPage()
+            saveReadingProgress()
+        }
+        .onChange(of: currentPageIndex) { _, _ in
+            saveReadingProgress()
         }
     }
 
@@ -59,6 +79,23 @@ struct ComicBookReaderView: View {
             .padding(.horizontal, 18)
             .padding(.bottom, 12)
         }
+    }
+
+    private func reconcileInitialPage() {
+        let pageCount = pages.count
+        guard pageCount > 0 else { return }
+        currentPageIndex = min(max(0, currentPageIndex), pageCount - 1)
+    }
+
+    private func saveReadingProgress() {
+        guard pages.indices.contains(currentPageIndex) else { return }
+        let page = pages[currentPageIndex]
+        onProgressChange?(StoryReaderProgressUpdate(
+            index: currentPageIndex,
+            total: pages.count,
+            chapterIndex: page.chapterIndex,
+            sceneIndex: page.sceneIndex
+        ))
     }
 }
 

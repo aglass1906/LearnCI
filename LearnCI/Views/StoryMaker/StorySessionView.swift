@@ -398,6 +398,9 @@ struct StorySessionView: View {
     private func playLocalAudio(url: URL, clip: StorySceneAudioClip, startAt: Double = 0, autoplay: Bool = false) {
         audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
+        audioManager.onStreamFinished = {
+            advanceAfterSceneClipFinished()
+        }
         duration = adapter.duration(
             forChapter: currentChapterIndex,
             currentClipIndex: currentSceneClipIndex,
@@ -475,6 +478,7 @@ struct StorySessionView: View {
     }
     
     private func cleanupSession() {
+        audioManager.onStreamFinished = nil
         stopSupplementalPlayback()
         audioManager.stopAmbient()
         audioManager.stopAudio()

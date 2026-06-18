@@ -162,6 +162,7 @@ final class StorySupplementalAudioPlayback {
         }
 
         if isUsingGeneratedAudio {
+            audioManager?.onStreamFinished = nil
             audioManager?.stopStream()
         }
 
@@ -272,6 +273,12 @@ final class StorySupplementalAudioPlayback {
 
                 audioManager.streamAudio(url: playbackURL, startAt: startAt)
                 audioManager.setStreamRate(playbackRate)
+                audioManager.onStreamFinished = { [weak self] in
+                    guard let self else { return }
+                    self.isPlaying = false
+                    self.audioManager?.streamFinished = false
+                    self.onFinished?()
+                }
                 let timedDuration = wordTimings.last?.end
                 duration = max(timedDuration ?? 0, audioManager.streamDuration, 1)
                 currentTime = startAt

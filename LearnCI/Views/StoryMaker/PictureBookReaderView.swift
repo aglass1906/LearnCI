@@ -104,6 +104,7 @@ struct PictureBookReaderView: View {
         .mediaPlaybackLifecycle(
             onUserLeave: {
                 cancelScheduledAutoAdvance()
+                audioManager.onStreamFinished = nil
                 supplementalPlayback.stop()
                 audioManager.stopAudio()
             },
@@ -527,6 +528,9 @@ struct PictureBookReaderView: View {
     private func playLocal(url: URL, clip: StorySceneAudioClip, autoplay: Bool, startAt: Double = 0) {
         audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
+        audioManager.onStreamFinished = {
+            advanceAfterClipFinished()
+        }
         duration = clip.duration ?? audioManager.streamDuration
         sliderValue = startAt
         audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)

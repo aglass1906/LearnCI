@@ -33,6 +33,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var streamPlaybackRate: Float = 1.0
     var streamLoadError: String?
     var streamIsBuffering: Bool = false
+    var onStreamFinished: (() -> Void)?
     private var streamTimeObserver: Any?
     private var streamItemObservations: [NSKeyValueObservation] = []
     private var isAudioSessionConfigured = false
@@ -728,6 +729,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamPlayer?.pause()
         streamPlayer = nil
         isStreaming = false
+        streamFinished = false
+        onStreamFinished = nil
         streamDuration = 0
         streamCurrentTime = 0
         streamPlaybackRate = 1.0
@@ -847,6 +850,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     @objc private func streamDidFinish() {
         isStreaming = false
         streamFinished = true
+        onStreamFinished?()
     }
 
     // MARK: - Ambient Playback

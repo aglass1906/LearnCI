@@ -10,7 +10,7 @@ struct MediaPlaybackLifecycleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onDisappear {
-                if scenePhase != .background {
+                if scenePhase == .active {
                     onUserLeave()
                 }
             }

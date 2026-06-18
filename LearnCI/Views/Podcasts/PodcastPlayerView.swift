@@ -138,7 +138,7 @@ struct PodcastPlayerView: View {
         }
         .onDisappear {
             // Avoid tearing down playback when the app backgrounds (lock screen, etc.).
-            if scenePhase != .background {
+            if scenePhase == .active {
                 cleanupSession()
             }
         }

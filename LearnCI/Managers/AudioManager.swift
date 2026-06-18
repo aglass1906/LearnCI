@@ -36,6 +36,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var streamTimeObserver: Any?
     private var streamItemObservations: [NSKeyValueObservation] = []
     private var isAudioSessionConfigured = false
+    private var wasPlayingBeforeInterruption = false
+    private var wasStreamingBeforeInterruption = false
     
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
@@ -98,20 +100,43 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         switch type {
         case .began:
             // Phone call, Siri, alarm, etc. — pause but keep the player alive
+            wasStreamingBeforeInterruption = isStreaming
+            wasPlayingBeforeInterruption = player?.isPlaying == true
+
             if isStreaming {
                 streamPlayer?.pause()
                 isStreaming = false
+            }
+            if player?.isPlaying == true {
+                player?.pause()
+                isPlaying = false
             }
 
         case .ended:
             guard let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
-            if options.contains(.shouldResume), streamPlayer != nil {
-                try? AVAudioSession.sharedInstance().setActive(true)
+
+            guard options.contains(.shouldResume) else {
+                wasPlayingBeforeInterruption = false
+                wasStreamingBeforeInterruption = false
+                return
+            }
+
+            try? AVAudioSession.sharedInstance().setActive(true)
+
+            if wasStreamingBeforeInterruption, streamPlayer != nil {
                 streamPlayer?.play()
                 if streamPlaybackRate != 1.0 { streamPlayer?.rate = streamPlaybackRate }
                 isStreaming = true
+                updateStreamNowPlayingInfo()
+            } else if wasPlayingBeforeInterruption, let player {
+                player.play()
+                isPlaying = true
+                updateNowPlayingInfo()
             }
+
+            wasPlayingBeforeInterruption = false
+            wasStreamingBeforeInterruption = false
 
         @unknown default:
             break

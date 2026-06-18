@@ -114,7 +114,7 @@ struct PodcastSessionView: View {
             saveSessionState()
             // Don't stop audio if the app is just going to the background (phone lock, etc.)
             // Only stop if the user actually navigated away from the session.
-            if scenePhase != .background {
+            if scenePhase == .active {
                 audioManager.stopStream()
                 logSessionActivity()
             }

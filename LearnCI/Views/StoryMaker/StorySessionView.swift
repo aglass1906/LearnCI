@@ -72,6 +72,9 @@ struct StorySessionView: View {
     @State private var isTranslatingWord: Bool = false
     @State private var showWordLookup: Bool = false
     @State private var wordTranslationCache: [String: (translation: String, pos: String)] = [:]
+    @State private var selectedWordRequest: StoryWordLookupRequest?
+    @State private var phraseSelectionStart: StoryWordLookupRequest?
+    @State private var phraseSelectionMessage: String?
     
     enum DisplayLanguage: String, CaseIterable {
         case target = "Target Language"
@@ -141,8 +144,9 @@ struct StorySessionView: View {
             }
         }
         .environment(\.storyWordLookupAction) { request in
-            lookupWord(request.word, time: request.time, context: request.context)
+            handleWordLookupRequest(request)
         }
+        .overlay(alignment: .bottom) { phraseSelectionBanner }
     }
 
     private var readerBody: some View {
@@ -260,7 +264,8 @@ struct StorySessionView: View {
                 seekTime: selectedWordTime,
                 onSeek: { time in
                     seekTo(time)
-                }
+                },
+                onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil
             )
             .presentationDetents([.fraction(0.4)])
             .presentationDragIndicator(.visible)
@@ -540,7 +545,49 @@ struct StorySessionView: View {
     
     // MARK: - Word Lookup
 
+    private var canSelectPhrase: Bool {
+        selectedWordRequest?.wordIndex != nil && selectedWordRequest?.sourceText?.isEmpty == false
+    }
+
+    @ViewBuilder
+    private var phraseSelectionBanner: some View {
+        if let phraseSelectionStart {
+            HStack(spacing: 10) {
+                Image(systemName: "text.cursor")
+                Text(phraseSelectionMessage ?? "Tap the last word in the phrase.")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Button("Cancel") {
+                    self.phraseSelectionStart = nil
+                    phraseSelectionMessage = nil
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(radius: 8, y: 4)
+            .padding()
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .accessibilityLabel("Selecting phrase starting with \(phraseSelectionStart.word)")
+        }
+    }
+
+    private func handleWordLookupRequest(_ request: StoryWordLookupRequest) {
+        if phraseSelectionStart != nil {
+            finishPhraseSelection(with: request)
+        } else {
+            lookupWord(request.word, time: request.time, context: request.context, request: request)
+        }
+    }
+
     private func lookupWord(_ word: String, time: Double?, context providedContext: String? = nil) {
+        lookupWord(word, time: time, context: providedContext, request: nil)
+    }
+
+    private func lookupWord(_ word: String, time: Double?, context providedContext: String? = nil, request: StoryWordLookupRequest?) {
+        selectedWordRequest = request
         selectedWord = word
         selectedWordTime = time
         wordTranslation = nil
@@ -576,10 +623,67 @@ struct StorySessionView: View {
         }
     }
 
+    private func beginPhraseSelection() {
+        guard let selectedWordRequest, canSelectPhrase else { return }
+        phraseSelectionStart = selectedWordRequest
+        phraseSelectionMessage = "Tap the last word in the phrase."
+        showWordLookup = false
+        selectedWord = nil
+        selectedWordTime = nil
+        wordTranslation = nil
+        wordPartOfSpeech = nil
+        isTranslatingWord = false
+    }
+
+    private func finishPhraseSelection(with request: StoryWordLookupRequest) {
+        guard let start = phraseSelectionStart,
+              let sourceText = start.sourceText,
+              sourceText == request.sourceText,
+              let startIndex = start.wordIndex,
+              let endIndex = request.wordIndex,
+              let phrase = phraseText(in: sourceText, from: startIndex, to: endIndex) else {
+            phraseSelectionStart = request.wordIndex == nil ? nil : request
+            phraseSelectionMessage = "Phrase selection restarted. Tap the last word in this text block."
+            return
+        }
+
+        phraseSelectionStart = nil
+        phraseSelectionMessage = nil
+        lookupWord(
+            phrase,
+            time: min(start.time ?? request.time ?? 0, request.time ?? start.time ?? 0),
+            context: sentenceContaining(phrase: phrase, in: sourceText),
+            request: StoryWordLookupRequest(word: phrase, time: start.time, context: sentenceContaining(phrase: phrase, in: sourceText), sourceText: sourceText)
+        )
+    }
+
+    private func phraseText(in text: String, from firstIndex: Int, to secondIndex: Int) -> String? {
+        let matches = wordRanges(in: text)
+        guard matches.indices.contains(firstIndex), matches.indices.contains(secondIndex) else { return nil }
+
+        let lowerIndex = min(firstIndex, secondIndex)
+        let upperIndex = max(firstIndex, secondIndex)
+        let phrase = text[matches[lowerIndex].lowerBound..<matches[upperIndex].upperBound]
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return phrase.isEmpty ? nil : phrase
+    }
+
+    private func wordRanges(in text: String) -> [Range<String.Index>] {
+        let nsText = text as NSString
+        let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
+        return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsText.length))
+            .compactMap { Range($0.range, in: text) } ?? []
+    }
+
     private func sentenceContaining(word: String) -> String? {
         let text = currentChapter?.bodyTextTargetForReading ?? ""
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
+    }
+
+    private func sentenceContaining(phrase: String, in text: String) -> String? {
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
+        return sentences.first(where: { $0.localizedCaseInsensitiveContains(phrase) })?.trimmingCharacters(in: .whitespaces)
     }
 
     // MARK: - Comprehension Quiz
@@ -1306,9 +1410,7 @@ struct StorySessionView: View {
                         timings: currentChapter?.bodyWordTimingsForPlayback ?? [],
                         wordMatches: wordMatches,
                         onSeek: seekTo,
-                        onWordTap: { word, time in
-                            lookupWord(word, time: time)
-                        }
+                        onWordTap: handleWordLookupRequest
                     )
                     .id(chunk.id)
                 }
@@ -1757,7 +1859,7 @@ struct ParagraphView: View {
     let timings: [WordTiming]
     let wordMatches: [NSTextCheckingResult]
     let onSeek: (Double) -> Void
-    let onWordTap: (String, Double?) -> Void
+    let onWordTap: (StoryWordLookupRequest) -> Void
 
     var body: some View {
         Text(attributedParagraph)
@@ -1772,7 +1874,19 @@ struct ParagraphView: View {
                         .first(where: { $0.name == "t" })?
                         .value
                         .flatMap(Double.init)
-                    onWordTap(word, targetTime)
+                    let wordIndex = components.queryItems?
+                        .first(where: { $0.name == "i" })?
+                        .value
+                        .flatMap(Int.init)
+                    onWordTap(
+                        StoryWordLookupRequest(
+                            word: word,
+                            time: targetTime,
+                            context: sentenceContaining(word: word, in: chunk.text),
+                            wordIndex: wordIndex,
+                            sourceText: chunk.text
+                        )
+                    )
                     return .handled
                 }
                 if url.scheme == "x-learnci-seek",
@@ -1808,9 +1922,9 @@ struct ParagraphView: View {
                     let encoded = matchedWord.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? matchedWord
                     if i < timings.count {
                         let timing = timings[i]
-                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&t=\(timing.start)")
+                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&i=\(i)&t=\(timing.start)")
                     } else {
-                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)")
+                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&i=\(i)")
                     }
 
                     // Highlight active
@@ -1822,6 +1936,13 @@ struct ParagraphView: View {
             }
         }
         return attrString
+    }
+
+    private func sentenceContaining(word: String, in text: String) -> String? {
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
+        return sentences
+            .first(where: { $0.localizedCaseInsensitiveContains(word) })?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
@@ -2761,6 +2882,7 @@ struct WordLookupSheet: View {
     let isLoading: Bool
     let seekTime: Double?
     let onSeek: (Double) -> Void
+    var onSelectPhrase: (() -> Void)? = nil
     var onMarkForStudy: (() -> Void)? = nil
     var isMarkedForStudy: Bool = false
     @Environment(\.dismiss) private var dismiss
@@ -2768,11 +2890,15 @@ struct WordLookupSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    // Word + language badge
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Word or phrase + language badge
                         Text(word)
-                            .font(.system(size: 32, weight: .bold, design: .serif))
+                            .font(.system(size: 20, weight: .semibold, design: .serif))
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+
                         Text(languageLabel)
                             .font(.caption.bold())
                             .foregroundColor(.secondary)
@@ -2780,42 +2906,64 @@ struct WordLookupSheet: View {
                             .padding(.vertical, 3)
                             .background(Color.secondary.opacity(0.12))
                             .clipShape(Capsule())
+
+                        // Part of speech
+                        if let pos = partOfSpeech, !pos.isEmpty {
+                            Text(pos)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .italic()
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
 
-                    // Part of speech
-                    if let pos = partOfSpeech, !pos.isEmpty {
-                        Text(pos)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .italic()
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                    Divider()
+                        .padding(.vertical, 16)
 
-                Divider()
-                    .padding(.vertical, 16)
-
-                // Translation
-                Group {
-                    if isLoading {
-                        HStack(spacing: 10) {
-                            ProgressView()
-                            Text("Translating…")
+                    // Translation
+                    Group {
+                        if isLoading {
+                            HStack(spacing: 10) {
+                                ProgressView()
+                                Text("Translating...")
+                                    .foregroundColor(.secondary)
+                            }
+                        } else if let t = translation, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text(t)
+                                .font(.system(size: 22, weight: .regular))
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        } else {
+                            Text("Translation unavailable.")
+                                .font(.body)
                                 .foregroundColor(.secondary)
                         }
-                    } else if let t = translation, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text(t)
-                            .font(.system(size: 22, weight: .regular))
-                    } else {
-                        Text("Translation unavailable.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
                     }
+                    .padding(.horizontal)
+                    .padding(.bottom, 16)
                 }
-                .padding(.horizontal)
 
                 Spacer()
+
+                if let onSelectPhrase {
+                    Button {
+                        onSelectPhrase()
+                        dismiss()
+                    } label: {
+                        Label("Select phrase", systemImage: "text.cursor")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.secondary.opacity(0.12))
+                            .foregroundColor(.primary)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, seekTime == nil ? 20 : 8)
+                    .disabled(isLoading)
+                }
 
                 // Seek button
                 if let time = seekTime {

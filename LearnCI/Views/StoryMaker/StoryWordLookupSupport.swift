@@ -4,6 +4,16 @@ struct StoryWordLookupRequest {
     let word: String
     let time: Double?
     let context: String?
+    let wordIndex: Int?
+    let sourceText: String?
+
+    init(word: String, time: Double?, context: String?, wordIndex: Int? = nil, sourceText: String? = nil) {
+        self.word = word
+        self.time = time
+        self.context = context
+        self.wordIndex = wordIndex
+        self.sourceText = sourceText
+    }
 }
 
 private struct StoryWordLookupActionKey: EnvironmentKey {
@@ -33,12 +43,20 @@ private struct StoryWordLookupHostModifier: ViewModifier {
     @State private var wordPartOfSpeech: String?
     @State private var isTranslatingWord = false
     @State private var wordTranslationCache: [String: (translation: String, pos: String)] = [:]
+    @State private var selectedRequest: StoryWordLookupRequest?
+    @State private var phraseSelectionStart: StoryWordLookupRequest?
+    @State private var phraseSelectionMessage: String?
 
     func body(content: Content) -> some View {
         content
             .environment(\.storyWordLookupAction) { request in
-                lookupWord(request)
+                if phraseSelectionStart != nil {
+                    finishPhraseSelection(with: request)
+                } else {
+                    lookupWord(request)
+                }
             }
+            .overlay(alignment: .bottom) { phraseSelectionBanner }
             .sheet(
                 isPresented: Binding(
                     get: { selectedWord != nil },
@@ -50,6 +68,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                             wordTranslation = nil
                             wordPartOfSpeech = nil
                             isTranslatingWord = false
+                            selectedRequest = nil
                         }
                     }
                 )
@@ -61,17 +80,48 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                     partOfSpeech: wordPartOfSpeech,
                     isLoading: isTranslatingWord,
                     seekTime: selectedWordTime,
-                    onSeek: { _ in }
+                    onSeek: { _ in },
+                    onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil
                 )
                 .presentationDetents([.fraction(0.4)])
                 .presentationDragIndicator(.visible)
             }
     }
 
+    private var canSelectPhrase: Bool {
+        selectedRequest?.wordIndex != nil && selectedRequest?.sourceText?.isEmpty == false
+    }
+
+    @ViewBuilder
+    private var phraseSelectionBanner: some View {
+        if let phraseSelectionStart {
+            HStack(spacing: 10) {
+                Image(systemName: "text.cursor")
+                Text(phraseSelectionMessage ?? "Tap the last word in the phrase.")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Button("Cancel") {
+                    self.phraseSelectionStart = nil
+                    phraseSelectionMessage = nil
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(radius: 8, y: 4)
+            .padding()
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .accessibilityLabel("Selecting phrase starting with \(phraseSelectionStart.word)")
+        }
+    }
+
     private func lookupWord(_ request: StoryWordLookupRequest) {
         let trimmedWord = request.word.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedWord.isEmpty else { return }
 
+        selectedRequest = request
         selectedWord = trimmedWord
         selectedWordTime = request.time
         selectedContext = request.context
@@ -109,6 +159,68 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             }
         }
     }
+
+    private func beginPhraseSelection() {
+        guard let selectedRequest, canSelectPhrase else { return }
+        phraseSelectionStart = selectedRequest
+        phraseSelectionMessage = "Tap the last word in the phrase."
+        selectedWord = nil
+        selectedWordTime = nil
+        selectedContext = nil
+        wordTranslation = nil
+        wordPartOfSpeech = nil
+        isTranslatingWord = false
+    }
+
+    private func finishPhraseSelection(with request: StoryWordLookupRequest) {
+        guard let start = phraseSelectionStart,
+              let sourceText = start.sourceText,
+              sourceText == request.sourceText,
+              let startIndex = start.wordIndex,
+              let endIndex = request.wordIndex,
+              let phrase = phraseText(in: sourceText, from: startIndex, to: endIndex) else {
+            phraseSelectionStart = request.wordIndex == nil ? nil : request
+            phraseSelectionMessage = "Phrase selection restarted. Tap the last word in this text block."
+            return
+        }
+
+        phraseSelectionStart = nil
+        phraseSelectionMessage = nil
+        lookupWord(
+            StoryWordLookupRequest(
+                word: phrase,
+                time: min(start.time ?? request.time ?? 0, request.time ?? start.time ?? 0),
+                context: sentenceContaining(phrase: phrase, in: sourceText),
+                sourceText: sourceText
+            )
+        )
+    }
+
+    private func phraseText(in text: String, from firstIndex: Int, to secondIndex: Int) -> String? {
+        let matches = wordMatches(in: text)
+        guard matches.indices.contains(firstIndex), matches.indices.contains(secondIndex) else { return nil }
+
+        let lowerIndex = min(firstIndex, secondIndex)
+        let upperIndex = max(firstIndex, secondIndex)
+        let lowerBound = matches[lowerIndex].lowerBound
+        let upperBound = matches[upperIndex].upperBound
+        let phrase = text[lowerBound..<upperBound].trimmingCharacters(in: .whitespacesAndNewlines)
+        return phrase.isEmpty ? nil : phrase
+    }
+
+    private func wordMatches(in text: String) -> [Range<String.Index>] {
+        let nsText = text as NSString
+        let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
+        return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsText.length))
+            .compactMap { Range($0.range, in: text) } ?? []
+    }
+
+    private func sentenceContaining(phrase: String, in text: String) -> String? {
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
+        return sentences
+            .first(where: { $0.localizedCaseInsensitiveContains(phrase) })?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 struct TappableStoryText: View {
@@ -144,7 +256,12 @@ struct TappableStoryText: View {
                     StoryWordLookupRequest(
                         word: word,
                         time: time,
-                        context: sentenceContaining(word: word, in: text)
+                        context: sentenceContaining(word: word, in: text),
+                        wordIndex: components.queryItems?
+                            .first(where: { $0.name == "i" })?
+                            .value
+                            .flatMap(Int.init),
+                        sourceText: text
                     )
                 )
                 return .handled
@@ -173,7 +290,7 @@ struct TappableStoryText: View {
 
             if index < timings.count {
                 let timing = timings[index]
-                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&t=\(timing.start)")
+                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&i=\(index)&t=\(timing.start)")
 
                 if let currentTime {
                     let slack = 0.150
@@ -185,7 +302,7 @@ struct TappableStoryText: View {
                     }
                 }
             } else {
-                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)")
+                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&i=\(index)")
             }
         }
 

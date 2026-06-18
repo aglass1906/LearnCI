@@ -31,7 +31,12 @@ struct TimedTextView: View {
                     StoryWordLookupRequest(
                         word: word,
                         time: time,
-                        context: sentenceContaining(word: word, in: segment.text)
+                        context: sentenceContaining(word: word, in: segment.text),
+                        wordIndex: components.queryItems?
+                            .first(where: { $0.name == "i" })?
+                            .value
+                            .flatMap(Int.init),
+                        sourceText: segment.text
                     )
                 )
                 return .handled
@@ -65,7 +70,7 @@ struct TimedTextView: View {
                 let attrRange = lowerBound..<upperBound
                 let word = String(segment.text[swiftRange])
                 let encodedWord = word.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? word
-                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&t=\(timing.start)")
+                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&i=\(i)&t=\(timing.start)")
 
                 // 150ms slack for smoother word-to-word transitions
                 let slack: Double = 0.150

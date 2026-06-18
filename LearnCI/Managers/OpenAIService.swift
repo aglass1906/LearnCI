@@ -893,7 +893,13 @@ actor OpenAIService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        var prompt = "Translate the word '\(word)' from \(language) to English. Return JSON with keys 'translation' (concise, 1-5 words) and 'partOfSpeech' (e.g. noun, verb, adjective, adverb, pronoun, preposition)."
+        let lookupText = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isPhrase = lookupText.contains(where: { $0.isWhitespace || $0.isPunctuation })
+        var prompt = if isPhrase {
+            "Translate the phrase '\(lookupText)' from \(language) to English. Return JSON with keys 'translation' (concise natural English) and 'partOfSpeech' (empty string unless a grammar label is useful)."
+        } else {
+            "Translate the word '\(lookupText)' from \(language) to English. Return JSON with keys 'translation' (concise, 1-5 words) and 'partOfSpeech' (e.g. noun, verb, adjective, adverb, pronoun, preposition)."
+        }
         if let ctx = context, !ctx.isEmpty {
             prompt += " Context sentence: '\(ctx)'"
         }

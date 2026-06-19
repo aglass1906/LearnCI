@@ -236,7 +236,11 @@ private struct SavedStudyWordRow: View {
 
 private struct SavedStudyWordDetailView: View {
     @Environment(AudioManager.self) private var audioManager
+    @Query private var stories: [Story]
     let word: SavedStudyWord
+
+    @State private var activeClipEnd: Double?
+    @State private var youtubeClip: SavedStudyWordYouTubeClip?
 
     private var language: Language {
         Language(rawValue: word.languageCode) ?? .spanish
@@ -271,11 +275,11 @@ private struct SavedStudyWordDetailView: View {
                         Text(sentence)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Button(action: { playSentenceAudio(sentence) }) {
+                        Button(action: { playContextAudio(sentence) }) {
                             Image(systemName: "speaker.wave.2.fill")
                         }
                         .buttonStyle(.borderless)
-                        .accessibilityLabel("Play sentence audio")
+                        .accessibilityLabel(sourceClipBounds == nil ? "Play sentence audio" : "Play source clip")
                     }
                 }
                 if let native = word.sentenceNative, !native.isEmpty {
@@ -298,13 +302,25 @@ private struct SavedStudyWordDetailView: View {
                     Link("Open Source", destination: url)
                 }
                 if let mediaStart = word.mediaStart {
-                    Text("Saved at \(formatTime(mediaStart))")
+                    Text(sourceClipLabel(start: mediaStart, end: word.mediaEnd))
                         .foregroundStyle(.secondary)
                 }
             }
         }
         .navigationTitle("Study Word")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $youtubeClip) { clip in
+            SavedStudyWordYouTubeClipPlayer(clip: clip)
+                .presentationDetents([.medium, .large])
+        }
+        .onChange(of: audioManager.streamCurrentTime) { _, currentTime in
+            guard let activeClipEnd, currentTime >= activeClipEnd else { return }
+            audioManager.pauseStream()
+            self.activeClipEnd = nil
+        }
+        .onDisappear {
+            activeClipEnd = nil
+        }
     }
 
     private func playWordAudio() {
@@ -322,7 +338,11 @@ private struct SavedStudyWordDetailView: View {
         }
     }
 
-    private func playSentenceAudio(_ sentence: String) {
+    private func playContextAudio(_ sentence: String) {
+        if playSourceClipIfAvailable() {
+            return
+        }
+
         if let audioSentenceFile = word.audioSentenceFile,
            audioManager.audioExists(named: audioSentenceFile, folderName: word.deckFolderName) {
             audioManager.playAudio(
@@ -337,11 +357,193 @@ private struct SavedStudyWordDetailView: View {
         }
     }
 
+    private func playSourceClipIfAvailable() -> Bool {
+        guard let bounds = sourceClipBounds else { return false }
+
+        switch word.sourceType {
+        case .podcast:
+            guard let sourceUrl = word.sourceUrl,
+                  let url = URL(string: sourceUrl) else { return false }
+            playStreamClip(url: url, bounds: bounds)
+            return true
+        case .story:
+            guard let url = storyAudioURL() else { return false }
+            playStreamClip(url: url, bounds: bounds)
+            return true
+        case .youtube:
+            guard let videoID = youtubeVideoID() else { return false }
+            youtubeClip = SavedStudyWordYouTubeClip(
+                videoID: videoID,
+                videoURL: nil,
+                title: word.sourceTitle,
+                start: bounds.start,
+                end: bounds.end
+            )
+            return true
+        case .flashcard, .other:
+            return false
+        }
+    }
+
+    private func playStreamClip(url: URL, bounds: (start: Double, end: Double)) {
+        activeClipEnd = bounds.end
+        audioManager.streamAudio(url: url, startAt: bounds.start)
+        audioManager.playStream()
+        audioManager.updateStreamNowPlayingInfo(title: word.sourceTitle, artist: word.sourceType.label)
+    }
+
+    private var sourceClipBounds: (start: Double, end: Double)? {
+        guard let mediaStart = word.mediaStart else { return nil }
+        let rawEnd: Double
+        if let mediaEnd = word.mediaEnd, mediaEnd > mediaStart {
+            rawEnd = mediaEnd
+        } else {
+            rawEnd = mediaStart + 6
+        }
+
+        let start = max(0, mediaStart - 0.35)
+        let end = max(start + 1, rawEnd + 0.6)
+        return (start, end)
+    }
+
+    private func storyAudioURL() -> URL? {
+        guard let storyID = UUID(uuidString: word.sourceId),
+              let story = stories.first(where: { $0.id == storyID }) else {
+            return nil
+        }
+
+        if let audioFilename = story.audioFilename?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !audioFilename.isEmpty {
+            let localURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(audioFilename)
+            if FileManager.default.fileExists(atPath: localURL.path) {
+                return localURL
+            }
+        }
+
+        if let remoteAudioPath = story.remoteAudioPath?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !remoteAudioPath.isEmpty {
+            return StoryReaderDataAdapter.remoteAudioURL(for: remoteAudioPath)
+        }
+
+        return nil
+    }
+
+    private func youtubeVideoID() -> String? {
+        let sourceId = word.sourceId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !sourceId.isEmpty {
+            return sourceId
+        }
+
+        guard let sourceUrl = word.sourceUrl,
+              let url = URL(string: sourceUrl) else { return nil }
+
+        if url.host?.contains("youtu.be") == true {
+            return url.pathComponents.dropFirst().first
+        }
+
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let id = components.queryItems?.first(where: { $0.name == "v" })?.value,
+           !id.isEmpty {
+            return id
+        }
+
+        return nil
+    }
+
+    private func sourceClipLabel(start: Double, end: Double?) -> String {
+        if let end, end > start {
+            return "Clip \(formatTime(start))-\(formatTime(end))"
+        }
+        return "Saved at \(formatTime(start))"
+    }
+
     @ViewBuilder
     private func metricRow(_ title: String, _ value: String?) -> some View {
         if let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             LabeledContent(title, value: value)
         }
+    }
+
+    private func formatTime(_ time: Double) -> String {
+        let total = Int(time.rounded())
+        return "\(total / 60):\(String(format: "%02d", total % 60))"
+    }
+}
+
+private struct SavedStudyWordYouTubeClip: Identifiable {
+    let id = UUID()
+    let videoID: String
+    let videoURL: String?
+    let title: String
+    let start: Double
+    let end: Double
+}
+
+private struct SavedStudyWordYouTubeClipPlayer: View {
+    let clip: SavedStudyWordYouTubeClip
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var watchDuration: TimeInterval = 0
+    @State private var seekAndPlayRequest: Double?
+    @State private var pauseRequest: Bool?
+    @State private var didStartPlayback = false
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                YouTubePlayerView(
+                    videoID: clip.videoID,
+                    videoURL: clip.videoURL,
+                    watchDuration: $watchDuration,
+                    pauseRequest: $pauseRequest,
+                    seekAndPlayRequest: $seekAndPlayRequest,
+                    initialPlaybackTime: clip.start,
+                    shouldResumePlayback: true,
+                    onPlaybackSnapshot: handleSnapshot
+                )
+                .frame(height: 240)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(clip.title)
+                        .font(.headline)
+                    Text("\(formatTime(clip.start))-\(formatTime(clip.end))")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Source Clip")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") {
+                        pauseRequest = true
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                seekAndPlayRequest = clip.start
+            }
+            .onDisappear {
+                pauseRequest = true
+            }
+        }
+    }
+
+    private func handleSnapshot(_ snapshot: YouTubePlayerPlaybackSnapshot) {
+        if !didStartPlayback, snapshot.duration > 0 {
+            didStartPlayback = true
+            seekAndPlayRequest = clip.start
+        }
+
+        guard snapshot.isPlaying, snapshot.currentTime >= clip.end else { return }
+        pauseRequest = true
     }
 
     private func formatTime(_ time: Double) -> String {

@@ -3,13 +3,15 @@ import SwiftUI
 struct StoryWordLookupRequest {
     let word: String
     let time: Double?
+    let endTime: Double?
     let context: String?
     let wordIndex: Int?
     let sourceText: String?
 
-    init(word: String, time: Double?, context: String?, wordIndex: Int? = nil, sourceText: String? = nil) {
+    init(word: String, time: Double?, endTime: Double? = nil, context: String?, wordIndex: Int? = nil, sourceText: String? = nil) {
         self.word = word
         self.time = time
+        self.endTime = endTime
         self.context = context
         self.wordIndex = wordIndex
         self.sourceText = sourceText
@@ -201,7 +203,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             sourceUrl: nil,
             blockIndex: selectedRequest?.wordIndex,
             mediaStart: selectedWordTime,
-            mediaEnd: nil,
+            mediaEnd: selectedRequest?.endTime,
             audioWordFile: nil,
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil
@@ -239,6 +241,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             StoryWordLookupRequest(
                 word: phrase,
                 time: min(start.time ?? request.time ?? 0, request.time ?? start.time ?? 0),
+                endTime: max(start.endTime ?? start.time ?? 0, request.endTime ?? request.time ?? 0),
                 context: sentenceContaining(phrase: phrase, in: sourceText),
                 sourceText: sourceText
             )
@@ -297,19 +300,16 @@ struct TappableStoryText: View {
                     return .systemAction
                 }
 
-                let time = components.queryItems?
-                    .first(where: { $0.name == "t" })?
-                    .value
-                    .flatMap(Double.init)
+                let queryItems = components.queryItems ?? []
+                let time = queryItems.first(where: { $0.name == "t" })?.value.flatMap(Double.init)
+                let endTime = queryItems.first(where: { $0.name == "e" })?.value.flatMap(Double.init)
                 lookupAction?(
                     StoryWordLookupRequest(
                         word: word,
                         time: time,
+                        endTime: endTime,
                         context: sentenceContaining(word: word, in: text),
-                        wordIndex: components.queryItems?
-                            .first(where: { $0.name == "i" })?
-                            .value
-                            .flatMap(Int.init),
+                        wordIndex: queryItems.first(where: { $0.name == "i" })?.value.flatMap(Int.init),
                         sourceText: text
                     )
                 )
@@ -339,7 +339,7 @@ struct TappableStoryText: View {
 
             if index < timings.count {
                 let timing = timings[index]
-                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&i=\(index)&t=\(timing.start)")
+                attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encodedWord)&i=\(index)&t=\(timing.start)&e=\(timing.end)")
 
                 if let currentTime {
                     let slack = 0.150

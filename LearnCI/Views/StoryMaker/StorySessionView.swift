@@ -726,7 +726,7 @@ struct StorySessionView: View {
             sourceUrl: nil,
             blockIndex: selectedWordRequest?.wordIndex,
             mediaStart: selectedWordTime,
-            mediaEnd: nil,
+            mediaEnd: selectedWordRequest?.endTime,
             audioWordFile: nil,
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil
@@ -765,7 +765,13 @@ struct StorySessionView: View {
             phrase,
             time: min(start.time ?? request.time ?? 0, request.time ?? start.time ?? 0),
             context: sentenceContaining(phrase: phrase, in: sourceText),
-            request: StoryWordLookupRequest(word: phrase, time: start.time, context: sentenceContaining(phrase: phrase, in: sourceText), sourceText: sourceText)
+            request: StoryWordLookupRequest(
+                word: phrase,
+                time: min(start.time ?? request.time ?? 0, request.time ?? start.time ?? 0),
+                endTime: max(start.endTime ?? start.time ?? 0, request.endTime ?? request.time ?? 0),
+                context: sentenceContaining(phrase: phrase, in: sourceText),
+                sourceText: sourceText
+            )
         )
     }
 
@@ -2072,18 +2078,15 @@ struct ParagraphView: View {
                 if url.scheme == "x-learnci-word",
                    let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let word = components.queryItems?.first(where: { $0.name == "word" })?.value {
-                    let targetTime = components.queryItems?
-                        .first(where: { $0.name == "t" })?
-                        .value
-                        .flatMap(Double.init)
-                    let wordIndex = components.queryItems?
-                        .first(where: { $0.name == "i" })?
-                        .value
-                        .flatMap(Int.init)
+                    let queryItems = components.queryItems ?? []
+                    let targetTime = queryItems.first(where: { $0.name == "t" })?.value.flatMap(Double.init)
+                    let endTime = queryItems.first(where: { $0.name == "e" })?.value.flatMap(Double.init)
+                    let wordIndex = queryItems.first(where: { $0.name == "i" })?.value.flatMap(Int.init)
                     onWordTap(
                         StoryWordLookupRequest(
                             word: word,
                             time: targetTime,
+                            endTime: endTime,
                             context: sentenceContaining(word: word, in: chunk.text),
                             wordIndex: wordIndex,
                             sourceText: chunk.text
@@ -2124,7 +2127,7 @@ struct ParagraphView: View {
                     let encoded = matchedWord.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? matchedWord
                     if i < timings.count {
                         let timing = timings[i]
-                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&i=\(i)&t=\(timing.start)")
+                        attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&i=\(i)&t=\(timing.start)&e=\(timing.end)")
                     } else {
                         attrString[attrRange].link = URL(string: "x-learnci-word://?word=\(encoded)&i=\(i)")
                     }

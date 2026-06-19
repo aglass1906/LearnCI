@@ -723,7 +723,7 @@ struct StorySessionView: View {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: nil,
+            sourceUrl: selectedStoryAudioClip()?.urlString ?? story.remoteAudioPath,
             blockIndex: selectedWordRequest?.wordIndex,
             mediaStart: selectedWordTime,
             mediaEnd: selectedWordRequest?.endTime,
@@ -733,6 +733,17 @@ struct StorySessionView: View {
         )
         savedStudyWordManager.save(capture: capture, in: modelContext)
         savedStudyRevision += 1
+    }
+
+    private func selectedStoryAudioClip() -> StorySceneAudioClip? {
+        guard let selectedWordTime else {
+            return currentChapterClips[safeStorySession: currentSceneClipIndex]
+        }
+        if let match = adapter.clipIndex(forChapter: currentChapterIndex, localTime: selectedWordTime),
+           currentChapterClips.indices.contains(match.index) {
+            return currentChapterClips[match.index]
+        }
+        return currentChapterClips[safeStorySession: currentSceneClipIndex]
     }
 
     private func beginPhraseSelection() {

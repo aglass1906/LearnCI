@@ -200,7 +200,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: nil,
+            sourceUrl: story.remoteAudioPath,
             blockIndex: selectedRequest?.wordIndex,
             mediaStart: selectedWordTime,
             mediaEnd: selectedRequest?.endTime,

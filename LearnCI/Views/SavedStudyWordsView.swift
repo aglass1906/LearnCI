@@ -416,8 +416,8 @@ private struct SavedStudyWordDetailView: View {
             playStreamClip(url: url, bounds: bounds)
             return true
         case .story:
-            guard let url = storyAudioURL() else { return false }
-            playStreamClip(url: url, bounds: bounds)
+            guard let playback = storyClipPlayback(for: bounds) else { return false }
+            playStreamClip(url: playback.url, bounds: playback.bounds)
             return true
         case .youtube:
             guard let videoID = youtubeVideoID() else { return false }
@@ -455,10 +455,21 @@ private struct SavedStudyWordDetailView: View {
         return (start, end)
     }
 
-    private func storyAudioURL() -> URL? {
+    private func storyClipPlayback(for bounds: (start: Double, end: Double)) -> (url: URL, bounds: (start: Double, end: Double))? {
         guard let storyID = UUID(uuidString: word.sourceId),
               let story = stories.first(where: { $0.id == storyID }) else {
+            if let sourceUrl = word.sourceUrl?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !sourceUrl.isEmpty,
+               let url = StoryReaderDataAdapter.remoteAudioURL(for: sourceUrl) {
+                return (url, bounds)
+            }
             return nil
+        }
+
+        let adapter = StoryReaderDataAdapter(story: story)
+        if let clip = bestStoryAudioClip(adapter: adapter),
+           let url = storyAudioURL(for: clip, adapter: adapter) {
+            return (url, adjustedStoryBounds(bounds, for: clip))
         }
 
         if let audioFilename = story.audioFilename?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -466,16 +477,94 @@ private struct SavedStudyWordDetailView: View {
             let localURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(audioFilename)
             if FileManager.default.fileExists(atPath: localURL.path) {
-                return localURL
+                return (localURL, bounds)
             }
         }
 
         if let remoteAudioPath = story.remoteAudioPath?.trimmingCharacters(in: .whitespacesAndNewlines),
            !remoteAudioPath.isEmpty {
-            return StoryReaderDataAdapter.remoteAudioURL(for: remoteAudioPath)
+            return StoryReaderDataAdapter.remoteAudioURL(for: remoteAudioPath).map { ($0, bounds) }
         }
 
         return nil
+    }
+
+    private func storyAudioURL(for clip: StorySceneAudioClip, adapter: StoryReaderDataAdapter) -> URL? {
+        adapter.cachedAudioURL(for: clip) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString)
+    }
+
+    private func bestStoryAudioClip(adapter: StoryReaderDataAdapter) -> StorySceneAudioClip? {
+        let clips = storyAudioClipCandidates(adapter: adapter)
+        guard !clips.isEmpty else { return nil }
+
+        if let sourceUrl = word.sourceUrl?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !sourceUrl.isEmpty,
+           let exact = clips.first(where: { $0.urlString == sourceUrl }) {
+            return exact
+        }
+
+        let context = word.sentenceTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !context.isEmpty,
+           let textMatch = clips.first(where: { clip in
+               clip.caption.localizedCaseInsensitiveContains(context) ||
+               context.localizedCaseInsensitiveContains(clip.caption)
+           }) {
+            return textMatch
+        }
+
+        let savedWord = word.word.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !savedWord.isEmpty,
+           let wordMatch = clips.first(where: { $0.caption.localizedCaseInsensitiveContains(savedWord) }) {
+            return wordMatch
+        }
+
+        guard let mediaStart = word.mediaStart else { return clips.first }
+        return clips.first(where: { clip in
+            let duration = clip.duration ?? 0
+            guard duration > 0 else { return false }
+            return mediaStart >= clip.startOffset && mediaStart <= clip.startOffset + duration
+        }) ?? clips.first(where: { clip in
+            let duration = clip.duration ?? 0
+            return duration > 0 && mediaStart <= duration
+        }) ?? clips.first
+    }
+
+    private func storyAudioClipCandidates(adapter: StoryReaderDataAdapter) -> [StorySceneAudioClip] {
+        var clips = adapter.allAudioClips()
+        for chapterIndex in adapter.story.chapters.indices {
+            clips.append(contentsOf: adapter.audioClips(forChapter: chapterIndex))
+        }
+
+        var seen = Set<String>()
+        return clips.filter { clip in
+            let key = "\(clip.id)|\(clip.urlString)|\(clip.startOffset)"
+            return seen.insert(key).inserted
+        }
+    }
+
+    private func adjustedStoryBounds(
+        _ bounds: (start: Double, end: Double),
+        for clip: StorySceneAudioClip
+    ) -> (start: Double, end: Double) {
+        let duration = clip.duration ?? 0
+        let paddedDuration = duration + 2
+
+        if duration > 0,
+           bounds.start >= clip.startOffset,
+           bounds.start <= clip.startOffset + paddedDuration {
+            let start = max(0, bounds.start - clip.startOffset)
+            let end = max(start + 1, min(duration, bounds.end - clip.startOffset))
+            return (start, end)
+        }
+
+        if duration > 0, bounds.start <= paddedDuration {
+            let start = max(0, bounds.start)
+            let end = max(start + 1, min(duration, bounds.end))
+            return (start, end)
+        }
+
+        let fallbackEnd = duration > 0 ? min(duration, 6) : 6
+        return (0, max(1, fallbackEnd))
     }
 
     private func youtubeVideoID() -> String? {

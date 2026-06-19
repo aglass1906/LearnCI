@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import SwiftData
 
 struct PictureBookReaderView: View {
     let story: Story
@@ -27,7 +28,11 @@ struct PictureBookReaderView: View {
     @State private var isAutoContinueEnabled = false
     @State private var autoAdvanceToken = 0
     @State private var lastSavedPlaybackSecond = -1
+    @State private var startTime: Date?
+    @State private var didPlayAudio = false
+    @State private var didLogActivity = false
 
+    @Environment(\.modelContext) private var modelContext
     private var audioManager = AudioManager.shared
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
@@ -83,7 +88,12 @@ struct PictureBookReaderView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear(perform: loadBookIfNeeded)
+        .onAppear {
+            if startTime == nil {
+                startTime = Date()
+            }
+            loadBookIfNeeded()
+        }
         .onChange(of: isAutoContinueEnabled) { _, enabled in
             if enabled {
                 startAutoContinueForCurrentSpread()
@@ -104,9 +114,7 @@ struct PictureBookReaderView: View {
         .mediaPlaybackLifecycle(
             onUserLeave: {
                 cancelScheduledAutoAdvance()
-                audioManager.onStreamFinished = nil
-                supplementalPlayback.stop()
-                audioManager.stopAudio()
+                cleanupSession()
             },
             onEnterBackground: { audioManager.updateStreamNowPlayingInfo() }
         )
@@ -428,6 +436,9 @@ struct PictureBookReaderView: View {
                 speakableText: currentReadingMatterSpeakableText
             )
             isPlaying = supplementalPlayback.isPlaying
+            if isPlaying {
+                didPlayAudio = true
+            }
             return
         }
 
@@ -446,6 +457,9 @@ struct PictureBookReaderView: View {
                 speakableText: currentReadingMatterSpeakableText
             )
             isPlaying = supplementalPlayback.isPlaying
+            if isPlaying {
+                didPlayAudio = true
+            }
             return
         }
 
@@ -463,6 +477,7 @@ struct PictureBookReaderView: View {
         } else {
             audioManager.playStream()
             isPlaying = true
+            didPlayAudio = true
         }
         audioManager.updateStreamNowPlayingInfo()
     }
@@ -535,6 +550,7 @@ struct PictureBookReaderView: View {
         sliderValue = startAt
         audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
         if autoplay {
+            didPlayAudio = true
             let announcement = startAt == 0 ? adapter.playbackAnnouncement(for: clip) : nil
             audioManager.announceThenPlayStream(announcement, language: story.language)
             isPlaying = true
@@ -594,6 +610,9 @@ struct PictureBookReaderView: View {
                     speakableText: currentReadingMatterSpeakableText
                 )
                 isPlaying = supplementalPlayback.isPlaying
+                if isPlaying {
+                    didPlayAudio = true
+                }
             } else {
                 scheduleAutoAdvanceToNextSpread()
             }
@@ -606,6 +625,7 @@ struct PictureBookReaderView: View {
                     if !audioManager.isStreaming {
                         audioManager.playStream()
                         isPlaying = true
+                        didPlayAudio = true
                     }
                 } else {
                     playClip(at: clipIndex, autoplay: true)
@@ -663,6 +683,32 @@ struct PictureBookReaderView: View {
         guard second != lastSavedPlaybackSecond else { return }
         lastSavedPlaybackSecond = second
         saveReadingProgress()
+    }
+
+    private func cleanupSession() {
+        audioManager.onStreamFinished = nil
+        supplementalPlayback.stop()
+        audioManager.stopAudio()
+        logActivityIfNeeded()
+    }
+
+    private func logActivityIfNeeded() {
+        guard !didLogActivity else { return }
+        guard let startTime else { return }
+        let minutes = Int(Date().timeIntervalSince(startTime) / 60)
+        guard minutes > 0 else { return }
+
+        let activity = UserActivity(
+            date: startTime,
+            minutes: minutes,
+            activityType: didPlayAudio ? .listening : .reading,
+            language: story.language,
+            userID: story.userID.isEmpty ? nil : story.userID,
+            comment: story.title
+        )
+        modelContext.insert(activity)
+        try? modelContext.save()
+        didLogActivity = true
     }
 
     private func prepareInitialPlaybackPositionIfNeeded() {

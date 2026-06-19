@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import SwiftData
 
 struct AudioBookReaderView: View {
     let story: Story
@@ -28,7 +29,11 @@ struct AudioBookReaderView: View {
     @State private var sleepTimerEndDate: Date?
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
     @State private var lastSavedPlaybackSecond = -1
+    @State private var startTime: Date?
+    @State private var didPlayAudio = false
+    @State private var didLogActivity = false
 
+    @Environment(\.modelContext) private var modelContext
     @Bindable private var audioManager = AudioManager.shared
     private let sleepTimerTicker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private let supplementalTicker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -114,12 +119,16 @@ struct AudioBookReaderView: View {
                 .accessibilityLabel("Sleep Timer")
             }
         }
-        .onAppear(perform: prepareReaderIfNeeded)
+        .onAppear {
+            if startTime == nil {
+                startTime = Date()
+            }
+            prepareReaderIfNeeded()
+        }
         .mediaPlaybackLifecycle(
             onUserLeave: {
                 cancelSleepTimer()
-                supplementalPlayback.stop()
-                audioManager.stopAudio()
+                cleanupSession()
             },
             onEnterBackground: { updateNowPlayingMetadata() }
         )
@@ -710,6 +719,9 @@ struct AudioBookReaderView: View {
             speakableText: readingMatterSpeakableText(for: page)
         )
         isPlaying = supplementalPlayback.isPlaying
+        if isPlaying {
+            didPlayAudio = true
+        }
     }
 
     private func advanceAfterReadingMatterFinished() {
@@ -877,6 +889,9 @@ struct AudioBookReaderView: View {
                     .flatMap { readingMatterSpeakableText(for: $0) }
             )
             isPlaying = supplementalPlayback.isPlaying
+            if isPlaying {
+                didPlayAudio = true
+            }
 
         case .cover:
             beginPlaybackFromCover()
@@ -892,6 +907,7 @@ struct AudioBookReaderView: View {
             } else {
                 audioManager.playStream()
                 isPlaying = true
+                didPlayAudio = true
             }
 
         case .none:
@@ -981,6 +997,7 @@ struct AudioBookReaderView: View {
         sliderValue = currentClipStartOffset + startAt
         updateNowPlayingMetadata(clip: clip)
         if autoplay {
+            didPlayAudio = true
             let announcement = startAt == 0 ? readerAdapter.playbackAnnouncement(for: clip) : nil
             audioManager.announceThenPlayStream(announcement, language: story.language)
             isPlaying = true
@@ -1197,6 +1214,31 @@ struct AudioBookReaderView: View {
         guard second != lastSavedPlaybackSecond else { return }
         lastSavedPlaybackSecond = second
         saveReadingProgress()
+    }
+
+    private func cleanupSession() {
+        supplementalPlayback.stop()
+        audioManager.stopAudio()
+        logActivityIfNeeded()
+    }
+
+    private func logActivityIfNeeded() {
+        guard !didLogActivity else { return }
+        guard let startTime else { return }
+        let minutes = Int(Date().timeIntervalSince(startTime) / 60)
+        guard minutes > 0 else { return }
+
+        let activity = UserActivity(
+            date: startTime,
+            minutes: minutes,
+            activityType: didPlayAudio ? .listening : .reading,
+            language: story.language,
+            userID: story.userID.isEmpty ? nil : story.userID,
+            comment: story.title
+        )
+        modelContext.insert(activity)
+        try? modelContext.save()
+        didLogActivity = true
     }
 
     private func prepareInitialPlaybackPositionIfNeeded() {

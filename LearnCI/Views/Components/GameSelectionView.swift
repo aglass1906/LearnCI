@@ -7,6 +7,10 @@ struct GameSelectionView: View {
     let onPlayNow: () -> Void
     let onConfigure: () -> Void
 
+    private var visibleGameTypes: [GameConfiguration.GameType] {
+        gameTypes.filter { $0 != .story }
+    }
+
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -17,7 +21,7 @@ struct GameSelectionView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(gameTypes) { gameType in
+                        ForEach(visibleGameTypes) { gameType in
                             Button {
                                 selectedGameType = gameType
                             } label: {
@@ -36,6 +40,11 @@ struct GameSelectionView: View {
             actionBar
                 .padding()
                 .background(.bar)
+        }
+        .onAppear {
+            if selectedGameType == .story, let firstType = visibleGameTypes.first {
+                selectedGameType = firstType
+            }
         }
     }
 

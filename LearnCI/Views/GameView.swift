@@ -10,6 +10,8 @@ struct GameView: View {
     @Query private var allProfiles: [UserProfile]
 
     @Environment(AudioManager.self) private var audioManager
+    private static let defaultGameTypes = GameConfiguration.GameType.allCases.filter { $0 != .story }
+
     private let availableGameTypes: [GameConfiguration.GameType]
     private let initialGameType: GameConfiguration.GameType?
     private let initialDeck: DeckMetadata?
@@ -57,15 +59,17 @@ struct GameView: View {
     @State private var viewModel: GameSessionViewModel?
 
     init(
-        availableGameTypes: [GameConfiguration.GameType] = GameConfiguration.GameType.allCases,
+        availableGameTypes: [GameConfiguration.GameType] = Self.defaultGameTypes,
         initialGameType: GameConfiguration.GameType? = nil,
         initialDeck: DeckMetadata? = nil
     ) {
-        let normalizedTypes = availableGameTypes.isEmpty ? GameConfiguration.GameType.allCases : availableGameTypes
+        let filteredTypes = availableGameTypes.filter { $0 != .story }
+        let normalizedTypes = filteredTypes.isEmpty ? Self.defaultGameTypes : filteredTypes
         self.availableGameTypes = normalizedTypes
         self.initialGameType = initialGameType
         self.initialDeck = initialDeck
-        _selectedGameType = State(initialValue: initialGameType ?? normalizedTypes.first ?? .flashcards)
+        let initialSelection = initialGameType == .story ? nil : initialGameType
+        _selectedGameType = State(initialValue: initialSelection ?? normalizedTypes.first ?? .flashcards)
         _selectedDeck = State(initialValue: initialDeck)
         _setupStage = State(initialValue: initialDeck == nil ? .gameSelection : .sessionConfiguration)
     }

@@ -49,7 +49,7 @@ struct InputHubView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
 
-                NavigationLink(destination: GameView(availableGameTypes: GameConfiguration.GameType.allCases.filter { $0 != .flashcards })) {
+                NavigationLink(destination: GameView(availableGameTypes: GameConfiguration.GameType.allCases.filter { $0 != .flashcards && $0 != .story })) {
                     HubPanel(
                         title: "Games",
                         subtitle: "Focused practice modes",

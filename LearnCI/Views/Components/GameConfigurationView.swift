@@ -16,6 +16,7 @@ struct GameConfigurationView: View {
     // Sheet State
     @State private var showDeckPicker = false
     @State private var showTagSelection = false
+    @State private var showCardBrowser = false
     
     private var deckImage: UIImage? {
         guard let deck = selectedDeck, let cover = deck.coverImage else { return nil }
@@ -50,6 +51,19 @@ struct GameConfigurationView: View {
                         )
                         .background(Color(UIColor.secondarySystemGroupedBackground))
                         .cornerRadius(12)
+                    }
+
+                    if selectedGameType == .flashcards, selectedDeck != nil {
+                        Button(action: { showCardBrowser = true }) {
+                            SettingsRow(
+                                icon: "star.text.square.fill",
+                                iconColor: .yellow,
+                                text: "Browse Flashcards",
+                                subText: "Save individual cards to Saved Study Words"
+                            )
+                            .background(Color(UIColor.secondarySystemGroupedBackground))
+                            .cornerRadius(12)
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -155,6 +169,11 @@ struct GameConfigurationView: View {
                 defaultLevel: mapLevel(sessionLevel),
                 selectedDeck: $selectedDeck
             )
+        }
+        .sheet(isPresented: $showCardBrowser) {
+            if let selectedDeck {
+                FlashcardDeckBrowserSheet(deckMetadata: selectedDeck)
+            }
         }
         .onChange(of: selectedGameType) { _, newType in
             // Validate deck compatibility

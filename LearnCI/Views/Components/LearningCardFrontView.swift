@@ -8,6 +8,9 @@ struct LearningCardFrontView: View {
     
     @Environment(AudioManager.self) private var audioManager
     @Environment(DataManager.self) private var dataManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
+    @Environment(\.modelContext) private var modelContext
     
     // Internal state for hints
     @State private var isImageRevealed: Bool = false
@@ -19,6 +22,18 @@ struct LearningCardFrontView: View {
     
     var body: some View {
         VStack(spacing: 15) {
+            HStack {
+                Spacer()
+                Button {
+                    saveCardForStudy()
+                } label: {
+                    Label(isSavedForStudy ? "Saved" : "Save", systemImage: isSavedForStudy ? "star.fill" : "star")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .disabled(isSavedForStudy || authManager.currentUser == nil)
+            }
+
             // Visual Media (Image or Video)
             if config.image != .hidden, let filename = card.mediaFile, !filename.isEmpty {
                 let isVideo = isVideoFile(filename)
@@ -205,6 +220,46 @@ struct LearningCardFrontView: View {
         // Reset state when card changes
         .id(card.id) 
     }
+
+    private var isSavedForStudy: Bool {
+        guard let userID = authManager.currentUser else { return false }
+        return savedStudyWordManager.isSaved(
+            word: card.wordTarget,
+            userID: userID,
+            languageCode: deck.language.code,
+            sourceType: .flashcard,
+            sourceId: "\(deck.id):\(card.id)",
+            in: modelContext
+        )
+    }
+
+    private func saveCardForStudy() {
+        guard let userID = authManager.currentUser else { return }
+        let capture = SavedStudyWordCapture(
+            userID: userID,
+            word: card.wordTarget,
+            translation: card.wordNative,
+            lemma: nil,
+            sentenceTarget: card.sentenceTarget,
+            sentenceNative: card.sentenceNative,
+            languageCode: deck.language.code,
+            level: deck.level?.cerCode ?? deck.proficiencyLevel.map { String($0) },
+            partOfSpeech: nil,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .flashcard,
+            sourceId: "\(deck.id):\(card.id)",
+            sourceTitle: deck.title,
+            sourceUrl: nil,
+            blockIndex: nil,
+            mediaStart: nil,
+            mediaEnd: nil,
+            audioWordFile: card.audioWordFile,
+            audioSentenceFile: card.audioSentenceFile,
+            deckFolderName: deck.baseFolderName
+        )
+        savedStudyWordManager.save(capture: capture, in: modelContext)
+    }
     
     // Helper to detect video extensions
     private func isVideoFile(_ filename: String) -> Bool {
@@ -213,4 +268,3 @@ struct LearningCardFrontView: View {
         return videoExtensions.contains(ext)
     }
 }
-

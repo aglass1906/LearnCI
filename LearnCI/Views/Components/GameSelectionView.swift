@@ -15,17 +15,19 @@ struct GameSelectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(gameTypes) { gameType in
-                        Button {
-                            selectedGameType = gameType
-                        } label: {
-                            GameTileView(
-                                gameType: gameType,
-                                isSelected: selectedGameType == gameType
-                            )
+                VStack(spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(gameTypes) { gameType in
+                            Button {
+                                selectedGameType = gameType
+                            } label: {
+                                GameTileView(
+                                    gameType: gameType,
+                                    isSelected: selectedGameType == gameType
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .padding()

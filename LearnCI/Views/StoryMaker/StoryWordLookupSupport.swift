@@ -36,6 +36,9 @@ extension View {
 private struct StoryWordLookupHostModifier: ViewModifier {
     let story: Story
 
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @State private var selectedWord: String?
     @State private var selectedWordTime: Double?
     @State private var selectedContext: String?
@@ -81,7 +84,11 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                     isLoading: isTranslatingWord,
                     seekTime: selectedWordTime,
                     onSeek: { _ in },
-                    onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil
+                    onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil,
+                    onMarkForStudy: {
+                        markSelectedWordForStudy()
+                    },
+                    isMarkedForStudy: isSelectedWordSaved
                 )
                 .presentationDetents([.fraction(0.4)])
                 .presentationDragIndicator(.visible)
@@ -90,6 +97,19 @@ private struct StoryWordLookupHostModifier: ViewModifier {
 
     private var canSelectPhrase: Bool {
         selectedRequest?.wordIndex != nil && selectedRequest?.sourceText?.isEmpty == false
+    }
+
+    private var isSelectedWordSaved: Bool {
+        guard let userID = authManager.currentUser,
+              let selectedWord else { return false }
+        return savedStudyWordManager.isSaved(
+            word: selectedWord,
+            userID: userID,
+            languageCode: story.language.code,
+            sourceType: .story,
+            sourceId: story.id.uuidString,
+            in: modelContext
+        )
     }
 
     @ViewBuilder
@@ -158,6 +178,35 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                 }
             }
         }
+    }
+
+    private func markSelectedWordForStudy() {
+        guard let userID = authManager.currentUser,
+              let selectedWord else { return }
+        let capture = SavedStudyWordCapture(
+            userID: userID,
+            word: selectedWord,
+            translation: wordTranslation,
+            lemma: nil,
+            sentenceTarget: selectedContext,
+            sentenceNative: nil,
+            languageCode: story.language.code,
+            level: String(story.level),
+            partOfSpeech: wordPartOfSpeech,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .story,
+            sourceId: story.id.uuidString,
+            sourceTitle: story.title,
+            sourceUrl: nil,
+            blockIndex: selectedRequest?.wordIndex,
+            mediaStart: selectedWordTime,
+            mediaEnd: nil,
+            audioWordFile: nil,
+            audioSentenceFile: story.audioFilename,
+            deckFolderName: nil
+        )
+        savedStudyWordManager.save(capture: capture, in: modelContext)
     }
 
     private func beginPhraseSelection() {

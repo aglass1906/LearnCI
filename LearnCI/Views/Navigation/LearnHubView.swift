@@ -18,6 +18,16 @@ struct LearnHubView: View {
                         )
                     }
                     .buttonStyle(.plain)
+
+                    NavigationLink(destination: SavedStudyWordsView()) {
+                        HubPanelHero(
+                            title: "Saved Study Words",
+                            subtitle: "Review words saved from flashcards, stories, YouTube, and podcasts",
+                            icon: "star.text.square.fill",
+                            gradient: Gradient(colors: [.yellow, .orange])
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding()
             }

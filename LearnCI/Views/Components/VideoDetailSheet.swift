@@ -8,6 +8,7 @@ struct VideoDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Query private var allProfiles: [UserProfile]
 
     private let captionService = YouTubeCaptionService()
@@ -940,28 +941,48 @@ struct VideoDetailSheet: View {
               let session = studySessionViewModel else { return }
         let blockIndex = cueIndex ?? session.currentBlockIndex
         let mediaTime = session.mediaPlayer.currentTime
-        let marked = MarkedStudyWord(
+        let block = session.currentBlock
+        let capture = SavedStudyWordCapture(
             userID: userID,
-            resource: session.resource,
-            blockIndex: blockIndex,
             word: word,
             translation: studyViewModel.lookupResult?.translation,
-            contextSnippet: contextText,
-            mediaTime: mediaTime
+            lemma: nil,
+            sentenceTarget: contextText ?? block?.targetText,
+            sentenceNative: block?.nativeText,
+            languageCode: session.resource.languageCode ?? lookupLanguageCode,
+            level: nil,
+            partOfSpeech: studyViewModel.lookupResult?.partOfSpeech,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .youtube,
+            sourceId: session.resource.resourceId,
+            sourceTitle: session.resource.title,
+            sourceUrl: session.resource.consumptionUrl,
+            blockIndex: blockIndex,
+            mediaStart: block?.mediaStart ?? mediaTime,
+            mediaEnd: block?.mediaEnd,
+            audioWordFile: nil,
+            audioSentenceFile: nil,
+            deckFolderName: nil
         )
-        modelContext.insert(marked)
+        savedStudyWordManager.save(capture: capture, in: modelContext)
+    }
+
+    private var lookupLanguageCode: String {
+        currentUserProfile?.currentLanguage.code ?? "es"
     }
 
     private func isWordMarkedForStudy(_ word: String) -> Bool {
         guard let userID = authManager.currentUser,
               let session = studySessionViewModel else { return false }
-        let descriptor = FetchDescriptor<MarkedStudyWord>()
-        guard let marks = try? modelContext.fetch(descriptor) else { return false }
-        return marks.contains {
-            $0.userID == userID &&
-            $0.resourceId == session.resource.resourceId &&
-            $0.word.lowercased() == word.lowercased()
-        }
+        return savedStudyWordManager.isSaved(
+            word: word,
+            userID: userID,
+            languageCode: session.resource.languageCode ?? lookupLanguageCode,
+            sourceType: .youtube,
+            sourceId: session.resource.resourceId,
+            in: modelContext
+        )
     }
 
     private func saveSessionRecord(definition: StudySessionDefinition) {

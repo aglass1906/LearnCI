@@ -21,12 +21,12 @@ struct AudioBookReaderView: View {
     @State private var duration = 0.0
     @State private var playbackRate: Float = 1.0
     @State private var showTranscript = false
-    @State private var showSleepTimer = false
     @State private var showTracklist = false
     @State private var prefetchingClipIDs: Set<String> = []
     @State private var lockScreenArtwork: UIImage?
     @State private var sleepTimerMode: AudioBookSleepTimerMode = .inactive
     @State private var sleepTimerEndDate: Date?
+    @State private var isAutoContinueEnabled = true
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
     @State private var lastSavedPlaybackSecond = -1
     @State private var startTime: Date?
@@ -109,16 +109,6 @@ struct AudioBookReaderView: View {
         }
         .navigationTitle("Audio Book")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showSleepTimer = true
-                } label: {
-                    Image(systemName: sleepTimerMode == .inactive ? "moon.zzz" : "moon.zzz.fill")
-                }
-                .accessibilityLabel("Sleep Timer")
-            }
-        }
         .onAppear {
             if startTime == nil {
                 startTime = Date()
@@ -204,17 +194,39 @@ struct AudioBookReaderView: View {
                 .presentationDetents([.medium, .large])
             }
         }
-        .sheet(isPresented: $showSleepTimer) {
-            AudioBookSleepTimerSheet(
-                mode: $sleepTimerMode,
-                onSelect: applySleepTimer
-            )
-            .presentationDetents([.medium])
-        }
         .sheet(isPresented: $showTracklist) {
-            tracklistSheet
+            AudioBookPlayerSheet(
+                navItems: navItems,
+                selectedNavItemID: selectedNavItemID,
+                currentChapterTitle: selectedNavItem?.kind == .chapter ? selectedNavItem?.title : nil,
+                chapterClips: playerSheetChapterClips,
+                globalClips: clips,
+                currentClipIndex: currentClipIndex,
+                adapter: readerAdapter,
+                story: story,
+                isAutoContinueEnabled: $isAutoContinueEnabled,
+                sleepTimerMode: $sleepTimerMode,
+                playbackRate: $playbackRate,
+                onChangeRate: setRate,
+                onSelectTimer: applySleepTimer,
+                onSelectNavItem: { item in
+                    showTracklist = false
+                    selectNavItem(item)
+                },
+                onSelectClip: { globalIndex in
+                    showTracklist = false
+                    playClip(at: globalIndex, autoplay: true)
+                }
+            )
                 .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
+    }
+
+    private var playerSheetChapterClips: [StorySceneAudioClip] {
+        guard selectedNavItem?.kind == .chapter,
+              let currentChapterIndex else { return [] }
+        return readerAdapter.chapterPlaybackClips(forChapter: currentChapterIndex)
     }
 
     @ViewBuilder
@@ -620,6 +632,7 @@ struct AudioBookReaderView: View {
                 playbackContextLabel: playerBarContextLabel,
                 isBuffering: playerBarIsBuffering,
                 bufferingLabel: loadingAudioLabel ?? "Loading audio…",
+                showsRateControl: false,
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
@@ -725,6 +738,10 @@ struct AudioBookReaderView: View {
     }
 
     private func advanceAfterReadingMatterFinished() {
+        guard isAutoContinueEnabled else {
+            isPlaying = false
+            return
+        }
         guard let currentID = selectedNavItemID,
               let index = navItems.firstIndex(where: { $0.id == currentID }),
               index < navItems.count - 1 else {
@@ -1076,7 +1093,6 @@ struct AudioBookReaderView: View {
         case .endOfChapter, .endOfStory:
             sleepTimerEndDate = nil
         }
-        showSleepTimer = false
     }
 
     private func cancelSleepTimer() {
@@ -1085,7 +1101,12 @@ struct AudioBookReaderView: View {
     }
 
     private func fireSleepTimer() {
-        audioManager.pauseStream()
+        if isOnReadingMatterSelection {
+            supplementalPlayback.pause()
+        } else {
+            audioManager.pauseStream()
+        }
+        isAutoContinueEnabled = false
         isPlaying = false
         cancelSleepTimer()
     }
@@ -1145,6 +1166,10 @@ struct AudioBookReaderView: View {
         if sceneIndex < chapterClips.count - 1,
            let nextSceneClip = chapterClips[safeAudioBook: sceneIndex + 1],
            let nextGlobalIndex = clips.firstIndex(where: { $0.id == nextSceneClip.id }) {
+            guard isAutoContinueEnabled else {
+                isPlaying = false
+                return
+            }
             Task { @MainActor in
                 playClip(at: nextGlobalIndex, autoplay: true)
             }
@@ -1159,6 +1184,10 @@ struct AudioBookReaderView: View {
             return
         }
         let nextIndex = currentClipIndex + 1
+        guard isAutoContinueEnabled else {
+            isPlaying = false
+            return
+        }
         Task { @MainActor in
             playClip(at: nextIndex, autoplay: true)
         }
@@ -1405,7 +1434,7 @@ private struct AudioBookNavRow: View {
 
 // MARK: - Sleep Timer
 
-private enum AudioBookSleepTimerMode: Equatable {
+private enum AudioBookSleepTimerMode: Hashable {
     case inactive
     case minutes(Int)
     case endOfChapter
@@ -1463,6 +1492,190 @@ private struct AudioBookSleepTimerSheet: View {
 }
 
 // MARK: - Tracklist
+
+private struct AudioBookPlayerSheet: View {
+    let navItems: [AudioBookNavItem]
+    let selectedNavItemID: String?
+    let currentChapterTitle: String?
+    let chapterClips: [StorySceneAudioClip]
+    let globalClips: [StorySceneAudioClip]
+    let currentClipIndex: Int
+    let adapter: StoryReaderDataAdapter
+    let story: Story
+    @Binding var isAutoContinueEnabled: Bool
+    @Binding var sleepTimerMode: AudioBookSleepTimerMode
+    @Binding var playbackRate: Float
+    let onChangeRate: (Float) -> Void
+    let onSelectTimer: (AudioBookSleepTimerMode) -> Void
+    let onSelectNavItem: (AudioBookNavItem) -> Void
+    let onSelectClip: (Int) -> Void
+
+    private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
+    private let timerOptions: [(label: String, mode: AudioBookSleepTimerMode)] = [
+        ("Off", .inactive),
+        ("5m", .minutes(5)),
+        ("10m", .minutes(10)),
+        ("15m", .minutes(15)),
+        ("30m", .minutes(30)),
+        ("Chapter", .endOfChapter)
+    ]
+
+    private var currentClipID: String? {
+        globalClips[safeAudioBook: currentClipIndex]?.id
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Playback") {
+                    Toggle(isOn: $isAutoContinueEnabled) {
+                        Label("Auto Play", systemImage: "play.circle")
+                    }
+
+                    Picker(selection: timerBinding) {
+                        ForEach(timerOptions, id: \.label) { option in
+                            Text(option.label).tag(option.mode)
+                        }
+                    } label: {
+                        Label("Timer", systemImage: "timer")
+                    }
+
+                    HStack(spacing: 12) {
+                        Label("Speed", systemImage: "speedometer")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Picker("Speed", selection: speedBinding) {
+                            ForEach(playbackRates, id: \.self) { rate in
+                                Text("\(String(format: "%.2g", rate))x").tag(rate)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 210)
+                    }
+                }
+
+                if !chapterClips.isEmpty {
+                    Section(currentChapterTitle ?? "Current Chapter") {
+                        ForEach(chapterClips) { clip in
+                            let globalIndex = globalClips.firstIndex { $0.id == clip.id }
+                            let isCurrent = clip.id == currentClipID
+                            Button {
+                                guard let globalIndex else { return }
+                                onSelectClip(globalIndex)
+                            } label: {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Image(systemName: clip.isChapterIntro ? "text.quote" : "waveform")
+                                        .frame(width: 24)
+                                        .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(trackTitle(for: clip))
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+
+                                        Text(trackSubtitle(for: clip))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+
+                                        if let duration = clip.duration, duration > 0 {
+                                            Text(formatDuration(duration))
+                                                .font(.caption2)
+                                                .foregroundStyle(.tertiary)
+                                                .monospacedDigit()
+                                        }
+                                    }
+
+                                    Spacer(minLength: 0)
+
+                                    if isCurrent {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(Color.accentColor)
+                                    }
+                                }
+                            }
+                            .disabled(globalIndex == nil)
+                        }
+                    }
+                }
+
+                Section("Chapter Navigation") {
+                    ForEach(navItems) { item in
+                        Button {
+                            onSelectNavItem(item)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: item.kind.systemImage)
+                                    .frame(width: 24)
+                                    .foregroundStyle(selectedNavItemID == item.id ? Color.accentColor : .secondary)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(item.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(2)
+                                    Text(item.kind.label)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer(minLength: 0)
+
+                                if selectedNavItemID == item.id {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Player")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    private var speedBinding: Binding<Float> {
+        Binding(
+            get: { playbackRate },
+            set: { rate in
+                playbackRate = rate
+                onChangeRate(rate)
+            }
+        )
+    }
+
+    private var timerBinding: Binding<AudioBookSleepTimerMode> {
+        Binding(
+            get: { sleepTimerMode },
+            set: { mode in
+                sleepTimerMode = mode
+                onSelectTimer(mode)
+            }
+        )
+    }
+
+    private func trackTitle(for clip: StorySceneAudioClip) -> String {
+        guard let chapter = story.chapters[safeAudioBook: clip.chapterIndex] else {
+            return clip.title
+        }
+        return adapter.tracklistTitle(for: clip, chapter: chapter)
+    }
+
+    private func trackSubtitle(for clip: StorySceneAudioClip) -> String {
+        guard let chapter = story.chapters[safeAudioBook: clip.chapterIndex] else {
+            return clip.caption
+        }
+        return adapter.tracklistSubtitle(for: clip, chapter: chapter)
+    }
+
+    private func formatDuration(_ seconds: Double) -> String {
+        let minutes = Int(seconds) / 60
+        let secs = Int(seconds) % 60
+        return String(format: "%d:%02d", minutes, secs)
+    }
+}
 
 private struct AudioBookChapterTracklistSheet: View {
     let story: Story

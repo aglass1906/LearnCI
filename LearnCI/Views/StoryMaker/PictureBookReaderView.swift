@@ -17,6 +17,7 @@ struct PictureBookReaderView: View {
     @State private var duration = 0.0
     @State private var playbackRate: Float = 1.0
     @State private var showSpine = false
+    @State private var isPlayerMinimized = false
     @State private var isLoadingBook = true
     @State private var loadingIssue: StoryReaderRequirementIssue?
     @State private var spreads: [PictureBookSpreadModel]
@@ -25,8 +26,10 @@ struct PictureBookReaderView: View {
     @State private var clipIndexToSpreadIndex: [Int: Int]
     @State private var selectedLanguage: StorySessionView.DisplayLanguage = .target
     @State private var supplementalPlayback = StorySupplementalAudioPlayback()
-    @State private var isAutoContinueEnabled = false
+    @State private var isAutoContinueEnabled = true
     @State private var autoAdvanceToken = 0
+    @State private var sleepTimerMinutes = 0
+    @State private var sleepTimerToken = 0
     @State private var lastSavedPlaybackSecond = -1
     @State private var startTime: Date?
     @State private var didPlayAudio = false
@@ -101,15 +104,23 @@ struct PictureBookReaderView: View {
                 cancelScheduledAutoAdvance()
             }
         }
+        .onChange(of: sleepTimerMinutes) { _, minutes in
+            scheduleSleepTimer(minutes: minutes)
+        }
         .sheet(isPresented: $showSpine) {
-            PictureBookSpineSheet(
+            PictureBookPlayerSheet(
                 spreads: spreads,
-                currentSpreadIndex: currentSpreadIndex
+                currentSpreadIndex: currentSpreadIndex,
+                isAutoContinueEnabled: $isAutoContinueEnabled,
+                sleepTimerMinutes: $sleepTimerMinutes,
+                playbackRate: $playbackRate,
+                onChangeRate: setRate
             ) { index in
                 showSpine = false
                 goToSpread(index)
             }
             .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .mediaPlaybackLifecycle(
             onUserLeave: {
@@ -198,18 +209,15 @@ struct PictureBookReaderView: View {
                     PictureBookSpreadView(
                         spread: spreads[currentSpreadIndex],
                         selectedLanguage: selectedLanguage,
-                        readingMatterPlayback: isOnReadingMatterSpread ? supplementalPlayback : nil
+                        readingMatterPlayback: isOnReadingMatterSpread ? supplementalPlayback : nil,
+                        onUserScroll: minimizePlayerForReading
                     )
                     .id("\(spreads[currentSpreadIndex].id)-\(selectedLanguage.rawValue)")
                     .transition(.opacity)
                 }
             }
 
-            VStack(spacing: 10) {
-                playbackControls
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            playbackControls
         }
     }
 
@@ -247,18 +255,6 @@ struct PictureBookReaderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             pictureBookLanguageToggle
-
-            Button {
-                isAutoContinueEnabled.toggle()
-            } label: {
-                Image(systemName: isAutoContinueEnabled ? "play.circle.fill" : "play.circle")
-                    .font(.headline.weight(.semibold))
-                    .frame(width: 34, height: 34)
-                    .foregroundStyle(isAutoContinueEnabled ? Color.accentColor : .secondary)
-                    .background(.thinMaterial)
-                    .clipShape(Circle())
-            }
-            .accessibilityLabel(isAutoContinueEnabled ? "Turn Off Auto Continue" : "Turn On Auto Continue")
 
             Text("\(currentSpreadIndex + 1)/\(spreads.count)")
                 .font(.caption.weight(.semibold))
@@ -303,6 +299,8 @@ struct PictureBookReaderView: View {
                 playbackContextLabel: spreadPlaybackContextLabel,
                 isBuffering: supplementalPlayback.isLoading,
                 bufferingLabel: "Loading audio…",
+                isMinimized: isPlayerMinimized,
+                showsRateControl: false,
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
@@ -314,9 +312,14 @@ struct PictureBookReaderView: View {
                 onPreviousChapter: currentSpreadIndex > 0 ? {
                     goToSpread(currentSpreadIndex - 1)
                 } : nil,
-                onShowSpine: { showSpine = true }
+                onShowSpine: {
+                    isPlayerMinimized = false
+                    showSpine = true
+                },
+                onExpand: expandPlayerController
             )
             .disabled(isDownloadingAudio || supplementalPlayback.isLoading)
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 
@@ -667,6 +670,44 @@ struct PictureBookReaderView: View {
         autoAdvanceToken += 1
     }
 
+    private func minimizePlayerForReading() {
+        guard !isPlayerMinimized, !showSpine else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
+    }
+
+    private func expandPlayerController() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = false
+        }
+    }
+
+    private func scheduleSleepTimer(minutes: Int) {
+        sleepTimerToken += 1
+        let token = sleepTimerToken
+        guard minutes > 0 else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(minutes * 60)) {
+            guard token == sleepTimerToken, sleepTimerMinutes == minutes else { return }
+            pauseForSleepTimer()
+        }
+    }
+
+    private func pauseForSleepTimer() {
+        cancelScheduledAutoAdvance()
+        isAutoContinueEnabled = false
+        sleepTimerMinutes = 0
+
+        if isOnReadingMatterSpread {
+            supplementalPlayback.pause()
+        } else {
+            audioManager.pauseStream()
+        }
+
+        isPlaying = false
+    }
+
     private func saveReadingProgress() {
         guard spreads.indices.contains(currentSpreadIndex) else { return }
         onProgressChange?(StoryReaderProgressUpdate(
@@ -994,48 +1035,100 @@ private struct PictureBookLoadingView: View {
     }
 }
 
-private struct PictureBookSpineSheet: View {
+private struct PictureBookPlayerSheet: View {
     let spreads: [PictureBookSpreadModel]
     let currentSpreadIndex: Int
+    @Binding var isAutoContinueEnabled: Bool
+    @Binding var sleepTimerMinutes: Int
+    @Binding var playbackRate: Float
+    let onChangeRate: (Float) -> Void
     let onSelect: (Int) -> Void
+
+    private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
+    private let timerOptions = [0, 5, 10, 15, 30]
 
     var body: some View {
         NavigationStack {
-            List(Array(spreads.enumerated()), id: \.element.id) { index, spread in
-                Button {
-                    onSelect(index)
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: icon(for: spread))
-                            .frame(width: 24)
-                            .foregroundStyle(index == currentSpreadIndex ? Color.accentColor : .secondary)
+            List {
+                Section("Playback") {
+                    Toggle(isOn: $isAutoContinueEnabled) {
+                        Label("Auto Play", systemImage: "play.circle")
+                    }
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(spread.spinePrimaryTitle)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                            Text(StoryReadingSpineTitles.spinePositionLabel(
-                                index: index,
-                                total: spreads.count,
-                                context: spread.spineContextLabel
-                            ))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    Picker(selection: $sleepTimerMinutes) {
+                        ForEach(timerOptions, id: \.self) { minutes in
+                            Text(timerLabel(for: minutes)).tag(minutes)
                         }
+                    } label: {
+                        Label("Timer", systemImage: "timer")
+                    }
 
-                        Spacer()
+                    HStack(spacing: 12) {
+                        Label("Speed", systemImage: "speedometer")
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        if index == currentSpreadIndex {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
+                        Picker("Speed", selection: speedBinding) {
+                            ForEach(playbackRates, id: \.self) { rate in
+                                Text("\(String(format: "%.2g", rate))x").tag(rate)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 210)
+                    }
+                }
+
+                Section("Chapter Navigation") {
+                    ForEach(Array(spreads.enumerated()), id: \.element.id) { index, spread in
+                        Button {
+                            onSelect(index)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: icon(for: spread))
+                                    .frame(width: 24)
+                                    .foregroundStyle(index == currentSpreadIndex ? Color.accentColor : .secondary)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(spread.spinePrimaryTitle)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .lineLimit(1)
+                                    Text(StoryReadingSpineTitles.spinePositionLabel(
+                                        index: index,
+                                        total: spreads.count,
+                                        context: spread.spineContextLabel
+                                    ))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                if index == currentSpreadIndex {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle("Story Spine")
+            .navigationTitle("Player")
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private var speedBinding: Binding<Float> {
+        Binding(
+            get: { playbackRate },
+            set: { rate in
+                playbackRate = rate
+                onChangeRate(rate)
+            }
+        )
+    }
+
+    private func timerLabel(for minutes: Int) -> String {
+        minutes == 0 ? "Off" : "\(minutes)m"
     }
 
     private func icon(for spread: PictureBookSpreadModel) -> String {
@@ -1056,6 +1149,7 @@ private struct PictureBookSpreadView: View {
     let spread: PictureBookSpreadModel
     let selectedLanguage: StorySessionView.DisplayLanguage
     var readingMatterPlayback: StorySupplementalAudioPlayback? = nil
+    var onUserScroll: () -> Void = {}
 
     var body: some View {
         GeometryReader { geometry in
@@ -1076,6 +1170,15 @@ private struct PictureBookSpreadView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
+    }
+
+    private var readingScrollGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                guard abs(value.translation.height) > abs(value.translation.width),
+                      abs(value.translation.height) > 12 else { return }
+                onUserScroll()
+            }
     }
 
     private func imageHeight(in frame: CGRect) -> CGFloat {
@@ -1138,6 +1241,7 @@ private struct PictureBookSpreadView: View {
             .frame(width: contentWidth, alignment: .leading)
             .padding(.horizontal, horizontalPadding)
         }
+        .simultaneousGesture(readingScrollGesture)
         .frame(minWidth: frame.width, maxWidth: frame.width, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(.systemBackground))
         .clipped()
@@ -1262,6 +1366,7 @@ private struct PictureBookSpreadView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
         }
+        .simultaneousGesture(readingScrollGesture)
         .frame(maxWidth: 520, maxHeight: maxHeight, alignment: .leading)
         .background(.black.opacity(0.62))
         .clipShape(RoundedRectangle(cornerRadius: 8))

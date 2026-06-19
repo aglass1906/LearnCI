@@ -39,11 +39,14 @@ struct StorySessionView: View {
     // UI State
     @State private var showStoryInfo = false
     @State private var showSpine = false
+    @State private var isPlayerMinimized = false
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     @State private var readingMatterHeroImage: UIImage? = nil
     @State private var isAutoContinueEnabled = false
     @State private var autoAdvanceToken = 0
+    @State private var sleepTimerMinutes = 0
+    @State private var sleepTimerToken = 0
     
     // Auto-Scroll State
     @State private var activeWordIndex: Int? = nil
@@ -267,15 +270,21 @@ struct StorySessionView: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showSpine) {
-            StoryBookSpineSheet(
+            StoryBookPlayerSheet(
                 spineItems: storyBookSpineItems,
                 currentSpineIndex: currentSpineIndex,
-                adapter: adapter
+                adapter: adapter,
+                isAutoContinueEnabled: $isAutoContinueEnabled,
+                sleepTimerMinutes: $sleepTimerMinutes,
+                playbackRate: $playbackRate,
+                onChangeRate: setRate
             ) { spineIndex in
                 showSpine = false
+                isPlayerMinimized = false
                 goToSpineIndex(spineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: spineIndex))
             }
             .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
@@ -366,6 +375,9 @@ struct StorySessionView: View {
             } else {
                 cancelScheduledAutoAdvance()
             }
+        }
+        .onChange(of: sleepTimerMinutes) { _, minutes in
+            scheduleSleepTimer(minutes: minutes)
         }
     }
     
@@ -906,8 +918,6 @@ struct StorySessionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            autoContinueHeaderButton
-
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
                     .font(.caption.weight(.semibold))
@@ -938,8 +948,6 @@ struct StorySessionView: View {
             if currentChapterHasEnglishContent {
                 chapterLanguageToggle
             }
-
-            autoContinueHeaderButton
 
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
@@ -1009,8 +1017,6 @@ struct StorySessionView: View {
                 chapterLanguageToggle
             }
 
-            autoContinueHeaderButton
-
             if !storyBookSpineItems.isEmpty {
                 Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
                     .font(.caption.weight(.semibold))
@@ -1018,20 +1024,6 @@ struct StorySessionView: View {
                     .monospacedDigit()
             }
         }
-    }
-
-    private var autoContinueHeaderButton: some View {
-        Button {
-            isAutoContinueEnabled.toggle()
-        } label: {
-            Image(systemName: isAutoContinueEnabled ? "play.circle.fill" : "play.circle")
-                .font(.headline.weight(.semibold))
-                .frame(width: 34, height: 34)
-                .foregroundStyle(isAutoContinueEnabled ? Color.accentColor : .secondary)
-                .background(.thinMaterial)
-                .clipShape(Circle())
-        }
-        .accessibilityLabel(isAutoContinueEnabled ? "Turn Off Auto Continue" : "Turn On Auto Continue")
     }
 
     private var currentChapterHasEnglishContent: Bool {
@@ -1125,7 +1117,8 @@ struct StorySessionView: View {
                 playbackTime: supplementalPlayback.currentTime,
                 wordTimings: supplementalPlayback.wordTimings,
                 useNativeLanguage: selectedLanguage == .native,
-                bottomSpacer: StoryBookLayout.bottomScrollSpacer
+                bottomSpacer: StoryBookLayout.bottomScrollSpacer,
+                onUserScroll: minimizePlayerForReading
             )
             .onAppear {
                 prepareSupplementalPlaybackForCurrentSpineItem()
@@ -1188,6 +1181,7 @@ struct StorySessionView: View {
                     .padding(.horizontal, StoryBookLayout.horizontalPadding)
                     .padding(.top, 8)
                 }
+                .simultaneousGesture(readingScrollGesture)
                 .onChange(of: activeParagraphId) { _, newId in
                     if let id = newId {
                         withAnimation(.easeInOut(duration: 0.5)) {
@@ -1399,6 +1393,8 @@ struct StorySessionView: View {
                 playbackContextLabel: playerContextLabel,
                 isBuffering: isOnSupplementalSpineItem ? supplementalPlayback.isLoading : isDownloadingAudio,
                 bufferingLabel: "Downloading audio…",
+                isMinimized: isPlayerMinimized,
+                showsRateControl: false,
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,
@@ -1406,7 +1402,11 @@ struct StorySessionView: View {
                 onChangeRate: setRate,
                 onNextChapter: spineStepNavigationHandler(delta: 1),
                 onPreviousChapter: spineStepNavigationHandler(delta: -1),
-                onShowSpine: { showSpine = true }
+                onShowSpine: {
+                    isPlayerMinimized = false
+                    showSpine = true
+                },
+                onExpand: expandPlayerController
             )
             .disabled((isOnSupplementalSpineItem && supplementalPlayback.isLoading) || (isOnChapterSpineItem && isDownloadingAudio))
             .id("story-book-footer")
@@ -1656,6 +1656,32 @@ struct StorySessionView: View {
         autoAdvanceToken += 1
     }
 
+    private func scheduleSleepTimer(minutes: Int) {
+        sleepTimerToken += 1
+        let token = sleepTimerToken
+        guard minutes > 0 else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(minutes * 60)) {
+            guard token == sleepTimerToken, sleepTimerMinutes == minutes else { return }
+            pauseForSleepTimer()
+        }
+    }
+
+    private func pauseForSleepTimer() {
+        cancelScheduledAutoAdvance()
+        isAutoContinueEnabled = false
+        sleepTimerMinutes = 0
+
+        if isOnSupplementalSpineItem {
+            supplementalPlayback.pause()
+        } else {
+            audioManager.pauseStream()
+        }
+
+        audioManager.pauseAmbient()
+        isPlaying = false
+    }
+
     private func chapterHasIntroContent(at chapterIndex: Int) -> Bool {
         guard story.chapters.indices.contains(chapterIndex) else { return false }
         let chapter = story.chapters[chapterIndex]
@@ -1798,6 +1824,28 @@ struct StorySessionView: View {
             }
         }
     }
+
+    private var readingScrollGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                guard abs(value.translation.height) > abs(value.translation.width),
+                      abs(value.translation.height) > 12 else { return }
+                minimizePlayerForReading()
+            }
+    }
+
+    private func minimizePlayerForReading() {
+        guard !isPlayerMinimized, !showSpine else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
+    }
+
+    private func expandPlayerController() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = false
+        }
+    }
 }
 
 private extension Collection {
@@ -1841,6 +1889,7 @@ private struct StoryBookReadingMatterPageView: View {
     let wordTimings: [WordTiming]
     let useNativeLanguage: Bool
     let bottomSpacer: CGFloat
+    var onUserScroll: () -> Void = {}
 
     var body: some View {
         GeometryReader { geo in
@@ -1865,8 +1914,18 @@ private struct StoryBookReadingMatterPageView: View {
                 .padding(.horizontal, StoryBookLayout.horizontalPadding)
                 .padding(.top, 8)
             }
+            .simultaneousGesture(readingScrollGesture)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var readingScrollGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                guard abs(value.translation.height) > abs(value.translation.width),
+                      abs(value.translation.height) > 12 else { return }
+                onUserScroll()
+            }
     }
 
     @ViewBuilder
@@ -2283,57 +2342,110 @@ struct HeroMediaView: View {
     }
 }
 
-private struct StoryBookSpineSheet: View {
+private struct StoryBookPlayerSheet: View {
     let spineItems: [StoryReadingSpineItem]
     let currentSpineIndex: Int
     let adapter: StoryReaderDataAdapter
+    @Binding var isAutoContinueEnabled: Bool
+    @Binding var sleepTimerMinutes: Int
+    @Binding var playbackRate: Float
+    let onChangeRate: (Float) -> Void
     let onSelect: (Int) -> Void
+
+    private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
+    private let timerOptions = [0, 5, 10, 15, 30]
 
     var body: some View {
         NavigationStack {
-            List(Array(spineItems.enumerated()), id: \.element.id) { index, item in
-                Button {
-                    onSelect(index)
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: icon(for: item))
-                            .frame(width: 24)
-                            .foregroundStyle(index == currentSpineIndex ? Color.accentColor : .secondary)
+            List {
+                Section("Playback") {
+                    Toggle(isOn: $isAutoContinueEnabled) {
+                        Label("Auto Play", systemImage: "play.circle")
+                    }
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(StoryReadingSpineTitles.spinePrimaryTitle(
-                                for: item,
-                                story: adapter.story,
-                                adapter: adapter
-                            ))
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                            Text(StoryReadingSpineTitles.spinePositionLabel(
-                                index: index,
-                                total: spineItems.count,
-                                context: StoryReadingSpineTitles.spineContextLabel(
-                                    for: item,
-                                    story: adapter.story,
-                                    adapter: adapter
-                                )
-                            ))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    Picker(selection: $sleepTimerMinutes) {
+                        ForEach(timerOptions, id: \.self) { minutes in
+                            Text(timerLabel(for: minutes)).tag(minutes)
                         }
+                    } label: {
+                        Label("Timer", systemImage: "timer")
+                    }
 
-                        Spacer()
+                    HStack(spacing: 12) {
+                        Label("Speed", systemImage: "speedometer")
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        if index == currentSpineIndex {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
+                        Picker("Speed", selection: speedBinding) {
+                            ForEach(playbackRates, id: \.self) { rate in
+                                Text("\(String(format: "%.2g", rate))x").tag(rate)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 210)
+                    }
+                }
+
+                Section("Chapter Navigation") {
+                    ForEach(Array(spineItems.enumerated()), id: \.element.id) { index, item in
+                        Button {
+                            onSelect(index)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: icon(for: item))
+                                    .frame(width: 24)
+                                    .foregroundStyle(index == currentSpineIndex ? Color.accentColor : .secondary)
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(StoryReadingSpineTitles.spinePrimaryTitle(
+                                        for: item,
+                                        story: adapter.story,
+                                        adapter: adapter
+                                    ))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+
+                                    Text(StoryReadingSpineTitles.spinePositionLabel(
+                                        index: index,
+                                        total: spineItems.count,
+                                        context: StoryReadingSpineTitles.spineContextLabel(
+                                            for: item,
+                                            story: adapter.story,
+                                            adapter: adapter
+                                        )
+                                    ))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                if index == currentSpineIndex {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle("Story Spine")
+            .navigationTitle("Player")
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private var speedBinding: Binding<Float> {
+        Binding(
+            get: { playbackRate },
+            set: { rate in
+                playbackRate = rate
+                onChangeRate(rate)
+            }
+        )
+    }
+
+    private func timerLabel(for minutes: Int) -> String {
+        minutes == 0 ? "Off" : "\(minutes)m"
     }
 
     private func icon(for item: StoryReadingSpineItem) -> String {
@@ -2362,6 +2474,8 @@ struct AudioPlayerBar: View {
     var playbackContextLabel: String? = nil
     var isBuffering: Bool = false
     var bufferingLabel: String = "Buffering…"
+    var isMinimized: Bool = false
+    var showsRateControl: Bool = true
 
     var onPlayPause: () -> Void
     var onSkipForward: () -> Void
@@ -2374,6 +2488,7 @@ struct AudioPlayerBar: View {
     var onSkipPreviousChapter: (() -> Void)? = nil
     var onSkipNextChapter: (() -> Void)? = nil
     var onShowSpine: (() -> Void)? = nil
+    var onExpand: (() -> Void)? = nil
 
     @State private var isScrubbing = false
     @State private var scrubberPreviewValue: Double = 0
@@ -2383,6 +2498,65 @@ struct AudioPlayerBar: View {
     }
 
     var body: some View {
+        Group {
+            if isMinimized {
+                minimizedBody
+            } else {
+                expandedBody
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var minimizedBody: some View {
+        HStack(spacing: 12) {
+            Capsule()
+                .fill(Color.secondary.opacity(0.35))
+                .frame(width: 44, height: 5)
+                .accessibilityHidden(true)
+
+            Text(formatTime(displayedSliderValue))
+                .font(.caption.monospacedDigit().weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 8)
+
+            Button(action: onPlayPause) {
+                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(canControlPlayback ? .white : .secondary)
+                    .frame(width: 38, height: 38)
+                    .background(canControlPlayback ? Color.accentColor : Color(.systemGray5))
+                    .clipShape(Circle())
+            }
+            .disabled(!canControlPlayback)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .padding(.bottom, 14)
+        .background(
+            Rectangle()
+                .fill(.thinMaterial)
+                .cornerRadius(24, corners: [.topLeft, .topRight])
+                .ignoresSafeArea(edges: .bottom)
+        )
+        .shadow(radius: 8, y: -4)
+        .contentShape(Rectangle())
+        .onTapGesture { onExpand?() }
+        .gesture(
+            DragGesture(minimumDistance: 8)
+                .onEnded { value in
+                    if value.translation.height < -12 {
+                        onExpand?()
+                    }
+                }
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Minimized audio player")
+        .accessibilityHint("Swipe up or tap to show playback controls")
+    }
+
+    private var expandedBody: some View {
         VStack(spacing: 12) {
             if isBuffering {
                 HStack(spacing: 8) {
@@ -2496,6 +2670,7 @@ struct AudioPlayerBar: View {
                 onPrevious: { onPreviousChapter?() },
                 onNext: { onNextChapter?() },
                 onChangeRate: onChangeRate,
+                showsRateControl: showsRateControl,
                 onShowSpine: onShowSpine
             )
             .padding(.horizontal)
@@ -2509,7 +2684,6 @@ struct AudioPlayerBar: View {
                 .ignoresSafeArea(edges: .bottom)
         )
         .shadow(radius: 10, y: -5)
-        .fixedSize(horizontal: false, vertical: true)
     }
     
     private func formatTime(_ time: Double) -> String {
@@ -2529,6 +2703,7 @@ struct StoryPlaybackControls: View {
     let onPrevious: () -> Void
     let onNext: () -> Void
     let onChangeRate: (Float) -> Void
+    var showsRateControl: Bool = true
     var onShowSpine: (() -> Void)? = nil
 
     var body: some View {
@@ -2555,7 +2730,7 @@ struct StoryPlaybackControls: View {
             )
             .disabled(!canGoNext)
 
-            Group {
+            if showsRateControl {
                 if canPlayPause {
                     Menu {
                         Button("0.75x") { onChangeRate(0.75) }

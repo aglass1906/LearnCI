@@ -407,19 +407,20 @@ private struct SavedStudyWordDetailView: View {
     }
 
     private func playSourceClipIfAvailable() -> Bool {
-        guard let bounds = sourceClipBounds else { return false }
-
         switch word.sourceType {
         case .podcast:
+            guard let bounds = sourceClipBounds else { return false }
             guard let sourceUrl = word.sourceUrl,
                   let url = URL(string: sourceUrl) else { return false }
             playStreamClip(url: url, bounds: bounds)
             return true
         case .story:
+            let bounds = sourceClipBounds ?? (start: 0, end: 6)
             guard let playback = storyClipPlayback(for: bounds) else { return false }
             playStreamClip(url: playback.url, bounds: playback.bounds)
             return true
         case .youtube:
+            guard let bounds = sourceClipBounds else { return false }
             guard let videoID = youtubeVideoID() else { return false }
             youtubeClip = SavedStudyWordYouTubeClip(
                 videoID: videoID,

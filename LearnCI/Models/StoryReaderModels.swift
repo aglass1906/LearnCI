@@ -435,6 +435,7 @@ enum CropRegion: String, Codable, Equatable {
 struct ReadingMatterPage: Codable, Identifiable, Equatable {
     var id: String
     var placement: String?
+    var order: Int?
     var titleTarget: String?
     var titleNative: String?
     var bodyTarget: String?
@@ -446,7 +447,13 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     var nativeWordTimings: [WordTiming]?
 
     enum CodingKeys: String, CodingKey {
-        case id, placement
+        case id, placement, order
+        case sortOrder = "sort_order"
+        case sortOrderCamel = "sortOrder"
+        case spineOrder = "spine_order"
+        case spineOrderCamel = "spineOrder"
+        case pageOrder = "page_order"
+        case pageOrderCamel = "pageOrder"
         case titleTarget
         case titleNative
         case bodyTarget
@@ -470,6 +477,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     init(
         id: String,
         placement: String? = nil,
+        order: Int? = nil,
         titleTarget: String? = nil,
         titleNative: String? = nil,
         bodyTarget: String? = nil,
@@ -482,6 +490,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     ) {
         self.id = id
         self.placement = placement
+        self.order = order
         self.titleTarget = titleTarget
         self.titleNative = titleNative
         self.bodyTarget = bodyTarget
@@ -497,6 +506,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         placement = try? container.decode(String.self, forKey: .placement)
+        order = Self.decodeOrder(from: container)
         titleTarget = try? container.decode(String.self, forKey: .titleTarget)
         titleNative = try? container.decode(String.self, forKey: .titleNative)
         bodyTarget = try? container.decode(String.self, forKey: .bodyTarget)
@@ -521,6 +531,7 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(placement, forKey: .placement)
+        try container.encodeIfPresent(order, forKey: .order)
         try container.encodeIfPresent(titleTarget, forKey: .titleTarget)
         try container.encodeIfPresent(titleNative, forKey: .titleNative)
         try container.encodeIfPresent(bodyTarget, forKey: .bodyTarget)
@@ -548,30 +559,38 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         audioUrlForPlayback(preferNative: preferNative) != nil
     }
 
-    var isBackMatter: Bool {
+    nonisolated var isBackMatter: Bool {
+        let placementTokens = placement?.readingMatterPlacementTokens ?? []
         let placementKey = placement?.readingMatterPlacementKey ?? ""
-        if placementKey.contains("front") || placementKey.contains("about") || placementKey.contains("intro") {
+        if placementTokens.contains("front")
+            || placementTokens.contains("about")
+            || placementTokens.contains("intro")
+            || placementKey.contains("beforechapter")
+            || placementKey.contains("frontmatter") {
             return false
         }
-        if placementKey.contains("back")
+        if placementTokens.contains("back")
             || placementKey.contains("appendix")
-            || placementKey.contains("after")
-            || placementKey.contains("end")
-            || placementKey.contains("post")
+            || placementTokens.contains("after")
+            || placementTokens.contains("end")
+            || placementTokens.contains("post")
+            || placementKey.contains("afterchapter")
+            || placementKey.contains("backmatter")
             || placementKey.contains("credit") {
             return true
         }
 
-        let identityKey = [
+        let identityText = [
             id,
             titleTarget,
             titleNative
         ]
             .compactMap { $0 }
             .joined(separator: " ")
-            .readingMatterPlacementKey
+        let identityKey = identityText.readingMatterPlacementKey
+        let identityTokens = identityText.readingMatterPlacementTokens
 
-        return identityKey.contains("back")
+        return identityTokens.contains("back")
             || identityKey.contains("appendix")
             || identityKey.contains("credit")
             || identityKey.contains("afterword")
@@ -581,6 +600,25 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
     private static func trimmedNonEmpty(_ value: String?) -> String? {
         let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private static func decodeOrder(from container: KeyedDecodingContainer<CodingKeys>) -> Int? {
+        let keys: [CodingKeys] = [
+            .order,
+            .sortOrder,
+            .sortOrderCamel,
+            .spineOrder,
+            .spineOrderCamel,
+            .pageOrder,
+            .pageOrderCamel
+        ]
+
+        for key in keys {
+            if let value = try? container.decode(Int.self, forKey: key) {
+                return value
+            }
+        }
+        return nil
     }
 }
 
@@ -616,38 +654,58 @@ struct StoryReadingSpine {
     var items: [StoryReadingSpineItem]
 
     static func make(for story: Story, mode: StoryReadingSpineMode = .storyBook) -> StoryReadingSpine {
-        var items: [StoryReadingSpineItem] = [.cover]
-        let matterPages = story.readingMatterPages.enumerated().map { index, page in
-            (index: index, page: page)
-        }
-        let frontMatter = matterPages.filter { !$0.page.isBackMatter }
-        let backMatter = matterPages.filter { $0.page.isBackMatter }
+        let positionedMatter = story.readingMatterPages.enumerated()
+            .map { index, page in
+                PositionedReadingMatter(
+                    index: index,
+                    page: page,
+                    position: readingMatterPosition(for: page)
+                )
+            }
+            .sorted(by: compareReadingMatter)
 
-        items.append(contentsOf: frontMatter.map { index, page in
-            .readingMatterPage(index: index, id: page.id)
-        })
-
+        var mainItems: [StoryReadingSpineItem] = []
         switch mode {
         case .storyBook:
-            items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+            mainItems.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
         case .audioBook:
-            items.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
-            items.append(contentsOf: sceneItems(for: story, useLayoutOrder: false))
+            mainItems.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+            mainItems.append(contentsOf: sceneItems(for: story, useLayoutOrder: false))
         case .dialogStory:
             for chapterIndex in story.chapters.indices {
-                items.append(.chapter(index: chapterIndex))
-                items.append(contentsOf: sceneItems(
+                mainItems.append(.chapter(index: chapterIndex))
+                mainItems.append(contentsOf: sceneItems(
                     for: story,
                     chapterIndex: chapterIndex,
                     useLayoutOrder: false
                 ))
             }
         case .pictureBook, .comicBook:
-            items.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
+            mainItems.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
         }
 
-        items.append(contentsOf: backMatter.map { index, page in
-            .readingMatterPage(index: index, id: page.id)
+        for matter in positionedMatter.reversed() {
+            switch matter.position {
+            case .beforeChapter(let chapterIndex):
+                let insertionIndex = insertionIndexBeforeChapter(chapterIndex, in: mainItems)
+                mainItems.insert(.readingMatterPage(index: matter.index, id: matter.page.id), at: insertionIndex)
+            case .afterChapter(let chapterIndex):
+                let insertionIndex = insertionIndexAfterChapter(chapterIndex, in: mainItems)
+                mainItems.insert(.readingMatterPage(index: matter.index, id: matter.page.id), at: insertionIndex)
+            case .front, .back:
+                continue
+            }
+        }
+
+        var items: [StoryReadingSpineItem] = [.cover]
+        items.append(contentsOf: positionedMatter.compactMap { matter in
+            guard case .front = matter.position else { return nil }
+            return .readingMatterPage(index: matter.index, id: matter.page.id)
+        })
+        items.append(contentsOf: mainItems)
+        items.append(contentsOf: positionedMatter.compactMap { matter in
+            guard case .back = matter.position else { return nil }
+            return .readingMatterPage(index: matter.index, id: matter.page.id)
         })
 
         return StoryReadingSpine(items: items)
@@ -703,6 +761,149 @@ struct StoryReadingSpine {
             guard !seen.contains(item.id) else { return false }
             seen.insert(item.id)
             return true
+        }
+    }
+
+    private enum ReadingMatterPosition {
+        case front
+        case beforeChapter(Int)
+        case afterChapter(Int)
+        case back
+    }
+
+    private struct PositionedReadingMatter {
+        let index: Int
+        let page: ReadingMatterPage
+        let position: ReadingMatterPosition
+    }
+
+    nonisolated private static func compareReadingMatter(
+        _ lhs: PositionedReadingMatter,
+        _ rhs: PositionedReadingMatter
+    ) -> Bool {
+        switch (lhs.page.order, rhs.page.order) {
+        case let (lhsOrder?, rhsOrder?) where lhsOrder != rhsOrder:
+            return lhsOrder < rhsOrder
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        default:
+            return lhs.index < rhs.index
+        }
+    }
+
+    nonisolated private static func readingMatterPosition(for page: ReadingMatterPage) -> ReadingMatterPosition {
+        if let placementPosition = readingMatterPositionFromPlacement(page.placement) {
+            return placementPosition
+        }
+
+        let searchableText = [
+            page.placement,
+            page.id,
+            page.titleTarget,
+            page.titleNative
+        ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+            .lowercased()
+
+        if let chapterIndex = chapterIndex(in: searchableText) {
+            let key = searchableText.readingMatterPlacementKey
+            if key.contains("before") || key.contains("pre") {
+                return .beforeChapter(chapterIndex)
+            }
+            if key.contains("after") || key.contains("post") || key.contains("end") {
+                return .afterChapter(chapterIndex)
+            }
+        }
+
+        return page.isBackMatter ? .back : .front
+    }
+
+    nonisolated private static func readingMatterPositionFromPlacement(_ placement: String?) -> ReadingMatterPosition? {
+        guard let placement, !placement.isEmpty else { return nil }
+        let placementKey = placement.readingMatterPlacementKey
+
+        if let chapterIndex = chapterIndex(in: placement.lowercased()) {
+            if placementKey.contains("before") || placementKey.contains("pre") {
+                return .beforeChapter(chapterIndex)
+            }
+            if placementKey.contains("after") || placementKey.contains("post") || placementKey.contains("end") {
+                return .afterChapter(chapterIndex)
+            }
+        }
+
+        if placementKey.contains("beforechapter")
+            || placementKey.contains("frontmatter")
+            || placementKey == "front"
+            || placementKey == "before" {
+            return .front
+        }
+
+        if placementKey.contains("afterchapter")
+            || placementKey.contains("backmatter")
+            || placementKey == "back"
+            || placementKey == "after"
+            || placementKey == "appendix" {
+            return .back
+        }
+
+        return nil
+    }
+
+    nonisolated private static func chapterIndex(in text: String) -> Int? {
+        let nsText = text as NSString
+        let patterns = [
+            #"chapter\s*[_\-\s:]?\s*(\d+)"#,
+            #"chapitre\s*[_\-\s:]?\s*(\d+)"#,
+            #"cap[ií]tulo\s*[_\-\s:]?\s*(\d+)"#,
+            #"ch\s*[_\-\s:]?\s*(\d+)"#
+        ]
+
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+                  let match = regex.firstMatch(in: text, options: [], range: NSRange(location: 0, length: nsText.length)),
+                  match.numberOfRanges > 1,
+                  let range = Range(match.range(at: 1), in: text),
+                  let chapterNumber = Int(text[range]) else {
+                continue
+            }
+            return max(0, chapterNumber - 1)
+        }
+
+        return nil
+    }
+
+    nonisolated private static func insertionIndexBeforeChapter(
+        _ chapterIndex: Int,
+        in items: [StoryReadingSpineItem]
+    ) -> Int {
+        items.firstIndex { item in
+            item.belongsToChapter(chapterIndex)
+        } ?? items.count
+    }
+
+    nonisolated private static func insertionIndexAfterChapter(
+        _ chapterIndex: Int,
+        in items: [StoryReadingSpineItem]
+    ) -> Int {
+        guard let lastIndex = items.lastIndex(where: { $0.belongsToChapter(chapterIndex) }) else {
+            return items.count
+        }
+        return items.index(after: lastIndex)
+    }
+}
+
+private extension StoryReadingSpineItem {
+    nonisolated func belongsToChapter(_ chapterIndex: Int) -> Bool {
+        switch self {
+        case .chapter(let index):
+            return index == chapterIndex
+        case .scene(let index, _):
+            return index == chapterIndex
+        case .cover, .readingMatterPage:
+            return false
         }
     }
 }
@@ -862,8 +1063,16 @@ enum StoryReadingSpineTitles {
 }
 
 private extension String {
-    var readingMatterPlacementKey: String {
+    nonisolated var readingMatterPlacementKey: String {
         lowercased().filter { $0.isLetter || $0.isNumber }
+    }
+
+    nonisolated var readingMatterPlacementTokens: Set<String> {
+        let separators = CharacterSet.alphanumerics.inverted
+        let tokens = lowercased()
+            .components(separatedBy: separators)
+            .filter { !$0.isEmpty }
+        return Set(tokens)
     }
 
     var spineTrimmedNilIfEmpty: String? {

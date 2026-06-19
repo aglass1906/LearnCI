@@ -33,6 +33,19 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertTrue(page.hasGeneratedAudio(preferNative: true))
     }
 
+    func testReadingMatterPageDecodesOrderFields() throws {
+        let json = """
+        [
+          { "id": "settings", "order": 2, "titleTarget": "Settings & Background" },
+          { "id": "about", "spine_order": 1, "titleTarget": "About" },
+          { "id": "appendix", "sortOrder": 3, "titleTarget": "Appendix" }
+        ]
+        """
+        let pages = try JSONDecoder().decode([ReadingMatterPage].self, from: Data(json.utf8))
+
+        XCTAssertEqual(pages.map(\.order), [2, 1, 3])
+    }
+
     func testReadingMatterAudioClipUsesGeneratedAudioPath() throws {
         let story = try makeStory(
             layout: nil,
@@ -175,6 +188,128 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(
             StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
             ["cover", "matter-0-about", "chapter-0", "chapter-1", "matter-1-appendix"]
+        )
+    }
+
+    func testSettingsBackgroundPageIsFrontMatter() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "settings-background",
+                    placement: nil,
+                    titleTarget: "Settings & Background",
+                    bodyTarget: "Front matter"
+                ),
+                ReadingMatterPage(
+                    id: "appendix",
+                    placement: "back",
+                    titleTarget: "Apendice",
+                    bodyTarget: "Back matter"
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
+            ["cover", "matter-0-settings-background", "chapter-0", "chapter-1", "matter-1-appendix"]
+        )
+    }
+
+    func testStoryBookSpineUsesReadingMatterOrder() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "settings-background",
+                    placement: nil,
+                    order: 2,
+                    titleTarget: "Settings & Background",
+                    bodyTarget: "Front matter"
+                ),
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    order: 1,
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro"
+                ),
+                ReadingMatterPage(
+                    id: "appendix",
+                    placement: "back",
+                    order: 3,
+                    titleTarget: "Apendice",
+                    bodyTarget: "Back matter"
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
+            ["cover", "matter-1-about", "matter-0-settings-background", "chapter-0", "chapter-1", "matter-2-appendix"]
+        )
+    }
+
+    func testStoryBookSpineUsesGeneratedBeforeAfterChaptersPlacement() throws {
+        let json = """
+        [
+          {
+            "id": "about",
+            "placement": "beforeChapters",
+            "titleTarget": "Acerca de este libro",
+            "bodyTarget": "Intro"
+          },
+          {
+            "id": "settings-background",
+            "placement": "beforeChapters",
+            "titleTarget": "Settings & Background",
+            "bodyTarget": "Front settings"
+          },
+          {
+            "id": "cultural-notes",
+            "placement": "afterChapters",
+            "titleTarget": "Notas culturales",
+            "bodyTarget": "Back matter"
+          }
+        ]
+        """
+        let pages = try JSONDecoder().decode([ReadingMatterPage].self, from: Data(json.utf8))
+        let story = try makeStory(layout: nil, readingMatterPages: pages)
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
+            ["cover", "matter-0-about", "matter-1-settings-background", "chapter-0", "chapter-1", "matter-2-cultural-notes"]
+        )
+    }
+
+    func testStoryBookSpinePlacesChapterScopedReadingMatterAfterChapter() throws {
+        let story = try makeStory(
+            layout: nil,
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro"
+                ),
+                ReadingMatterPage(
+                    id: "chapter-1-note",
+                    placement: "after_chapter_1",
+                    titleTarget: "Nota",
+                    bodyTarget: "After chapter one"
+                ),
+                ReadingMatterPage(
+                    id: "appendix",
+                    placement: "back",
+                    titleTarget: "Apendice",
+                    bodyTarget: "Back matter"
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
+            ["cover", "matter-0-about", "chapter-0", "matter-1-chapter-1-note", "chapter-1", "matter-2-appendix"]
         )
     }
 
@@ -344,6 +479,31 @@ final class StoryReadingSpineTests: XCTestCase {
         )
         XCTAssertEqual(spreads[2].audioClip?.sceneIndex, 0)
         XCTAssertEqual(spreads[3].audioClip?.sceneIndex, 1)
+    }
+
+    func testPictureBookSpinePlacesChapterScopedReadingMatterAfterLastChapterScene() throws {
+        let story = try makeStory(
+            layout: StoryLayout(),
+            readingMatterPages: [
+                ReadingMatterPage(
+                    id: "about",
+                    placement: "front",
+                    titleTarget: "Acerca",
+                    bodyTarget: "Intro"
+                ),
+                ReadingMatterPage(
+                    id: "chapter-1-note",
+                    placement: "after chapter 1",
+                    titleTarget: "Nota",
+                    bodyTarget: "After chapter one"
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .pictureBook).items.map(\.id),
+            ["cover", "matter-0-about", "scene-0-0", "scene-0-1", "matter-1-chapter-1-note", "scene-1-0"]
+        )
     }
 
     func testPictureBookRendererAttachesMatchingLayoutPanel() throws {

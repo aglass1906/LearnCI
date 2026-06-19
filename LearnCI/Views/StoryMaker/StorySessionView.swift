@@ -708,6 +708,12 @@ struct StorySessionView: View {
               let selectedWord else { return }
 
         let sentenceTarget = selectedWordRequest?.context ?? sentenceContaining(word: selectedWord)
+        let audioResolution = StoryStudyWordAudioResolver.resolve(
+            story: story,
+            request: selectedWordRequest,
+            fallbackWord: selectedWord,
+            fallbackContext: sentenceTarget
+        )
         let capture = SavedStudyWordCapture(
             userID: userID,
             word: selectedWord,
@@ -723,10 +729,10 @@ struct StorySessionView: View {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: selectedStoryAudioClip()?.urlString ?? story.remoteAudioPath,
+            sourceUrl: selectedStoryAudioClip()?.urlString ?? audioResolution?.sourceUrl ?? story.remoteAudioPath,
             blockIndex: selectedWordRequest?.wordIndex,
-            mediaStart: selectedWordTime,
-            mediaEnd: selectedWordRequest?.endTime,
+            mediaStart: selectedWordTime ?? audioResolution?.mediaStart,
+            mediaEnd: selectedWordRequest?.endTime ?? audioResolution?.mediaEnd,
             audioWordFile: nil,
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil

@@ -18,6 +18,174 @@ struct StoryWordLookupRequest {
     }
 }
 
+struct StoryStudyWordAudioResolution {
+    let sourceUrl: String?
+    let mediaStart: Double?
+    let mediaEnd: Double?
+}
+
+enum StoryStudyWordAudioResolver {
+    static func resolve(
+        story: Story,
+        request: StoryWordLookupRequest?,
+        fallbackWord: String,
+        fallbackContext: String?
+    ) -> StoryStudyWordAudioResolution? {
+        let candidates = makeCandidates(story: story)
+        guard !candidates.isEmpty else { return nil }
+
+        if let request,
+           let sourceText = request.sourceText?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !sourceText.isEmpty,
+           let wordIndex = request.wordIndex {
+            for candidate in candidates where textsLikelyMatch(sourceText, candidate.text) {
+                if let resolution = resolveByWordIndex(candidate: candidate, wordIndex: wordIndex, phrase: request.word) {
+                    return resolution
+                }
+            }
+        }
+
+        let lookupText = fallbackContext?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmptyStoryAudio
+            ?? request?.context?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmptyStoryAudio
+            ?? request?.word.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmptyStoryAudio
+            ?? fallbackWord.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        for candidate in candidates {
+            if let resolution = resolveByText(candidate: candidate, lookupText: lookupText) {
+                return resolution
+            }
+        }
+
+        let fallbackWord = fallbackWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fallbackWord.isEmpty else { return nil }
+        for candidate in candidates {
+            if let resolution = resolveByText(candidate: candidate, lookupText: fallbackWord) {
+                return resolution
+            }
+        }
+
+        return nil
+    }
+
+    private struct Candidate {
+        let text: String
+        let timings: [WordTiming]
+        let sourceUrl: String?
+    }
+
+    private struct Token {
+        let value: String
+    }
+
+    private static func makeCandidates(story: Story) -> [Candidate] {
+        var candidates: [Candidate] = []
+
+        for chapter in story.chapters {
+            let chapterText = chapter.bodyTextTargetForReading.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !chapterText.isEmpty {
+                candidates.append(Candidate(
+                    text: chapterText,
+                    timings: chapter.bodyWordTimingsForPlayback,
+                    sourceUrl: chapter.audioUrl
+                ))
+            }
+
+            if let script = chapter.scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !script.isEmpty,
+               let timings = chapter.wordTimings,
+               !timings.isEmpty {
+                candidates.append(Candidate(text: script, timings: timings, sourceUrl: chapter.audioUrl))
+            }
+
+            for scene in chapter.scenes.sorted(by: { $0.sceneIndex < $1.sceneIndex }) {
+                let text = (scene.targetTextForReading ?? scene.scriptTargetLanguage ?? scene.captionTarget ?? "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !text.isEmpty, !scene.wordTimings.isEmpty {
+                    candidates.append(Candidate(text: text, timings: scene.wordTimings, sourceUrl: scene.audioUrl))
+                }
+            }
+        }
+
+        for page in story.readingMatterPages {
+            let text = page.bodyTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let timings = page.wordTimingsForPlayback(preferNative: false)
+            if !text.isEmpty, !timings.isEmpty {
+                candidates.append(Candidate(
+                    text: text,
+                    timings: timings,
+                    sourceUrl: page.audioUrlForPlayback(preferNative: false)
+                ))
+            }
+        }
+
+        let legacyText = story.targetLanguageText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !legacyText.isEmpty, !story.wordTimings.isEmpty {
+            candidates.append(Candidate(text: legacyText, timings: story.wordTimings, sourceUrl: story.remoteAudioPath))
+        }
+
+        return candidates.filter { !$0.timings.isEmpty }
+    }
+
+    private static func resolveByWordIndex(candidate: Candidate, wordIndex: Int, phrase: String) -> StoryStudyWordAudioResolution? {
+        let tokenCount = max(1, tokens(in: phrase).count)
+        let startIndex = wordIndex
+        let endIndex = min(candidate.timings.count - 1, wordIndex + tokenCount - 1)
+        guard startIndex >= 0, startIndex < candidate.timings.count, endIndex >= startIndex else { return nil }
+        return resolution(candidate: candidate, startIndex: startIndex, endIndex: endIndex)
+    }
+
+    private static func resolveByText(candidate: Candidate, lookupText: String) -> StoryStudyWordAudioResolution? {
+        let candidateTokens = tokens(in: candidate.text)
+        let lookupTokens = tokens(in: lookupText)
+        guard !candidateTokens.isEmpty, !lookupTokens.isEmpty else { return nil }
+
+        let maxStart = candidateTokens.count - lookupTokens.count
+        guard maxStart >= 0 else { return nil }
+
+        for start in 0...maxStart {
+            let end = start + lookupTokens.count
+            if candidateTokens[start..<end].map(\.value) == lookupTokens.map(\.value) {
+                return resolution(candidate: candidate, startIndex: start, endIndex: end - 1)
+            }
+        }
+
+        return nil
+    }
+
+    private static func resolution(candidate: Candidate, startIndex: Int, endIndex: Int) -> StoryStudyWordAudioResolution? {
+        guard candidate.timings.indices.contains(startIndex),
+              candidate.timings.indices.contains(endIndex) else { return nil }
+        return StoryStudyWordAudioResolution(
+            sourceUrl: candidate.sourceUrl,
+            mediaStart: candidate.timings[startIndex].start,
+            mediaEnd: candidate.timings[endIndex].end
+        )
+    }
+
+    private static func tokens(in text: String) -> [Token] {
+        let nsText = text as NSString
+        let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
+        let matches = regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsText.length)) ?? []
+        return matches.compactMap { match in
+            guard let range = Range(match.range, in: text) else { return nil }
+            let value = String(text[range])
+                .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+                .lowercased()
+            return Token(value: value)
+        }
+    }
+
+    private static func textsLikelyMatch(_ lhs: String, _ rhs: String) -> Bool {
+        lhs == rhs || lhs.localizedCaseInsensitiveContains(rhs) || rhs.localizedCaseInsensitiveContains(lhs)
+    }
+}
+
+private extension String {
+    var nilIfEmptyStoryAudio: String? {
+        isEmpty ? nil : self
+    }
+}
+
 private struct StoryWordLookupActionKey: EnvironmentKey {
     static let defaultValue: ((StoryWordLookupRequest) -> Void)? = nil
 }
@@ -185,6 +353,12 @@ private struct StoryWordLookupHostModifier: ViewModifier {
     private func markSelectedWordForStudy() {
         guard let userID = authManager.currentUser,
               let selectedWord else { return }
+        let audioResolution = StoryStudyWordAudioResolver.resolve(
+            story: story,
+            request: selectedRequest,
+            fallbackWord: selectedWord,
+            fallbackContext: selectedContext
+        )
         let capture = SavedStudyWordCapture(
             userID: userID,
             word: selectedWord,
@@ -200,10 +374,10 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: story.remoteAudioPath,
+            sourceUrl: audioResolution?.sourceUrl ?? story.remoteAudioPath,
             blockIndex: selectedRequest?.wordIndex,
-            mediaStart: selectedWordTime,
-            mediaEnd: selectedRequest?.endTime,
+            mediaStart: selectedWordTime ?? audioResolution?.mediaStart,
+            mediaEnd: selectedRequest?.endTime ?? audioResolution?.mediaEnd,
             audioWordFile: nil,
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil

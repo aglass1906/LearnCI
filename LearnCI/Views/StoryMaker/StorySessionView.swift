@@ -714,6 +714,7 @@ struct StorySessionView: View {
             fallbackWord: selectedWord,
             fallbackContext: sentenceTarget
         )
+        let audioCapture = selectedStoryAudioCapture(fallback: audioResolution)
         let capture = SavedStudyWordCapture(
             userID: userID,
             word: selectedWord,
@@ -729,16 +730,45 @@ struct StorySessionView: View {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: selectedStoryAudioClip()?.urlString ?? audioResolution?.sourceUrl ?? story.remoteAudioPath,
+            sourceUrl: audioCapture.sourceUrl ?? story.remoteAudioPath,
             blockIndex: selectedWordRequest?.wordIndex,
-            mediaStart: selectedWordTime ?? audioResolution?.mediaStart,
-            mediaEnd: selectedWordRequest?.endTime ?? audioResolution?.mediaEnd,
+            mediaStart: audioCapture.mediaStart,
+            mediaEnd: audioCapture.mediaEnd,
             audioWordFile: nil,
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil
         )
         savedStudyWordManager.save(capture: capture, in: modelContext)
         savedStudyRevision += 1
+    }
+
+    private func selectedStoryAudioCapture(
+        fallback: StoryStudyWordAudioResolution?
+    ) -> StoryStudyWordAudioResolution {
+        if let selectedWordTime,
+           let match = adapter.clipIndex(forChapter: currentChapterIndex, localTime: selectedWordTime),
+           let clip = currentChapterClips[safeStorySession: match.index] {
+            let start = match.offset
+            let end = selectedWordRequest?.endTime
+                .map { max(0, $0 - clip.startOffset) }
+                .flatMap { $0 > start ? $0 : nil }
+
+            return StoryStudyWordAudioResolution(
+                sourceUrl: clip.urlString,
+                mediaStart: start,
+                mediaEnd: end
+            )
+        }
+
+        if let fallback {
+            return fallback
+        }
+
+        return StoryStudyWordAudioResolution(
+            sourceUrl: selectedStoryAudioClip()?.urlString,
+            mediaStart: selectedWordTime,
+            mediaEnd: selectedWordRequest?.endTime
+        )
     }
 
     private func selectedStoryAudioClip() -> StorySceneAudioClip? {

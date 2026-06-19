@@ -415,7 +415,8 @@ struct StorySessionView: View {
         )
         if autoplay {
             startAmbient()
-            audioManager.playStream()
+            let announcement = startAt == 0 ? adapter.playbackAnnouncement(for: clip) : nil
+            audioManager.announceThenPlayStream(announcement, language: story.language)
             isPlaying = true
         }
     }

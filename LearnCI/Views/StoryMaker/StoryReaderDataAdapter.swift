@@ -198,6 +198,12 @@ struct StoryReaderDataAdapter {
         return "Scene \(clip.sceneIndex + 1)"
     }
 
+    func playbackAnnouncement(for clip: StorySceneAudioClip) -> String? {
+        guard clip.chapterIndex >= 0,
+              let chapter = story.chapters[safeReaderData: clip.chapterIndex] else { return nil }
+        return chapter.spokenPlaybackMarker(isIntro: clip.isChapterIntro)
+    }
+
     func tracklistSubtitle(for clip: StorySceneAudioClip, chapter: StoryChapter) -> String {
         if clip.isChapterIntro {
             let intro = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)

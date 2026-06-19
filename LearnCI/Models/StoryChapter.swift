@@ -26,6 +26,18 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
 
+    var spokenChapterReferenceTitle: String {
+        if isPrologue { return "Prologue" }
+        if isEpilogue { return "Epilogue" }
+        return "Chapter \(chapterNumber)"
+    }
+
+    func spokenPlaybackMarker(isIntro: Bool) -> String {
+        let title = titleTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
+        let section = isIntro ? "\(spokenChapterReferenceTitle) intro" : "\(spokenChapterReferenceTitle) main story"
+        return title.isEmpty ? section : "\(section): \(title)"
+    }
+
     var hasChapterIntroContent: Bool {
         let hasAudio = !(chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         let hasText = !(chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)

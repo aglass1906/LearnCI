@@ -535,7 +535,8 @@ struct PictureBookReaderView: View {
         sliderValue = startAt
         audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
         if autoplay {
-            audioManager.playStream()
+            let announcement = startAt == 0 ? adapter.playbackAnnouncement(for: clip) : nil
+            audioManager.announceThenPlayStream(announcement, language: story.language)
             isPlaying = true
         }
     }

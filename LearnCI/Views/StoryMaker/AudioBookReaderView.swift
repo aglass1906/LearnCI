@@ -981,7 +981,8 @@ struct AudioBookReaderView: View {
         sliderValue = currentClipStartOffset + startAt
         updateNowPlayingMetadata(clip: clip)
         if autoplay {
-            audioManager.playStream()
+            let announcement = startAt == 0 ? readerAdapter.playbackAnnouncement(for: clip) : nil
+            audioManager.announceThenPlayStream(announcement, language: story.language)
             isPlaying = true
         }
         syncSelectionToCurrentClip()

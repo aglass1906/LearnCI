@@ -189,7 +189,8 @@ extension StorySupplementalAudioPlayback {
             intro = chapter.chapterIntroText
         }
 
-        var parts = [title]
+        let marker = "\(chapter.spokenChapterReferenceTitle) intro"
+        var parts = [title.isEmpty ? marker : "\(marker): \(title)"]
         if let intro {
             let trimmed = intro.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmed.isEmpty {

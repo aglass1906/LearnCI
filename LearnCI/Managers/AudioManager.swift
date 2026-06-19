@@ -689,6 +689,21 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         updateStreamBufferingState()
     }
 
+    func announceThenPlayStream(_ announcement: String?, language: Language, rate: Float = 0.5) {
+        guard let announcement = announcement?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !announcement.isEmpty else {
+            playStream()
+            return
+        }
+
+        streamPlayer?.pause()
+        isStreaming = false
+        onCompletion = { [weak self] in
+            self?.playStream()
+        }
+        speak(text: announcement, language: language, gender: nil, rate: rate)
+    }
+
     func pauseStream() {
         streamPlayer?.pause()
         isStreaming = false

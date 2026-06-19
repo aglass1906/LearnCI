@@ -380,7 +380,7 @@ class GameSessionViewModel {
         return UserActivity(
             date: Date(),
             minutes: minutes,
-            activityType: .appLearning,
+            activityType: sessionConfig.gameType == .flashcards ? .flashcards : .appLearning,
             language: language,
             userID: userID,
             comment: comment

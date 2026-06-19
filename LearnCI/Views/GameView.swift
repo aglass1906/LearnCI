@@ -57,6 +57,7 @@ struct GameView: View {
 
     // ViewModel (owns all runtime game state)
     @State private var viewModel: GameSessionViewModel?
+    @State private var didSaveActivityForCurrentSession = false
 
     init(
         availableGameTypes: [GameConfiguration.GameType] = Self.defaultGameTypes,
@@ -312,6 +313,7 @@ struct GameView: View {
                             onCancel: {
                                 audioManager.stopAudio()
                                 vm.pauseSession()
+                                saveActivity()
                                 dataManager.isFullScreen = false
                                 dismiss()
                             }
@@ -697,6 +699,7 @@ struct GameView: View {
             return
         }
 
+        didSaveActivityForCurrentSession = false
         viewModel?.startSession(
             deck: loadedDeck,
             selectedPreset: selectedPreset,
@@ -715,6 +718,9 @@ struct GameView: View {
 
     func saveActivity() {
         guard let vm = viewModel else { return }
+        guard !didSaveActivityForCurrentSession else { return }
+        didSaveActivityForCurrentSession = true
+
         let activity = vm.makeActivity(
             language: sessionLanguage,
             deckTitle: selectedDeck?.title,
@@ -723,6 +729,7 @@ struct GameView: View {
             preset: selectedPreset
         )
         modelContext.insert(activity)
+        try? modelContext.save()
     }
 }
 

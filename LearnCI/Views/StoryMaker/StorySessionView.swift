@@ -3306,14 +3306,18 @@ struct WordLookupSheet: View {
                 ToolbarItem(placement: .topBarLeading) {
                     if let onMarkForStudy {
                         Button {
-                            onMarkForStudy()
+                            if !isMarkedForStudy {
+                                onMarkForStudy()
+                            }
                         } label: {
                             Label(
                                 isMarkedForStudy ? "Saved" : "Mark for study",
                                 systemImage: isMarkedForStudy ? "star.fill" : "star"
                             )
+                            .foregroundStyle(isMarkedForStudy ? .yellow : .blue)
                         }
-                        .disabled(isMarkedForStudy || isLoading)
+                        .disabled(isLoading)
+                        .accessibilityLabel(isMarkedForStudy ? "Saved for study" : "Mark for study")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {

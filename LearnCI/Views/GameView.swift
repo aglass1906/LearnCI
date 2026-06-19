@@ -10,6 +10,8 @@ struct GameView: View {
     @Query private var allProfiles: [UserProfile]
 
     @Environment(AudioManager.self) private var audioManager
+    private static let defaultGameTypes = GameConfiguration.GameType.allCases.filter { $0 != .story }
+
     private let availableGameTypes: [GameConfiguration.GameType]
     private let initialGameType: GameConfiguration.GameType?
     private let initialDeck: DeckMetadata?
@@ -57,15 +59,17 @@ struct GameView: View {
     @State private var viewModel: GameSessionViewModel?
 
     init(
-        availableGameTypes: [GameConfiguration.GameType] = GameConfiguration.GameType.allCases,
+        availableGameTypes: [GameConfiguration.GameType] = Self.defaultGameTypes,
         initialGameType: GameConfiguration.GameType? = nil,
         initialDeck: DeckMetadata? = nil
     ) {
-        let normalizedTypes = availableGameTypes.isEmpty ? GameConfiguration.GameType.allCases : availableGameTypes
+        let filteredTypes = availableGameTypes.filter { $0 != .story }
+        let normalizedTypes = filteredTypes.isEmpty ? Self.defaultGameTypes : filteredTypes
         self.availableGameTypes = normalizedTypes
         self.initialGameType = initialGameType
         self.initialDeck = initialDeck
-        _selectedGameType = State(initialValue: initialGameType ?? normalizedTypes.first ?? .flashcards)
+        let initialSelection = initialGameType == .story ? nil : initialGameType
+        _selectedGameType = State(initialValue: initialSelection ?? normalizedTypes.first ?? .flashcards)
         _selectedDeck = State(initialValue: initialDeck)
         _setupStage = State(initialValue: initialDeck == nil ? .gameSelection : .sessionConfiguration)
     }
@@ -300,26 +304,41 @@ struct GameView: View {
                 // game's own end animation completes.
                 let isSelfContained = [GameConfiguration.GameType.wordRain, .wordCrush, .linker, .memoryMatch]
                     .contains(vm.sessionConfig.gameType)
-                ActiveSessionView(
-                    errorMessage: dataManager.errorMessage,
-                    deck: vm.deck,
-                    sessionCards: vm.sessionCards,
-                    currentCardIndex: vm.currentCardIndex,
-                    learnedCount: vm.learnedCount,
-                    sessionCardGoal: vm.sessionCardGoal,
-                    sessionConfig: vm.sessionConfig,
-                    isFlipped: Binding(
-                        get: { vm.isFlipped },
-                        set: { vm.isFlipped = $0 }
-                    ),
-                    matchMode: vm.sessionConfig.memoryMatchMode,
-                    onRelearn: { vm.relearnCard() },
-                    onLearned: isSelfContained ? { vm.recordWordLearned() } : { vm.learnedCard() },
-                    onFinish: { vm.endSession() },
-                    onNext: { vm.nextCard() },
-                    onPrev: { vm.prevCard() },
-                    onGrade: isSelfContained ? nil : { vm.handleGrade($0) }
-                )
+                VStack(spacing: 0) {
+                    if isStudyFlow {
+                        StudyDeckSessionHeader(
+                            title: vm.deck?.title ?? selectedDeck?.title ?? "Study Deck",
+                            subtitle: "\(vm.currentCardIndex + 1) of \(max(vm.sessionCards.count, 1))",
+                            onCancel: {
+                                audioManager.stopAudio()
+                                vm.pauseSession()
+                                dataManager.isFullScreen = false
+                                dismiss()
+                            }
+                        )
+                    }
+
+                    ActiveSessionView(
+                        errorMessage: dataManager.errorMessage,
+                        deck: vm.deck,
+                        sessionCards: vm.sessionCards,
+                        currentCardIndex: vm.currentCardIndex,
+                        learnedCount: vm.learnedCount,
+                        sessionCardGoal: vm.sessionCardGoal,
+                        sessionConfig: vm.sessionConfig,
+                        isFlipped: Binding(
+                            get: { vm.isFlipped },
+                            set: { vm.isFlipped = $0 }
+                        ),
+                        matchMode: vm.sessionConfig.memoryMatchMode,
+                        onRelearn: { vm.relearnCard() },
+                        onLearned: isSelfContained ? { vm.recordWordLearned() } : { vm.learnedCard() },
+                        onFinish: { vm.endSession() },
+                        onNext: { vm.nextCard() },
+                        onPrev: { vm.prevCard() },
+                        onGrade: isSelfContained ? nil : { vm.handleGrade($0) }
+                    )
+                }
             }
         case .finished:
             if let vm = viewModel {
@@ -727,6 +746,40 @@ struct StatRow: View {
             Text(value)
                 .fontWeight(.bold)
         }
+    }
+}
+
+private struct StudyDeckSessionHeader: View {
+    let title: String
+    let subtitle: String
+    let onCancel: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: onCancel) {
+                Image(systemName: "xmark")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .frame(width: 34, height: 34)
+                    .background(Color.secondary.opacity(0.14))
+                    .clipShape(Circle())
+            }
+            .accessibilityLabel("Cancel study session")
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 10)
+        .background(.bar)
     }
 }
 

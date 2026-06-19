@@ -22,6 +22,7 @@ struct PodcastPlayerView: View {
 
     @Environment(AudioManager.self) private var audioManager
     @Environment(AuthManager.self) private var authManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
@@ -1217,17 +1218,31 @@ struct PodcastPlayerView: View {
         guard let userID = authManager.currentUser,
               let session = studySessionViewModel else { return }
 
-        let marked = MarkedStudyWord(
+        let block = session.currentBlock
+        let capture = SavedStudyWordCapture(
             userID: userID,
-            resource: session.resource,
-            blockIndex: session.currentBlockIndex,
             word: word,
             translation: lookupTranslation,
-            contextSnippet: session.currentBlock?.targetText,
-            mediaTime: session.mediaPlayer.currentTime
+            lemma: nil,
+            sentenceTarget: block?.targetText,
+            sentenceNative: block?.nativeText,
+            languageCode: session.resource.languageCode ?? episode.show?.language.code ?? "es",
+            level: nil,
+            partOfSpeech: lookupPartOfSpeech,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .podcast,
+            sourceId: session.resource.resourceId,
+            sourceTitle: session.resource.title,
+            sourceUrl: session.resource.consumptionUrl,
+            blockIndex: session.currentBlockIndex,
+            mediaStart: block?.mediaStart ?? session.mediaPlayer.currentTime,
+            mediaEnd: block?.mediaEnd,
+            audioWordFile: nil,
+            audioSentenceFile: nil,
+            deckFolderName: nil
         )
-        modelContext.insert(marked)
-        try? modelContext.save()
+        savedStudyWordManager.save(capture: capture, in: modelContext)
         showToast("Marked \"\(word)\" for study")
     }
 

@@ -17,6 +17,7 @@ struct LearnCIApp: App {
     @State private var locationManager = LocationManager()
     @State private var audioManager = AudioManager()
     @State private var ambientSoundManager: AmbientSoundManager
+    @State private var savedStudyWordManager = SavedStudyWordManager()
 
     init() {
         let auth = AuthManager()
@@ -39,6 +40,7 @@ struct LearnCIApp: App {
             StudySessionRecord.self,
             StudyNote.self,
             MarkedStudyWord.self,
+            SavedStudyWord.self,
             MediaTranscriptCache.self,
             Story.self,
             PodcastShow.self,
@@ -71,6 +73,7 @@ struct LearnCIApp: App {
                         .environment(locationManager)
                         .environment(audioManager)
                         .environment(ambientSoundManager)
+                        .environment(savedStudyWordManager)
                         .onOpenURL { url in
                             print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
                             Task {

@@ -254,6 +254,9 @@ struct CoachingCheckInDTO: Codable {
 
             // Push Favorites
             try await syncFavorites(context: modelContext, userID: userID)
+
+            // Saved study words
+            try await syncSavedStudyWords(context: modelContext, userID: userID)
             
             // Sync Activities (Push new)
             try await syncActivities(context: modelContext, userID: userID)
@@ -266,6 +269,7 @@ struct CoachingCheckInDTO: Codable {
             
             // NEW: Pull Favorites (Server Wins & Deletions)
             try await pullFavorites(context: modelContext, userID: userID)
+            try await pullSavedStudyWords(context: modelContext, userID: userID)
 
             // Podcasts
             try await syncPodcasts(context: modelContext, userID: userID)
@@ -684,6 +688,140 @@ struct CoachingCheckInDTO: Codable {
         }
         
         try context.save()
+    }
+
+    @MainActor
+    private func syncSavedStudyWords(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<SavedStudyWord>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSynced = try context.fetch(descriptor)
+        guard !unSynced.isEmpty else { return }
+        guard let uid = UUID(uuidString: userID) else { return }
+
+        let dtos = unSynced.map { word in
+            SavedStudyWordDTO(
+                id: word.id,
+                user_id: uid,
+                word: word.word,
+                normalized_word: word.normalizedWord,
+                lemma: word.lemma,
+                translation: word.translation,
+                sentence_target: word.sentenceTarget,
+                sentence_native: word.sentenceNative,
+                language_code: word.languageCode,
+                level: word.level,
+                part_of_speech: word.partOfSpeech,
+                verb_tense: word.verbTense,
+                grammar_notes: word.grammarNotes,
+                source_type: word.sourceTypeRaw,
+                source_id: word.sourceId,
+                source_title: word.sourceTitle,
+                source_url: word.sourceUrl,
+                block_index: word.blockIndex,
+                media_start: word.mediaStart,
+                media_end: word.mediaEnd,
+                audio_word_file: word.audioWordFile,
+                audio_sentence_file: word.audioSentenceFile,
+                deck_folder_name: word.deckFolderName,
+                created_at: word.createdAt,
+                updated_at: word.updatedAt
+            )
+        }
+
+        try await authManager.supabase.from("saved_study_words")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+
+        for word in unSynced {
+            word.isSynced = true
+        }
+        try context.save()
+    }
+
+    @MainActor
+    private func pullSavedStudyWords(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+        let response = try await authManager.supabase.from("saved_study_words")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let serverWords = try decoder.decode([SavedStudyWordDTO].self, from: response.data)
+        let serverIDs = Set(serverWords.map { $0.id })
+        let descriptor = FetchDescriptor<SavedStudyWord>(predicate: #Predicate { $0.userID == userID })
+        let localWords = try context.fetch(descriptor)
+
+        for local in localWords {
+            if local.isSynced && !serverIDs.contains(local.id) {
+                context.delete(local)
+            }
+        }
+
+        for dto in serverWords {
+            if let existing = localWords.first(where: { $0.id == dto.id }) {
+                apply(dto: dto, to: existing)
+            } else {
+                let capture = SavedStudyWordCapture(
+                    userID: userID,
+                    word: dto.word,
+                    translation: dto.translation,
+                    lemma: dto.lemma,
+                    sentenceTarget: dto.sentence_target,
+                    sentenceNative: dto.sentence_native,
+                    languageCode: dto.language_code,
+                    level: dto.level,
+                    partOfSpeech: dto.part_of_speech,
+                    verbTense: dto.verb_tense,
+                    grammarNotes: dto.grammar_notes,
+                    sourceType: SavedStudyWordSourceType(rawValue: dto.source_type) ?? .other,
+                    sourceId: dto.source_id,
+                    sourceTitle: dto.source_title,
+                    sourceUrl: dto.source_url,
+                    blockIndex: dto.block_index,
+                    mediaStart: dto.media_start,
+                    mediaEnd: dto.media_end,
+                    audioWordFile: dto.audio_word_file,
+                    audioSentenceFile: dto.audio_sentence_file,
+                    deckFolderName: dto.deck_folder_name
+                )
+                let word = SavedStudyWord(id: dto.id, capture: capture, createdAt: dto.created_at)
+                word.updatedAt = dto.updated_at
+                word.isSynced = true
+                context.insert(word)
+            }
+        }
+
+        try context.save()
+    }
+
+    private func apply(dto: SavedStudyWordDTO, to word: SavedStudyWord) {
+        word.word = dto.word
+        word.normalizedWord = dto.normalized_word
+        word.lemma = dto.lemma
+        word.translation = dto.translation
+        word.sentenceTarget = dto.sentence_target
+        word.sentenceNative = dto.sentence_native
+        word.languageCode = dto.language_code
+        word.level = dto.level
+        word.partOfSpeech = dto.part_of_speech
+        word.verbTense = dto.verb_tense
+        word.grammarNotes = dto.grammar_notes
+        word.sourceTypeRaw = dto.source_type
+        word.sourceId = dto.source_id
+        word.sourceTitle = dto.source_title
+        word.sourceUrl = dto.source_url
+        word.blockIndex = dto.block_index
+        word.mediaStart = dto.media_start
+        word.mediaEnd = dto.media_end
+        word.audioWordFile = dto.audio_word_file
+        word.audioSentenceFile = dto.audio_sentence_file
+        word.deckFolderName = dto.deck_folder_name
+        word.createdAt = dto.created_at
+        word.updatedAt = dto.updated_at
+        word.isSynced = true
     }
 
     @MainActor
@@ -1508,6 +1646,34 @@ struct FavoriteDTO: Codable {
     let image_url: String?
     let source_resource_id: String?
     let created_at: Date
+}
+
+struct SavedStudyWordDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let word: String
+    let normalized_word: String
+    let lemma: String?
+    let translation: String?
+    let sentence_target: String?
+    let sentence_native: String?
+    let language_code: String
+    let level: String?
+    let part_of_speech: String?
+    let verb_tense: String?
+    let grammar_notes: String?
+    let source_type: String
+    let source_id: String
+    let source_title: String
+    let source_url: String?
+    let block_index: Int?
+    let media_start: Double?
+    let media_end: Double?
+    let audio_word_file: String?
+    let audio_sentence_file: String?
+    let deck_folder_name: String?
+    let created_at: Date
+    let updated_at: Date
 }
 
 struct PodcastShowDTO: Codable {

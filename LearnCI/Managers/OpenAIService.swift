@@ -971,6 +971,96 @@ actor OpenAIService {
         return (trimmedTranslation, partOfSpeech)
     }
 
+    func analyzeStudyWord(
+        _ word: String,
+        languageCode: String,
+        context: String?,
+        existingTranslation: String?,
+        existingLevel: String?
+    ) async throws -> StudyWordAnalysis {
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            throw OpenAIServiceError.noAPIKey
+        }
+
+        let url = URL(string: "\(baseURL)/chat/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let lookupText = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        let languageName = Language(rawValue: languageCode)?.displayName ?? languageCode
+        var prompt = """
+        Analyze the \(languageName) study word or phrase "\(lookupText)" for a language learner. Return JSON with string keys: translation, lemma, partOfSpeech, level, verbTense, grammarNotes. Use CEFR-style level labels when possible. Leave verbTense empty unless this is a conjugated verb form. Keep grammarNotes under 18 words.
+        """
+        if let existingTranslation, !existingTranslation.isEmpty {
+            prompt += "\nKnown translation: \(existingTranslation)"
+        }
+        if let existingLevel, !existingLevel.isEmpty {
+            prompt += "\nKnown level: \(existingLevel)"
+        }
+        if let context, !context.isEmpty {
+            prompt += "\nContext sentence: \(context)"
+        }
+
+        let body: [String: Any] = [
+            "model": "gpt-4o-mini",
+            "messages": [
+                ["role": "system", "content": "You are a concise language-learning grammar analyst. Respond strictly in JSON."],
+                ["role": "user", "content": prompt]
+            ],
+            "response_format": ["type": "json_object"]
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            var errorMessage = "Status code: \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let errorObj = errorJson["error"] as? [String: Any],
+               let msg = errorObj["message"] as? String {
+                errorMessage = msg
+            }
+            throw OpenAIServiceError.apiError(errorMessage)
+        }
+
+        struct ChatCompletionResponse: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable {
+                    let content: String
+                }
+                let message: Message
+            }
+            let choices: [Choice]
+        }
+
+        let result = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let contentString = result.choices.first?.message.content,
+              let contentData = contentString.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: contentData) as? [String: Any] else {
+            throw OpenAIServiceError.decodingError
+        }
+
+        func stringValue(_ keys: String...) -> String? {
+            for key in keys {
+                if let value = json[key] as? String {
+                    return value
+                }
+            }
+            return nil
+        }
+
+        return StudyWordAnalysis(
+            translation: stringValue("translation"),
+            lemma: stringValue("lemma"),
+            partOfSpeech: stringValue("partOfSpeech", "part_of_speech"),
+            level: stringValue("level"),
+            verbTense: stringValue("verbTense", "verb_tense"),
+            grammarNotes: stringValue("grammarNotes", "grammar_notes")
+        )
+    }
+
     // Check if key exists
     func hasKey() -> Bool {
         return apiKey != nil && !apiKey!.isEmpty

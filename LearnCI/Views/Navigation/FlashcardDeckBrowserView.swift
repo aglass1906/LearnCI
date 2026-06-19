@@ -136,8 +136,12 @@ private struct DeckBrowserRow: View {
 private struct FlashcardDeckDetailView: View {
     let deck: DeckMetadata
 
+    @Environment(AuthManager.self) private var authManager
     @Environment(DataManager.self) private var dataManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
+    @Environment(\.modelContext) private var modelContext
     @State private var loadedDeck: CardDeck?
+    @State private var savedRevision = 0
 
     var body: some View {
         List {
@@ -152,6 +156,10 @@ private struct FlashcardDeckDetailView: View {
                             HStack(alignment: .firstTextBaseline) {
                                 Text(card.wordTarget)
                                     .font(.headline)
+                                SaveCardForStudyButton(
+                                    isSaved: isSaved(card, in: loadedDeck),
+                                    action: { save(card, from: loadedDeck) }
+                                )
                                 CardAudioButton(
                                     filename: card.audioWordFile,
                                     text: card.wordTarget,
@@ -222,6 +230,65 @@ private struct FlashcardDeckDetailView: View {
         .onAppear {
             loadedDeck = dataManager.loadDeck(from: deck)
         }
+    }
+
+    private func isSaved(_ card: LearningCard, in loadedDeck: CardDeck) -> Bool {
+        _ = savedRevision
+        guard let userID = authManager.currentUser else { return false }
+        return savedStudyWordManager.isSaved(
+            word: card.wordTarget,
+            userID: userID,
+            languageCode: loadedDeck.language.code,
+            sourceType: .flashcard,
+            sourceId: "\(loadedDeck.id):\(card.id)",
+            in: modelContext
+        )
+    }
+
+    private func save(_ card: LearningCard, from loadedDeck: CardDeck) {
+        guard let userID = authManager.currentUser else { return }
+        let capture = SavedStudyWordCapture(
+            userID: userID,
+            word: card.wordTarget,
+            translation: card.wordNative,
+            lemma: nil,
+            sentenceTarget: card.sentenceTarget,
+            sentenceNative: card.sentenceNative,
+            languageCode: loadedDeck.language.code,
+            level: loadedDeck.level?.cerCode ?? loadedDeck.proficiencyLevel.map { String($0) },
+            partOfSpeech: nil,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .flashcard,
+            sourceId: "\(loadedDeck.id):\(card.id)",
+            sourceTitle: loadedDeck.title,
+            sourceUrl: nil,
+            blockIndex: nil,
+            mediaStart: nil,
+            mediaEnd: nil,
+            audioWordFile: card.audioWordFile,
+            audioSentenceFile: card.audioSentenceFile,
+            deckFolderName: loadedDeck.baseFolderName ?? deck.folderName
+        )
+        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedRevision += 1
+    }
+}
+
+private struct SaveCardForStudyButton: View {
+    let isSaved: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isSaved ? "star.fill" : "star")
+                .font(.caption)
+                .foregroundColor(isSaved ? .yellow : .secondary)
+                .frame(width: 22, height: 22)
+        }
+        .buttonStyle(.plain)
+        .disabled(isSaved)
+        .accessibilityLabel(isSaved ? "Saved for study" : "Save for study")
     }
 }
 

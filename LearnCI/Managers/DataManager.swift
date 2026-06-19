@@ -3,7 +3,7 @@ import SwiftData
 import Observation
 import UIKit
 
-struct DeckMetadata: Identifiable, Equatable {
+struct DeckMetadata: Identifiable, Equatable, Hashable {
     let id: String
     let title: String
     let description: String?
@@ -15,6 +15,10 @@ struct DeckMetadata: Identifiable, Equatable {
     let supportedModes: Set<GameConfiguration.GameType>
     let gameConfiguration: [String: DeckDefaults]?
     let coverImage: String?
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 struct InspirationalQuote: Codable, Identifiable {
@@ -694,4 +698,3 @@ class DataManager {
         )
     }
 }
-

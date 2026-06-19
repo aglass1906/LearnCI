@@ -922,8 +922,18 @@ struct VideoDetailSheet: View {
     private func lookupWordInFocus(_ word: String) {
         guard let block = studySessionViewModel?.currentBlock else { return }
         let cue: YouTubeCaptionCue
-        if let cueStartIndex = block.cueStartIndex,
-           studyViewModel.activeCues.indices.contains(cueStartIndex) {
+        let blockCues = studyViewModel.activeCues.filter { block.contains(cueIndex: $0.index) }
+        let matchingCues = blockCues.filter {
+            $0.normalizedText.localizedCaseInsensitiveContains(word)
+        }
+        if let activeCue = studyViewModel.activeCue,
+           block.contains(cueIndex: activeCue.index),
+           activeCue.normalizedText.localizedCaseInsensitiveContains(word) {
+            cue = activeCue
+        } else if let matchingCue = matchingCues.first {
+            cue = matchingCue
+        } else if let cueStartIndex = block.cueStartIndex,
+                  studyViewModel.activeCues.indices.contains(cueStartIndex) {
             cue = studyViewModel.activeCues[cueStartIndex]
         } else {
             cue = YouTubeCaptionCue(
@@ -942,13 +952,16 @@ struct VideoDetailSheet: View {
         let blockIndex = cueIndex ?? session.currentBlockIndex
         let mediaTime = session.mediaPlayer.currentTime
         let block = session.currentBlock
+        let selectedCue = cueIndex.flatMap { cueIndex in
+            studyViewModel.activeCues.first(where: { $0.index == cueIndex })
+        }
         let capture = SavedStudyWordCapture(
             userID: userID,
             word: word,
             translation: studyViewModel.lookupResult?.translation,
             lemma: nil,
-            sentenceTarget: contextText ?? block?.targetText,
-            sentenceNative: block?.nativeText,
+            sentenceTarget: contextText ?? selectedCue?.normalizedText ?? block?.targetText,
+            sentenceNative: selectedCue.flatMap { studyViewModel.translatedCue(for: $0)?.text } ?? block?.nativeText,
             languageCode: session.resource.languageCode ?? lookupLanguageCode,
             level: nil,
             partOfSpeech: studyViewModel.lookupResult?.partOfSpeech,
@@ -959,8 +972,8 @@ struct VideoDetailSheet: View {
             sourceTitle: session.resource.title,
             sourceUrl: session.resource.consumptionUrl,
             blockIndex: blockIndex,
-            mediaStart: block?.mediaStart ?? mediaTime,
-            mediaEnd: block?.mediaEnd,
+            mediaStart: selectedCue?.startTime ?? block?.mediaStart ?? mediaTime,
+            mediaEnd: selectedCue?.endTime ?? block?.mediaEnd,
             audioWordFile: nil,
             audioSentenceFile: nil,
             deckFolderName: nil

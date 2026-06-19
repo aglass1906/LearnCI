@@ -13,6 +13,8 @@ struct PreGameSummaryView: View {
     let cardGoal: Int
     let order: GameConfiguration.OrderStrategy
     var customConfig: GameConfiguration? = nil
+    var startButtonTitle: String = "Start Game"
+    var settingsTitle: String = "Game Settings"
 
     let onStartGame: () -> Void
     let onBack: () -> Void
@@ -54,7 +56,7 @@ struct PreGameSummaryView: View {
                     Button(action: onStartGame) {
                         HStack {
                             Image(systemName: "play.fill")
-                            Text("Start Game")
+                            Text(startButtonTitle)
                         }
                         .font(.headline)
                         .foregroundColor(.white)
@@ -173,7 +175,7 @@ struct PreGameSummaryView: View {
     @ViewBuilder
     private func gameConfigSection(items: [ConfigItem]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Game Settings")
+            Text(settingsTitle)
                 .font(.caption)
                 .fontWeight(.bold)
                 .foregroundColor(.secondary)

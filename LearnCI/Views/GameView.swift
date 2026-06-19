@@ -6,9 +6,13 @@ struct GameView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.dismiss) private var dismiss
     @Query private var allProfiles: [UserProfile]
 
     @Environment(AudioManager.self) private var audioManager
+    private let availableGameTypes: [GameConfiguration.GameType]
+    private let initialGameType: GameConfiguration.GameType?
+    private let initialDeck: DeckMetadata?
 
     // State Management
     enum GameSetupStage {
@@ -51,6 +55,24 @@ struct GameView: View {
 
     // ViewModel (owns all runtime game state)
     @State private var viewModel: GameSessionViewModel?
+
+    init(
+        availableGameTypes: [GameConfiguration.GameType] = GameConfiguration.GameType.allCases,
+        initialGameType: GameConfiguration.GameType? = nil,
+        initialDeck: DeckMetadata? = nil
+    ) {
+        let normalizedTypes = availableGameTypes.isEmpty ? GameConfiguration.GameType.allCases : availableGameTypes
+        self.availableGameTypes = normalizedTypes
+        self.initialGameType = initialGameType
+        self.initialDeck = initialDeck
+        _selectedGameType = State(initialValue: initialGameType ?? normalizedTypes.first ?? .flashcards)
+        _selectedDeck = State(initialValue: initialDeck)
+        _setupStage = State(initialValue: initialDeck == nil ? .gameSelection : .sessionConfiguration)
+    }
+
+    private var isStudyFlow: Bool {
+        availableGameTypes == [.flashcards]
+    }
 
     var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
@@ -200,6 +222,7 @@ struct GameView: View {
             let _ = print("DEBUG: Showing gameSelection view")
             GameSelectionView(
                 selectedGameType: $selectedGameType,
+                gameTypes: availableGameTypes,
                 quickStartDeckTitle: quickStartDeckTitle,
                 onPlayNow: startWithDefaults,
                 onConfigure: configureSelectedGame
@@ -208,7 +231,7 @@ struct GameView: View {
             let _ = print("DEBUG: Showing deckSelection view")
             configurationView
         case .sessionConfiguration:
-            SessionOptionsView(
+                SessionOptionsView(
                 sessionDuration: $sessionDuration,
                 sessionCardGoal: $sessionCardGoal,
                 navigationStyle: $navigationStyle,
@@ -253,12 +276,14 @@ struct GameView: View {
                 cardGoal: sessionCardGoal,
                 order: order,
                 customConfig: customConfig,
+                startButtonTitle: isStudyFlow ? "Start Study" : "Start Game",
+                settingsTitle: isStudyFlow ? "Study Settings" : "Game Settings",
                 onStartGame: startActiveSession,
                 onBack: { setupStage = .gameSpecificConfig }
             )
         case .starting:
             let _ = print("DEBUG: Showing starting transition")
-            ProgressView("Preparing game...")
+            ProgressView(isStudyFlow ? "Preparing study session..." : "Preparing game...")
                 .onAppear {
                     print("DEBUG: Starting transition onAppear - will move to .playing in 0.5s")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -314,6 +339,9 @@ struct GameView: View {
                     duration: sessionDuration,
                     cardGoal: sessionCardGoal,
                     order: vm.sessionConfig.order,
+                    primaryActionTitle: isStudyFlow ? "Study Again" : "Play Again",
+                    menuActionTitle: isStudyFlow ? "Return to Deck" : "Return to Menu",
+                    onReturnToMenu: isStudyFlow ? { dismiss() } : nil,
                     onPlayAgain: startActiveSession
                 )
             }
@@ -359,7 +387,7 @@ struct GameView: View {
         case .gameSelection: return "Choose a Game"
         case .deckSelection: return "Select Deck"
         case .sessionConfiguration: return "Session Options"
-        case .gameSpecificConfig: return "Game Settings"
+        case .gameSpecificConfig: return isStudyFlow ? "Study Settings" : "Game Settings"
         case .sessionSummary: return "Review"
         case .starting: return ""
         case .playing: return ""
@@ -573,11 +601,11 @@ struct GameView: View {
 
         guard let profile = userProfile, !hasInitialized else { return }
 
-        sessionLanguage = profile.currentLanguage
-        sessionLevel = profile.proficiencyLevel
+        sessionLanguage = initialDeck?.language ?? profile.currentLanguage
+        sessionLevel = initialDeck?.proficiencyLevel ?? (initialDeck?.level.map { LevelManager.shared.normalize($0) } ?? profile.proficiencyLevel)
         sessionCardGoal = profile.dailyCardGoal ?? 20
         selectedPreset = profile.defaultGamePreset
-        selectedGameType = profile.currentGameType
+        selectedGameType = initialGameType ?? allowedGameType(for: profile.currentGameType)
 
         ttsRate = profile.ttsRate
         useTTSFallback = true
@@ -596,7 +624,11 @@ struct GameView: View {
 
         hasInitialized = true
 
-        if let lastId = profile.lastSelectedDeckId {
+        if let initialDeck {
+            selectedDeck = initialDeck
+            dataManager.discoverDecks(language: initialDeck.language, proficiency: sessionLevel)
+            _ = dataManager.loadDeck(from: initialDeck)
+        } else if let lastId = profile.lastSelectedDeckId {
             DispatchQueue.global(qos: .userInitiated).async {
                 if let match = self.dataManager.findDeckMetadata(id: lastId) {
                     DispatchQueue.main.async {
@@ -621,6 +653,10 @@ struct GameView: View {
             soundEffectsEnabled: userProfile?.gameSoundEffectsEnabled ?? true,
             hapticsEnabled: userProfile?.gameHapticsEnabled ?? true
         )
+    }
+
+    private func allowedGameType(for gameType: GameConfiguration.GameType) -> GameConfiguration.GameType {
+        availableGameTypes.contains(gameType) ? gameType : (availableGameTypes.first ?? .flashcards)
     }
 
     func startActiveSession() {

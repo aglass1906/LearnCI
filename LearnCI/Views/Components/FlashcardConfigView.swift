@@ -23,7 +23,7 @@ struct FlashcardConfigView: View {
         VStack(spacing: 24) {
             // Settings Form
             Form {
-                Section(header: Text("Game Settings")) {
+                Section(header: Text("Study Settings")) {
                     Picker("Card Layout", selection: $selectedPreset) {
                         ForEach(GameConfiguration.Preset.allCases) { preset in
                             Text(preset.rawValue).tag(preset)

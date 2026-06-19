@@ -36,10 +36,10 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.dashboard)
                 
-                GameView()
+                LearnHubView()
                     .id(learnResetID)
                     .tabItem {
-                        Label("Learn", systemImage: "gamecontroller.fill")
+                        Label("Learn", systemImage: "book.closed.fill")
                     }
                     .tag(AppTab.learn)
                 

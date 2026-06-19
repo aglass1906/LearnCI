@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameSelectionView: View {
     @Binding var selectedGameType: GameConfiguration.GameType
+    var gameTypes: [GameConfiguration.GameType] = GameConfiguration.GameType.allCases
     let quickStartDeckTitle: String?
     let onPlayNow: () -> Void
     let onConfigure: () -> Void
@@ -15,7 +16,7 @@ struct GameSelectionView: View {
         VStack(spacing: 0) {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(GameConfiguration.GameType.allCases) { gameType in
+                    ForEach(gameTypes) { gameType in
                         Button {
                             selectedGameType = gameType
                         } label: {

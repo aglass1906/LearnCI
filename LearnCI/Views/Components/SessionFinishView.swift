@@ -17,6 +17,9 @@ struct SessionFinishView: View {
     let cardGoal: Int
     let order: GameConfiguration.OrderStrategy
     var filterText: String? = nil
+    var primaryActionTitle: String = "Play Again"
+    var menuActionTitle: String = "Return to Menu"
+    var onReturnToMenu: (() -> Void)? = nil
 
     let onPlayAgain: () -> Void
 
@@ -249,7 +252,7 @@ struct SessionFinishView: View {
             Button(action: onPlayAgain) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.counterclockwise")
-                    Text("Play Again")
+                    Text(primaryActionTitle)
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -260,11 +263,17 @@ struct SessionFinishView: View {
                 .shadow(color: gameType.tileColor.opacity(0.3), radius: 8, y: 4)
             }
 
-            Button(action: { setupStage = .gameSelection }) {
+            Button(action: {
+                if let onReturnToMenu {
+                    onReturnToMenu()
+                } else {
+                    setupStage = .gameSelection
+                }
+            }) {
                 HStack(spacing: 6) {
                     Image(systemName: "house")
                         .font(.subheadline)
-                    Text("Return to Menu")
+                    Text(menuActionTitle)
                         .font(.subheadline)
                 }
                 .foregroundColor(.secondary)

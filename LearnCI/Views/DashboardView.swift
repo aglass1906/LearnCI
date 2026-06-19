@@ -390,7 +390,7 @@ extension DashboardView {
             subTitle: "Learn vocabulary in a fun way",
             accentColor: .orange,
             icon: "sparkles",
-            destination: GameView()
+            destination: FlashcardDeckBrowserView()
         ) {
             if let word = wordOfDay {
                 VStack(alignment: .leading, spacing: 10) {

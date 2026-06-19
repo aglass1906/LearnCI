@@ -38,7 +38,7 @@ struct UserHeader: View {
                     Button {
                         onSelectTab(.learn)
                     } label: {
-                        Label("Learn / Games", systemImage: "gamecontroller.fill")
+                        Label("Learn", systemImage: "book.closed.fill")
                     }
                     Button {
                         onSelectTab(.discovery)

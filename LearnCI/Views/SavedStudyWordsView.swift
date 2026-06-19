@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
+import Supabase
+import PostgREST
 
 struct SavedStudyWordsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(DataManager.self) private var dataManager
     @Environment(AudioManager.self) private var audioManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Query(sort: \SavedStudyWord.createdAt, order: .reverse) private var savedWords: [SavedStudyWord]
     @Query(sort: \MarkedStudyWord.createdAt, order: .reverse) private var legacyMarkedWords: [MarkedStudyWord]
 
@@ -99,6 +102,7 @@ struct SavedStudyWordsView: View {
                     SavedStudyWordRow(word: word)
                 }
             }
+            .onDelete(perform: deleteSavedWords)
         }
     }
 
@@ -163,6 +167,24 @@ struct SavedStudyWordsView: View {
             gameConfiguration: nil,
             coverImage: nil
         )
+    }
+
+    private func deleteSavedWords(at offsets: IndexSet) {
+        let wordsToDelete = offsets.compactMap { filteredWords[safeStudyWords: $0] }
+        for word in wordsToDelete {
+            deleteSavedWord(word)
+        }
+    }
+
+    private func deleteSavedWord(_ word: SavedStudyWord) {
+        let wordID = word.id
+        savedStudyWordManager.delete(word, in: modelContext)
+        Task {
+            try? await authManager.supabase.from("saved_study_words")
+                .delete()
+                .eq("id", value: wordID)
+                .execute()
+        }
     }
 
     private func migrateLegacyMarkedWordsIfNeeded() {
@@ -235,12 +257,17 @@ private struct SavedStudyWordRow: View {
 }
 
 private struct SavedStudyWordDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AuthManager.self) private var authManager
     @Environment(AudioManager.self) private var audioManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Query private var stories: [Story]
     let word: SavedStudyWord
 
     @State private var activeClipEnd: Double?
     @State private var youtubeClip: SavedStudyWordYouTubeClip?
+    @State private var showDeleteConfirmation = false
 
     private var language: Language {
         Language(rawValue: word.languageCode) ?? .spanish
@@ -309,6 +336,28 @@ private struct SavedStudyWordDetailView: View {
         }
         .navigationTitle("Study Word")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Image(systemName: "trash")
+                }
+                .accessibilityLabel("Delete saved word")
+            }
+        }
+        .confirmationDialog(
+            "Delete Saved Word?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                deleteSavedWord()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This removes the word from Saved Study Words on this device and from sync.")
+        }
         .sheet(item: $youtubeClip) { clip in
             SavedStudyWordYouTubeClipPlayer(clip: clip)
                 .presentationDetents([.medium, .large])
@@ -458,6 +507,21 @@ private struct SavedStudyWordDetailView: View {
         return "Saved at \(formatTime(start))"
     }
 
+    private func deleteSavedWord() {
+        let wordID = word.id
+        activeClipEnd = nil
+        audioManager.pauseStream()
+        savedStudyWordManager.delete(word, in: modelContext)
+        dismiss()
+
+        Task {
+            try? await authManager.supabase.from("saved_study_words")
+                .delete()
+                .eq("id", value: wordID)
+                .execute()
+        }
+    }
+
     @ViewBuilder
     private func metricRow(_ title: String, _ value: String?) -> some View {
         if let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -468,6 +532,12 @@ private struct SavedStudyWordDetailView: View {
     private func formatTime(_ time: Double) -> String {
         let total = Int(time.rounded())
         return "\(total / 60):\(String(format: "%02d", total % 60))"
+    }
+}
+
+private extension Array {
+    subscript(safeStudyWords index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 

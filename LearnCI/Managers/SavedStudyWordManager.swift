@@ -77,6 +77,11 @@ final class SavedStudyWordManager {
         return ((try? context.fetchCount(descriptor)) ?? 0) > 0
     }
 
+    func delete(_ word: SavedStudyWord, in context: ModelContext) {
+        context.delete(word)
+        try? context.save()
+    }
+
     private func shouldEnrich(_ word: SavedStudyWord) -> Bool {
         word.translation?.isEmpty != false ||
         word.lemma?.isEmpty != false ||

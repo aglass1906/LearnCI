@@ -22,6 +22,8 @@ struct StorySessionView: View {
     private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
     @Environment(AudioManager.self) private var audioManager
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
@@ -81,6 +83,7 @@ struct StorySessionView: View {
     @State private var selectedWordRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
+    @State private var savedStudyRevision = 0
     @State private var didApplyInitialPlaybackPosition = false
     @State private var lastSavedPlaybackSecond = -1
 
@@ -297,7 +300,11 @@ struct StorySessionView: View {
                 onSeek: { time in
                     seekTo(time)
                 },
-                onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil
+                onSelectPhrase: canSelectPhrase ? { beginPhraseSelection() } : nil,
+                onMarkForStudy: {
+                    markSelectedWordForStudy()
+                },
+                isMarkedForStudy: isSelectedWordSaved
             )
             .presentationDetents([.fraction(0.4)])
             .presentationDragIndicator(.visible)
@@ -680,6 +687,52 @@ struct StorySessionView: View {
                 }
             }
         }
+    }
+
+    private var isSelectedWordSaved: Bool {
+        _ = savedStudyRevision
+        guard let userID = authManager.currentUser,
+              let selectedWord else { return false }
+        return savedStudyWordManager.isSaved(
+            word: selectedWord,
+            userID: userID,
+            languageCode: story.language.code,
+            sourceType: .story,
+            sourceId: story.id.uuidString,
+            in: modelContext
+        )
+    }
+
+    private func markSelectedWordForStudy() {
+        guard let userID = authManager.currentUser,
+              let selectedWord else { return }
+
+        let sentenceTarget = selectedWordRequest?.context ?? sentenceContaining(word: selectedWord)
+        let capture = SavedStudyWordCapture(
+            userID: userID,
+            word: selectedWord,
+            translation: wordTranslation,
+            lemma: nil,
+            sentenceTarget: sentenceTarget,
+            sentenceNative: nil,
+            languageCode: story.language.code,
+            level: String(story.level),
+            partOfSpeech: wordPartOfSpeech,
+            verbTense: nil,
+            grammarNotes: nil,
+            sourceType: .story,
+            sourceId: story.id.uuidString,
+            sourceTitle: story.title,
+            sourceUrl: nil,
+            blockIndex: selectedWordRequest?.wordIndex,
+            mediaStart: selectedWordTime,
+            mediaEnd: nil,
+            audioWordFile: nil,
+            audioSentenceFile: story.audioFilename,
+            deckFolderName: nil
+        )
+        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyRevision += 1
     }
 
     private func beginPhraseSelection() {

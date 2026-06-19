@@ -36,14 +36,14 @@ struct UserHeader: View {
                         Label("Home", systemImage: "house.fill")
                     }
                     Button {
-                        onSelectTab(.learn)
-                    } label: {
-                        Label("Learn", systemImage: "book.closed.fill")
-                    }
-                    Button {
                         onSelectTab(.discovery)
                     } label: {
                         Label("Input", systemImage: "brain.head.profile.fill")
+                    }
+                    Button {
+                        onSelectTab(.learn)
+                    } label: {
+                        Label("Learn", systemImage: "book.closed.fill")
                     }
                     Button {
                         onSelectTab(.history)

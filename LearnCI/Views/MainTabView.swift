@@ -36,19 +36,19 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.dashboard)
                 
-                LearnHubView()
-                    .id(learnResetID)
-                    .tabItem {
-                        Label("Learn", systemImage: "book.closed.fill")
-                    }
-                    .tag(AppTab.learn)
-                
                 InputDiscoveryView()
                     .id(discoveryResetID)
                     .tabItem {
                         Label("Input", systemImage: "brain.head.profile.fill")
                     }
                     .tag(AppTab.discovery)
+
+                LearnHubView()
+                    .id(learnResetID)
+                    .tabItem {
+                        Label("Learn", systemImage: "book.closed.fill")
+                    }
+                    .tag(AppTab.learn)
                 
                 InsightsView()
                     .id(historyResetID)

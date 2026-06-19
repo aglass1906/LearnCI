@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct InputHubView: View {
-    @State private var showGames = false
-
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -11,6 +9,16 @@ struct InputHubView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
+                NavigationLink(destination: FlashcardDeckBrowserView()) {
+                    HubPanel(
+                        title: "Flashcards",
+                        subtitle: "Browse decks & study cards",
+                        icon: "rectangle.stack.fill",
+                        gradient: Gradient(colors: [.blue, .indigo])
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+
                 NavigationLink(destination: VideoView()) {
                     HubPanel(
                         title: "YouTube",
@@ -40,7 +48,17 @@ struct InputHubView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
-                
+
+                NavigationLink(destination: GameView(availableGameTypes: GameConfiguration.GameType.allCases.filter { $0 != .flashcards })) {
+                    HubPanel(
+                        title: "Games",
+                        subtitle: "Focused practice modes",
+                        icon: "gamecontroller.fill",
+                        gradient: Gradient(colors: [.orange, .pink])
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+
                 NavigationLink(destination: ResourceLibraryView()) {
                     HubPanel(
                         title: "The Library",
@@ -50,37 +68,10 @@ struct InputHubView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
-
-                NavigationLink(destination: FlashcardDeckBrowserView()) {
-                    HubPanel(
-                        title: "Flashcards",
-                        subtitle: "Browse decks & study cards",
-                        icon: "rectangle.stack.fill",
-                        gradient: Gradient(colors: [.blue, .indigo])
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-
-                Button {
-                    showGames = true
-                } label: {
-                    HubPanel(
-                        title: "Games",
-                        subtitle: "Focused practice modes",
-                        icon: "gamecontroller.fill",
-                        gradient: Gradient(colors: [.orange, .pink])
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
             }
             .padding()
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .sheet(isPresented: $showGames) {
-            GameView(
-                availableGameTypes: GameConfiguration.GameType.allCases.filter { $0 != .flashcards }
-            )
-        }
     }
 }
 

@@ -110,70 +110,42 @@ struct VideoView: View {
         }
     }
     
+    private var showsShortsFilter: Bool {
+        switch sourceScope {
+        case .all:
+            mode == .subscriptions
+        case .favorites:
+            favoritesBrowseMode == .feed || favoritesBrowseMode == .saved
+        case .playlists:
+            false
+        }
+    }
+
+    private var hasNonDefaultFilters: Bool {
+        sourceScope != .all
+            || mode != .subscriptions
+            || favoritesBrowseMode != .feed
+            || shortsFilter != .all
+            || selectedCategory != "All"
+    }
+
+    private var isScopeRefreshing: Bool {
+        switch sourceScope {
+        case .playlists:
+            youtubeManager.isPlaylistsLoading
+        case .all where mode == .discovery:
+            youtubeManager.isDiscoveryLoading
+        default:
+            youtubeManager.isLoading
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            Picker("Source", selection: $sourceScope) {
-                ForEach(VideoSourceScope.allCases, id: \.self) { scope in
-                    Text(scope.rawValue).tag(scope)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top, 8)
-            
-            if sourceScope == .all {
-                Picker("Tab", selection: $mode) {
-                    ForEach(VideoTabMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding()
-            } else if sourceScope == .favorites {
-                Picker("Favorites", selection: $favoritesBrowseMode) {
-                    ForEach(FavoritesBrowseMode.allCases, id: \.self) { browseMode in
-                        Text(browseMode.rawValue).tag(browseMode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding()
-            }
-            
-            // Count Header
-            if selectedChannel == nil {
-                HStack {
-                    Text(scopeCountLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 4)
-            }
-            
-            // Category Scroll
             if sourceScope == .all && mode == .discovery {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(categories, id: \.self) { category in
-                            Button(action: { selectedCategory = category }) {
-                                Text(category)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 12)
-                                    .frame(minHeight: 44)
-                                    .background(selectedCategory == category ? Color.red : Color.gray.opacity(0.1))
-                                    .foregroundColor(selectedCategory == category ? .white : .primary)
-                                    .cornerRadius(22)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.bottom, 8)
+                discoveryCategoryBar
             }
-            
+
             Group {
                 if let channel = selectedChannel {
                     ChannelDetailView(
@@ -252,6 +224,7 @@ struct VideoView: View {
             }
         }
         .navigationTitle(selectedChannel?.title ?? "YouTube")
+        .navigationSubtitle(selectedChannel == nil ? scopeCountLabel : "")
         .toolbar {
             if selectedChannel != nil {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -263,22 +236,23 @@ struct VideoView: View {
                     }
                 }
             }
-            
-            if youtubeManager.isAuthenticated {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: {
-                        if sourceScope == .favorites {
-                            refreshFavoriteSavedVideos()
-                            youtubeManager.refreshVideos()
-                        } else if sourceScope == .playlists {
-                            youtubeManager.fetchUserPlaylists(forceRefresh: true)
-                        } else if mode == .discovery {
-                            refreshDiscovery()
-                        } else {
-                            youtubeManager.refreshVideos()
+
+            if selectedChannel == nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 16) {
+                        if youtubeManager.isAuthenticated {
+                            Button(action: refreshCurrentScope) {
+                                if isScopeRefreshing {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                            }
+                            .disabled(isScopeRefreshing)
                         }
-                    }) {
-                        Image(systemName: "arrow.clockwise")
+
+                        videoFilterMenu
                     }
                 }
             }
@@ -324,16 +298,16 @@ struct VideoView: View {
             Image(systemName: "link.circle.fill")
                 .font(.system(size: 60))
                 .foregroundColor(.red)
-            
+
             Text("Connect YouTube")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             Text("Go to Profile to connect your YouTube account")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
-            
+
             NavigationLink(destination: ProfileView()) {
                 Label("Go to Profile", systemImage: "person.circle.fill")
                     .font(.headline)
@@ -346,7 +320,84 @@ struct VideoView: View {
         }
         .padding()
     }
-    
+
+    private var discoveryCategoryBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(categories, id: \.self) { category in
+                    Button(action: { selectedCategory = category }) {
+                        Text(category)
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(selectedCategory == category ? Color.red : Color.gray.opacity(0.12))
+                            .foregroundColor(selectedCategory == category ? .white : .primary)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.vertical, 8)
+    }
+
+    private var videoFilterMenu: some View {
+        Menu {
+            Section("Source") {
+                Picker("Source", selection: $sourceScope) {
+                    ForEach(VideoSourceScope.allCases, id: \.self) { scope in
+                        Text(scope.rawValue).tag(scope)
+                    }
+                }
+            }
+
+            if sourceScope == .all {
+                Section("View") {
+                    Picker("View", selection: $mode) {
+                        ForEach(VideoTabMode.allCases, id: \.self) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                }
+            } else if sourceScope == .favorites {
+                Section("View") {
+                    Picker("View", selection: $favoritesBrowseMode) {
+                        ForEach(FavoritesBrowseMode.allCases, id: \.self) { browseMode in
+                            Text(browseMode.rawValue).tag(browseMode)
+                        }
+                    }
+                }
+            }
+
+            if showsShortsFilter {
+                Section("Format") {
+                    Picker("Format", selection: $shortsFilter) {
+                        ForEach(VideoFilter.allCases) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: hasNonDefaultFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                .foregroundStyle(hasNonDefaultFilters ? .blue : .primary)
+        }
+        .accessibilityLabel("Filter videos")
+    }
+
+    private func refreshCurrentScope() {
+        if sourceScope == .favorites {
+            refreshFavoriteSavedVideos()
+            youtubeManager.refreshVideos()
+        } else if sourceScope == .playlists {
+            youtubeManager.fetchUserPlaylists(forceRefresh: true)
+        } else if mode == .discovery {
+            refreshDiscovery()
+        } else {
+            youtubeManager.refreshVideos()
+        }
+    }
+
     var playlistListView: some View {
         Group {
             if !youtubeManager.isAuthenticated {
@@ -466,28 +517,9 @@ struct VideoView: View {
     // channelDetailView helper removed - replaced by ChannelDetailView struct
     
     var subscriptionContentView: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Picker("Filter", selection: $shortsFilter) {
-                    ForEach(VideoFilter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                Button(action: { youtubeManager.refreshVideos() }) {
-                    if youtubeManager.isLoading {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                .disabled(youtubeManager.isLoading)
-            }
-            .padding()
-            
+        Group {
             let svideos = feedVideosForCurrentScope()
-            
+
             if svideos.isEmpty && youtubeManager.isLoading && youtubeManager.videos.isEmpty {
                 ProgressView("Loading subscriptions...")
             } else if youtubeManager.videos.isEmpty {
@@ -583,27 +615,9 @@ struct VideoView: View {
     }
     
     var savedFavoritesView: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Picker("Filter", selection: $shortsFilter) {
-                    ForEach(VideoFilter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-                
-                Button(action: { refreshFavoriteSavedVideos() }) {
-                    if youtubeManager.isLoading {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-            }
-            .padding()
-            
+        Group {
             let saved = videosMatchingShortsFilter(youtubeManager.savedFavoriteVideos)
-            
+
             if favoritesIndex.videoIds.isEmpty {
                 ContentUnavailableView(
                     "No Saved Videos",

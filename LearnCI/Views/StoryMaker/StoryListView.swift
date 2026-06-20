@@ -105,6 +105,7 @@ private struct StoryTypeBadge: View {
 
 struct StoryListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AuthManager.self) private var authManager
     @Environment(SyncManager.self) private var syncManager
     @Query(sort: \Story.updatedAt, order: .reverse) var stories: [Story]
@@ -118,6 +119,7 @@ struct StoryListView: View {
     @State private var sortOption: SortOption = .newest
     @State private var selectedLanguage: String = "All"
     @State private var selectedStoryTypeID: String = "All"
+    @State private var selectedStoryID: Story.ID?
     
     enum SortOption: String, CaseIterable {
         case newest = "Newest First"
@@ -159,79 +161,27 @@ struct StoryListView: View {
         let langs = Set(stories.map { $0.language.displayName })
         return ["All"] + langs.sorted()
     }
+
+    private var usesMasterDetail: Bool {
+        AdaptiveLayoutPolicy.usesLibraryMasterDetail(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private var selectedStory: Story? {
+        if let selectedStoryID,
+           let selected = stories.first(where: { $0.id == selectedStoryID }) {
+            return selected
+        }
+        return nil
+    }
     
     var body: some View {
         NavigationStack {
-            List {
-                if filteredStories.isEmpty {
-                    ContentUnavailableView(
-                        isFiltered ? "No Matching Stories" : "No Stories Yet",
-                        systemImage: "book",
-                        description: Text(isFiltered ? "Try clearing your filters." : "Generate your first AI audio story to get started.")
-                    )
+            Group {
+                if usesMasterDetail {
+                    masterDetailContent
+                } else {
+                    compactListContent
                 }
-                
-                ForEach(filteredStories) { story in
-                    NavigationLink(destination: StoryAboutView(story: story)) {
-                        HStack(spacing: 12) {
-                            // Cover Image Thumbnail
-                            StoryThumbnailView(story: story)
-                            
-                            // Story Info
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(story.title)
-                                        .font(.headline)
-                                        
-                                    let isCloud = (story.remoteAudioPath != nil || story.remoteCoverPath != nil || story.remoteVideoPath != nil)
-                                    Image(systemName: isCloud ? "cloud" : "iphone")
-                                        .font(.caption)
-                                        .foregroundStyle(isCloud ? .blue : .gray)
-                                        
-                                    if story.preferences.interactiveAudio {
-                                        Image(systemName: "waveform.and.mic")
-                                            .font(.caption)
-                                            .foregroundStyle(.orange)
-                                    }
-                                }
-                                HStack(spacing: 4) {
-                                    Text(story.language.displayName)
-                                    Text("·")
-                                    Text("Level \(story.level)")
-                                    Text("·")
-                                    Text(story.preferences.genre.rawValue)
-                                }
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                                StoryTypeBadge(storyType: story.preferences.storyType)
-                                let isDramatized = story.preferences.audioStyle == .dramatized
-                                HStack(spacing: 8) {
-                                    if !story.chapters.isEmpty {
-                                        Label("\(story.chapters.count) ch", systemImage: "book.pages")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.blue.opacity(0.1))
-                                            .foregroundStyle(.blue)
-                                            .cornerRadius(4)
-                                    }
-                                    Label(
-                                        isDramatized ? "Dramatized" : "Single Voice",
-                                        systemImage: isDramatized ? "person.2.fill" : "person.fill"
-                                    )
-                                    .font(.system(size: 10, weight: .bold))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(isDramatized ? Color.orange.opacity(0.1) : Color.gray.opacity(0.1))
-                                    .foregroundStyle(isDramatized ? .orange : .secondary)
-                                    .cornerRadius(4)
-                                }
-                            }
-                        }
-                    }
-                }
-                .onDelete(perform: deleteStories)
             }
             .navigationTitle("AI Stories")
             .toolbar {
@@ -307,13 +257,158 @@ struct StoryListView: View {
             .task {
                 hasKey = await storyManager.hasAPIKey()
             }
+            .onChange(of: stories.map(\.id)) { _, _ in
+                reconcileSelectedStory()
+            }
+            .onChange(of: sortOption) { _, _ in
+                reconcileSelectedStory()
+            }
+            .onChange(of: selectedLanguage) { _, _ in
+                reconcileSelectedStory()
+            }
+            .onChange(of: selectedStoryTypeID) { _, _ in
+                reconcileSelectedStory()
+            }
         }
+    }
+
+    private var compactListContent: some View {
+        List {
+            emptyStateIfNeeded
+
+            ForEach(filteredStories) { story in
+                NavigationLink(destination: StoryAboutView(story: story)) {
+                    storyRow(story)
+                }
+            }
+            .onDelete(perform: deleteStories)
+        }
+    }
+
+    private var masterDetailContent: some View {
+        HStack(spacing: 0) {
+            List {
+                emptyStateIfNeeded
+
+                ForEach(filteredStories) { story in
+                    Button {
+                        selectedStoryID = story.id
+                    } label: {
+                        storyRow(story)
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(
+                        selectedStoryID == story.id
+                            ? Color.accentColor.opacity(0.12)
+                            : Color.clear
+                    )
+                }
+                .onDelete(perform: deleteStories)
+            }
+            .listStyle(.plain)
+            .frame(width: 390)
+            .onAppear {
+                reconcileSelectedStory()
+            }
+
+            Divider()
+
+            Group {
+                if let selectedStory {
+                    StoryAboutView(story: selectedStory)
+                        .id(selectedStory.id)
+                } else {
+                    ContentUnavailableView(
+                        "Select a Story",
+                        systemImage: "book",
+                        description: Text("Choose a story to preview, read, or listen.")
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var emptyStateIfNeeded: some View {
+        if filteredStories.isEmpty {
+            ContentUnavailableView(
+                isFiltered ? "No Matching Stories" : "No Stories Yet",
+                systemImage: "book",
+                description: Text(isFiltered ? "Try clearing your filters." : "Generate your first AI audio story to get started.")
+            )
+        }
+    }
+
+    private func storyRow(_ story: Story) -> some View {
+        HStack(spacing: 12) {
+            StoryThumbnailView(story: story)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(story.title)
+                        .font(.headline)
+
+                    let isCloud = (story.remoteAudioPath != nil || story.remoteCoverPath != nil || story.remoteVideoPath != nil)
+                    Image(systemName: isCloud ? "cloud" : "iphone")
+                        .font(.caption)
+                        .foregroundStyle(isCloud ? .blue : .gray)
+
+                    if story.preferences.interactiveAudio {
+                        Image(systemName: "waveform.and.mic")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
+                HStack(spacing: 4) {
+                    Text(story.language.displayName)
+                    Text("·")
+                    Text("Level \(story.level)")
+                    Text("·")
+                    Text(story.preferences.genre.rawValue)
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+                StoryTypeBadge(storyType: story.preferences.storyType)
+                let isDramatized = story.preferences.audioStyle == .dramatized
+                HStack(spacing: 8) {
+                    if !story.chapters.isEmpty {
+                        Label("\(story.chapters.count) ch", systemImage: "book.pages")
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.1))
+                            .foregroundStyle(.blue)
+                            .cornerRadius(4)
+                    }
+                    Label(
+                        isDramatized ? "Dramatized" : "Single Voice",
+                        systemImage: isDramatized ? "person.2.fill" : "person.fill"
+                    )
+                    .font(.system(size: 10, weight: .bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(isDramatized ? Color.orange.opacity(0.1) : Color.gray.opacity(0.1))
+                    .foregroundStyle(isDramatized ? .orange : .secondary)
+                    .cornerRadius(4)
+                }
+            }
+        }
+    }
+
+    private func reconcileSelectedStory() {
+        let visibleIDs = Set(filteredStories.map(\.id))
+        if let selectedStoryID, visibleIDs.contains(selectedStoryID) {
+            return
+        }
+        selectedStoryID = filteredStories.first?.id
     }
     
     private func deleteStories(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                let story = stories[index]
+                let story = filteredStories[index]
                 // Only allow deleting own stories
                 if let currentUserID = authManager.currentUser, story.userID == currentUserID {
                     storyManager.deleteStory(story, context: modelContext)

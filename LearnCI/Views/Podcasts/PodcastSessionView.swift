@@ -25,6 +25,7 @@ struct PodcastSessionView: View {
     @State private var manuallyPaused = false
     @State private var toastMessage: String?
     @State private var completedMinutes: Int? = nil  // non-nil triggers completion alert
+    @State private var isPlayerMinimized = false
 
     let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
@@ -39,66 +40,77 @@ struct PodcastSessionView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // Session Progress
-                        sessionProgressView
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // Session Progress
+                            sessionProgressView
 
-                        // Current Episode Artwork
-                        if let episode = currentEpisode {
-                            currentEpisodeView(episode)
+                            // Current Episode Artwork
+                            if let episode = currentEpisode {
+                                currentEpisodeView(episode)
+                            }
+
+                            // Up Next
+                            if !upNextEpisodes.isEmpty {
+                                upNextView
+                            }
+
+                            // End Session
+                            Button(action: endSession) {
+                                Text("End Session")
+                                    .font(.subheadline)
+                                    .foregroundColor(.red)
+                            }
+                            .padding(.top, 8)
+
+                            // Spacer for player bar
+                            Color.clear.frame(height: 160)
                         }
-
-                        // Up Next
-                        if !upNextEpisodes.isEmpty {
-                            upNextView
-                        }
-
-                        // End Session
-                        Button(action: endSession) {
-                            Text("End Session")
-                                .font(.subheadline)
-                                .foregroundColor(.red)
-                        }
-                        .padding(.top, 8)
-
-                        // Spacer for player bar
-                        Color.clear.frame(height: 160)
+                        .padding(.top, 12)
                     }
-                    .padding(.top, 12)
+
+                    // Sticky Player Bar
+                    AudioPlayerBar(
+                        isPlaying: $isPlaying,
+                        sliderValue: $sliderValue,
+                        duration: duration,
+                        playbackRate: $playbackRate,
+                        ambientVolume: .constant(0),
+                        isAmbientPlaying: false,
+                        isBuffering: audioManager.streamIsBuffering,
+                        bufferingLabel: "Loading episode…",
+                        isMinimized: isPlayerMinimized,
+                        onPlayPause: togglePlay,
+                        onSkipForward: skipForward,
+                        onSkipBackward: skipBackward,
+                        onSeek: seekTo,
+                        onChangeRate: setRate,
+                        onExpand: expandPlayerController,
+                        onMinimize: minimizePlayerController
+                    )
                 }
 
-                // Sticky Player Bar
-                AudioPlayerBar(
-                    isPlaying: $isPlaying,
-                    sliderValue: $sliderValue,
-                    duration: duration,
-                    playbackRate: $playbackRate,
-                    ambientVolume: .constant(0),
-                    isAmbientPlaying: false,
-                    isBuffering: audioManager.streamIsBuffering,
-                    bufferingLabel: "Loading episode…",
-                    onPlayPause: togglePlay,
-                    onSkipForward: skipForward,
-                    onSkipBackward: skipBackward,
-                    onSeek: seekTo,
-                    onChangeRate: setRate
-                )
+                // Toast
+                if let message = toastMessage {
+                    Text(message)
+                        .font(.subheadline.weight(.medium))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(20)
+                        .shadow(radius: 4)
+                        .padding(.top, 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
-
-            // Toast
-            if let message = toastMessage {
-                Text(message)
-                    .font(.subheadline.weight(.medium))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20)
-                    .shadow(radius: 4)
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+            .onAppear {
+                minimizePlayerForLandscapeIfNeeded(geometry.size)
+            }
+            .onChange(of: geometry.size) { _, newSize in
+                minimizePlayerForLandscapeIfNeeded(newSize)
             }
         }
         .navigationTitle("Listening Session")
@@ -464,6 +476,24 @@ struct PodcastSessionView: View {
     }
 
     // MARK: - Helpers
+
+    private func minimizePlayerController() {
+        guard !isPlayerMinimized else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
+    }
+
+    private func expandPlayerController() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = false
+        }
+    }
+
+    private func minimizePlayerForLandscapeIfNeeded(_ size: CGSize) {
+        guard size.width > size.height else { return }
+        minimizePlayerController()
+    }
 
     private func showToast(_ message: String) {
         withAnimation(.easeInOut(duration: 0.3)) {

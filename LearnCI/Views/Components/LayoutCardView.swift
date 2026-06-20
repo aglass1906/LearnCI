@@ -6,6 +6,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
     let accentColor: Color
     let icon: String?
     let destination: Destination? // Optional navigation destination
+    let appliesHorizontalPadding: Bool
     let content: Content
     
     // Initializer for navigation-enabled card
@@ -15,6 +16,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
         accentColor: Color = .blue,
         icon: String? = nil,
         destination: Destination,
+        appliesHorizontalPadding: Bool = true,
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -22,6 +24,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
         self.accentColor = accentColor
         self.icon = icon
         self.destination = destination
+        self.appliesHorizontalPadding = appliesHorizontalPadding
         self.content = content()
     }
     
@@ -31,6 +34,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
         subTitle: String? = nil,
         accentColor: Color = .blue,
         icon: String? = nil,
+        appliesHorizontalPadding: Bool = true,
         @ViewBuilder content: () -> Content
     ) where Destination == EmptyView {
         self.title = title
@@ -38,6 +42,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
         self.accentColor = accentColor
         self.icon = icon
         self.destination = nil
+        self.appliesHorizontalPadding = appliesHorizontalPadding
         self.content = content()
     }
     
@@ -92,7 +97,7 @@ struct LayoutCardView<Content: View, Destination: View>: View {
         .background(accentColor.opacity(0.1))
         .cornerRadius(16)
         .shadow(color: accentColor.opacity(0.1), radius: 2, x: 0, y: 1)
-        .padding(.horizontal)
+        .padding(.horizontal, appliesHorizontalPadding ? 16 : 0)
     }
 }
 

@@ -26,6 +26,7 @@ struct StorySessionView: View {
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     // Playback State
     @State private var isPlaying: Bool = false
@@ -49,6 +50,8 @@ struct StorySessionView: View {
     @State private var autoAdvanceToken = 0
     @State private var sleepTimerMinutes = 0
     @State private var sleepTimerToken = 0
+    @State private var usesStoryBookSidePane = false
+    @State private var isStoryBookSidePaneHidden = false
     
     // Auto-Scroll State
     @State private var activeWordIndex: Int? = nil
@@ -175,29 +178,38 @@ struct StorySessionView: View {
     }
 
     private var readerBody: some View {
-        ZStack(alignment: .bottom) {
-            VStack(spacing: 0) {
-                storyBookSpineHeader
+        GeometryReader { geometry in
+            Group {
+                if showsStoryBookSidePane {
+                    HStack(spacing: 0) {
+                        storyBookReaderStack
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                Group {
-                    switch currentSpineItem {
-                    case .cover:
-                        coverPageView
-                    case .readingMatterPage:
-                        currentReadingMatterPageView
-                    case .chapter:
-                        chapterReaderContent
-                    case .scene, .none:
-                        StoryReaderUnavailableView(
-                            title: "Reader Data Missing",
-                            message: "This story spine item could not be displayed."
-                        )
+                        Divider()
+
+                        storyBookSidePane
+                            .frame(width: 360)
                     }
+                } else {
+                    storyBookReaderStack
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-
-            stickyPlayerView
+            .onAppear {
+                usesStoryBookSidePane = showsStoryBookSidePane
+                minimizePlayerForLandscapeIfNeeded(geometry.size)
+            }
+            .onChange(of: geometry.size) { _, newSize in
+                minimizePlayerForLandscapeIfNeeded(newSize)
+            }
+            .onChange(of: horizontalSizeClass) { _, _ in
+                if !usesStoryReaderSidePane {
+                    isStoryBookSidePaneHidden = false
+                }
+                usesStoryBookSidePane = showsStoryBookSidePane
+            }
+            .onChange(of: isStoryBookSidePaneHidden) { _, _ in
+                usesStoryBookSidePane = showsStoryBookSidePane
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -273,22 +285,13 @@ struct StorySessionView: View {
             StoryInfoSheet(story: story)
                 .presentationDetents([.medium, .large])
         }
-        .sheet(isPresented: $showSpine) {
-            StoryBookPlayerSheet(
-                spineItems: storyBookSpineItems,
-                currentSpineIndex: currentSpineIndex,
-                adapter: adapter,
-                isAutoContinueEnabled: $isAutoContinueEnabled,
-                sleepTimerMinutes: $sleepTimerMinutes,
-                playbackRate: $playbackRate,
-                onChangeRate: setRate
-            ) { spineIndex in
-                showSpine = false
-                isPlayerMinimized = false
-                goToSpineIndex(spineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: spineIndex))
-            }
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+        .sheet(isPresented: Binding(
+            get: { showSpine && !usesStoryReaderSidePane },
+            set: { if !$0 { showSpine = false } }
+        )) {
+            storyBookSidePane
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showWordLookup) {
             WordLookupSheet(
@@ -388,6 +391,57 @@ struct StorySessionView: View {
         .onChange(of: sleepTimerMinutes) { _, minutes in
             scheduleSleepTimer(minutes: minutes)
         }
+    }
+
+    private var storyBookReaderStack: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                storyBookSpineHeader
+
+                Group {
+                    switch currentSpineItem {
+                    case .cover:
+                        coverPageView
+                    case .readingMatterPage:
+                        currentReadingMatterPageView
+                    case .chapter:
+                        chapterReaderContent
+                    case .scene, .none:
+                        StoryReaderUnavailableView(
+                            title: "Reader Data Missing",
+                            message: "This story spine item could not be displayed."
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+
+            stickyPlayerView
+        }
+    }
+
+    private var storyBookSidePane: some View {
+        StoryBookPlayerSheet(
+            spineItems: storyBookSpineItems,
+            currentSpineIndex: currentSpineIndex,
+            adapter: adapter,
+            isAutoContinueEnabled: $isAutoContinueEnabled,
+            sleepTimerMinutes: $sleepTimerMinutes,
+            playbackRate: $playbackRate,
+            onChangeRate: setRate
+        ) { spineIndex in
+            showSpine = false
+            isPlayerMinimized = false
+            goToSpineIndex(spineIndex, showChapterCard: shouldShowChapterCard(forSpineIndex: spineIndex))
+        }
+    }
+
+    private var usesStoryReaderSidePane: Bool {
+        AdaptiveLayoutPolicy.usesStoryReaderSidePane(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private var showsStoryBookSidePane: Bool {
+        usesStoryReaderSidePane && !isStoryBookSidePaneHidden
     }
     
     // MARK: - Audio Logic
@@ -1513,11 +1567,9 @@ struct StorySessionView: View {
                 onChangeRate: setRate,
                 onNextChapter: spineStepNavigationHandler(delta: 1),
                 onPreviousChapter: spineStepNavigationHandler(delta: -1),
-                onShowSpine: {
-                    isPlayerMinimized = false
-                    showSpine = true
-                },
-                onExpand: expandPlayerController
+                onShowSpine: toggleSpineController,
+                onExpand: expandPlayerController,
+                onMinimize: minimizePlayerController
             )
             .disabled((isOnSupplementalSpineItem && supplementalPlayback.isLoading) || (isOnChapterSpineItem && isDownloadingAudio))
             .id("story-book-footer")
@@ -1950,6 +2002,31 @@ struct StorySessionView: View {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
             isPlayerMinimized = true
         }
+    }
+
+    private func minimizePlayerController() {
+        guard !isPlayerMinimized else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
+    }
+
+    private func minimizePlayerForLandscapeIfNeeded(_ size: CGSize) {
+        guard size.width > size.height else { return }
+        minimizePlayerController()
+    }
+
+    private func toggleSpineController() {
+        if usesStoryReaderSidePane {
+            showSpine = false
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                isStoryBookSidePaneHidden.toggle()
+            }
+            return
+        }
+
+        isPlayerMinimized = false
+        showSpine = true
     }
 
     private func expandPlayerController() {
@@ -2597,6 +2674,7 @@ struct AudioPlayerBar: View {
     var onSkipNextChapter: (() -> Void)? = nil
     var onShowSpine: (() -> Void)? = nil
     var onExpand: (() -> Void)? = nil
+    var onMinimize: (() -> Void)? = nil
 
     @State private var isScrubbing = false
     @State private var scrubberPreviewValue: Double = 0
@@ -2666,6 +2744,23 @@ struct AudioPlayerBar: View {
 
     private var expandedBody: some View {
         VStack(spacing: 12) {
+            if let onMinimize {
+                HStack {
+                    Spacer()
+                    Button(action: onMinimize) {
+                        Image(systemName: "chevron.down")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 34, height: 28)
+                            .background(Color(.secondarySystemBackground).opacity(0.85))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Minimize player")
+                }
+                .padding(.horizontal, 20)
+            }
+
             if isBuffering {
                 HStack(spacing: 8) {
                     ProgressView()
@@ -2783,7 +2878,7 @@ struct AudioPlayerBar: View {
             )
             .padding(.horizontal)
         }
-        .padding(.top, 20)
+        .padding(.top, onMinimize == nil ? 20 : 10)
         .padding(.bottom, 20)
         .background(
             Rectangle()

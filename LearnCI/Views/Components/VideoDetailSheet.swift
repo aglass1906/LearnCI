@@ -215,7 +215,7 @@ struct VideoDetailSheet: View {
     }
 
     private func usesStudyLandscapeLayout(for size: CGSize) -> Bool {
-        studyViewModel.mode == .study && size.width > size.height
+        studyViewModel.mode == .study && AdaptiveLayoutPolicy.usesLearningSplit(for: size)
     }
 
     private var standardLayout: some View {

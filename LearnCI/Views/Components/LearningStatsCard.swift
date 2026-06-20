@@ -2,12 +2,14 @@ import SwiftUI
 
 struct LearningStatsCard: View {
     let stats: StatsManager.LearningStats
+    var appliesHorizontalPadding: Bool = true
     
     var body: some View {
         LayoutCardView(
             title: "Learning Stats",
             accentColor: .orange,
-            icon: "chart.line.uptrend.xyaxis"
+            icon: "chart.line.uptrend.xyaxis",
+            appliesHorizontalPadding: appliesHorizontalPadding
         ) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 StatItemView(

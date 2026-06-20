@@ -32,8 +32,10 @@ struct AudioBookReaderView: View {
     @State private var startTime: Date?
     @State private var didPlayAudio = false
     @State private var didLogActivity = false
+    @State private var usesAudioBookSidePane = false
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Bindable private var audioManager = AudioManager.shared
     private let sleepTimerTicker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private let supplementalTicker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -194,30 +196,11 @@ struct AudioBookReaderView: View {
                 .presentationDetents([.medium, .large])
             }
         }
-        .sheet(isPresented: $showTracklist) {
-            AudioBookPlayerSheet(
-                navItems: navItems,
-                selectedNavItemID: selectedNavItemID,
-                currentChapterTitle: selectedNavItem?.kind == .chapter ? selectedNavItem?.title : nil,
-                chapterClips: playerSheetChapterClips,
-                globalClips: clips,
-                currentClipIndex: currentClipIndex,
-                adapter: readerAdapter,
-                story: story,
-                isAutoContinueEnabled: $isAutoContinueEnabled,
-                sleepTimerMode: $sleepTimerMode,
-                playbackRate: $playbackRate,
-                onChangeRate: setRate,
-                onSelectTimer: applySleepTimer,
-                onSelectNavItem: { item in
-                    showTracklist = false
-                    selectNavItem(item)
-                },
-                onSelectClip: { globalIndex in
-                    showTracklist = false
-                    playClip(at: globalIndex, autoplay: true)
-                }
-            )
+        .sheet(isPresented: Binding(
+            get: { showTracklist && !usesAudioBookSidePane },
+            set: { if !$0 { showTracklist = false } }
+        )) {
+            audioBookSidePane
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
@@ -377,6 +360,33 @@ struct AudioBookReaderView: View {
     }
 
     private var podcastBody: some View {
+        GeometryReader { _ in
+            Group {
+                if usesStoryReaderSidePane {
+                    HStack(spacing: 0) {
+                        audioBookMainColumn(showsSpineNavigation: false)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                        Divider()
+
+                        audioBookSidePane
+                            .frame(width: 380)
+                    }
+                } else {
+                    audioBookMainColumn(showsSpineNavigation: true)
+                }
+            }
+            .onAppear {
+                updateAudioBookSidePaneState()
+            }
+            .onChange(of: horizontalSizeClass) { _, _ in
+                updateAudioBookSidePaneState()
+            }
+        }
+        .background { podcastBackground }
+    }
+
+    private func audioBookMainColumn(showsSpineNavigation: Bool) -> some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 20) {
@@ -388,7 +398,10 @@ struct AudioBookReaderView: View {
                         audioLoadingBanner
                     }
 
-                    spineNavigationSection
+                    if showsSpineNavigation {
+                        spineNavigationSection
+                    }
+
                     Color.clear.frame(height: 140)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -399,7 +412,43 @@ struct AudioBookReaderView: View {
             playerBar
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background { podcastBackground }
+    }
+
+    private var audioBookSidePane: some View {
+        AudioBookPlayerSheet(
+            navItems: navItems,
+            selectedNavItemID: selectedNavItemID,
+            currentChapterTitle: selectedNavItem?.kind == .chapter ? selectedNavItem?.title : nil,
+            chapterClips: playerSheetChapterClips,
+            globalClips: clips,
+            currentClipIndex: currentClipIndex,
+            adapter: readerAdapter,
+            story: story,
+            isAutoContinueEnabled: $isAutoContinueEnabled,
+            sleepTimerMode: $sleepTimerMode,
+            playbackRate: $playbackRate,
+            onChangeRate: setRate,
+            onSelectTimer: applySleepTimer,
+            onSelectNavItem: { item in
+                showTracklist = false
+                selectNavItem(item)
+            },
+            onSelectClip: { globalIndex in
+                showTracklist = false
+                playClip(at: globalIndex, autoplay: true)
+            }
+        )
+    }
+
+    private var usesStoryReaderSidePane: Bool {
+        AdaptiveLayoutPolicy.usesStoryReaderSidePane(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private func updateAudioBookSidePaneState() {
+        usesAudioBookSidePane = usesStoryReaderSidePane
+        if usesStoryReaderSidePane {
+            showTracklist = false
+        }
     }
 
     @ViewBuilder

@@ -25,6 +25,7 @@ struct PodcastPlayerView: View {
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var playbackMode: PodcastPlaybackMode = .watch
     @State private var isPlaying = false
@@ -35,6 +36,7 @@ struct PodcastPlayerView: View {
     @State private var artworkImage: UIImage?
     @State private var toastMessage: String?
     @State private var playbackError: String?
+    @State private var isPlayerMinimized = false
 
     @State private var studyLoadState: YouTubeStudyLoadState = .idle
     @State private var studyWords: [WordTiming] = []
@@ -68,39 +70,16 @@ struct PodcastPlayerView: View {
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        ZStack(alignment: .top) {
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
             VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        modePicker
-
-                        if playbackMode == .study {
-                            studyContent
-                        } else {
-                            watchContent
-                        }
-
-                        Color.clear.frame(height: 160)
-                    }
-                    .padding(.top, 12)
-                    .padding(.horizontal, 16)
+                if usesPodcastPlayerSplit {
+                    widePodcastLayout
+                } else {
+                    compactPodcastLayout
                 }
 
-                AudioPlayerBar(
-                    isPlaying: $isPlaying,
-                    sliderValue: $sliderValue,
-                    duration: duration,
-                    playbackRate: $playbackRate,
-                    ambientVolume: .constant(0),
-                    isAmbientPlaying: false,
-                    isBuffering: audioManager.streamIsBuffering,
-                    bufferingLabel: "Loading episode…",
-                    onPlayPause: togglePlay,
-                    onSkipForward: skipForward,
-                    onSkipBackward: skipBackward,
-                    onSeek: seekTo,
-                    onChangeRate: setRate
-                )
+                podcastAudioPlayerBar
             }
 
             if let message = toastMessage {
@@ -114,6 +93,13 @@ struct PodcastPlayerView: View {
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
+        }
+        .onAppear {
+            minimizePlayerForLandscapeIfNeeded(geometry.size)
+        }
+        .onChange(of: geometry.size) { _, newSize in
+            minimizePlayerForLandscapeIfNeeded(newSize)
+        }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -218,6 +204,89 @@ struct PodcastPlayerView: View {
 
     // MARK: - Mode UI
 
+    private var usesPodcastPlayerSplit: Bool {
+        AdaptiveLayoutPolicy.usesPodcastPlayerSplit(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private var compactPodcastLayout: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                modePicker
+
+                if playbackMode == .study {
+                    studyContent
+                } else {
+                    watchContent
+                }
+
+                Color.clear.frame(height: 160)
+            }
+            .padding(.top, 12)
+            .padding(.horizontal, 16)
+        }
+    }
+
+    private var widePodcastLayout: some View {
+        HStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 18) {
+                    modePicker
+                    artworkView
+                    episodeTitleBlock
+                    playbackStatusBlock
+
+                    if playbackMode == .study, let note = studyCoverageNote {
+                        Label(note, systemImage: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .frame(maxWidth: 360)
+                .frame(maxWidth: .infinity)
+                .padding(20)
+            }
+            .frame(maxWidth: .infinity)
+
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if playbackMode == .study {
+                        studyContent
+                    } else {
+                        episodeDescriptionContent(isExpanded: true)
+                    }
+
+                    Color.clear.frame(height: 48)
+                }
+                .padding(20)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var podcastAudioPlayerBar: some View {
+        AudioPlayerBar(
+            isPlaying: $isPlaying,
+            sliderValue: $sliderValue,
+            duration: duration,
+            playbackRate: $playbackRate,
+            ambientVolume: .constant(0),
+            isAmbientPlaying: false,
+            isBuffering: audioManager.streamIsBuffering,
+            bufferingLabel: "Loading episode…",
+            isMinimized: isPlayerMinimized,
+            onPlayPause: togglePlay,
+            onSkipForward: skipForward,
+            onSkipBackward: skipBackward,
+            onSeek: seekTo,
+            onChangeRate: setRate,
+            onExpand: expandPlayerController,
+            onMinimize: minimizePlayerController
+        )
+    }
+
     private var modePicker: some View {
         Picker("Mode", selection: $playbackMode) {
             ForEach(PodcastPlaybackMode.allCases) { mode in
@@ -231,32 +300,47 @@ struct PodcastPlayerView: View {
         VStack(spacing: 20) {
             artworkView
 
-            VStack(spacing: 6) {
-                Text(episode.title)
-                    .font(.title3.bold())
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
+            episodeTitleBlock
 
-                if let showTitle = episode.show?.title {
-                    Text(showTitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-            }
+            episodeDescriptionContent(isExpanded: false)
 
-            if !episode.episodeDescription.isEmpty {
-                Text(episode.episodeDescription)
-                    .font(.caption)
+            playbackStatusBlock
+        }
+    }
+
+    private var episodeTitleBlock: some View {
+        VStack(spacing: 6) {
+            Text(episode.title)
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+
+            if let showTitle = episode.show?.title {
+                Text(showTitle)
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
-                    .lineLimit(6)
             }
+        }
+    }
 
-            if let message = currentPlaybackError {
-                Label(message, systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .multilineTextAlignment(.center)
-            }
+    @ViewBuilder
+    private func episodeDescriptionContent(isExpanded: Bool) -> some View {
+        if !episode.episodeDescription.isEmpty {
+            Text(episode.episodeDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(isExpanded ? nil : 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder
+    private var playbackStatusBlock: some View {
+        if let message = currentPlaybackError {
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(.orange)
+                .multilineTextAlignment(.center)
         }
     }
 
@@ -1511,6 +1595,24 @@ struct PodcastPlayerView: View {
         playbackRate = rate
         audioManager.setStreamRate(rate)
         audioManager.updateStreamNowPlayingInfo()
+    }
+
+    private func minimizePlayerController() {
+        guard !isPlayerMinimized else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
+    }
+
+    private func expandPlayerController() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = false
+        }
+    }
+
+    private func minimizePlayerForLandscapeIfNeeded(_ size: CGSize) {
+        guard size.width > size.height else { return }
+        minimizePlayerController()
     }
 
     private func showToast(_ message: String) {

@@ -4,6 +4,7 @@ import SwiftData
 struct ResourceLibraryView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query private var allProfiles: [UserProfile]
 
     var userProfile: UserProfile? {
@@ -30,6 +31,7 @@ struct ResourceLibraryView: View {
     @State private var viewMode: ViewMode = .grid
     @State private var uiFilter: FilterOption = .all
     @State private var showAddResourceSheet = false
+    @State private var selectedResourceID: LearningResource.ID?
     
     var filteredResources: [LearningResource] {
         switch uiFilter {
@@ -47,9 +49,27 @@ struct ResourceLibraryView: View {
     let columns = [
         GridItem(.adaptive(minimum: 160), spacing: 16)
     ]
+
+    private var usesMasterDetail: Bool {
+        AdaptiveLayoutPolicy.usesLibraryMasterDetail(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private var selectedResource: LearningResource? {
+        if let selectedResourceID,
+           let selected = resourceManager.resources.first(where: { $0.id == selectedResourceID }) {
+            return selected
+        }
+        return nil
+    }
     
     var body: some View {
-        libraryContent
+        Group {
+            if usesMasterDetail {
+                masterDetailLibraryContent
+            } else {
+                libraryContent
+            }
+        }
         .navigationTitle("Library")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -64,12 +84,14 @@ struct ResourceLibraryView: View {
                 Image(systemName: "arrow.clockwise")
             }
 
-            Button(action: {
-                withAnimation {
-                    viewMode = (viewMode == .grid) ? .list : .grid
+            if !usesMasterDetail {
+                Button(action: {
+                    withAnimation {
+                        viewMode = (viewMode == .grid) ? .list : .grid
+                    }
+                }) {
+                    Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
                 }
-            }) {
-                Image(systemName: viewMode == .grid ? "list.bullet" : "square.grid.2x2")
             }
 
             Button(action: { showAddResourceSheet = true }) {
@@ -97,6 +119,12 @@ struct ResourceLibraryView: View {
                 resourceManager: resourceManager,
                 currentLanguage: userProfile?.currentLanguage.code
             )
+        }
+        .onChange(of: resourceManager.resources.map(\.id)) { _, _ in
+            reconcileSelectedResource()
+        }
+        .onChange(of: uiFilter) { _, _ in
+            reconcileSelectedResource()
         }
     }
 
@@ -154,6 +182,86 @@ struct ResourceLibraryView: View {
                 )
             }
         }
+    }
+
+    private var masterDetailLibraryContent: some View {
+        HStack(spacing: 0) {
+            librarySidebar
+                .frame(width: 360)
+
+            Divider()
+
+            Group {
+                if let selectedResource {
+                    ResourceDetailView(resource: selectedResource)
+                        .id(selectedResource.id)
+                } else {
+                    ContentUnavailableView(
+                        "Select a Resource",
+                        systemImage: "books.vertical",
+                        description: Text("Choose something from the library to preview it here.")
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var librarySidebar: some View {
+        VStack(spacing: 0) {
+            Picker("Filter", selection: $uiFilter) {
+                ForEach(FilterOption.allCases) { option in
+                    Text(option.rawValue).tag(option)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+
+            if resourceManager.isLoading {
+                ProgressView("Loading Library...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if filteredResources.isEmpty {
+                ContentUnavailableView(
+                    "No Resources Found",
+                    systemImage: "books.vertical",
+                    description: Text("Try changing the filter.")
+                )
+            } else {
+                List {
+                    ForEach(filteredResources) { resource in
+                        Button {
+                            selectedResourceID = resource.id
+                        } label: {
+                            ResourceRow(resource: resource)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(
+                            selectedResourceID == resource.id
+                                ? Color.accentColor.opacity(0.12)
+                                : Color.clear
+                        )
+                    }
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await resourceManager.loadRemoteResources(
+                        client: authManager.supabase,
+                        language: userProfile?.currentLanguage.code
+                    )
+                }
+            }
+        }
+        .onAppear {
+            reconcileSelectedResource()
+        }
+    }
+
+    private func reconcileSelectedResource() {
+        let visibleIDs = Set(filteredResources.map(\.id))
+        if let selectedResourceID, visibleIDs.contains(selectedResourceID) {
+            return
+        }
+        selectedResourceID = filteredResources.first?.id
     }
     
     func openResource(_ resource: LearningResource) {

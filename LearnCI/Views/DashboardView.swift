@@ -62,45 +62,9 @@ struct DashboardView: View {
     var body: some View {
         ZStack {
             NavigationStack {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        
-                        // Greeting
-                        if let profile = userProfile {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("\(profile.currentLanguage.greetingPrefix) \(profile.name.isEmpty ? "" : profile.name)")
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
-                                    
-                                Text("Language Learning with Comprehensible Input")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                            .padding(.top, 10)
-                        }
-                        
-                        // 0. Learning Stats
-                        LearningStatsCard(stats: learningStats)
-                        
-                        // 1. AI Stories
-                        storiesSection
-                        
-                        // 4. Word of the Day
-                        wordOfDaySection
-                        
-                        // 5. Coaching Section
-                        coachingSection
-                        
-                        // 6. Input Roadmap
-                        roadmapSection
-                        
-                        // 7. Breakdown
-                        breakdownSection
-                        
-                        // 7. Leaderboard
-                        leaderboardSection
+                GeometryReader { geometry in
+                    ScrollView {
+                        dashboardContent(size: geometry.size)
                     }
                 }
 
@@ -144,6 +108,47 @@ struct DashboardView: View {
                     .transition(.opacity.animation(.easeInOut(duration: 0.3)))
                     .zIndex(1)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func dashboardContent(size: CGSize) -> some View {
+        let usesTwoColumns = AdaptiveLayoutPolicy.usesDashboardTwoColumns(for: size)
+
+        VStack(spacing: 20) {
+            greetingSection
+
+            LearningStatsCard(stats: learningStats, appliesHorizontalPadding: false)
+
+            DashboardCardGrid(usesTwoColumns: usesTwoColumns) {
+                storiesSection
+                wordOfDaySection
+                coachingSection
+                roadmapSection
+                breakdownSection
+                leaderboardSection
+            }
+        }
+        .frame(maxWidth: AdaptiveLayoutPolicy.dashboardMaxContentWidth)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 32)
+    }
+
+    @ViewBuilder
+    private var greetingSection: some View {
+        if let profile = userProfile {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(profile.currentLanguage.greetingPrefix) \(profile.name.isEmpty ? "" : profile.name)")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Language Learning with Comprehensible Input")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     
@@ -208,7 +213,8 @@ extension DashboardView {
             subTitle: isCheckInDue ? nil : "Next Check-in: \(hoursToNextMilestone)h",
             accentColor: .blue,
             icon: "graduationcap.fill",
-            destination: CoachingProgressView().navigationTitle("Milestones")
+            destination: CoachingProgressView().navigationTitle("Milestones"),
+            appliesHorizontalPadding: false
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 // Check-in Banner
@@ -349,7 +355,8 @@ extension DashboardView {
             title: "Input Roadmap",
             subTitle: userProfile != nil ? "\(totalMinutes / 60)h Total Input" : nil,
             accentColor: .green,
-            icon: "map.fill"
+            icon: "map.fill",
+            appliesHorizontalPadding: false
         ) {
             if userProfile != nil {
                 RoadmapView(totalMinutes: totalMinutes)
@@ -363,7 +370,8 @@ extension DashboardView {
             subTitle: "Activity Summary",
             accentColor: .blue,
             icon: "chart.bar.xaxis",
-            destination: CoachingProgressDetailView()
+            destination: CoachingProgressDetailView(),
+            appliesHorizontalPadding: false
         ) {
             ActivityBreakdownChart(activityByType: activityByType)
                 .padding(.top, 4)
@@ -376,7 +384,8 @@ extension DashboardView {
             subTitle: "See where you rank!",
             accentColor: .yellow,
             icon: "trophy.fill",
-            destination: LeaderboardView()
+            destination: LeaderboardView(),
+            appliesHorizontalPadding: false
         ) {
              Text("Compete with learners worldwide.")
                 .font(.caption)
@@ -390,7 +399,8 @@ extension DashboardView {
             subTitle: "Learn vocabulary in a fun way",
             accentColor: .orange,
             icon: "sparkles",
-            destination: FlashcardDeckBrowserView()
+            destination: FlashcardDeckBrowserView(),
+            appliesHorizontalPadding: false
         ) {
             if let word = wordOfDay {
                 VStack(alignment: .leading, spacing: 10) {
@@ -503,12 +513,36 @@ extension DashboardView {
             subTitle: "Generate, Read, & Listen",
             accentColor: .purple,
             icon: "sparkles.rectangle.stack.fill",
-            destination: StoryListView()
+            destination: StoryListView(),
+            appliesHorizontalPadding: false
         ) {
              Text("Create custom stories with AI-generated audio.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+private struct DashboardCardGrid<Content: View>: View {
+    let usesTwoColumns: Bool
+    @ViewBuilder let content: Content
+
+    private var columns: [GridItem] {
+        if usesTwoColumns {
+            return [
+                GridItem(.flexible(), spacing: 16, alignment: .top),
+                GridItem(.flexible(), spacing: 16, alignment: .top)
+            ]
+        }
+
+        return [GridItem(.flexible(), spacing: 16, alignment: .top)]
+    }
+
+    var body: some View {
+        LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
+            content
+        }
+        .animation(.easeInOut(duration: 0.2), value: usesTwoColumns)
     }
 }
 

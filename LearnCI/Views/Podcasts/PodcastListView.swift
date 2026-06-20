@@ -28,6 +28,7 @@ enum PodcastSortOption: String, CaseIterable, Identifiable {
 
 struct PodcastListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(AuthManager.self) private var authManager
     @Query(sort: \PodcastShow.addedAt, order: .reverse) private var shows: [PodcastShow]
     @Query(sort: \PodcastEpisode.publishedDate, order: .reverse) private var allEpisodes: [PodcastEpisode]
@@ -45,6 +46,28 @@ struct PodcastListView: View {
     @State private var filterUnplayedOnly = false
     @State private var filterFavoritesOnly = false
     @State private var sortOption: PodcastSortOption = .newest
+    @State private var selectedEpisodeID: PodcastEpisode.ID?
+    @State private var selectedShowID: PodcastShow.ID?
+
+    private var usesMasterDetail: Bool {
+        AdaptiveLayoutPolicy.usesLibraryMasterDetail(horizontalSizeClass: horizontalSizeClass)
+    }
+
+    private var selectedEpisode: PodcastEpisode? {
+        if let selectedEpisodeID,
+           let episode = allEpisodes.first(where: { $0.id == selectedEpisodeID }) {
+            return episode
+        }
+        return nil
+    }
+
+    private var selectedShow: PodcastShow? {
+        if let selectedShowID,
+           let show = shows.first(where: { $0.id == selectedShowID }) {
+            return show
+        }
+        return nil
+    }
 
     private var hasActiveListFilter: Bool {
         filterUnplayedOnly || filterFavoritesOnly
@@ -91,11 +114,15 @@ struct PodcastListView: View {
                             .buttonStyle(.borderedProminent)
                     }
                 } else {
-                    switch selectedTab {
-                    case .newEpisodes:
-                        newEpisodesView
-                    case .shows:
-                        showsView
+                    if usesMasterDetail {
+                        podcastMasterDetailContent
+                    } else {
+                        switch selectedTab {
+                        case .newEpisodes:
+                            newEpisodesView
+                        case .shows:
+                            showsView
+                        }
                     }
                 }
             }
@@ -177,9 +204,19 @@ struct PodcastListView: View {
         }
         .onAppear {
             checkForResumableSession()
+            reconcilePodcastSelection()
         }
         .task {
             await refreshAllPodcastsIfStale()
+        }
+        .onChange(of: selectedTab) { _, _ in
+            reconcilePodcastSelection()
+        }
+        .onChange(of: filteredEpisodes.map(\.id)) { _, _ in
+            reconcilePodcastSelection()
+        }
+        .onChange(of: filteredShows.map(\.id)) { _, _ in
+            reconcilePodcastSelection()
         }
         .refreshable {
             await refreshAllPodcasts(showProgress: false)
@@ -190,6 +227,127 @@ struct PodcastListView: View {
     private static let fullRefreshInterval: TimeInterval = 30 * 60
 
     // MARK: - New Episodes Tab
+
+    private var podcastMasterDetailContent: some View {
+        HStack(spacing: 0) {
+            podcastSidebarContent
+                .frame(width: 390)
+
+            Divider()
+
+            Group {
+                switch selectedTab {
+                case .newEpisodes:
+                    if let selectedEpisode {
+                        PodcastPlayerView(episode: selectedEpisode)
+                            .id(selectedEpisode.id)
+                    } else {
+                        ContentUnavailableView(
+                            "Select an Episode",
+                            systemImage: "waveform",
+                            description: Text("Choose an episode to listen or study.")
+                        )
+                    }
+                case .shows:
+                    if let selectedShow {
+                        PodcastShowView(show: selectedShow)
+                            .id(selectedShow.id)
+                    } else {
+                        ContentUnavailableView(
+                            "Select a Show",
+                            systemImage: "headphones",
+                            description: Text("Choose a show to browse episodes.")
+                        )
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var podcastSidebarContent: some View {
+        Group {
+            switch selectedTab {
+            case .newEpisodes:
+                masterDetailEpisodesList
+            case .shows:
+                masterDetailShowsList
+            }
+        }
+    }
+
+    private var masterDetailEpisodesList: some View {
+        Group {
+            if allEpisodes.isEmpty {
+                ContentUnavailableView {
+                    Label("No Episodes", systemImage: "waveform")
+                } description: {
+                    Text("Episodes from your subscribed shows will appear here.")
+                }
+            } else if filteredEpisodes.isEmpty && hasActiveListFilter {
+                ContentUnavailableView {
+                    Label("No Matching Episodes", systemImage: filterFavoritesOnly ? "heart.slash" : "waveform")
+                } description: {
+                    Text(filterFavoritesOnly
+                         ? "Favorite episodes from the player toolbar will appear here."
+                         : "Try turning off filters to see more episodes.")
+                }
+            } else {
+                List {
+                    podcastSessionActionsSection
+
+                    Section {
+                        ForEach(filteredEpisodes) { episode in
+                            Button {
+                                selectedEpisodeID = episode.id
+                            } label: {
+                                NewEpisodeRow(episode: episode)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowBackground(
+                                selectedEpisodeID == episode.id
+                                    ? Color.accentColor.opacity(0.12)
+                                    : Color.clear
+                            )
+                        }
+                    }
+                }
+                .id(listRefreshToken)
+                .listStyle(.plain)
+            }
+        }
+    }
+
+    private var masterDetailShowsList: some View {
+        Group {
+            if filteredShows.isEmpty && filterFavoritesOnly {
+                ContentUnavailableView {
+                    Label("No Favorite Shows", systemImage: "heart.slash")
+                } description: {
+                    Text("Favorite a show from its detail page to see it here.")
+                }
+            } else {
+                List {
+                    ForEach(filteredShows) { show in
+                        Button {
+                            selectedShowID = show.id
+                        } label: {
+                            PodcastShowRow(show: show)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(
+                            selectedShowID == show.id
+                                ? Color.accentColor.opacity(0.12)
+                                : Color.clear
+                        )
+                    }
+                    .onDelete(perform: deleteShows)
+                }
+                .id(listRefreshToken)
+                .listStyle(.plain)
+            }
+        }
+    }
 
     private var newEpisodesView: some View {
         Group {
@@ -209,70 +367,7 @@ struct PodcastListView: View {
                 }
             } else {
                 List {
-                    // Resume Session Banner
-                    if let saved = resumableSession {
-                        Section {
-                            HStack(spacing: 12) {
-                                Button { resumeSession() } label: {
-                                    HStack(spacing: 12) {
-                                        Image(systemName: "play.circle.fill")
-                                            .font(.system(size: 36))
-                                            .foregroundColor(.green)
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text("Resume Session")
-                                                .font(.headline)
-                                                .foregroundColor(.primary)
-                                            Text("Episode \(saved.currentIndex + 1) of \(saved.episodeIDs.count) · \(saved.minutes) min goal")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                    .padding(.vertical, 4)
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    discardSavedSession()
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary)
-                                        .font(.title3)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    // Start Session Card
-                    Section {
-                        Button {
-                            showSessionSetup = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 36))
-                                    .foregroundColor(.blue)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Start Listening Session")
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Text("Pick shows & set a time goal")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
-                            .padding(.vertical, 4)
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    podcastSessionActionsSection
 
                     // Episodes
                     Section {
@@ -286,6 +381,72 @@ struct PodcastListView: View {
                 .id(listRefreshToken)
                 .listStyle(.plain)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var podcastSessionActionsSection: some View {
+        if let saved = resumableSession {
+            Section {
+                HStack(spacing: 12) {
+                    Button { resumeSession() } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 36))
+                                .foregroundColor(.green)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Resume Session")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Text("Episode \(saved.currentIndex + 1) of \(saved.episodeIDs.count) · \(saved.minutes) min goal")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        discardSavedSession()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .font(.title3)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+
+        Section {
+            Button {
+                showSessionSetup = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.blue)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Start Listening Session")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("Pick shows & set a time goal")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -457,6 +618,23 @@ struct PodcastListView: View {
             UserDefaults.standard.removeObject(forKey: $0)
         }
         resumableSession = nil
+    }
+
+    private func reconcilePodcastSelection() {
+        switch selectedTab {
+        case .newEpisodes:
+            let visibleIDs = Set(filteredEpisodes.map(\.id))
+            if let selectedEpisodeID, visibleIDs.contains(selectedEpisodeID) {
+                return
+            }
+            selectedEpisodeID = filteredEpisodes.first?.id
+        case .shows:
+            let visibleIDs = Set(filteredShows.map(\.id))
+            if let selectedShowID, visibleIDs.contains(selectedShowID) {
+                return
+            }
+            selectedShowID = filteredShows.first?.id
+        }
     }
 
     private func deleteShows(at offsets: IndexSet) {

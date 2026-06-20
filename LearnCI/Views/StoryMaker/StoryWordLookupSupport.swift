@@ -214,8 +214,9 @@ private struct StoryWordLookupHostModifier: ViewModifier {
     @State private var selectedContext: String?
     @State private var wordTranslation: String?
     @State private var wordPartOfSpeech: String?
+    @State private var wordLookupDetails: WordTranslationResult?
     @State private var isTranslatingWord = false
-    @State private var wordTranslationCache: [String: (translation: String, pos: String)] = [:]
+    @State private var wordTranslationCache: [String: WordTranslationResult] = [:]
     @State private var selectedRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
@@ -240,6 +241,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                             selectedContext = nil
                             wordTranslation = nil
                             wordPartOfSpeech = nil
+                            wordLookupDetails = nil
                             isTranslatingWord = false
                             selectedRequest = nil
                         }
@@ -251,6 +253,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                     languageLabel: story.language.displayName,
                     translation: wordTranslation,
                     partOfSpeech: wordPartOfSpeech,
+                    details: wordLookupDetails,
                     isLoading: isTranslatingWord,
                     seekTime: selectedWordTime,
                     onSeek: { _ in },
@@ -317,11 +320,13 @@ private struct StoryWordLookupHostModifier: ViewModifier {
         selectedContext = request.context
         wordTranslation = nil
         wordPartOfSpeech = nil
+        wordLookupDetails = nil
 
         let cacheKey = "\(trimmedWord.lowercased())_\(story.language.rawValue)_\(request.context ?? "")"
         if let cached = wordTranslationCache[cacheKey] {
             wordTranslation = cached.translation
-            wordPartOfSpeech = cached.pos
+            wordPartOfSpeech = cached.partOfSpeech
+            wordLookupDetails = cached
             return
         }
 
@@ -336,13 +341,15 @@ private struct StoryWordLookupHostModifier: ViewModifier {
                 await MainActor.run {
                     wordTranslation = result.translation
                     wordPartOfSpeech = result.partOfSpeech
-                    wordTranslationCache[cacheKey] = (result.translation, result.partOfSpeech)
+                    wordLookupDetails = result
+                    wordTranslationCache[cacheKey] = result
                     isTranslatingWord = false
                 }
             } catch {
                 await MainActor.run {
                     wordTranslation = error.localizedDescription
                     wordPartOfSpeech = ""
+                    wordLookupDetails = nil
                     isTranslatingWord = false
                     Logger.error("Story word lookup failed for '\(trimmedWord)': \(error.localizedDescription)", category: .general)
                 }
@@ -363,14 +370,14 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             userID: userID,
             word: selectedWord,
             translation: wordTranslation,
-            lemma: nil,
+            lemma: wordLookupDetails?.lemma,
             sentenceTarget: selectedContext,
             sentenceNative: nil,
             languageCode: story.language.code,
-            level: String(story.level),
+            level: wordLookupDetails?.level ?? String(story.level),
             partOfSpeech: wordPartOfSpeech,
-            verbTense: nil,
-            grammarNotes: nil,
+            verbTense: wordLookupDetails?.verbTense,
+            grammarNotes: wordLookupDetails?.grammarNotes,
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,

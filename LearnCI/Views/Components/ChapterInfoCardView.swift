@@ -7,6 +7,7 @@ struct ChapterInfoCardView: View {
     let heroImage: UIImage?
     @Binding var selectedLanguage: StorySessionView.DisplayLanguage
     var playbackTime: Double = 0
+    var onUserScroll: (() -> Void)? = nil
 
     var body: some View {
         GeometryReader { geo in
@@ -61,6 +62,14 @@ struct ChapterInfoCardView: View {
                 .padding(.horizontal, horizontalPadding)
                 .padding(.top, 8)
             }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { value in
+                        guard abs(value.translation.height) > abs(value.translation.width),
+                              abs(value.translation.height) > 12 else { return }
+                        onUserScroll?()
+                    }
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }

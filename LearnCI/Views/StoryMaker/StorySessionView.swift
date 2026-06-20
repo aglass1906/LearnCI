@@ -77,9 +77,10 @@ struct StorySessionView: View {
     @State private var selectedWordTime: Double? = nil
     @State private var wordTranslation: String? = nil
     @State private var wordPartOfSpeech: String? = nil
+    @State private var wordLookupDetails: WordTranslationResult? = nil
     @State private var isTranslatingWord: Bool = false
     @State private var showWordLookup: Bool = false
-    @State private var wordTranslationCache: [String: (translation: String, pos: String)] = [:]
+    @State private var wordTranslationCache: [String: WordTranslationResult] = [:]
     @State private var selectedWordRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
@@ -295,6 +296,7 @@ struct StorySessionView: View {
                 languageLabel: story.language.displayName,
                 translation: wordTranslation,
                 partOfSpeech: wordPartOfSpeech,
+                details: wordLookupDetails,
                 isLoading: isTranslatingWord,
                 seekTime: selectedWordTime,
                 onSeek: { time in
@@ -658,30 +660,34 @@ struct StorySessionView: View {
         selectedWordTime = time
         wordTranslation = nil
         wordPartOfSpeech = nil
+        wordLookupDetails = nil
         showWordLookup = true
 
-        let cacheKey = "\(word.lowercased())_\(story.language.rawValue)"
+        let context = providedContext ?? sentenceContaining(word: word)
+        let cacheKey = "\(word.lowercased())_\(story.language.rawValue)_\(context ?? "")"
         if let cached = wordTranslationCache[cacheKey] {
             wordTranslation = cached.translation
-            wordPartOfSpeech = cached.pos
+            wordPartOfSpeech = cached.partOfSpeech
+            wordLookupDetails = cached
             return
         }
 
         isTranslatingWord = true
-        let context = providedContext ?? sentenceContaining(word: word)
         Task {
             do {
                 let result = try await OpenAIService().translateWord(word, language: story.language.displayName, context: context)
                 await MainActor.run {
                     wordTranslation = result.translation
                     wordPartOfSpeech = result.partOfSpeech
-                    wordTranslationCache[cacheKey] = (result.translation, result.partOfSpeech)
+                    wordLookupDetails = result
+                    wordTranslationCache[cacheKey] = result
                     isTranslatingWord = false
                 }
             } catch {
                 await MainActor.run {
                     wordTranslation = error.localizedDescription
                     wordPartOfSpeech = ""
+                    wordLookupDetails = nil
                     isTranslatingWord = false
                     Logger.error("Story word lookup failed for '\(word)': \(error.localizedDescription)", category: .general)
                 }
@@ -719,14 +725,14 @@ struct StorySessionView: View {
             userID: userID,
             word: selectedWord,
             translation: wordTranslation,
-            lemma: nil,
+            lemma: wordLookupDetails?.lemma,
             sentenceTarget: sentenceTarget,
             sentenceNative: nil,
             languageCode: story.language.code,
-            level: String(story.level),
+            level: wordLookupDetails?.level ?? String(story.level),
             partOfSpeech: wordPartOfSpeech,
-            verbTense: nil,
-            grammarNotes: nil,
+            verbTense: wordLookupDetails?.verbTense,
+            grammarNotes: wordLookupDetails?.grammarNotes,
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
@@ -791,6 +797,7 @@ struct StorySessionView: View {
         selectedWordTime = nil
         wordTranslation = nil
         wordPartOfSpeech = nil
+        wordLookupDetails = nil
         isTranslatingWord = false
     }
 
@@ -1230,11 +1237,7 @@ struct StorySessionView: View {
                 prepareSupplementalPlaybackForCurrentSpineItem()
             }
             .onChange(of: selectedLanguage) { _, _ in
-                let wasPlaying = isPlaying
-                prepareSupplementalPlaybackForCurrentSpineItem()
-                if wasPlaying {
-                    toggleSupplementalPlayback(forcePlay: true)
-                }
+                prepareSupplementalPlaybackForLanguageChangeIfIdle()
             }
         } else {
             StoryReaderUnavailableView(
@@ -1416,6 +1419,11 @@ struct StorySessionView: View {
         }
     }
 
+    private func prepareSupplementalPlaybackForLanguageChangeIfIdle() {
+        guard !isPlaying else { return }
+        prepareSupplementalPlaybackForCurrentSpineItem()
+    }
+
     private var chapterLanguageToggle: some View {
         Picker("Language", selection: $selectedLanguage) {
             Text(story.language.rawValue.uppercased()).tag(DisplayLanguage.target)
@@ -1461,18 +1469,15 @@ struct StorySessionView: View {
                     chapter: chapter,
                     heroImage: heroImage,
                     selectedLanguage: $selectedLanguage,
-                    playbackTime: supplementalPlayback.currentTime
+                    playbackTime: supplementalPlayback.currentTime,
+                    onUserScroll: minimizePlayerForReading
                 )
                 .id("chapter-intro-\(currentChapterIndex)")
                 .onAppear {
                     prepareSupplementalPlaybackForCurrentSpineItem()
                 }
                 .onChange(of: selectedLanguage) { _, _ in
-                    let wasPlaying = isPlaying
-                    prepareSupplementalPlaybackForCurrentSpineItem()
-                    if wasPlaying {
-                        toggleSupplementalPlayback(forcePlay: true)
-                    }
+                    prepareSupplementalPlaybackForLanguageChangeIfIdle()
                 }
             } else {
                 chapterScrollContent
@@ -3247,6 +3252,7 @@ struct WordLookupSheet: View {
     let languageLabel: String
     let translation: String?
     let partOfSpeech: String?
+    var details: WordTranslationResult? = nil
     let isLoading: Bool
     let seekTime: Double?
     let onSeek: (Double) -> Void
@@ -3299,11 +3305,15 @@ struct WordLookupSheet: View {
                                     .foregroundColor(.secondary)
                             }
                         } else if let t = translation, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Text(t)
-                                .font(.system(size: 22, weight: .regular))
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text(t)
+                                    .font(.system(size: 22, weight: .regular))
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+
+                                lookupDetailsView
+                            }
                         } else {
                             Text("Translation unavailable.")
                                 .font(.body)
@@ -3374,6 +3384,43 @@ struct WordLookupSheet: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var lookupDetailsView: some View {
+        if let details {
+            let rows = lookupDetailRows(details)
+            if !rows.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(rows, id: \.label) { row in
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(row.label)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            Text(row.value)
+                                .font(.subheadline)
+                                .textSelection(.enabled)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func lookupDetailRows(_ details: WordTranslationResult) -> [(label: String, value: String)] {
+        [
+            ("Lemma", details.lemma),
+            ("Level", details.level),
+            ("Verb tense", details.verbTense),
+            ("Grammar", details.grammarNotes),
+            ("Usage", details.usageNote),
+            ("Example", details.exampleTarget),
+            ("Example translation", details.exampleEnglish)
+        ].compactMap { label, value in
+            let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return trimmed.isEmpty ? nil : (label, trimmed)
         }
     }
 }

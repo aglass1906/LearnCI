@@ -1,5 +1,17 @@
 import Foundation
 
+struct WordTranslationResult: Equatable {
+    let translation: String
+    let partOfSpeech: String
+    let lemma: String?
+    let level: String?
+    let verbTense: String?
+    let grammarNotes: String?
+    let usageNote: String?
+    let exampleTarget: String?
+    let exampleEnglish: String?
+}
+
 enum OpenAIServiceError: Error, LocalizedError {
     case invalidURL
     case noAPIKey
@@ -882,7 +894,7 @@ actor OpenAIService {
         return wrapper.questions
     }
 
-    func translateWord(_ word: String, language: String, context: String?) async throws -> (translation: String, partOfSpeech: String) {
+    func translateWord(_ word: String, language: String, context: String?) async throws -> WordTranslationResult {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -896,10 +908,11 @@ actor OpenAIService {
         let lookupText = word.trimmingCharacters(in: .whitespacesAndNewlines)
         let isPhrase = lookupText.contains(where: { $0.isWhitespace || $0.isPunctuation })
         var prompt = if isPhrase {
-            "Translate the phrase '\(lookupText)' from \(language) to English. Return JSON with keys 'translation' (concise natural English) and 'partOfSpeech' (empty string unless a grammar label is useful)."
+            "Translate the phrase '\(lookupText)' from \(language) to English for a language learner."
         } else {
-            "Translate the word '\(lookupText)' from \(language) to English. Return JSON with keys 'translation' (concise, 1-5 words) and 'partOfSpeech' (e.g. noun, verb, adjective, adverb, pronoun, preposition)."
+            "Translate the word '\(lookupText)' from \(language) to English for a language learner."
         }
+        prompt += " Return JSON with string keys: translation, partOfSpeech, lemma, level, verbTense, grammarNotes, usageNote, exampleTarget, exampleEnglish. Keep translation concise. Use CEFR-style level when possible. Leave verbTense empty unless this is a conjugated verb form. Keep grammarNotes and usageNote under 18 words each."
         if let ctx = context, !ctx.isEmpty {
             prompt += " Context sentence: '\(ctx)'"
         }
@@ -954,21 +967,37 @@ actor OpenAIService {
             translation = String(describing: rawTranslation)
         }
 
-        let partOfSpeech: String
-        if let value = json["partOfSpeech"] as? String {
-            partOfSpeech = value
-        } else if let value = json["part_of_speech"] as? String {
-            partOfSpeech = value
-        } else {
-            partOfSpeech = ""
+        func stringValue(_ keys: String...) -> String? {
+            for key in keys {
+                if let value = json[key] as? String {
+                    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmed.isEmpty { return trimmed }
+                } else if let values = json[key] as? [String] {
+                    let trimmed = values.joined(separator: ", ").trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmed.isEmpty { return trimmed }
+                }
+            }
+            return nil
         }
+
+        let partOfSpeech = stringValue("partOfSpeech", "part_of_speech") ?? ""
 
         let trimmedTranslation = translation.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTranslation.isEmpty else {
             throw OpenAIServiceError.decodingError
         }
 
-        return (trimmedTranslation, partOfSpeech)
+        return WordTranslationResult(
+            translation: trimmedTranslation,
+            partOfSpeech: partOfSpeech,
+            lemma: stringValue("lemma"),
+            level: stringValue("level"),
+            verbTense: stringValue("verbTense", "verb_tense"),
+            grammarNotes: stringValue("grammarNotes", "grammar_notes"),
+            usageNote: stringValue("usageNote", "usage_note"),
+            exampleTarget: stringValue("exampleTarget", "example_target"),
+            exampleEnglish: stringValue("exampleEnglish", "example_english")
+        )
     }
 
     func analyzeStudyWord(

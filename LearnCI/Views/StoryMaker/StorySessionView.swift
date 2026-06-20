@@ -2855,6 +2855,9 @@ struct StoryPlaybackControls: View {
                 }
             }
 
+            AirPlayRoutePicker()
+                .frame(width: 44, height: 44)
+
             if let onShowSpine {
                 circleButton(
                     systemName: "list.bullet",
@@ -2892,6 +2895,23 @@ struct StoryPlaybackControls: View {
                 .shadow(color: isEnabled ? .black.opacity(0.16) : .clear, radius: 6, y: 3)
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct AirPlayRoutePicker: UIViewRepresentable {
+    func makeUIView(context: Context) -> AVRoutePickerView {
+        let picker = AVRoutePickerView()
+        picker.activeTintColor = UIColor(Color.accentColor)
+        picker.tintColor = UIColor.label
+        picker.prioritizesVideoDevices = true
+        picker.backgroundColor = .clear
+        picker.accessibilityLabel = "AirPlay"
+        return picker
+    }
+
+    func updateUIView(_ uiView: AVRoutePickerView, context: Context) {
+        uiView.activeTintColor = UIColor(Color.accentColor)
+        uiView.tintColor = UIColor.label
     }
 }
 

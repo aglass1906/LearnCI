@@ -35,6 +35,8 @@ struct CardVideoPlayer: View {
                 let newPlayer = AVPlayer(url: self.url)
                 newPlayer.isMuted = false
                 newPlayer.volume = 1.0
+                newPlayer.allowsExternalPlayback = true
+                newPlayer.usesExternalPlaybackWhileExternalScreenIsActive = true
                 
                 // CRITICAL: Differentiate audio algorithm for Simulator vs Device
                 #if targetEnvironment(simulator)
@@ -70,6 +72,8 @@ struct CardVideoPlayer: View {
         // Re-enforce unmute when item changes
         player?.isMuted = false
         player?.volume = 1.0
+        player?.allowsExternalPlayback = true
+        player?.usesExternalPlaybackWhileExternalScreenIsActive = true
     }
 }
 

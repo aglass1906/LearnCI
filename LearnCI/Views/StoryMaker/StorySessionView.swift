@@ -211,8 +211,9 @@ struct StorySessionView: View {
                 usesStoryBookSidePane = showsStoryBookSidePane
             }
         }
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         // Programmatic navigation to quiz on audio completion or overflow menu tap
         .navigationDestination(isPresented: $navigateToQuiz) {
             StoryQuizView(story: story, preloadedQuestions: quizQuestions.isEmpty ? nil : quizQuestions)
@@ -248,38 +249,6 @@ struct StorySessionView: View {
             audioManager.setAmbientVolume(newValue)
             story.ambientVolume = newValue
             try? modelContext.save()
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button(action: { showStoryInfo = true }) {
-                        Label("Story Info", systemImage: "info.circle")
-                    }
-
-                    Button(action: openQuiz) {
-                        Label("Comprehension Quiz", systemImage: "checkmark.circle")
-                    }
-
-                    Divider()
-
-                    Button(action: {
-                        if selectedLanguage == .target {
-                            UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n")
-                        } else {
-                            UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextEnglishForReading }.joined(separator: "\n\n")
-                        }
-                    }) {
-                        Label(
-                            selectedLanguage == .target ? "Copy Story (\(story.language.displayName))" : "Copy Story (English)",
-                            systemImage: "doc.on.doc"
-                        )
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                }
-            }
         }
         .sheet(isPresented: $showStoryInfo) {
             StoryInfoSheet(story: story)
@@ -1055,22 +1024,126 @@ struct StorySessionView: View {
     }
 
     private var storyBookSpineHeader: some View {
-        Group {
-            if isOnChapterSpineItem {
-                chapterSpineHeader
-            } else if isOnReadingMatterSpineItem {
-                readingMatterSpineHeader
-            } else {
-                defaultSpineHeader
+        HStack(spacing: 10) {
+            readerHeaderBackButton
+
+            spineHeaderTitleStack
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if showsHeaderLanguageToggle {
+                chapterLanguageToggle
             }
+
+            if !storyBookSpineItems.isEmpty {
+                spineHeaderPageCounter
+            }
+
+            readerHeaderOverflowMenu
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(Color(.systemBackground))
     }
 
-    private var defaultSpineHeader: some View {
-        HStack(spacing: 10) {
+    private var readerHeaderBackButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.headline.weight(.semibold))
+                .frame(width: 36, height: 36)
+                .foregroundStyle(.primary)
+                .background(.thinMaterial)
+                .clipShape(Circle())
+        }
+    }
+
+    private var readerHeaderOverflowMenu: some View {
+        Menu {
+            Button(action: { showStoryInfo = true }) {
+                Label("Story Info", systemImage: "info.circle")
+            }
+
+            Button(action: openQuiz) {
+                Label("Comprehension Quiz", systemImage: "checkmark.circle")
+            }
+
+            Divider()
+
+            Button(action: {
+                if selectedLanguage == .target {
+                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n")
+                } else {
+                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextEnglishForReading }.joined(separator: "\n\n")
+                }
+            }) {
+                Label(
+                    selectedLanguage == .target ? "Copy Story (\(story.language.displayName))" : "Copy Story (English)",
+                    systemImage: "doc.on.doc"
+                )
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .frame(width: 36, height: 36)
+        }
+    }
+
+    private var showsHeaderLanguageToggle: Bool {
+        if isOnChapterSpineItem { return currentChapterHasEnglishContent }
+        if isOnReadingMatterSpineItem { return currentReadingMatterHasEnglishContent }
+        return false
+    }
+
+    private var spineHeaderPageCounter: some View {
+        Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+    }
+
+    @ViewBuilder
+    private var spineHeaderTitleStack: some View {
+        if isOnChapterSpineItem {
+            HStack(spacing: 8) {
+                if isShowingChapterIntro {
+                    chapterHeaderThumbnail
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    if let subtitle = currentSpineSubtitle {
+                        Text(subtitle)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                    }
+
+                    if isShowingChapterIntro {
+                        Text(story.title)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+        } else if isOnReadingMatterSpineItem {
+            HStack(spacing: 8) {
+                readingMatterHeaderThumbnail
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(story.title)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+
+                    if let subtitle = currentSpineSubtitle {
+                        Text(subtitle)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+        } else {
             VStack(alignment: .leading, spacing: 2) {
                 Text(story.title)
                     .font(.subheadline.weight(.semibold))
@@ -1082,45 +1155,6 @@ struct StorySessionView: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !storyBookSpineItems.isEmpty {
-                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-        }
-    }
-
-    private var chapterSpineHeader: some View {
-        HStack(spacing: 10) {
-            chapterHeaderThumbnail
-
-            VStack(alignment: .leading, spacing: 2) {
-                if let subtitle = currentSpineSubtitle {
-                    Text(subtitle)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-                }
-
-                Text(story.title)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if currentChapterHasEnglishContent {
-                chapterLanguageToggle
-            }
-
-            if !storyBookSpineItems.isEmpty {
-                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
             }
         }
     }
@@ -1148,49 +1182,18 @@ struct StorySessionView: View {
                 chapterHeaderThumbnailPlaceholder
             }
         }
-        .frame(width: 44, height: 44)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .frame(width: 32, height: 32)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private var chapterHeaderThumbnailPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: 6)
             .fill(Color.accentColor.opacity(0.18))
             .overlay {
                 Image(systemName: "text.book.closed")
-                    .font(.caption.weight(.semibold))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(Color.accentColor)
             }
-    }
-
-    private var readingMatterSpineHeader: some View {
-        HStack(spacing: 10) {
-            readingMatterHeaderThumbnail
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(story.title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-
-                if let subtitle = currentSpineSubtitle {
-                    Text(subtitle)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if currentReadingMatterHasEnglishContent {
-                chapterLanguageToggle
-            }
-
-            if !storyBookSpineItems.isEmpty {
-                Text("\(currentSpineIndex + 1)/\(storyBookSpineItems.count)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-        }
     }
 
     private var currentChapterHasEnglishContent: Bool {
@@ -1222,9 +1225,6 @@ struct StorySessionView: View {
                     ? (readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget))
                     : readerMatterText(page.titleTarget)
                 let base = title ?? "Reading Matter"
-                if isPlaying, isOnReadingMatterSpineItem {
-                    return "\(base) · Now Playing"
-                }
                 return base
             }
             return "Reading Matter"
@@ -1238,14 +1238,12 @@ struct StorySessionView: View {
                 let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
                 let chapterLabel = trimmed.isEmpty ? "Chapter \(index + 1)" : "Chapter \(index + 1) · \(trimmed)"
                 if isShowingChapterIntro {
-                    let introPrefix = isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
-                    return "\(introPrefix) · \(chapterLabel)"
+                    return "Chapter Intro · \(chapterLabel)"
                 }
                 return chapterLabel
             }
             if isShowingChapterIntro {
-                let introPrefix = isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
-                return "\(introPrefix) · Chapter \(index + 1)"
+                return "Chapter Intro · Chapter \(index + 1)"
             }
             return "Chapter \(index + 1)"
         case .scene:
@@ -1324,8 +1322,8 @@ struct StorySessionView: View {
                 chapterHeaderThumbnailPlaceholder
             }
         }
-        .frame(width: 44, height: 44)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .frame(width: 32, height: 32)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private var chapterScrollContent: some View {
@@ -1479,12 +1477,15 @@ struct StorySessionView: View {
     }
 
     private var chapterLanguageToggle: some View {
-        Picker("Language", selection: $selectedLanguage) {
-            Text(story.language.rawValue.uppercased()).tag(DisplayLanguage.target)
-            Text("EN").tag(DisplayLanguage.native)
+        Button {
+            selectedLanguage = selectedLanguage == .native ? .target : .native
+        } label: {
+            Text(selectedLanguage == .native ? "EN" : story.language.rawValue.uppercased())
+                .font(.caption.bold())
+                .frame(minWidth: 36, minHeight: 32)
         }
-        .pickerStyle(.segmented)
-        .frame(width: 88)
+        .buttonStyle(.bordered)
+        .controlSize(.small)
     }
 
     @ViewBuilder

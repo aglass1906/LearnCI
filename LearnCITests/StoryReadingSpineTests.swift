@@ -68,6 +68,65 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(clip.urlString, "user/story/about.m4a")
     }
 
+    func testBodyTimingsSkipSpokenTitlePrefix() {
+        let timings = [
+            WordTiming(word: "About", start: 0.0, end: 0.4),
+            WordTiming(word: "This", start: 0.4, end: 0.8),
+            WordTiming(word: "Story", start: 0.8, end: 1.2),
+            WordTiming(word: "Hello", start: 1.2, end: 1.6),
+            WordTiming(word: "world", start: 1.6, end: 2.0)
+        ]
+
+        let bodyTimings = WordTiming.bodyTimings(
+            fullTimings: timings,
+            skippingLeadingSpokenText: "About This Story"
+        )
+
+        XCTAssertEqual(bodyTimings.map(\.word), ["Hello", "world"])
+    }
+
+    func testReadingMatterBodyWordTimingsSkipTitleWords() {
+        let page = ReadingMatterPage(
+            id: "about",
+            titleTarget: "Acerca de",
+            bodyTarget: "Intro al libro",
+            wordTimings: [
+                WordTiming(word: "Acerca", start: 0.0, end: 0.4),
+                WordTiming(word: "de", start: 0.4, end: 0.7),
+                WordTiming(word: "Intro", start: 0.7, end: 1.1),
+                WordTiming(word: "al", start: 1.1, end: 1.3),
+                WordTiming(word: "libro", start: 1.3, end: 1.8)
+            ]
+        )
+
+        XCTAssertEqual(
+            page.bodyWordTimingsForPlayback(preferNative: false).map(\.word),
+            ["Intro", "al", "libro"]
+        )
+    }
+
+    func testChapterIntroBodyWordTimingsSkipTitleWords() {
+        let chapter = StoryChapter(
+            chapterNumber: 1,
+            titleTargetLanguage: "Capitulo Uno",
+            titleEnglish: "Chapter One",
+            chapterIntroText: "Once upon a time.",
+            chapterIntroWordTimings: [
+                WordTiming(word: "Capitulo", start: 0.0, end: 0.5),
+                WordTiming(word: "Uno", start: 0.5, end: 0.9),
+                WordTiming(word: "Once", start: 0.9, end: 1.2),
+                WordTiming(word: "upon", start: 1.2, end: 1.5),
+                WordTiming(word: "a", start: 1.5, end: 1.6),
+                WordTiming(word: "time", start: 1.6, end: 2.0)
+            ]
+        )
+
+        XCTAssertEqual(
+            chapter.chapterIntroBodyWordTimings(preferNative: false).map(\.word),
+            ["Once", "upon", "a", "time"]
+        )
+    }
+
     func testChapterEnglishBodyFallsBackToSceneScriptEnglish() throws {
         let chapter = StoryChapter(
             chapterNumber: 1,

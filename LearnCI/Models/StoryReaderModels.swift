@@ -559,6 +559,20 @@ struct ReadingMatterPage: Codable, Identifiable, Equatable {
         audioUrlForPlayback(preferNative: preferNative) != nil
     }
 
+    func displayTitleForPlayback(preferNative: Bool) -> String? {
+        if preferNative {
+            return Self.trimmedNonEmpty(titleNative) ?? Self.trimmedNonEmpty(titleTarget)
+        }
+        return Self.trimmedNonEmpty(titleTarget)
+    }
+
+    func bodyWordTimingsForPlayback(preferNative: Bool) -> [WordTiming] {
+        WordTiming.bodyTimings(
+            fullTimings: wordTimingsForPlayback(preferNative: preferNative),
+            skippingLeadingSpokenText: displayTitleForPlayback(preferNative: preferNative)
+        )
+    }
+
     nonisolated var isBackMatter: Bool {
         let placementTokens = placement?.readingMatterPlacementTokens ?? []
         let placementKey = placement?.readingMatterPlacementKey ?? ""

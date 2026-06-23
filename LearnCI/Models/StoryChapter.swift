@@ -43,6 +43,22 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         let hasText = !(chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         return hasAudio || hasText
     }
+
+    func displayTitleForPlayback(preferNative: Bool) -> String {
+        if preferNative {
+            let english = titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
+            return english.isEmpty ? titleTargetLanguage : english
+        }
+        return titleTargetLanguage
+    }
+
+    func chapterIntroBodyWordTimings(preferNative: Bool) -> [WordTiming] {
+        WordTiming.bodyTimings(
+            fullTimings: chapterIntroWordTimings ?? [],
+            skippingLeadingSpokenText: displayTitleForPlayback(preferNative: preferNative)
+        )
+    }
+
     var bodyTextTargetForReading: String {
         return scenes
             .sorted { $0.sceneIndex < $1.sceneIndex }

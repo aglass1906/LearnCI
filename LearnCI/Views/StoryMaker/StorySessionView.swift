@@ -2161,7 +2161,10 @@ private struct StoryBookReadingMatterPageView: View {
                         text: bodyText,
                         startTime: 0,
                         endTime: .greatestFiniteMagnitude,
-                        timings: wordTimings
+                        timings: WordTiming.bodyTimings(
+                            fullTimings: wordTimings,
+                            skippingLeadingSpokenText: title
+                        )
                     ),
                     currentTime: playbackTime,
                     includesPadding: false
@@ -2999,9 +3002,9 @@ private struct AirPlayRoutePicker: UIViewRepresentable {
         let picker = AVRoutePickerView()
         picker.activeTintColor = UIColor(Color.accentColor)
         picker.tintColor = UIColor.label
-        picker.prioritizesVideoDevices = true
+        picker.prioritizesVideoDevices = false
         picker.backgroundColor = .clear
-        picker.accessibilityLabel = "AirPlay"
+        picker.accessibilityLabel = "AirPlay Audio"
         return picker
     }
 

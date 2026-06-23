@@ -2033,7 +2033,7 @@ private struct AudioBookTranscriptSheet: View {
                             text: introText,
                             startTime: 0,
                             endTime: .greatestFiniteMagnitude,
-                            timings: timings
+                            timings: chapter.chapterIntroBodyWordTimings(preferNative: false)
                         )
                     ]
                 } else {

@@ -108,7 +108,7 @@ enum StoryStudyWordAudioResolver {
 
         for page in story.readingMatterPages {
             let text = page.bodyTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let timings = page.wordTimingsForPlayback(preferNative: false)
+            let timings = page.bodyWordTimingsForPlayback(preferNative: false)
             if !text.isEmpty, !timings.isEmpty {
                 candidates.append(Candidate(
                     text: text,

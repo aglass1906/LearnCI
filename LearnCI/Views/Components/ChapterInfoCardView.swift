@@ -120,7 +120,9 @@ struct ChapterInfoCardView: View {
                         text: intro,
                         startTime: 0,
                         endTime: .greatestFiniteMagnitude,
-                        timings: timings
+                        timings: chapter.chapterIntroBodyWordTimings(
+                            preferNative: selectedLanguage == .native
+                        )
                     ),
                     currentTime: playbackTime,
                     includesPadding: false

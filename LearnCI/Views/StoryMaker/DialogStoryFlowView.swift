@@ -450,7 +450,7 @@ struct DialogStoryFlowView: View {
                                     text: body,
                                     startTime: 0,
                                     endTime: .greatestFiniteMagnitude,
-                                    timings: supplementalPlayback.wordTimings
+                                    timings: page.bodyWordTimingsForPlayback(preferNative: showEnglish)
                                 ),
                                 currentTime: supplementalPlayback.currentTime,
                                 includesPadding: false

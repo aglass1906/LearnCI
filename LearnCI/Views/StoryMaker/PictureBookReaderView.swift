@@ -341,7 +341,7 @@ struct PictureBookReaderView: View {
             return currentReadingMatterCanPlay
         }
         if case .cover = currentSpread?.spineItem {
-            return firstPlayableClipIndex != nil
+            return currentSpreadIndex < spreads.count - 1
         }
         return currentSpread?.isScene == true
     }
@@ -357,17 +357,8 @@ struct PictureBookReaderView: View {
     }
 
     private var currentReadingMatterSpeakableText: String? {
-        guard let spread = currentSpread,
-              let page = spread.readingMatterPage else { return nil }
-        var parts: [String] = []
-        if let title = spread.displayMatterTitle(language: selectedLanguage) {
-            parts.append(title)
-        }
-        if let body = spread.displayBody(language: selectedLanguage) {
-            parts.append(body)
-        }
-        let text = parts.joined(separator: ". ")
-        return text.isEmpty ? nil : text
+        guard let spread = currentSpread, spread.readingMatterPage != nil else { return nil }
+        return spread.displayBody(language: selectedLanguage)
     }
 
     private func prepareSupplementalForCurrentSpread() {
@@ -467,9 +458,10 @@ struct PictureBookReaderView: View {
         }
 
         if audioManager.streamPlayer == nil {
-            let clipIndex = spreadIndexToClipIndex[currentSpreadIndex] ?? firstPlayableClipIndex
-            if let clipIndex {
+            if let clipIndex = spreadIndexToClipIndex[currentSpreadIndex] {
                 playClip(at: clipIndex, autoplay: true)
+            } else {
+                beginPlaybackFromCurrentSpread()
             }
             return
         }
@@ -515,8 +507,9 @@ struct PictureBookReaderView: View {
         }
     }
 
-    private var firstPlayableClipIndex: Int? {
-        clips.isEmpty ? nil : 0
+    private func beginPlaybackFromCurrentSpread() {
+        guard currentSpreadIndex < spreads.count - 1 else { return }
+        goToSpread(currentSpreadIndex + 1, autoplay: true)
     }
 
     private func playClip(at index: Int, autoplay: Bool, startAt: Double = 0) {
@@ -1204,6 +1197,7 @@ private struct PictureBookSpreadView: View {
                     if case .readingMatterPage = spread.spineItem,
                        selectedLanguage == .target,
                        let playback = readingMatterPlayback,
+                       let page = spread.readingMatterPage,
                        playback.isUsingGeneratedAudio,
                        !playback.wordTimings.isEmpty {
                         TimedTextView(
@@ -1212,7 +1206,9 @@ private struct PictureBookSpreadView: View {
                                 text: body,
                                 startTime: 0,
                                 endTime: .greatestFiniteMagnitude,
-                                timings: playback.wordTimings
+                                timings: page.bodyWordTimingsForPlayback(
+                                    preferNative: selectedLanguage == .native
+                                )
                             ),
                             currentTime: playback.currentTime,
                             includesPadding: false
@@ -1249,7 +1245,11 @@ private struct PictureBookSpreadView: View {
 
     private func coverLayout(in frame: CGRect) -> some View {
         ZStack(alignment: .bottomLeading) {
-            PictureBookImage(url: spread.imageURL, cropRegion: .center)
+            Color(.systemBackground)
+                .ignoresSafeArea()
+
+            PictureBookImage(url: spread.imageURL, cropRegion: .center, fillsFrame: false)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .ignoresSafeArea(edges: .top)
 
             LinearGradient(
@@ -1376,15 +1376,23 @@ private struct PictureBookSpreadView: View {
 private struct PictureBookImage: View {
     let url: URL?
     let cropRegion: CropRegion
+    var fillsFrame: Bool = true
 
     var body: some View {
         AsyncImage(url: url) { phase in
             switch phase {
             case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: cropRegion.pictureBookAlignment)
+                if fillsFrame {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: cropRegion.pictureBookAlignment)
+                } else {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
             case .failure:
                 placeholder
             case .empty:

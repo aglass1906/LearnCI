@@ -579,7 +579,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         stopNonStreamAudio()
         let playerItem = makeStreamPlayerItem(url: url)
         streamPlayer = AVPlayer(playerItem: playerItem)
-        configureExternalPlayback(for: streamPlayer!)
         configureStreamPlayback(player: streamPlayer!, item: playerItem, startAt: startAt)
     }
 
@@ -600,11 +599,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             options: ["AVURLAssetHTTPHeaderFieldsKey": headers]
         )
         return AVPlayerItem(asset: asset)
-    }
-
-    private func configureExternalPlayback(for player: AVPlayer) {
-        player.allowsExternalPlayback = true
-        player.usesExternalPlaybackWhileExternalScreenIsActive = true
     }
 
     private func replaceStreamItem(url: URL, startAt: Double, player: AVPlayer) {
@@ -628,7 +622,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
         let playerItem = makeStreamPlayerItem(url: url)
         player.replaceCurrentItem(with: playerItem)
-        configureExternalPlayback(for: player)
         configureStreamPlayback(player: player, item: playerItem, startAt: startAt)
     }
 

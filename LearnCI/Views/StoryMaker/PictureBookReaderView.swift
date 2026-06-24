@@ -134,18 +134,18 @@ struct PictureBookReaderView: View {
             saveReadingProgress()
         }
         .onChange(of: selectedLanguage) { _, _ in
-            guard isOnReadingMatterSpread else { return }
+            guard isOnSupplementalSpread else { return }
             let wasPlaying = supplementalPlayback.isPlaying
             prepareSupplementalForCurrentSpread()
             if wasPlaying {
                 supplementalPlayback.syncPlayback(
                     shouldPlay: true,
-                    speakableText: currentReadingMatterSpeakableText
+                    speakableText: currentSupplementalSpeakableText
                 )
             }
         }
         .onReceive(timer) { _ in
-            if isOnReadingMatterSpread {
+            if isOnSupplementalSpread {
                 supplementalPlayback.syncStreamState()
                 sliderValue = supplementalPlayback.currentTime
                 if supplementalPlayback.duration > 0 {
@@ -209,7 +209,7 @@ struct PictureBookReaderView: View {
                     PictureBookSpreadView(
                         spread: spreads[currentSpreadIndex],
                         selectedLanguage: selectedLanguage,
-                        readingMatterPlayback: isOnReadingMatterSpread ? supplementalPlayback : nil,
+                        supplementalPlayback: isOnSupplementalSpread ? supplementalPlayback : nil,
                         onUserScroll: minimizePlayerForReading
                     )
                     .id("\(spreads[currentSpreadIndex].id)-\(selectedLanguage.rawValue)")
@@ -290,11 +290,11 @@ struct PictureBookReaderView: View {
             AudioPlayerBar(
                 isPlaying: $isPlaying,
                 sliderValue: $sliderValue,
-                duration: max(isOnReadingMatterSpread ? supplementalPlayback.duration : duration, 1),
+                duration: max(isOnSupplementalSpread ? supplementalPlayback.duration : duration, 1),
                 playbackRate: $playbackRate,
                 ambientVolume: .constant(0),
                 isAmbientPlaying: false,
-                canSeek: isOnReadingMatterSpread ? supplementalPlayback.canSeek : audioManager.streamPlayer != nil,
+                canSeek: isOnSupplementalSpread ? supplementalPlayback.canSeek : audioManager.streamPlayer != nil,
                 canControlPlayback: canControlSpreadPlayback,
                 playbackContextLabel: spreadPlaybackContextLabel,
                 isBuffering: supplementalPlayback.isLoading,
@@ -332,13 +332,21 @@ struct PictureBookReaderView: View {
         return false
     }
 
+    private var isOnChapterIntroSpread: Bool {
+        currentSpread?.isChapterIntro == true
+    }
+
+    private var isOnSupplementalSpread: Bool {
+        isOnReadingMatterSpread || isOnChapterIntroSpread
+    }
+
     private var preferNativeLanguage: Bool {
         selectedLanguage == .native
     }
 
     private var canControlSpreadPlayback: Bool {
-        if isOnReadingMatterSpread {
-            return currentReadingMatterCanPlay
+        if isOnSupplementalSpread {
+            return currentSupplementalCanPlay
         }
         if case .cover = currentSpread?.spineItem {
             return currentSpreadIndex < spreads.count - 1
@@ -347,8 +355,21 @@ struct PictureBookReaderView: View {
     }
 
     private var spreadPlaybackContextLabel: String? {
-        guard isOnReadingMatterSpread, currentReadingMatterCanPlay else { return nil }
+        guard isOnSupplementalSpread, currentSupplementalCanPlay else { return nil }
+        if isOnChapterIntroSpread {
+            return supplementalPlayback.isPlaying ? "Chapter Intro · Now Playing" : "Chapter Intro"
+        }
         return supplementalPlayback.isPlaying ? "Reading Matter · Now Playing" : "Reading Matter"
+    }
+
+    private var currentSupplementalCanPlay: Bool {
+        if isOnReadingMatterSpread {
+            return currentReadingMatterCanPlay
+        }
+        if isOnChapterIntroSpread {
+            return currentChapterIntroCanPlay
+        }
+        return false
     }
 
     private var currentReadingMatterCanPlay: Bool {
@@ -361,8 +382,50 @@ struct PictureBookReaderView: View {
         return spread.displayBody(language: selectedLanguage)
     }
 
+    private var currentChapterIntroCanPlay: Bool {
+        guard let chapter = currentSpread?.chapter else { return false }
+        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return hasAudio || currentChapterIntroSpeakableText != nil
+    }
+
+    private var currentChapterIntroSpeakableText: String? {
+        guard let chapter = currentSpread?.chapter else { return nil }
+        return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
+            chapter: chapter,
+            preferNative: preferNativeLanguage
+        )
+    }
+
+    private var currentSupplementalSpeakableText: String? {
+        if isOnReadingMatterSpread {
+            return currentReadingMatterSpeakableText
+        }
+        if isOnChapterIntroSpread {
+            return currentChapterIntroSpeakableText
+        }
+        return nil
+    }
+
     private func prepareSupplementalForCurrentSpread() {
         supplementalPlayback.onFinished = nil
+
+        if isOnChapterIntroSpread,
+           let spread = currentSpread,
+           let chapter = spread.chapter,
+           case .chapter(let chapterIndex) = spread.spineItem {
+            supplementalPlayback.bind(story: story, audioManager: audioManager)
+            supplementalPlayback.setRate(playbackRate)
+            supplementalPlayback.prepareChapterIntro(
+                chapterIndex: chapterIndex,
+                chapter: chapter,
+                preferNative: preferNativeLanguage
+            )
+            supplementalPlayback.onFinished = {
+                advanceAfterSupplementalFinished()
+            }
+            return
+        }
+
         guard isOnReadingMatterSpread,
               let spread = currentSpread,
               let page = spread.readingMatterPage,
@@ -385,7 +448,7 @@ struct PictureBookReaderView: View {
 
     private func stopSupplementalPlayback() {
         supplementalPlayback.stop()
-        if isOnReadingMatterSpread {
+        if isOnSupplementalSpread {
             isPlaying = false
             sliderValue = 0
             duration = 0
@@ -424,10 +487,10 @@ struct PictureBookReaderView: View {
 
         guard shouldAutoplay else { return }
 
-        if isOnReadingMatterSpread {
+        if isOnSupplementalSpread {
             supplementalPlayback.syncPlayback(
                 shouldPlay: true,
-                speakableText: currentReadingMatterSpeakableText
+                speakableText: currentSupplementalSpeakableText
             )
             isPlaying = supplementalPlayback.isPlaying
             if isPlaying {
@@ -444,11 +507,11 @@ struct PictureBookReaderView: View {
     }
 
     private func togglePlay() {
-        if isOnReadingMatterSpread {
+        if isOnSupplementalSpread {
             let shouldPlay = !supplementalPlayback.isPlaying
             supplementalPlayback.syncPlayback(
                 shouldPlay: shouldPlay,
-                speakableText: currentReadingMatterSpeakableText
+                speakableText: currentSupplementalSpeakableText
             )
             isPlaying = supplementalPlayback.isPlaying
             if isPlaying {
@@ -478,17 +541,17 @@ struct PictureBookReaderView: View {
     }
 
     private func skipForward() {
-        guard isOnReadingMatterSpread, supplementalPlayback.canSeek else { return }
+        guard isOnSupplementalSpread, supplementalPlayback.canSeek else { return }
         seekTo(min(sliderValue + 10, max(supplementalPlayback.duration, 1)))
     }
 
     private func skipBackward() {
-        guard isOnReadingMatterSpread, supplementalPlayback.canSeek else { return }
+        guard isOnSupplementalSpread, supplementalPlayback.canSeek else { return }
         seekTo(max(0, sliderValue - 10))
     }
 
     private func seekTo(_ value: Double) {
-        if isOnReadingMatterSpread, supplementalPlayback.canSeek {
+        if isOnSupplementalSpread, supplementalPlayback.canSeek {
             supplementalPlayback.seek(to: value)
             sliderValue = value
             return
@@ -500,7 +563,7 @@ struct PictureBookReaderView: View {
 
     private func setRate(_ rate: Float) {
         playbackRate = rate
-        if isOnReadingMatterSpread {
+        if isOnSupplementalSpread {
             supplementalPlayback.setRate(rate)
         } else {
             audioManager.setStreamRate(rate)
@@ -599,11 +662,11 @@ struct PictureBookReaderView: View {
     private func startAutoContinueForCurrentSpread() {
         cancelScheduledAutoAdvance()
 
-        if isOnReadingMatterSpread {
-            if currentReadingMatterCanPlay {
+        if isOnSupplementalSpread {
+            if currentSupplementalCanPlay {
                 supplementalPlayback.syncPlayback(
                     shouldPlay: true,
-                    speakableText: currentReadingMatterSpeakableText
+                    speakableText: currentSupplementalSpeakableText
                 )
                 isPlaying = supplementalPlayback.isPlaying
                 if isPlaying {
@@ -692,7 +755,7 @@ struct PictureBookReaderView: View {
         isAutoContinueEnabled = false
         sleepTimerMinutes = 0
 
-        if isOnReadingMatterSpread {
+        if isOnSupplementalSpread {
             supplementalPlayback.pause()
         } else {
             audioManager.pauseStream()
@@ -785,6 +848,7 @@ struct PictureBookRenderer {
                     subtitle: "\(story.language.displayName) · Level \(story.level)",
                     body: nil,
                     readingMatterPage: nil,
+                    chapter: nil,
                     scene: nil,
                     panel: nil,
                     layoutPanels: [],
@@ -810,14 +874,43 @@ struct PictureBookRenderer {
                     subtitle: nil,
                     body: page.bodyTarget?.nilIfEmptyForPictureBook,
                     readingMatterPage: page,
+                    chapter: nil,
                     scene: nil,
                     panel: nil,
                     layoutPanels: [],
                     audioClip: nil,
                     imageURL: coverURL(for: story)
                 )
-            case .chapter:
-                return nil
+            case .chapter(let chapterIndex):
+                guard let chapter = story.chapters[safeForPictureBook: chapterIndex],
+                      chapter.hasChapterIntroContent else { return nil }
+                let chapterTitle = chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                let regularChapterCount = story.chapters.filter { !$0.isPrologue && !$0.isEpilogue }.count
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    spineItem: item,
+                    spreadIndex: spreadIndex,
+                    storyTitle: story.title,
+                    chapterIndex: chapterIndex,
+                    chapterTitle: chapterTitle,
+                    sceneTitle: nil,
+                    spinePrimaryTitle: StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex),
+                    spineContextLabel: StoryReadingSpineTitles.chapterKindLabel(
+                        for: chapter,
+                        index: chapterIndex,
+                        regularChapterCount: regularChapterCount
+                    ),
+                    title: chapterTitle,
+                    subtitle: "Chapter Intro",
+                    body: chapter.chapterIntroText?.nilIfEmptyForPictureBook,
+                    readingMatterPage: nil,
+                    chapter: chapter,
+                    scene: nil,
+                    panel: nil,
+                    layoutPanels: [],
+                    audioClip: nil,
+                    imageURL: adapter.chapterImageURL(forChapterAt: chapterIndex)
+                )
             case .scene(let chapterIndex, let sceneIndex):
                 guard let scene = adapter.scene(for: item) else { return nil }
                 let chapter = story.chapters[safeForPictureBook: chapterIndex]
@@ -850,6 +943,7 @@ struct PictureBookRenderer {
                     subtitle: nil,
                     body: scene.captionTarget?.nilIfEmptyForPictureBook,
                     readingMatterPage: nil,
+                    chapter: nil,
                     scene: scene,
                     panel: panel(for: item, in: story.storyLayout),
                     layoutPanels: layoutPanels(for: item, story: story, adapter: adapter),
@@ -924,6 +1018,7 @@ struct PictureBookSpreadModel: Identifiable {
     let subtitle: String?
     let body: String?
     let readingMatterPage: ReadingMatterPage?
+    let chapter: StoryChapter?
     let scene: StoryScene?
     let panel: PanelLayout?
     let layoutPanels: [PictureBookPanelModel]
@@ -970,6 +1065,15 @@ struct PictureBookSpreadModel: Identifiable {
             case .native:
                 return page.bodyNative?.nilIfEmptyForPictureBook ?? page.bodyTarget?.nilIfEmptyForPictureBook
             }
+        case .chapter:
+            guard let chapter else { return body }
+            switch language {
+            case .target:
+                return chapter.chapterIntroText?.nilIfEmptyForPictureBook
+            case .native:
+                return chapter.chapterIntroTextEnglish?.nilIfEmptyForPictureBook
+                    ?? chapter.chapterIntroText?.nilIfEmptyForPictureBook
+            }
         case .scene:
             guard let scene else { return body }
             return scene.pictureBookPreviewText(english: language == .native)
@@ -986,6 +1090,11 @@ struct PictureBookSpreadModel: Identifiable {
         case .native:
             return page.titleNative?.nilIfEmptyForPictureBook ?? page.titleTarget?.nilIfEmptyForPictureBook
         }
+    }
+
+    var isChapterIntro: Bool {
+        if case .chapter = spineItem { return true }
+        return false
     }
 
     var isScene: Bool {
@@ -1141,7 +1250,7 @@ private struct PictureBookPlayerSheet: View {
 private struct PictureBookSpreadView: View {
     let spread: PictureBookSpreadModel
     let selectedLanguage: StorySessionView.DisplayLanguage
-    var readingMatterPlayback: StorySupplementalAudioPlayback? = nil
+    var supplementalPlayback: StorySupplementalAudioPlayback? = nil
     var onUserScroll: () -> Void = {}
 
     var body: some View {
@@ -1154,15 +1263,29 @@ private struct PictureBookSpreadView: View {
                         coverLayout(in: safeFrame)
                     case .readingMatterPage:
                         readingMatterLayout(in: safeFrame)
+                    case .chapter:
+                        chapterIntroLayout(in: safeFrame)
                     case .scene:
                         sceneLayout(in: safeFrame)
-                    case .chapter:
-                        EmptyView()
                     }
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
+    }
+
+    private var supplementalWordTimings: [WordTiming] {
+        if spread.isChapterIntro, let chapter = spread.chapter {
+            return chapter.chapterIntroBodyWordTimings(preferNative: selectedLanguage == .native)
+        }
+        if let page = spread.readingMatterPage {
+            return page.bodyWordTimingsForPlayback(preferNative: selectedLanguage == .native)
+        }
+        return supplementalPlayback?.wordTimings ?? []
+    }
+
+    private var showsSupplementalTimedText: Bool {
+        spread.isChapterIntro || spread.readingMatterPage != nil
     }
 
     private var readingScrollGesture: some Gesture {
@@ -1194,21 +1317,18 @@ private struct PictureBookSpreadView: View {
                 }
 
                 if let body = spread.displayBody(language: selectedLanguage) {
-                    if case .readingMatterPage = spread.spineItem,
+                    if showsSupplementalTimedText,
                        selectedLanguage == .target,
-                       let playback = readingMatterPlayback,
-                       let page = spread.readingMatterPage,
+                       let playback = supplementalPlayback,
                        playback.isUsingGeneratedAudio,
-                       !playback.wordTimings.isEmpty {
+                       !supplementalWordTimings.isEmpty {
                         TimedTextView(
                             segment: StorySegmentTiming(
                                 speaker: "",
                                 text: body,
                                 startTime: 0,
                                 endTime: .greatestFiniteMagnitude,
-                                timings: page.bodyWordTimingsForPlayback(
-                                    preferNative: selectedLanguage == .native
-                                )
+                                timings: supplementalWordTimings
                             ),
                             currentTime: playback.currentTime,
                             includesPadding: false
@@ -1277,6 +1397,10 @@ private struct PictureBookSpreadView: View {
         }
         .frame(width: frame.width)
         .clipped()
+    }
+
+    private func chapterIntroLayout(in frame: CGRect) -> some View {
+        readingMatterLayout(in: frame)
     }
 
     private func sceneLayout(in frame: CGRect) -> some View {

@@ -127,6 +127,71 @@ final class StoryReadingSpineTests: XCTestCase {
         )
     }
 
+    func testPictureBookSpineInsertsChapterIntroBeforeFirstScene() throws {
+        let layout = StoryLayout()
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                chapterIntroText: "Once upon a time.",
+                chapterIntroAudioUrl: "a/ch1_intro.mp3",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", audioUrl: "a/scene_0.mp3")
+                ]
+            )
+        ]
+        let story = try makeStory(layout: layout, chapters: chapters, readingMatterPages: [])
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .pictureBook).items.map(\.id),
+            ["cover", "chapter-0", "scene-0-0"]
+        )
+    }
+
+    func testPictureBookRendererBuildsChapterIntroSpread() throws {
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                chapterIntroText: "Once upon a time.",
+                chapterIntroAudioUrl: "a/ch1_intro.mp3",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", audioUrl: "a/scene_0.mp3")
+                ]
+            )
+        ]
+        let story = try makeStory(layout: StoryLayout(), chapters: chapters, readingMatterPages: [])
+        let spreads = PictureBookRenderer.makeSpreads(
+            story: story,
+            adapter: StoryReaderDataAdapter(story: story)
+        )
+
+        XCTAssertEqual(spreads.map(\.id), ["cover", "chapter-0", "scene-0-0"])
+        XCTAssertTrue(spreads[1].isChapterIntro)
+        XCTAssertEqual(spreads[1].chapter?.chapterIntroText, "Once upon a time.")
+    }
+
+    func testChapterIntroSpeakableTextUsesProseOnly() {
+        let chapter = StoryChapter(
+            chapterNumber: 1,
+            titleTargetLanguage: "Capitulo Uno",
+            titleEnglish: "Chapter One",
+            chapterIntroText: "Once upon a time.",
+            chapterIntroTextEnglish: "Once upon a time in English."
+        )
+
+        XCTAssertEqual(
+            StorySupplementalAudioPlayback.chapterIntroSpeakableText(chapter: chapter, preferNative: false),
+            "Once upon a time."
+        )
+        XCTAssertEqual(
+            StorySupplementalAudioPlayback.chapterIntroSpeakableText(chapter: chapter, preferNative: true),
+            "Once upon a time in English."
+        )
+    }
+
     func testChapterEnglishBodyFallsBackToSceneScriptEnglish() throws {
         let chapter = StoryChapter(
             chapterNumber: 1,

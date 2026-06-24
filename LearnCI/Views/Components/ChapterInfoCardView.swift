@@ -188,28 +188,14 @@ extension StorySupplementalAudioPlayback {
         chapter: StoryChapter,
         preferNative: Bool
     ) -> String? {
-        let title: String
         let intro: String?
-
         if preferNative {
-            let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
-            title = english.isEmpty ? chapter.titleTargetLanguage : english
             intro = chapter.chapterIntroTextEnglish ?? chapter.chapterIntroText
         } else {
-            title = chapter.titleTargetLanguage
             intro = chapter.chapterIntroText
         }
 
-        let marker = "\(chapter.spokenChapterReferenceTitle) intro"
-        var parts = [title.isEmpty ? marker : "\(marker): \(title)"]
-        if let intro {
-            let trimmed = intro.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty {
-                parts.append(trimmed)
-            }
-        }
-
-        let text = parts.joined(separator: ". ")
-        return text.isEmpty ? nil : text
+        let trimmed = intro?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

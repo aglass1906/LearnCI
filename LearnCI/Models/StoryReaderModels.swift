@@ -695,7 +695,7 @@ struct StoryReadingSpine {
                 ))
             }
         case .pictureBook, .comicBook:
-            mainItems.append(contentsOf: sceneItems(for: story, useLayoutOrder: true))
+            mainItems.append(contentsOf: sceneItemsWithChapterIntros(for: story, useLayoutOrder: true))
         }
 
         for matter in positionedMatter.reversed() {
@@ -776,6 +776,32 @@ struct StoryReadingSpine {
             seen.insert(item.id)
             return true
         }
+    }
+
+    private static func sceneItemsWithChapterIntros(
+        for story: Story,
+        useLayoutOrder: Bool
+    ) -> [StoryReadingSpineItem] {
+        let scenes = sceneItems(for: story, useLayoutOrder: useLayoutOrder)
+        var result: [StoryReadingSpineItem] = []
+        var introducedChapters = Set<Int>()
+
+        for item in scenes {
+            guard case .scene(let chapterIndex, _) = item else {
+                result.append(item)
+                continue
+            }
+
+            if introducedChapters.insert(chapterIndex).inserted,
+               story.chapters.indices.contains(chapterIndex),
+               story.chapters[chapterIndex].hasChapterIntroContent {
+                result.append(.chapter(index: chapterIndex))
+            }
+
+            result.append(item)
+        }
+
+        return result
     }
 
     private enum ReadingMatterPosition {

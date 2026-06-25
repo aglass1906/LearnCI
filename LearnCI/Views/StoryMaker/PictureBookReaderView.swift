@@ -208,6 +208,7 @@ struct PictureBookReaderView: View {
                 if spreads.indices.contains(currentSpreadIndex) {
                     PictureBookSpreadView(
                         spread: spreads[currentSpreadIndex],
+                        story: story,
                         selectedLanguage: selectedLanguage,
                         supplementalPlayback: isOnSupplementalSpread ? supplementalPlayback : nil,
                         onUserScroll: minimizePlayerForReading
@@ -464,6 +465,10 @@ struct PictureBookReaderView: View {
             return "Reading Matter"
         case .chapter:
             return "Chapter"
+        case .chapterQuiz:
+            return "Quiz"
+        case .chapterVocabulary:
+            return "Word Focus"
         case .scene:
             return "Scene"
         }
@@ -950,6 +955,52 @@ struct PictureBookRenderer {
                     audioClip: clipsBySceneID[item.id],
                     imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex)
                 )
+            case .chapterQuiz(let chapterIndex):
+                guard let chapter = story.chapters[safeForPictureBook: chapterIndex] else { return nil }
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    spineItem: item,
+                    spreadIndex: spreadIndex,
+                    storyTitle: story.title,
+                    chapterIndex: chapterIndex,
+                    chapterTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                    sceneTitle: nil,
+                    spinePrimaryTitle: "Chapter Quiz",
+                    spineContextLabel: StoryReadingSpineTitles.spineContextLabel(for: item, story: story, adapter: adapter),
+                    title: "Chapter Quiz",
+                    subtitle: nil,
+                    body: nil,
+                    readingMatterPage: nil,
+                    chapter: chapter,
+                    scene: nil,
+                    panel: nil,
+                    layoutPanels: [],
+                    audioClip: nil,
+                    imageURL: adapter.chapterImageURL(forChapterAt: chapterIndex)
+                )
+            case .chapterVocabulary(let chapterIndex):
+                guard let chapter = story.chapters[safeForPictureBook: chapterIndex] else { return nil }
+                return PictureBookSpreadModel(
+                    id: item.id,
+                    spineItem: item,
+                    spreadIndex: spreadIndex,
+                    storyTitle: story.title,
+                    chapterIndex: chapterIndex,
+                    chapterTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                    sceneTitle: nil,
+                    spinePrimaryTitle: "Word Focus",
+                    spineContextLabel: StoryReadingSpineTitles.spineContextLabel(for: item, story: story, adapter: adapter),
+                    title: "Word Focus",
+                    subtitle: nil,
+                    body: chapter.vocabularyNote,
+                    readingMatterPage: nil,
+                    chapter: chapter,
+                    scene: nil,
+                    panel: nil,
+                    layoutPanels: [],
+                    audioClip: nil,
+                    imageURL: adapter.chapterImageURL(forChapterAt: chapterIndex)
+                )
             }
         }
     }
@@ -1052,6 +1103,8 @@ struct PictureBookSpreadModel: Identifiable {
                 .compactMap { $0?.nilIfEmptyForPictureBook }
                 .joined(separator: " / ")
                 .nilIfEmptyForPictureBook
+        case .chapterQuiz, .chapterVocabulary:
+            return chapterTitle?.nilIfEmptyForPictureBook ?? spineContextLabel
         }
     }
 
@@ -1089,6 +1142,15 @@ struct PictureBookSpreadModel: Identifiable {
             return page.titleTarget?.nilIfEmptyForPictureBook
         case .native:
             return page.titleNative?.nilIfEmptyForPictureBook ?? page.titleTarget?.nilIfEmptyForPictureBook
+        }
+    }
+
+    var isChapterSupplement: Bool {
+        switch spineItem {
+        case .chapterQuiz, .chapterVocabulary:
+            return true
+        default:
+            return false
         }
     }
 
@@ -1241,6 +1303,10 @@ private struct PictureBookPlayerSheet: View {
             return "doc.text"
         case .chapter:
             return "text.book.closed"
+        case .chapterQuiz:
+            return "checkmark.circle"
+        case .chapterVocabulary:
+            return "text.book.closed.fill"
         case .scene:
             return "photo"
         }
@@ -1249,6 +1315,7 @@ private struct PictureBookPlayerSheet: View {
 
 private struct PictureBookSpreadView: View {
     let spread: PictureBookSpreadModel
+    let story: Story
     let selectedLanguage: StorySessionView.DisplayLanguage
     var supplementalPlayback: StorySupplementalAudioPlayback? = nil
     var onUserScroll: () -> Void = {}
@@ -1265,6 +1332,10 @@ private struct PictureBookSpreadView: View {
                         readingMatterLayout(in: safeFrame)
                     case .chapter:
                         chapterIntroLayout(in: safeFrame)
+                    case .chapterQuiz:
+                        chapterQuizLayout(in: safeFrame)
+                    case .chapterVocabulary:
+                        chapterVocabularyLayout(in: safeFrame)
                     case .scene:
                         sceneLayout(in: safeFrame)
                     }
@@ -1272,6 +1343,26 @@ private struct PictureBookSpreadView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
+    }
+
+    private func chapterQuizLayout(in frame: CGRect) -> some View {
+        let resolved: (questions: [ComprehensionQuestion], isStoryWideFallback: Bool) = {
+            guard let chapter = spread.chapter else { return ([], false) }
+            return ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+        }()
+        let title = resolved.isStoryWideFallback ? "Story Comprehension Quiz" : "Chapter Comprehension"
+        return InlineChapterQuizView(questions: resolved.questions, title: title)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+    }
+
+    private func chapterVocabularyLayout(in frame: CGRect) -> some View {
+        InlineChapterVocabularyView(
+            vocabularyNote: spread.chapter?.vocabularyNote ?? "",
+            title: "Chapter Word Focus"
+        )
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
     }
 
     private var supplementalWordTimings: [WordTiming] {

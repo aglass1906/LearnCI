@@ -339,6 +339,32 @@ struct AudioBookReaderView: View {
                     firstClipIndex: firstClipByChapter[index]
                 )
 
+            case .chapterQuiz(let index):
+                guard let chapter = adapter.chapter(for: item) else { return nil }
+                return AudioBookNavItem(
+                    id: item.id,
+                    spineItem: item,
+                    kind: .chapterQuiz,
+                    title: "Chapter Quiz",
+                    subtitle: chapter.titleTargetLanguage.nilIfEmptyAudioBook,
+                    imageURL: adapter.chapterImageURL(forChapterAt: index),
+                    chapterIndex: index,
+                    firstClipIndex: nil
+                )
+
+            case .chapterVocabulary(let index):
+                guard let chapter = adapter.chapter(for: item) else { return nil }
+                return AudioBookNavItem(
+                    id: item.id,
+                    spineItem: item,
+                    kind: .chapterVocabulary,
+                    title: "Word Focus",
+                    subtitle: chapter.titleTargetLanguage.nilIfEmptyAudioBook,
+                    imageURL: adapter.chapterImageURL(forChapterAt: index),
+                    chapterIndex: index,
+                    firstClipIndex: nil
+                )
+
             case .scene:
                 return nil
             }
@@ -503,7 +529,33 @@ struct AudioBookReaderView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
+    @ViewBuilder
     private func currentItemHero(_ item: AudioBookNavItem) -> some View {
+        switch item.kind {
+        case .chapterQuiz:
+            if let chapterIndex = item.chapterIndex,
+               story.chapters.indices.contains(chapterIndex) {
+                let chapter = story.chapters[chapterIndex]
+                let resolved = ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+                let title = resolved.isStoryWideFallback ? "Story Comprehension Quiz" : "Chapter Comprehension"
+                InlineChapterQuizView(questions: resolved.questions, title: title)
+                    .frame(maxWidth: .infinity, maxHeight: 360, alignment: .top)
+            }
+        case .chapterVocabulary:
+            if let chapterIndex = item.chapterIndex,
+               story.chapters.indices.contains(chapterIndex) {
+                InlineChapterVocabularyView(
+                    vocabularyNote: story.chapters[chapterIndex].vocabularyNote ?? "",
+                    title: "Chapter Word Focus"
+                )
+                .frame(maxWidth: .infinity, maxHeight: 360, alignment: .top)
+            }
+        default:
+            standardItemHero(item)
+        }
+    }
+
+    private func standardItemHero(_ item: AudioBookNavItem) -> some View {
         VStack(spacing: 16) {
             ZStack(alignment: .topTrailing) {
                 Group {
@@ -932,6 +984,12 @@ struct AudioBookReaderView: View {
             if autoplay {
                 beginPlaybackFromCover()
             }
+        case .chapterQuiz, .chapterVocabulary:
+            stopSupplementalPlayback()
+            audioManager.stopAudio()
+            isPlaying = false
+            sliderValue = 0
+            duration = 0
         }
     }
 
@@ -975,6 +1033,9 @@ struct AudioBookReaderView: View {
                 isPlaying = true
                 didPlayAudio = true
             }
+
+        case .chapterQuiz, .chapterVocabulary:
+            break
 
         case .none:
             beginPlaybackFromCover()
@@ -1364,12 +1425,16 @@ private enum AudioBookNavKind {
     case cover
     case readingMatter
     case chapter
+    case chapterQuiz
+    case chapterVocabulary
 
     var label: String {
         switch self {
         case .cover: return "Cover"
         case .readingMatter: return "Reading Matter"
         case .chapter: return "Chapter"
+        case .chapterQuiz: return "Quiz"
+        case .chapterVocabulary: return "Word Focus"
         }
     }
 
@@ -1378,6 +1443,8 @@ private enum AudioBookNavKind {
         case .cover: return "book.closed.fill"
         case .readingMatter: return "doc.text.fill"
         case .chapter: return "headphones"
+        case .chapterQuiz: return "checkmark.circle.fill"
+        case .chapterVocabulary: return "text.book.closed.fill"
         }
     }
 }
@@ -2095,6 +2162,42 @@ private struct AudioBookTranscriptSheet: View {
             })
 
             return sections
+
+        case .chapterQuiz:
+            guard let chapterIndex = navItem.chapterIndex,
+                  let chapter = story.chapters[safeAudioBook: chapterIndex] else {
+                return []
+            }
+            let resolved = ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+            let body = resolved.questions.enumerated().map { index, question in
+                "\(index + 1). \(question.question)"
+            }.joined(separator: "\n\n")
+            return [
+                AudioBookTranscriptSection(
+                    id: "chapter-\(chapterIndex)-quiz",
+                    heading: "Chapter Quiz",
+                    body: body.isEmpty ? "No comprehension questions yet." : body,
+                    segments: [],
+                    isNowPlaying: false,
+                    allowsWordLookup: false
+                )
+            ]
+
+        case .chapterVocabulary:
+            guard let chapterIndex = navItem.chapterIndex,
+                  let chapter = story.chapters[safeAudioBook: chapterIndex] else {
+                return []
+            }
+            return [
+                AudioBookTranscriptSection(
+                    id: "chapter-\(chapterIndex)-vocab",
+                    heading: "Word Focus",
+                    body: chapter.vocabularyNote ?? "",
+                    segments: [],
+                    isNowPlaying: false,
+                    allowsWordLookup: true
+                )
+            ]
         }
     }
 }

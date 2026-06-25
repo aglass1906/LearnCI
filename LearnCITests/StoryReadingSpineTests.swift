@@ -762,6 +762,93 @@ final class StoryReadingSpineTests: XCTestCase {
         XCTAssertEqual(sceneSpread.spineContextLabel, "Ch 1 · Capitulo Uno · Scene 2")
     }
 
+    func testStoryBookSpineInsertsChapterQuizAndVocabularyAfterChapter() throws {
+        let questions = [
+            ComprehensionQuestion(question: "Q?", choices: ["a", "b", "c", "d"], correctIndex: 0)
+        ]
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", audioUrl: "a/scene_0.mp3")
+                ],
+                comprehensionQuestions: questions,
+                vocabularyNote: "gato\nEl gato come."
+            )
+        ]
+        let story = try makeStory(layout: nil, chapters: chapters, readingMatterPages: [])
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id),
+            ["cover", "chapter-0", "quiz-0", "vocab-0"]
+        )
+    }
+
+    func testChapterQuizResolverFallsBackToStoryWideQuestions() throws {
+        let storyQuestions = [
+            ComprehensionQuestion(question: "Story?", choices: ["a", "b", "c", "d"], correctIndex: 1)
+        ]
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", audioUrl: "a/scene_0.mp3")
+                ]
+            ),
+            StoryChapter(
+                chapterNumber: 2,
+                titleTargetLanguage: "Capitulo Dos",
+                titleEnglish: "Chapter Two",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena dos", audioUrl: "a/scene_1.mp3")
+                ]
+            )
+        ]
+        let story = try makeStory(
+            layout: nil,
+            chapters: chapters,
+            readingMatterPages: []
+        )
+        story.comprehensionQuestionsJSON = try encode(storyQuestions)
+
+        let spine = StoryReadingSpine.make(for: story, mode: .storyBook).items.map(\.id)
+        XCTAssertEqual(spine.last, "quiz-1")
+
+        let resolved = ChapterComprehensionQuizResolver.questions(
+            for: chapters[1],
+            in: story
+        )
+        XCTAssertTrue(resolved.isStoryWideFallback)
+        XCTAssertEqual(resolved.questions.count, 1)
+    }
+
+    func testPictureBookSpinePlacesQuizAndVocabAfterChapterScenes() throws {
+        let chapters = [
+            StoryChapter(
+                chapterNumber: 1,
+                titleTargetLanguage: "Capitulo Uno",
+                titleEnglish: "Chapter One",
+                scenes: [
+                    StoryScene(sceneIndex: 0, captionTarget: "Escena uno", audioUrl: "a/scene_0.mp3")
+                ],
+                comprehensionQuestions: [
+                    ComprehensionQuestion(question: "Q?", choices: ["a", "b", "c", "d"], correctIndex: 0)
+                ],
+                vocabularyNote: "perro"
+            )
+        ]
+        let story = try makeStory(layout: StoryLayout(), chapters: chapters, readingMatterPages: [])
+
+        XCTAssertEqual(
+            StoryReadingSpine.make(for: story, mode: .pictureBook).items.map(\.id),
+            ["cover", "scene-0-0", "quiz-0", "vocab-0"]
+        )
+    }
+
     private func makeStory(
         layout: StoryLayout?,
         chapters: [StoryChapter]? = nil,

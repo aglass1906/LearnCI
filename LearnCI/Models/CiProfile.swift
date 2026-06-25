@@ -72,21 +72,29 @@ struct CiProfile: Codable, Equatable {
     var learningStrategy: LearningStrategy = .comprehensibleNarrative
     var learningObjective: String = ""
     var pedagogicalGoals: String = ""
+    var generateQuiz: Bool = true
+    var generateChapterVocabulary: Bool = true
 
     enum CodingKeys: String, CodingKey {
         case learningStrategy
         case learningObjective
         case pedagogicalGoals
+        case generateQuiz
+        case generateChapterVocabulary
     }
 
     init(
         learningStrategy: LearningStrategy = .comprehensibleNarrative,
         learningObjective: String = "",
-        pedagogicalGoals: String = ""
+        pedagogicalGoals: String = "",
+        generateQuiz: Bool = true,
+        generateChapterVocabulary: Bool = true
     ) {
         self.learningStrategy = learningStrategy
         self.learningObjective = learningObjective
         self.pedagogicalGoals = pedagogicalGoals
+        self.generateQuiz = generateQuiz
+        self.generateChapterVocabulary = generateChapterVocabulary
     }
 
     init(from decoder: Decoder) throws {
@@ -95,6 +103,8 @@ struct CiProfile: Codable, Equatable {
         learningStrategy = LearningStrategy.fromStorage(raw)
         learningObjective = try container.decodeIfPresent(String.self, forKey: .learningObjective) ?? ""
         pedagogicalGoals = try container.decodeIfPresent(String.self, forKey: .pedagogicalGoals) ?? ""
+        generateQuiz = try container.decodeIfPresent(Bool.self, forKey: .generateQuiz) ?? true
+        generateChapterVocabulary = try container.decodeIfPresent(Bool.self, forKey: .generateChapterVocabulary) ?? true
     }
 
     /// Stakeholder-facing learning profile summary (English / native language).

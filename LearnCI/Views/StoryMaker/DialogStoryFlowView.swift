@@ -128,6 +128,10 @@ struct DialogStoryFlowView: View {
             } else {
                 Color.clear.onAppear { beginDialogue(for: index) }
             }
+        case .chapterQuiz:
+            dialogChapterQuizPage
+        case .chapterVocabulary:
+            dialogChapterVocabularyPage
         case .scene, .none:
             if spineIndex >= spineItems.count {
                 completionView
@@ -392,6 +396,10 @@ struct DialogStoryFlowView: View {
                 return "Reading Matter"
             case .chapter(let index):
                 return chapterSubtitle(for: index)
+            case .chapterQuiz:
+                return "Chapter Quiz"
+            case .chapterVocabulary:
+                return "Word Focus"
             case .scene:
                 return "Dialog"
             }
@@ -636,10 +644,39 @@ struct DialogStoryFlowView: View {
             case .scene(let chapterIndex, _):
                 beginDialogue(for: chapterIndex)
                 return
-            case .cover, .readingMatterPage:
+            case .cover, .readingMatterPage, .chapterQuiz, .chapterVocabulary:
                 return
             }
         }
+    }
+
+    private var dialogChapterQuizPage: some View {
+        Group {
+            if let item = currentSpineItem,
+               let chapter = adapter.chapter(for: item) {
+                let resolved = ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+                let title = resolved.isStoryWideFallback ? "Story Comprehension Quiz" : "Chapter Comprehension"
+                InlineChapterQuizView(questions: resolved.questions, title: title)
+            } else {
+                InlineChapterQuizView(questions: [], title: "Chapter Comprehension")
+            }
+        }
+        .padding()
+    }
+
+    private var dialogChapterVocabularyPage: some View {
+        Group {
+            if let item = currentSpineItem,
+               let chapter = adapter.chapter(for: item) {
+                InlineChapterVocabularyView(
+                    vocabularyNote: chapter.vocabularyNote ?? "",
+                    title: "Chapter Word Focus"
+                )
+            } else {
+                InlineChapterVocabularyView(vocabularyNote: "", title: "Chapter Word Focus")
+            }
+        }
+        .padding()
     }
 
     private func advanceSpineStep() {
@@ -652,7 +689,7 @@ struct DialogStoryFlowView: View {
         }
 
         switch item {
-        case .cover, .readingMatterPage:
+        case .cover, .readingMatterPage, .chapterQuiz, .chapterVocabulary:
             spineIndex += 1
             if spineIndex >= spineItems.count {
                 dismiss()
@@ -714,7 +751,7 @@ struct DialogStoryFlowView: View {
 
     private var progressChapterIndex: Int? {
         switch currentSpineItem {
-        case .chapter(let index), .scene(let index, _):
+        case .chapter(let index), .scene(let index, _), .chapterQuiz(let index), .chapterVocabulary(let index):
             return index
         default:
             if case .dialogue(let chapterIndex) = flowPhase {

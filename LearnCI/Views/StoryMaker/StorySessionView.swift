@@ -375,6 +375,10 @@ struct StorySessionView: View {
                         currentReadingMatterPageView
                     case .chapter:
                         chapterReaderContent
+                    case .chapterQuiz:
+                        currentChapterQuizView
+                    case .chapterVocabulary:
+                        currentChapterVocabularyView
                     case .scene, .none:
                         StoryReaderUnavailableView(
                             title: "Reader Data Missing",
@@ -974,6 +978,12 @@ struct StorySessionView: View {
         return nil
     }
 
+    private var isOnChapterSupplementSpineItem: Bool {
+        if case .chapterQuiz = currentSpineItem { return true }
+        if case .chapterVocabulary = currentSpineItem { return true }
+        return false
+    }
+
     private var isOnSupplementalSpineItem: Bool {
         if isOnReadingMatterSpineItem { return true }
         if isOnChapterSpineItem, isShowingChapterIntro { return true }
@@ -1006,6 +1016,7 @@ struct StorySessionView: View {
     }
 
     private var canControlCurrentSpinePlayback: Bool {
+        if isOnChapterSupplementSpineItem { return false }
         if isOnSupplementalSpineItem {
             if isShowingChapterIntro { return hasChapterIntroContent }
             return isOnPlayableReadingMatter
@@ -1248,6 +1259,35 @@ struct StorySessionView: View {
             return "Chapter \(index + 1)"
         case .scene:
             return nil
+        case .chapterQuiz:
+            return "Chapter Quiz"
+        case .chapterVocabulary:
+            return "Word Focus"
+        }
+    }
+
+    @ViewBuilder
+    private var currentChapterQuizView: some View {
+        if let item = currentSpineItem,
+           let chapter = adapter.chapter(for: item) {
+            let resolved = ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+            let title = resolved.isStoryWideFallback ? "Story Comprehension Quiz" : "Chapter Comprehension"
+            InlineChapterQuizView(questions: resolved.questions, title: title)
+        } else {
+            InlineChapterQuizView(questions: [], title: "Chapter Comprehension")
+        }
+    }
+
+    @ViewBuilder
+    private var currentChapterVocabularyView: some View {
+        if let item = currentSpineItem,
+           let chapter = adapter.chapter(for: item) {
+            InlineChapterVocabularyView(
+                vocabularyNote: chapter.vocabularyNote ?? "",
+                title: "Chapter Word Focus"
+            )
+        } else {
+            InlineChapterVocabularyView(vocabularyNote: "", title: "Chapter Word Focus")
         }
     }
 
@@ -1579,13 +1619,17 @@ struct StorySessionView: View {
     }
 
     private var currentChapter: StoryChapter? {
-        guard let item = storyBookChapterItems.first(where: { chapterIndex(for: $0) == currentChapterIndex }) else { return nil }
-        return adapter.chapter(for: item)
+        if let item = currentSpineItem, let chapter = adapter.chapter(for: item) {
+            return chapter
+        }
+        if let item = storyBookChapterItems.first(where: { chapterIndex(for: $0) == currentChapterIndex }) {
+            return adapter.chapter(for: item)
+        }
+        return story.chapters[safeStorySession: currentChapterIndex]
     }
 
     private func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
-        guard case .chapter(let index) = item else { return nil }
-        return index
+        adapter.chapterIndex(for: item)
     }
 
     private var hasChapterIntroContent: Bool {
@@ -1674,6 +1718,17 @@ struct StorySessionView: View {
             if isAutoContinueEnabled {
                 scheduleAutoAdvanceToNextSpineItem()
             }
+        case .chapterQuiz(let chapterIndex), .chapterVocabulary(let chapterIndex):
+            readingMatterHeroImage = nil
+            audioManager.stopAudio()
+            isShowingChapterIntro = false
+            currentChapterIndex = chapterIndex
+            sliderValue = 0
+            duration = 0
+            loadChapterImage()
+            if isAutoContinueEnabled {
+                scheduleAutoAdvanceToNextSpineItem(delay: 3.0)
+            }
         case .scene:
             audioManager.stopAudio()
             isShowingChapterIntro = false
@@ -1698,6 +1753,9 @@ struct StorySessionView: View {
         case .readingMatterPage:
             isShowingChapterIntro = false
             prepareSupplementalPlaybackForCurrentSpineItem()
+        case .chapterQuiz(let chapterIndex), .chapterVocabulary(let chapterIndex):
+            currentChapterIndex = chapterIndex
+            isShowingChapterIntro = false
         case .cover, .scene:
             isShowingChapterIntro = false
         }
@@ -1725,7 +1783,7 @@ struct StorySessionView: View {
 
     private var progressChapterIndex: Int? {
         switch currentSpineItem {
-        case .chapter(let index), .scene(let index, _):
+        case .chapter(let index), .scene(let index, _), .chapterQuiz(let index), .chapterVocabulary(let index):
             return index
         default:
             return nil
@@ -1762,6 +1820,11 @@ struct StorySessionView: View {
 
     private func startAutoContinueForCurrentSpineItem() {
         cancelScheduledAutoAdvance()
+
+        if isOnChapterSupplementSpineItem {
+            scheduleAutoAdvanceToNextSpineItem(delay: 3.0)
+            return
+        }
 
         if isOnSupplementalSpineItem {
             if canControlCurrentSpinePlayback {
@@ -1887,9 +1950,6 @@ struct StorySessionView: View {
         }
 
         isPlaying = false
-        if !navigateToQuiz {
-            navigateToQuiz = true
-        }
     }
 
     private func loadStoryCoverImage() {
@@ -2645,6 +2705,10 @@ private struct StoryBookPlayerSheet: View {
             return "doc.text"
         case .chapter:
             return "text.book.closed"
+        case .chapterQuiz:
+            return "checkmark.circle"
+        case .chapterVocabulary:
+            return "text.book.closed.fill"
         case .scene:
             return "photo"
         }

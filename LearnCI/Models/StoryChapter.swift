@@ -22,6 +22,16 @@ struct StoryChapter: Codable, Identifiable, Equatable {
     var scenes: [StoryScene] = []
     var nativeAudioUrl: String?
     var nativeWordTimings: [WordTiming]?
+    var comprehensionQuestions: [ComprehensionQuestion]?
+    var vocabularyNote: String?
+
+    var hasChapterQuizContent: Bool {
+        !(comprehensionQuestions?.isEmpty ?? true)
+    }
+
+    var hasChapterVocabularyContent: Bool {
+        !(vocabularyNote?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+    }
 
     var isPrologue: Bool { chapterType == "prologue" }
     var isEpilogue: Bool { chapterType == "epilogue" }
@@ -147,6 +157,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case nativeAudioUrlCamel = "nativeAudioUrl"
         case nativeWordTimings = "native_word_timings"
         case nativeWordTimingsCamel = "nativeWordTimings"
+        case comprehensionQuestions = "comprehension_questions"
+        case vocabularyNote = "vocabulary_note"
     }
 
     init(from decoder: Decoder) throws {
@@ -176,6 +188,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
             ?? (try? container.decode(String.self, forKey: .nativeAudioUrlCamel))
         nativeWordTimings = (try? container.decode([WordTiming].self, forKey: .nativeWordTimings))
             ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
+        comprehensionQuestions = try? container.decode([ComprehensionQuestion].self, forKey: .comprehensionQuestions)
+        vocabularyNote = try? container.decode(String.self, forKey: .vocabularyNote)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -200,6 +214,8 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         try container.encode(scenes, forKey: .scenes)
         try container.encodeIfPresent(nativeAudioUrl, forKey: .nativeAudioUrl)
         try container.encodeIfPresent(nativeWordTimings, forKey: .nativeWordTimings)
+        try container.encodeIfPresent(comprehensionQuestions, forKey: .comprehensionQuestions)
+        try container.encodeIfPresent(vocabularyNote, forKey: .vocabularyNote)
     }
 
     init(id: UUID = UUID(),
@@ -221,7 +237,9 @@ struct StoryChapter: Codable, Identifiable, Equatable {
          chapterIntroWordTimings: [WordTiming]? = nil,
          scenes: [StoryScene] = [],
          nativeAudioUrl: String? = nil,
-         nativeWordTimings: [WordTiming]? = nil) {
+         nativeWordTimings: [WordTiming]? = nil,
+         comprehensionQuestions: [ComprehensionQuestion]? = nil,
+         vocabularyNote: String? = nil) {
         self.id = id
         self.chapterNumber = chapterNumber
         self.chapterType = chapterType
@@ -242,5 +260,7 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         self.scenes = scenes
         self.nativeAudioUrl = nativeAudioUrl
         self.nativeWordTimings = nativeWordTimings
+        self.comprehensionQuestions = comprehensionQuestions
+        self.vocabularyNote = vocabularyNote
     }
 }

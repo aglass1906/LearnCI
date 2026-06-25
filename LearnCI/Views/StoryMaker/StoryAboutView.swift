@@ -777,6 +777,10 @@ private struct BookSpineSheet: View {
             return "doc.text"
         case .chapter:
             return "book.pages"
+        case .chapterQuiz:
+            return "checkmark.circle"
+        case .chapterVocabulary:
+            return "text.book.closed.fill"
         case .scene:
             return "photo.on.rectangle"
         }
@@ -790,6 +794,10 @@ private struct BookSpineSheet: View {
             return .indigo
         case .chapter:
             return .blue
+        case .chapterQuiz:
+            return .green
+        case .chapterVocabulary:
+            return .teal
         case .scene:
             return .orange
         }

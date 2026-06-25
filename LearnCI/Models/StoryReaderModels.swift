@@ -641,6 +641,8 @@ enum StoryReadingSpineItem: Identifiable, Equatable {
     case readingMatterPage(index: Int, id: String)
     case chapter(index: Int)
     case scene(chapterIndex: Int, sceneIndex: Int)
+    case chapterQuiz(index: Int)
+    case chapterVocabulary(index: Int)
 
     var id: String {
         switch self {
@@ -652,6 +654,10 @@ enum StoryReadingSpineItem: Identifiable, Equatable {
             return "chapter-\(index)"
         case .scene(let chapterIndex, let sceneIndex):
             return "scene-\(chapterIndex)-\(sceneIndex)"
+        case .chapterQuiz(let index):
+            return "quiz-\(index)"
+        case .chapterVocabulary(let index):
+            return "vocab-\(index)"
         }
     }
 }
@@ -681,9 +687,15 @@ struct StoryReadingSpine {
         var mainItems: [StoryReadingSpineItem] = []
         switch mode {
         case .storyBook:
-            mainItems.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+            for index in story.chapters.indices {
+                mainItems.append(.chapter(index: index))
+                mainItems.append(contentsOf: chapterSupplementItems(for: story, chapterIndex: index))
+            }
         case .audioBook:
-            mainItems.append(contentsOf: story.chapters.indices.map { .chapter(index: $0) })
+            for index in story.chapters.indices {
+                mainItems.append(.chapter(index: index))
+                mainItems.append(contentsOf: chapterSupplementItems(for: story, chapterIndex: index))
+            }
             mainItems.append(contentsOf: sceneItems(for: story, useLayoutOrder: false))
         case .dialogStory:
             for chapterIndex in story.chapters.indices {
@@ -693,9 +705,10 @@ struct StoryReadingSpine {
                     chapterIndex: chapterIndex,
                     useLayoutOrder: false
                 ))
+                mainItems.append(contentsOf: chapterSupplementItems(for: story, chapterIndex: chapterIndex))
             }
         case .pictureBook, .comicBook:
-            mainItems.append(contentsOf: sceneItemsWithChapterIntros(for: story, useLayoutOrder: true))
+            mainItems.append(contentsOf: panelStoryItemsWithSupplements(for: story, useLayoutOrder: true))
         }
 
         for matter in positionedMatter.reversed() {
@@ -802,6 +815,59 @@ struct StoryReadingSpine {
         }
 
         return result
+    }
+
+    private static func panelStoryItemsWithSupplements(
+        for story: Story,
+        useLayoutOrder: Bool
+    ) -> [StoryReadingSpineItem] {
+        let scenes = sceneItems(for: story, useLayoutOrder: useLayoutOrder)
+        var result: [StoryReadingSpineItem] = []
+        var introducedChapters = Set<Int>()
+        var supplementsInserted = Set<Int>()
+
+        for (index, item) in scenes.enumerated() {
+            if case .scene(let chapterIndex, _) = item {
+                if introducedChapters.insert(chapterIndex).inserted,
+                   story.chapters.indices.contains(chapterIndex),
+                   story.chapters[chapterIndex].hasChapterIntroContent {
+                    result.append(.chapter(index: chapterIndex))
+                }
+            }
+
+            result.append(item)
+
+            guard case .scene(let chapterIndex, _) = item else { continue }
+            let hasLaterSceneInChapter = scenes[(index + 1)...].contains {
+                if case .scene(let laterChapterIndex, _) = $0 {
+                    return laterChapterIndex == chapterIndex
+                }
+                return false
+            }
+            guard !hasLaterSceneInChapter,
+                  supplementsInserted.insert(chapterIndex).inserted else { continue }
+            result.append(contentsOf: chapterSupplementItems(for: story, chapterIndex: chapterIndex))
+        }
+
+        return result
+    }
+
+    private static func chapterSupplementItems(
+        for story: Story,
+        chapterIndex: Int
+    ) -> [StoryReadingSpineItem] {
+        guard story.chapters.indices.contains(chapterIndex) else { return [] }
+        let chapter = story.chapters[chapterIndex]
+        guard !chapter.isPrologue, !chapter.isEpilogue else { return [] }
+
+        var items: [StoryReadingSpineItem] = []
+        if ChapterComprehensionQuizResolver.shouldShowQuiz(for: chapter, in: story, chapterIndex: chapterIndex) {
+            items.append(.chapterQuiz(index: chapterIndex))
+        }
+        if ChapterComprehensionQuizResolver.shouldShowVocabulary(for: chapter, in: story) {
+            items.append(.chapterVocabulary(index: chapterIndex))
+        }
+        return items
     }
 
     private enum ReadingMatterPosition {
@@ -942,9 +1008,45 @@ private extension StoryReadingSpineItem {
             return index == chapterIndex
         case .scene(let index, _):
             return index == chapterIndex
+        case .chapterQuiz(let index), .chapterVocabulary(let index):
+            return index == chapterIndex
         case .cover, .readingMatterPage:
             return false
         }
+    }
+}
+
+enum ChapterComprehensionQuizResolver {
+    static func questions(
+        for chapter: StoryChapter,
+        in story: Story
+    ) -> (questions: [ComprehensionQuestion], isStoryWideFallback: Bool) {
+        if let chapterQuestions = chapter.comprehensionQuestions, !chapterQuestions.isEmpty {
+            return (chapterQuestions, false)
+        }
+        let storyQuestions = story.comprehensionQuestions
+        return (storyQuestions, !storyQuestions.isEmpty)
+    }
+
+    static func shouldShowQuiz(
+        for chapter: StoryChapter,
+        in story: Story,
+        chapterIndex: Int
+    ) -> Bool {
+        guard !chapter.isPrologue, !chapter.isEpilogue else { return false }
+        if chapter.hasChapterQuizContent { return true }
+
+        let anyChapterHasOwnedQuiz = story.chapters.contains { $0.hasChapterQuizContent }
+        let storyWideQuiz = !story.comprehensionQuestions.isEmpty
+        return storyWideQuiz
+            && !anyChapterHasOwnedQuiz
+            && chapterIndex == story.chapters.count - 1
+    }
+
+    static func shouldShowVocabulary(for chapter: StoryChapter, in story: Story) -> Bool {
+        guard !chapter.isPrologue, !chapter.isEpilogue else { return false }
+        guard chapter.hasChapterVocabularyContent else { return false }
+        return story.ciProfile?.generateChapterVocabulary ?? true
     }
 }
 
@@ -1068,6 +1170,10 @@ enum StoryReadingSpineTitles {
                 return sceneTitle(from: scene, sceneIndex: sceneIndex, breakdownTitle: breakdown)
             }
             return "Scene \(sceneIndex + 1)"
+        case .chapterQuiz:
+            return "Chapter Quiz"
+        case .chapterVocabulary:
+            return "Word Focus"
         }
     }
 
@@ -1088,6 +1194,12 @@ enum StoryReadingSpineTitles {
         case .scene(let chapterIndex, let sceneIndex):
             let chapter = story.chapters[safeSpineTitle: chapterIndex]
             return sceneContextLabel(chapter: chapter, chapterIndex: chapterIndex, sceneIndex: sceneIndex)
+        case .chapterQuiz(let chapterIndex):
+            guard let chapter = story.chapters[safeSpineTitle: chapterIndex] else { return "Chapter Quiz" }
+            return "\(chapterPrefix(for: chapter, index: chapterIndex))Quiz"
+        case .chapterVocabulary(let chapterIndex):
+            guard let chapter = story.chapters[safeSpineTitle: chapterIndex] else { return "Word Focus" }
+            return "\(chapterPrefix(for: chapter, index: chapterIndex))Vocabulary"
         }
     }
 

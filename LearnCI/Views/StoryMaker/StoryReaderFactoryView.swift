@@ -349,6 +349,10 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
             return "doc.text"
         case .chapter:
             return "text.book.closed"
+        case .chapterQuiz:
+            return "checkmark.circle"
+        case .chapterVocabulary:
+            return "text.book.closed.fill"
         case .scene:
             return "photo"
         }
@@ -356,7 +360,7 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
 
     private static func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
         switch item {
-        case .chapter(let index), .scene(let index, _):
+        case .chapter(let index), .scene(let index, _), .chapterQuiz(let index), .chapterVocabulary(let index):
             return index
         default:
             return nil

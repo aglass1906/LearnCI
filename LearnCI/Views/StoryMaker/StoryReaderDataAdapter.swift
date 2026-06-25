@@ -80,8 +80,26 @@ struct StoryReaderDataAdapter {
     }
 
     func chapter(for item: StoryReadingSpineItem) -> StoryChapter? {
-        guard case .chapter(let index) = item else { return nil }
-        return story.chapters[safeReaderData: index]
+        switch item {
+        case .chapter(let index),
+             .chapterQuiz(let index),
+             .chapterVocabulary(let index):
+            return story.chapters[safeReaderData: index]
+        default:
+            return nil
+        }
+    }
+
+    func chapterIndex(for item: StoryReadingSpineItem) -> Int? {
+        switch item {
+        case .chapter(let index),
+             .scene(let index, _),
+             .chapterQuiz(let index),
+             .chapterVocabulary(let index):
+            return index
+        default:
+            return nil
+        }
     }
 
     func readingMatterPage(for item: StoryReadingSpineItem) -> ReadingMatterPage? {

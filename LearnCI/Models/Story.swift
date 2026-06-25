@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-struct ComprehensionQuestion: Codable, Identifiable {
+struct ComprehensionQuestion: Codable, Identifiable, Equatable {
     var id: UUID = UUID()
     let question: String   // In target language
     let choices: [String]  // Exactly 4 choices, in target language

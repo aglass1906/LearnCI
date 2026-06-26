@@ -23,15 +23,15 @@ struct ComicBookReaderView: View {
         StoryReaderDataAdapter(story: story)
     }
 
-    private var pages: [ComicBookPageModel] {
-        ComicBookRenderer.makePages(story: story, adapter: adapter)
+    private var segments: [ComicBookSegment] {
+        ComicBookRenderer.makeSegments(story: story, adapter: adapter)
     }
 
     var body: some View {
         Group {
             if let issue = adapter.requirementIssue(for: .comicBook) {
                 StoryReaderUnavailableView(title: issue.title, message: issue.message)
-            } else if pages.isEmpty {
+            } else if segments.isEmpty {
                 StoryReaderUnavailableView(title: "Comic Layout Missing", message: "This comic book has no visible spine-backed panels.")
             } else {
                 comicPager
@@ -57,8 +57,8 @@ struct ComicBookReaderView: View {
             Color(.systemBackground).ignoresSafeArea()
 
             TabView(selection: $currentPageIndex) {
-                ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
-                    ComicBookPageView(page: page) { panel in
+                ForEach(Array(segments.enumerated()), id: \.element.id) { index, segment in
+                    ComicBookSegmentView(story: story, adapter: adapter, segment: segment) { panel in
                         selectedPanel = panel
                     }
                     .padding(.horizontal, 14)
@@ -70,11 +70,11 @@ struct ComicBookReaderView: View {
 
             ComicPageControls(
                 currentPage: currentPageIndex + 1,
-                pageCount: pages.count,
+                pageCount: segments.count,
                 canGoBack: currentPageIndex > 0,
-                canGoForward: currentPageIndex < pages.count - 1,
+                canGoForward: currentPageIndex < segments.count - 1,
                 onBack: { currentPageIndex = max(0, currentPageIndex - 1) },
-                onForward: { currentPageIndex = min(pages.count - 1, currentPageIndex + 1) }
+                onForward: { currentPageIndex = min(segments.count - 1, currentPageIndex + 1) }
             )
             .padding(.horizontal, 18)
             .padding(.bottom, 12)
@@ -82,24 +82,113 @@ struct ComicBookReaderView: View {
     }
 
     private func reconcileInitialPage() {
-        let pageCount = pages.count
-        guard pageCount > 0 else { return }
-        currentPageIndex = min(max(0, currentPageIndex), pageCount - 1)
+        let count = segments.count
+        guard count > 0 else { return }
+        currentPageIndex = min(max(0, currentPageIndex), count - 1)
     }
 
     private func saveReadingProgress() {
-        guard pages.indices.contains(currentPageIndex) else { return }
-        let page = pages[currentPageIndex]
+        guard segments.indices.contains(currentPageIndex) else { return }
+        let segment = segments[currentPageIndex]
         onProgressChange?(StoryReaderProgressUpdate(
             index: currentPageIndex,
-            total: pages.count,
-            chapterIndex: page.chapterIndex,
-            sceneIndex: page.sceneIndex
+            total: segments.count,
+            chapterIndex: segment.chapterIndex,
+            sceneIndex: segment.sceneIndex
         ))
     }
 }
 
+enum ComicBookSegment: Identifiable, Equatable {
+    case cover
+    case readingMatter(index: Int)
+    case chapterIntro(chapterIndex: Int)
+    case chapterPage(ComicBookPageModel)
+    case chapterQuiz(chapterIndex: Int)
+    case chapterVocabulary(chapterIndex: Int)
+
+    var id: String {
+        switch self {
+        case .cover:
+            return "cover"
+        case .readingMatter(let index):
+            return "matter-\(index)"
+        case .chapterIntro(let chapterIndex):
+            return "intro-\(chapterIndex)"
+        case .chapterPage(let page):
+            return page.id
+        case .chapterQuiz(let chapterIndex):
+            return "quiz-\(chapterIndex)"
+        case .chapterVocabulary(let chapterIndex):
+            return "vocab-\(chapterIndex)"
+        }
+    }
+
+    var chapterIndex: Int? {
+        switch self {
+        case .cover, .readingMatter:
+            return nil
+        case .chapterIntro(let chapterIndex),
+             .chapterQuiz(let chapterIndex),
+             .chapterVocabulary(let chapterIndex):
+            return chapterIndex
+        case .chapterPage(let page):
+            return page.chapterIndex
+        }
+    }
+
+    var sceneIndex: Int? {
+        if case .chapterPage(let page) = self {
+            return page.sceneIndex
+        }
+        return nil
+    }
+}
+
 struct ComicBookRenderer {
+    static func makeSegments(story: Story, adapter: StoryReaderDataAdapter) -> [ComicBookSegment] {
+        let items = adapter.items(for: .comicBook)
+        let panelPages = makePages(story: story, adapter: adapter)
+        var panelPageByChapter: [Int: ComicBookPageModel] = [:]
+        for page in panelPages {
+            if let chapterIndex = page.chapterIndex {
+                panelPageByChapter[chapterIndex] = page
+            }
+        }
+
+        var segments: [ComicBookSegment] = []
+        var emittedChapterPages = Set<Int>()
+
+        for item in items {
+            switch item {
+            case .cover:
+                segments.append(.cover)
+            case .readingMatterPage(let index, _):
+                segments.append(.readingMatter(index: index))
+            case .chapter(let chapterIndex):
+                segments.append(.chapterIntro(chapterIndex: chapterIndex))
+            case .scene(let chapterIndex, _):
+                if emittedChapterPages.insert(chapterIndex).inserted,
+                   let page = panelPageByChapter[chapterIndex] {
+                    segments.append(.chapterPage(page))
+                }
+            case .chapterQuiz(let chapterIndex):
+                segments.append(.chapterQuiz(chapterIndex: chapterIndex))
+            case .chapterVocabulary(let chapterIndex):
+                segments.append(.chapterVocabulary(chapterIndex: chapterIndex))
+            }
+        }
+
+        let hasPanelSegments = segments.contains {
+            if case .chapterPage = $0 { return true }
+            return false
+        }
+        if hasPanelSegments {
+            return segments
+        }
+        return panelPages.map { .chapterPage($0) }
+    }
+
     static func makePages(story: Story, adapter: StoryReaderDataAdapter) -> [ComicBookPageModel] {
         guard let layout = story.storyLayout, !layout.pages.isEmpty else { return [] }
         let spineSceneIDs = Set(adapter.spine(for: .comicBook).sceneItems.map(\.id))
@@ -130,14 +219,29 @@ struct ComicBookRenderer {
         }
         .filter { !$0.panels.isEmpty }
     }
+
+    static func storyCoverImageURL(for story: Story) -> URL? {
+        if let path = story.remoteCoverPath?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !path.isEmpty,
+           let url = AppConfig.chapterCoverURL(path) {
+            return url
+        }
+        if let path = story.coverArt?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !path.isEmpty,
+           let url = AppConfig.chapterCoverURL(path) {
+            return url
+        }
+        return nil
+    }
 }
 
 struct ComicBookPageModel: Identifiable, Equatable {
-    let id = UUID()
     let pageNumber: Int
     let chapterIndex: Int?
     let sceneIndex: Int?
     let panels: [ComicPanelModel]
+
+    var id: String { "page-\(pageNumber)" }
 }
 
 struct ComicPanelModel: Identifiable, Equatable {
@@ -155,6 +259,85 @@ struct ComicPanelModel: Identifiable, Equatable {
         scene.captionTarget?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
             ?? scene.scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
             ?? ""
+    }
+}
+
+private struct ComicBookSegmentView: View {
+    let story: Story
+    let adapter: StoryReaderDataAdapter
+    let segment: ComicBookSegment
+    let onPanelTap: (ComicPanelModel) -> Void
+
+    var body: some View {
+        switch segment {
+        case .cover:
+            ScrollView {
+                VStack(spacing: 16) {
+                    if let url = ComicBookRenderer.storyCoverImageURL(for: story) {
+                        AsyncImage(url: url) { phase in
+                            if case .success(let image) = phase {
+                                image.resizable().scaledToFit()
+                            } else {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.secondarySystemBackground))
+                                    .frame(height: 220)
+                            }
+                        }
+                    }
+                    Text(story.title)
+                        .font(.title2.weight(.bold))
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+            }
+        case .readingMatter(let index):
+            if let page = story.readingMatterPages[safe: index] {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(page.titleTarget ?? page.titleNative ?? "Reading Matter")
+                            .font(.title3.weight(.semibold))
+                        if let body = page.bodyTarget ?? page.bodyNative {
+                            TappableStoryText(text: body, font: .body)
+                        }
+                    }
+                    .padding()
+                }
+            }
+        case .chapterIntro(let chapterIndex):
+            if let chapter = story.chapters[safe: chapterIndex] {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex))
+                            .font(.title3.weight(.semibold))
+                        if let intro = chapter.chapterIntroText {
+                            TappableStoryText(text: intro, font: .body)
+                        }
+                    }
+                    .padding()
+                }
+            }
+        case .chapterPage(let page):
+            ComicBookPageView(page: page, onPanelTap: onPanelTap)
+        case .chapterQuiz(let chapterIndex):
+            if let chapter = story.chapters[safe: chapterIndex] {
+                let resolved = ChapterComprehensionQuizResolver.questions(for: chapter, in: story)
+                let title = resolved.isStoryWideFallback ? "Story Comprehension Quiz" : "Chapter Comprehension"
+                ScrollView {
+                    InlineChapterQuizView(questions: resolved.questions, title: title)
+                        .padding()
+                }
+            }
+        case .chapterVocabulary(let chapterIndex):
+            if let chapter = story.chapters[safe: chapterIndex] {
+                ScrollView {
+                    InlineChapterVocabularyView(
+                        vocabularyNote: chapter.vocabularyNote ?? "",
+                        title: "Chapter Word Focus"
+                    )
+                    .padding()
+                }
+            }
+        }
     }
 }
 

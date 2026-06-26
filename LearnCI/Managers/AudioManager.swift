@@ -36,6 +36,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var onStreamFinished: (() -> Void)?
     private var streamTimeObserver: Any?
     private var streamItemObservations: [NSKeyValueObservation] = []
+    private var playStreamWhenItemReady = false
     private var isAudioSessionConfigured = false
     private var wasPlayingBeforeInterruption = false
     private var wasStreamingBeforeInterruption = false
@@ -673,35 +674,37 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     func playStream() {
-        guard streamPlayer != nil else {
+        guard let player = streamPlayer else {
             streamLoadError = streamLoadError ?? "Audio is not ready to play yet."
             isStreaming = false
+            playStreamWhenItemReady = false
             return
         }
 
         activatePlaybackSession()
-        streamPlayer?.play()
-        // Apply custom rate if set (no-op if 1.0)
-        if streamPlaybackRate != 1.0 {
-            streamPlayer?.rate = streamPlaybackRate
-        }
-        isStreaming = true
-        updateStreamBufferingState()
-    }
 
-    func announceThenPlayStream(_ announcement: String?, language: Language, rate: Float = 0.5) {
-        guard let announcement = announcement?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !announcement.isEmpty else {
-            playStream()
+        guard let item = player.currentItem else {
+            playStreamWhenItemReady = true
             return
         }
 
-        streamPlayer?.pause()
-        isStreaming = false
-        onCompletion = { [weak self] in
-            self?.playStream()
+        switch item.status {
+        case .readyToPlay:
+            playStreamWhenItemReady = false
+            player.play()
+            if streamPlaybackRate != 1.0 {
+                player.rate = streamPlaybackRate
+            }
+            isStreaming = true
+            updateStreamBufferingState()
+        case .failed:
+            playStreamWhenItemReady = false
+            isStreaming = false
+        case .unknown:
+            playStreamWhenItemReady = true
+        @unknown default:
+            playStreamWhenItemReady = true
         }
-        speak(text: announcement, language: language, gender: nil, rate: rate)
     }
 
     func pauseStream() {
@@ -751,6 +754,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamPlaybackRate = 1.0
         streamLoadError = nil
         streamIsBuffering = false
+        playStreamWhenItemReady = false
         clearNowPlayingInfo()
     }
 
@@ -833,6 +837,9 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             let duration = item.duration
             if duration.isNumeric {
                 streamDuration = CMTimeGetSeconds(duration)
+            }
+            if playStreamWhenItemReady {
+                playStream()
             }
         case .failed:
             streamLoadError = item.error?.localizedDescription ?? "Could not load episode audio."

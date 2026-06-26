@@ -463,8 +463,7 @@ struct StorySessionView: View {
         )
         if autoplay {
             startAmbient()
-            let announcement = startAt == 0 ? adapter.playbackAnnouncement(for: clip) : nil
-            audioManager.announceThenPlayStream(announcement, language: story.language)
+            audioManager.playStream()
             isPlaying = true
         }
     }
@@ -1726,9 +1725,7 @@ struct StorySessionView: View {
             sliderValue = 0
             duration = 0
             loadChapterImage()
-            if isAutoContinueEnabled {
-                scheduleAutoAdvanceToNextSpineItem(delay: 3.0)
-            }
+            isPlaying = false
         case .scene:
             audioManager.stopAudio()
             isShowingChapterIntro = false
@@ -1822,7 +1819,6 @@ struct StorySessionView: View {
         cancelScheduledAutoAdvance()
 
         if isOnChapterSupplementSpineItem {
-            scheduleAutoAdvanceToNextSpineItem(delay: 3.0)
             return
         }
 

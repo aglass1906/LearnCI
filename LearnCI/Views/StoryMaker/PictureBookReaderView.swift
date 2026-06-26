@@ -341,6 +341,16 @@ struct PictureBookReaderView: View {
         isOnReadingMatterSpread || isOnChapterIntroSpread
     }
 
+    private var isOnChapterSupplementSpread: Bool {
+        guard let spread = currentSpread else { return false }
+        switch spread.spineItem {
+        case .chapterQuiz, .chapterVocabulary:
+            return true
+        default:
+            return false
+        }
+    }
+
     private var preferNativeLanguage: Bool {
         selectedLanguage == .native
     }
@@ -615,8 +625,7 @@ struct PictureBookReaderView: View {
         audioManager.updateStreamNowPlayingInfo(title: clip.title, artist: story.title, artworkImage: nil)
         if autoplay {
             didPlayAudio = true
-            let announcement = startAt == 0 ? adapter.playbackAnnouncement(for: clip) : nil
-            audioManager.announceThenPlayStream(announcement, language: story.language)
+            audioManager.playStream()
             isPlaying = true
         }
     }
@@ -651,6 +660,14 @@ struct PictureBookReaderView: View {
 
     private func advanceAfterClipFinished() {
         audioManager.streamFinished = false
+
+        if clips.indices.contains(currentClipIndex),
+           isLastSceneClipInChapter(clips[currentClipIndex]),
+           let supplementSpread = immediateChapterSupplementSpread(after: currentSpreadIndex) {
+            goToSpread(supplementSpread, autoplay: false)
+            return
+        }
+
         guard currentClipIndex < clips.count - 1 else {
             isPlaying = false
             if let backMatterIndex = spreads.indices.dropFirst(currentSpreadIndex + 1).first(where: {
@@ -664,8 +681,27 @@ struct PictureBookReaderView: View {
         playClip(at: currentClipIndex + 1, autoplay: true)
     }
 
+    private func isLastSceneClipInChapter(_ clip: StorySceneAudioClip) -> Bool {
+        adapter.audioClips(forChapter: clip.chapterIndex).last?.id == clip.id
+    }
+
+    private func immediateChapterSupplementSpread(after spreadIndex: Int) -> Int? {
+        let next = spreadIndex + 1
+        guard spreads.indices.contains(next) else { return nil }
+        switch spreads[next].spineItem {
+        case .chapterQuiz, .chapterVocabulary:
+            return next
+        default:
+            return nil
+        }
+    }
+
     private func startAutoContinueForCurrentSpread() {
         cancelScheduledAutoAdvance()
+
+        if isOnChapterSupplementSpread {
+            return
+        }
 
         if isOnSupplementalSpread {
             if currentSupplementalCanPlay {

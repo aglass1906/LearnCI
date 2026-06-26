@@ -201,7 +201,9 @@ final class StorySupplementalAudioPlayback {
             if audioManager.streamFinished {
                 audioManager.streamFinished = false
                 isPlaying = false
-                onFinished?()
+                let handler = onFinished
+                onFinished = nil
+                handler?()
                 return
             }
 
@@ -277,7 +279,9 @@ final class StorySupplementalAudioPlayback {
                     guard let self else { return }
                     self.isPlaying = false
                     self.audioManager?.streamFinished = false
-                    self.onFinished?()
+                    let handler = self.onFinished
+                    self.onFinished = nil
+                    handler?()
                 }
                 let timedDuration = wordTimings.last?.end
                 duration = max(timedDuration ?? 0, audioManager.streamDuration, 1)

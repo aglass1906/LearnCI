@@ -161,6 +161,25 @@ struct StoryAboutView: View {
                             }
                         }
 
+                        if supportsAudioPlayback {
+                            NavigationLink(destination: StoryAudioPlaybackView(story: story)) {
+                                HStack {
+                                    Image(systemName: "headphones.circle.fill")
+                                    Text("Listen / CarPlay")
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color(.secondarySystemBackground))
+                                .foregroundColor(.primary)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                        }
+
                         // Take Quiz
                         NavigationLink(destination: StoryQuizView(story: story)) {
                             HStack {
@@ -377,6 +396,10 @@ struct StoryAboutView: View {
         case .standard:
             return "Read & Listen to the story"
         }
+    }
+
+    private var supportsAudioPlayback: Bool {
+        StoryReaderDataAdapter(story: story).requirementIssue(for: .audioBook) == nil
     }
 
     // MARK: - Helpers

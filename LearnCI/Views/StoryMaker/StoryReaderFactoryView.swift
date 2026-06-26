@@ -211,6 +211,7 @@ enum StoryReaderProgressStore {
     enum ReaderKind: String {
         case storyBook
         case audioBook
+        case audioPlayback
         case dialogStory
         case comicBook
         case pictureBook
@@ -219,6 +220,7 @@ enum StoryReaderProgressStore {
             switch self {
             case .storyBook: return "Story Book"
             case .audioBook: return "Audio Book"
+            case .audioPlayback: return "Listen"
             case .dialogStory: return "Dialog Story"
             case .comicBook: return "Comic Book"
             case .pictureBook: return "Picture Book"
@@ -293,6 +295,9 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
         case .audioBook:
             return spineLocations(items: adapter.items(for: .audioBook), story: story, adapter: adapter)
                 .filter { $0.icon != "photo" }
+        case .audioPlayback:
+            return spineLocations(items: adapter.items(for: .audioBook), story: story, adapter: adapter)
+                .filter { $0.icon != "photo" && $0.icon != "checkmark.circle" && $0.icon != "text.book.closed.fill" }
         case .dialogStory:
             return spineLocations(items: adapter.items(for: .dialogStory), story: story, adapter: adapter)
                 .filter { $0.icon != "photo" }
@@ -309,15 +314,15 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
                 )
             }
         case .comicBook:
-            return ComicBookRenderer.makePages(story: story, adapter: adapter).enumerated().map { index, page in
+            return ComicBookRenderer.makeSegments(story: story, adapter: adapter).enumerated().map { index, segment in
                 StoryReaderStartLocation(
-                    id: page.id.uuidString,
+                    id: segment.id,
                     index: index,
-                    title: "Page \(index + 1)",
-                    subtitle: comicSubtitle(for: page),
-                    icon: "rectangle.grid.2x2",
-                    chapterIndex: page.chapterIndex,
-                    sceneIndex: page.sceneIndex
+                    title: comicSegmentTitle(for: segment, index: index),
+                    subtitle: comicSegmentSubtitle(for: segment, story: story),
+                    icon: icon(for: segment),
+                    chapterIndex: segment.chapterIndex,
+                    sceneIndex: segment.sceneIndex
                 )
             }
         }
@@ -383,6 +388,58 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
             parts.append("Scene \(sceneIndex + 1)")
         }
         return parts.isEmpty ? "Comic page" : parts.joined(separator: " · ")
+    }
+
+    private static func comicSegmentTitle(for segment: ComicBookSegment, index: Int) -> String {
+        switch segment {
+        case .cover:
+            return "Cover"
+        case .readingMatter:
+            return "Reading Matter"
+        case .chapterIntro:
+            return "Chapter Intro"
+        case .chapterPage:
+            return "Page \(index + 1)"
+        case .chapterQuiz:
+            return "Chapter Quiz"
+        case .chapterVocabulary:
+            return "Word Focus"
+        }
+    }
+
+    private static func comicSegmentSubtitle(for segment: ComicBookSegment, story: Story) -> String {
+        switch segment {
+        case .cover:
+            return story.title
+        case .readingMatter:
+            return "Reading Matter"
+        case .chapterIntro(let chapterIndex),
+             .chapterQuiz(let chapterIndex),
+             .chapterVocabulary(let chapterIndex):
+            guard story.chapters.indices.contains(chapterIndex) else {
+                return "Chapter \(chapterIndex + 1)"
+            }
+            return StoryReadingSpineTitles.chapterTitle(for: story.chapters[chapterIndex], index: chapterIndex)
+        case .chapterPage(let page):
+            return comicSubtitle(for: page)
+        }
+    }
+
+    private static func icon(for segment: ComicBookSegment) -> String {
+        switch segment {
+        case .cover:
+            return "book.closed"
+        case .readingMatter:
+            return "doc.text"
+        case .chapterIntro:
+            return "text.book.closed"
+        case .chapterPage:
+            return "rectangle.grid.2x2"
+        case .chapterQuiz:
+            return "checkmark.circle"
+        case .chapterVocabulary:
+            return "text.book.closed.fill"
+        }
     }
 }
 

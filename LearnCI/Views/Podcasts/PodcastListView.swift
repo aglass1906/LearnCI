@@ -53,9 +53,23 @@ struct PodcastListView: View {
         AdaptiveLayoutPolicy.usesLibraryMasterDetail(horizontalSizeClass: horizontalSizeClass)
     }
 
+    private var userShows: [PodcastShow] {
+        guard let userID = authManager.currentUser else { return [] }
+        let normalizedUserID = userID.lowercased()
+        return shows.filter { $0.userID?.lowercased() == normalizedUserID }
+    }
+
+    private var userEpisodes: [PodcastEpisode] {
+        let showIDs = Set(userShows.map(\.id))
+        return allEpisodes.filter { episode in
+            guard let showID = episode.show?.id else { return false }
+            return showIDs.contains(showID)
+        }
+    }
+
     private var selectedEpisode: PodcastEpisode? {
         if let selectedEpisodeID,
-           let episode = allEpisodes.first(where: { $0.id == selectedEpisodeID }) {
+           let episode = userEpisodes.first(where: { $0.id == selectedEpisodeID }) {
             return episode
         }
         return nil
@@ -63,7 +77,7 @@ struct PodcastListView: View {
 
     private var selectedShow: PodcastShow? {
         if let selectedShowID,
-           let show = shows.first(where: { $0.id == selectedShowID }) {
+           let show = userShows.first(where: { $0.id == selectedShowID }) {
             return show
         }
         return nil
@@ -84,15 +98,15 @@ struct PodcastListView: View {
             sortOption.rawValue,
             filterFavoritesOnly ? "fav" : "all",
             filterUnplayedOnly ? "unplayed" : "any",
-            String(allEpisodes.count),
-            String(shows.count),
+            String(userEpisodes.count),
+            String(userShows.count),
             String(allFavorites.count),
         ].joined(separator: "|")
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            if !shows.isEmpty {
+            if !userShows.isEmpty {
                 Picker("Tab", selection: $selectedTab) {
                     ForEach(PodcastTab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
@@ -104,7 +118,7 @@ struct PodcastListView: View {
             }
 
             Group {
-                if shows.isEmpty {
+                if userShows.isEmpty {
                     ContentUnavailableView {
                         Label("No Podcasts", systemImage: "headphones")
                     } description: {
@@ -173,14 +187,14 @@ struct PodcastListView: View {
             PodcastSearchSheet(
                 podcastManager: podcastManager,
                 modelContext: modelContext,
-                subscribedFeedUrls: Set(shows.map { $0.feedUrl }),
+                subscribedFeedUrls: Set(userShows.map { $0.feedUrl }),
                 userID: authManager.currentUser,
                 onDismiss: { showAddSheet = false }
             )
         }
         .sheet(isPresented: $showSessionSetup) {
             PodcastSessionSetupSheet(
-                shows: shows,
+                shows: userShows,
                 onStart: { episodes, minutes in
                     showSessionSetup = false
                     sessionMinutes = minutes
@@ -278,7 +292,7 @@ struct PodcastListView: View {
 
     private var masterDetailEpisodesList: some View {
         Group {
-            if allEpisodes.isEmpty {
+            if userEpisodes.isEmpty {
                 ContentUnavailableView {
                     Label("No Episodes", systemImage: "waveform")
                 } description: {
@@ -351,7 +365,7 @@ struct PodcastListView: View {
 
     private var newEpisodesView: some View {
         Group {
-            if allEpisodes.isEmpty {
+            if userEpisodes.isEmpty {
                 ContentUnavailableView {
                     Label("No Episodes", systemImage: "waveform")
                 } description: {
@@ -453,7 +467,7 @@ struct PodcastListView: View {
     // MARK: - Shows Tab
 
     private var filteredEpisodes: [PodcastEpisode] {
-        var result = allEpisodes
+        var result = userEpisodes
 
         if filterFavoritesOnly {
             let index = podcastFavoritesIndex
@@ -500,7 +514,7 @@ struct PodcastListView: View {
     }
 
     private var filteredShows: [PodcastShow] {
-        var result = shows
+        var result = userShows
 
         if filterFavoritesOnly {
             let index = podcastFavoritesIndex
@@ -577,7 +591,7 @@ struct PodcastListView: View {
         defer { if showProgress { isRefreshing = false } }
 
         // Sequential refresh — ModelContext is not thread-safe.
-        for show in shows {
+        for show in userShows {
             await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
         }
     }
@@ -597,7 +611,7 @@ struct PodcastListView: View {
         guard let saved = resumableSession else { return }
         let idSet = Set(saved.episodeIDs)
         let episodeMap = Dictionary(
-            uniqueKeysWithValues: allEpisodes
+            uniqueKeysWithValues: userEpisodes
                 .filter { idSet.contains($0.id.uuidString) }
                 .map { ($0.id.uuidString, $0) }
         )

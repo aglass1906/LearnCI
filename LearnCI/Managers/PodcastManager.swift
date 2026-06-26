@@ -91,6 +91,34 @@ class PodcastManager {
             }
 
             await MainActor.run {
+                let feedUrlToMatch = feedUrl
+                let existingDescriptor = FetchDescriptor<PodcastShow>(
+                    predicate: #Predicate { $0.feedUrl == feedUrlToMatch }
+                )
+                if let existing = try? modelContext.fetch(existingDescriptor).first,
+                   existing.userID == userID {
+                    existing.isSynced = false
+                    if let parsed = result.show {
+                        existing.title = parsed.title
+                        existing.author = parsed.author
+                        existing.showDescription = parsed.showDescription
+                        existing.artworkUrl = parsed.artworkUrl
+                    }
+                    let existingUrls = Set(existing.episodes.map(\.audioUrl))
+                    for episode in result.episodes {
+                        if !existingUrls.contains(episode.audioUrl) {
+                            episode.show = existing
+                            modelContext.insert(episode)
+                        }
+                    }
+                    for episode in existing.episodes {
+                        episode.isSynced = false
+                    }
+                    try? modelContext.save()
+                    isLoading = false
+                    return
+                }
+
                 show.userID = userID
                 modelContext.insert(show)
                 for episode in result.episodes {

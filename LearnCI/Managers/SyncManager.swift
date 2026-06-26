@@ -216,6 +216,34 @@ struct CoachingCheckInDTO: Codable {
 }
 
     // MARK: - Sync Methods
+
+    /// PostgREST returns PGRST205 when a table is not in the schema cache (not migrated yet).
+    private func isMissingTableError(_ error: Error) -> Bool {
+        guard let postgrestError = error as? PostgrestError else { return false }
+        return postgrestError.code == "PGRST205"
+    }
+
+    @MainActor
+    private func runSyncStep(
+        _ name: String,
+        allowMissingTable: Bool = false,
+        continueOnError: Bool = false,
+        operation: () async throws -> Void
+    ) async throws {
+        do {
+            try await operation()
+        } catch {
+            if allowMissingTable, isMissingTableError(error) {
+                print("[Sync] Skipping \(name): remote table not available (\(error.localizedDescription))")
+                return
+            }
+            if continueOnError {
+                print("[Sync] Skipping \(name): \(error.localizedDescription)")
+                return
+            }
+            throw error
+        }
+    }
     
     @MainActor
     func syncNow(modelContext: ModelContext) async {
@@ -255,25 +283,41 @@ struct CoachingCheckInDTO: Codable {
             // Push Favorites
             try await syncFavorites(context: modelContext, userID: userID)
 
-            // Saved study words
-            try await syncSavedStudyWords(context: modelContext, userID: userID)
+            // Saved study words (optional until migration is applied on Supabase)
+            try await runSyncStep("Saved study words push", allowMissingTable: true) {
+                try await syncSavedStudyWords(context: modelContext, userID: userID)
+            }
+
+            // Podcasts — run before activity push so unrelated RLS failures don't block library sync
+            try await runSyncStep("Podcasts push", allowMissingTable: true) {
+                try await syncPodcasts(context: modelContext, userID: userID)
+            }
+            try await runSyncStep("Podcasts pull", allowMissingTable: true) {
+                try await pullPodcasts(context: modelContext, userID: userID)
+            }
             
             // Sync Activities (Push new)
-            try await syncActivities(context: modelContext, userID: userID)
+            try await runSyncStep("Activities push", continueOnError: true) {
+                try await syncActivities(context: modelContext, userID: userID)
+            }
             
             // Sync Daily Feedback (Push new)
-            try await syncDailyFeedback(context: modelContext, userID: userID)
+            try await runSyncStep("Daily feedback push", continueOnError: true) {
+                try await syncDailyFeedback(context: modelContext, userID: userID)
+            }
             
             // Sync Coaching Check-ins (Push new)
-            try await syncCheckIns(context: modelContext, userID: userID)
+            try await runSyncStep("Coaching check-ins push", continueOnError: true) {
+                try await syncCheckIns(context: modelContext, userID: userID)
+            }
             
             // NEW: Pull Favorites (Server Wins & Deletions)
-            try await pullFavorites(context: modelContext, userID: userID)
-            try await pullSavedStudyWords(context: modelContext, userID: userID)
-
-            // Podcasts
-            try await syncPodcasts(context: modelContext, userID: userID)
-            try await pullPodcasts(context: modelContext, userID: userID)
+            try await runSyncStep("Favorites pull", continueOnError: true) {
+                try await pullFavorites(context: modelContext, userID: userID)
+            }
+            try await runSyncStep("Saved study words pull", allowMissingTable: true) {
+                try await pullSavedStudyWords(context: modelContext, userID: userID)
+            }
 
             // 5. Final Pull (Update Profile Totals after Push triggers)
             try await pullProfile(context: modelContext, userID: userID)
@@ -495,8 +539,24 @@ struct CoachingCheckInDTO: Codable {
                 story.userID = userID
             }
         }
+
+        // 4. Adopt podcasts with no assigned user.
+        let orphanPodcastDescriptor = FetchDescriptor<PodcastShow>(
+            predicate: #Predicate { $0.userID == nil }
+        )
+        let orphanPodcasts = try context.fetch(orphanPodcastDescriptor)
+        if !orphanPodcasts.isEmpty {
+            print("[Sync] Adopting \(orphanPodcasts.count) orphan podcast show(s) for user \(userID)")
+            for show in orphanPodcasts {
+                show.userID = userID
+                show.isSynced = false
+                for episode in show.episodes {
+                    episode.isSynced = false
+                }
+            }
+        }
         
-        if adoptedProfile || !anonymousActivities.isEmpty || !orphanStories.isEmpty {
+        if adoptedProfile || !anonymousActivities.isEmpty || !orphanStories.isEmpty || !orphanPodcasts.isEmpty {
             try context.save()
         }
     }
@@ -1379,11 +1439,27 @@ struct CoachingCheckInDTO: Codable {
     private func syncPodcasts(context: ModelContext, userID: String) async throws {
         guard let uid = UUID(uuidString: userID) else { return }
 
+        let normalizedUserID = userID.lowercased()
+        let allShows = try context.fetch(FetchDescriptor<PodcastShow>())
+        let otherAccountShows = allShows.filter { show in
+            guard let owner = show.userID?.lowercased() else { return false }
+            return owner != normalizedUserID
+        }
+        let orphanShows = allShows.filter { $0.userID == nil }
+        if !otherAccountShows.isEmpty {
+            print("[Sync] Podcasts: \(otherAccountShows.count) local show(s) belong to other account(s) and are skipped for \(userID).")
+        }
+        if !orphanShows.isEmpty {
+            print("[Sync] Podcasts: \(orphanShows.count) local show(s) have no user ID and are skipped for \(userID).")
+        }
+
         // Push unsynced shows
         let showDescriptor = FetchDescriptor<PodcastShow>(
             predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
         )
         let unsyncedShows = try context.fetch(showDescriptor)
+        var pushedShows = 0
+        var pushedEpisodes = 0
 
         for show in unsyncedShows {
             let dto = PodcastShowDTO(
@@ -1403,6 +1479,7 @@ struct CoachingCheckInDTO: Codable {
                 .execute()
 
             show.isSynced = true
+            pushedShows += 1
 
             // Push episodes for this show
             let unsyncedEpisodes = show.episodes.filter { !$0.isSynced }
@@ -1424,6 +1501,7 @@ struct CoachingCheckInDTO: Codable {
                     .execute()
 
                 episode.isSynced = true
+                pushedEpisodes += 1
             }
         }
 
@@ -1452,10 +1530,19 @@ struct CoachingCheckInDTO: Codable {
                     .execute()
 
                 episode.isSynced = true
+                pushedEpisodes += 1
             }
         }
 
         try context.save()
+
+        if pushedShows > 0 || pushedEpisodes > 0 {
+            print("[Sync] Podcasts: Pushed \(pushedShows) shows and \(pushedEpisodes) episodes for user \(userID).")
+        } else {
+            let ownedShows = allShows.filter { $0.userID?.lowercased() == normalizedUserID }
+            let unsyncedOwned = ownedShows.filter { !$0.isSynced }
+            print("[Sync] Podcasts: No local changes to push for user \(userID) (\(ownedShows.count) owned show(s), \(unsyncedOwned.count) unsynced).")
+        }
     }
 
     @MainActor
@@ -1478,11 +1565,13 @@ struct CoachingCheckInDTO: Codable {
         )
         let localShows = try context.fetch(localShowsDescriptor)
         let serverShowIDs = Set(serverShows.map { $0.id })
+        var deletedShows = 0
 
         // Delete shows removed on server
         for local in localShows {
             if local.isSynced && !serverShowIDs.contains(local.id) {
                 context.delete(local)
+                deletedShows += 1
             }
         }
 
@@ -1552,6 +1641,11 @@ struct CoachingCheckInDTO: Codable {
         }
 
         try context.save()
+
+        print("[Sync] Podcasts: Pulled \(serverShows.count) shows and \(serverEpisodes.count) episodes for user \(userID).")
+        if deletedShows > 0 {
+            print("[Sync] Podcasts: Deleted \(deletedShows) local shows no longer on the server.")
+        }
     }
 
     @MainActor

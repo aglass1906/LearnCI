@@ -158,7 +158,7 @@ private struct FlashcardDeckDetailView: View {
                                     .font(.headline)
                                 SaveCardForStudyButton(
                                     isSaved: isSaved(card, in: loadedDeck),
-                                    action: { save(card, from: loadedDeck) }
+                                    action: { toggleSave(card, from: loadedDeck) }
                                 )
                                 CardAudioButton(
                                     filename: card.audioWordFile,
@@ -245,7 +245,7 @@ private struct FlashcardDeckDetailView: View {
         )
     }
 
-    private func save(_ card: LearningCard, from loadedDeck: CardDeck) {
+    private func toggleSave(_ card: LearningCard, from loadedDeck: CardDeck) {
         guard let userID = authManager.currentUser else { return }
         let capture = SavedStudyWordCapture(
             userID: userID,
@@ -270,7 +270,7 @@ private struct FlashcardDeckDetailView: View {
             audioSentenceFile: card.audioSentenceFile,
             deckFolderName: loadedDeck.baseFolderName ?? deck.folderName
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
         savedRevision += 1
     }
 }
@@ -280,15 +280,7 @@ private struct SaveCardForStudyButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            Image(systemName: isSaved ? "star.fill" : "star")
-                .font(.caption)
-                .foregroundColor(isSaved ? .yellow : .secondary)
-                .frame(width: 22, height: 22)
-        }
-        .buttonStyle(.plain)
-        .disabled(isSaved)
-        .accessibilityLabel(isSaved ? "Saved for study" : "Save for study")
+        SaveForStudyControl(isSaved: isSaved, style: .compactStar, action: action)
     }
 }
 

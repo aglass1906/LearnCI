@@ -17,13 +17,14 @@ struct LearnCIApp: App {
     @State private var locationManager = LocationManager()
     @State private var audioManager = AudioManager()
     @State private var ambientSoundManager: AmbientSoundManager
-    @State private var savedStudyWordManager = SavedStudyWordManager()
+    @State private var savedStudyWordManager: SavedStudyWordManager
 
     init() {
         let auth = AuthManager()
         _authManager = State(initialValue: auth)
         _syncManager = State(initialValue: SyncManager(authManager: auth))
         _ambientSoundManager = State(initialValue: AmbientSoundManager(authManager: auth))
+        _savedStudyWordManager = State(initialValue: SavedStudyWordManager(authManager: auth))
         print("Documents Directory: \(URL.documentsDirectory.path)")
     }
     

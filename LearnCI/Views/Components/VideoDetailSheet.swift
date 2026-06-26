@@ -38,6 +38,7 @@ struct VideoDetailSheet: View {
     @State private var youtubeStudyMediaPlayer = YouTubeStudyMediaPlayer()
     @State private var studyFocusWindowSize: StudyFocusWindowSize = .sentence
     @State private var layoutSize: CGSize = .zero
+    @State private var savedStudyRevision = 0
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
@@ -978,7 +979,8 @@ struct VideoDetailSheet: View {
             audioSentenceFile: nil,
             deckFolderName: nil
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
+        savedStudyRevision += 1
     }
 
     private var lookupLanguageCode: String {
@@ -986,6 +988,7 @@ struct VideoDetailSheet: View {
     }
 
     private func isWordMarkedForStudy(_ word: String) -> Bool {
+        _ = savedStudyRevision
         guard let userID = authManager.currentUser,
               let session = studySessionViewModel else { return false }
         return savedStudyWordManager.isSaved(

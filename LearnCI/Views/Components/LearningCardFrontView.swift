@@ -24,14 +24,12 @@ struct LearningCardFrontView: View {
         VStack(spacing: 15) {
             HStack {
                 Spacer()
-                Button {
-                    saveCardForStudy()
-                } label: {
-                    Label(isSavedForStudy ? "Saved" : "Save", systemImage: isSavedForStudy ? "star.fill" : "star")
-                        .font(.caption.weight(.semibold))
-                }
-                .buttonStyle(.bordered)
-                .disabled(isSavedForStudy || authManager.currentUser == nil)
+                SaveForStudyControl(
+                    isSaved: isSavedForStudy,
+                    style: .borderedLabel,
+                    action: { toggleCardForStudy() }
+                )
+                .disabled(authManager.currentUser == nil)
             }
 
             // Visual Media (Image or Video)
@@ -233,7 +231,7 @@ struct LearningCardFrontView: View {
         )
     }
 
-    private func saveCardForStudy() {
+    private func toggleCardForStudy() {
         guard let userID = authManager.currentUser else { return }
         let capture = SavedStudyWordCapture(
             userID: userID,
@@ -258,7 +256,7 @@ struct LearningCardFrontView: View {
             audioSentenceFile: card.audioSentenceFile,
             deckFolderName: deck.baseFolderName
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
     }
     
     // Helper to detect video extensions

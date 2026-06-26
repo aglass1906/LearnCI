@@ -12,6 +12,7 @@ struct FlashcardDeckBrowserSheet: View {
 
     @State private var deck: CardDeck?
     @State private var searchText = ""
+    @State private var savedRevision = 0
 
     private var filteredCards: [LearningCard] {
         let cards = deck?.cards ?? []
@@ -33,7 +34,7 @@ struct FlashcardDeckBrowserSheet: View {
                             card: card,
                             deck: deck,
                             isSaved: isSaved(card, in: deck),
-                            onSave: { save(card, from: deck) }
+                            onSave: { toggleSave(card, from: deck) }
                         )
                     }
                     .searchable(text: $searchText, prompt: "Search cards")
@@ -55,6 +56,7 @@ struct FlashcardDeckBrowserSheet: View {
     }
 
     private func isSaved(_ card: LearningCard, in deck: CardDeck) -> Bool {
+        _ = savedRevision
         guard let userID = authManager.currentUser else { return false }
         return savedStudyWordManager.isSaved(
             word: card.wordTarget,
@@ -66,7 +68,7 @@ struct FlashcardDeckBrowserSheet: View {
         )
     }
 
-    private func save(_ card: LearningCard, from deck: CardDeck) {
+    private func toggleSave(_ card: LearningCard, from deck: CardDeck) {
         guard let userID = authManager.currentUser else { return }
         let capture = SavedStudyWordCapture(
             userID: userID,
@@ -91,7 +93,8 @@ struct FlashcardDeckBrowserSheet: View {
             audioSentenceFile: card.audioSentenceFile,
             deckFolderName: deck.baseFolderName
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
+        savedRevision += 1
     }
 }
 
@@ -121,15 +124,7 @@ private struct FlashcardBrowserRow: View {
 
             Spacer()
 
-            Button(action: onSave) {
-                Image(systemName: isSaved ? "star.fill" : "star")
-                    .font(.title3)
-                    .foregroundStyle(isSaved ? .yellow : .secondary)
-                    .frame(width: 36, height: 36)
-            }
-            .buttonStyle(.borderless)
-            .disabled(isSaved)
-            .accessibilityLabel(isSaved ? "Saved" : "Save for study")
+            SaveForStudyControl(isSaved: isSaved, style: .star, action: onSave)
         }
         .padding(.vertical, 4)
     }

@@ -58,6 +58,7 @@ struct PodcastPlayerView: View {
     @State private var showSessionSetup = false
     @State private var showNotes = false
     @State private var lookupSelection: WordSelection?
+    @State private var lookupRevision = 0
     @State private var lookupTranslation: String?
     @State private var lookupPartOfSpeech: String?
     @State private var isLookingUpWord = false
@@ -175,7 +176,8 @@ struct PodcastPlayerView: View {
                 onSeek: seekTo,
                 onMarkForStudy: {
                     markWordForStudy(word: selection.word)
-                }
+                },
+                isMarkedForStudy: isWordMarkedForStudy(selection.word)
             )
         }
         .confirmationDialog(
@@ -1326,8 +1328,23 @@ struct PodcastPlayerView: View {
             audioSentenceFile: nil,
             deckFolderName: nil
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
-        showToast("Marked \"\(word)\" for study")
+        let wasSaved = savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
+        lookupRevision += 1
+        showToast(wasSaved ? "Marked \"\(word)\" for study" : "Removed \"\(word)\" from study words")
+    }
+
+    private func isWordMarkedForStudy(_ word: String) -> Bool {
+        _ = lookupRevision
+        guard let userID = authManager.currentUser,
+              let session = studySessionViewModel else { return false }
+        return savedStudyWordManager.isSaved(
+            word: word,
+            userID: userID,
+            languageCode: session.resource.languageCode ?? episode.show?.language.code ?? "es",
+            sourceType: .podcast,
+            sourceId: session.resource.resourceId,
+            in: modelContext
+        )
     }
 
     private func saveSessionRecord(definition: StudySessionDefinition) {

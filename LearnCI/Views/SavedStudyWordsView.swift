@@ -1,7 +1,5 @@
 import SwiftUI
 import SwiftData
-import Supabase
-import PostgREST
 
 struct SavedStudyWordsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,6 +7,7 @@ struct SavedStudyWordsView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(AudioManager.self) private var audioManager
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
+    @Environment(SyncManager.self) private var syncManager
     @Query(sort: \SavedStudyWord.createdAt, order: .reverse) private var savedWords: [SavedStudyWord]
     @Query(sort: \MarkedStudyWord.createdAt, order: .reverse) private var legacyMarkedWords: [MarkedStudyWord]
 
@@ -53,6 +52,19 @@ struct SavedStudyWordsView: View {
         }
         .navigationTitle("Saved Study Words")
         .searchable(text: $searchText, prompt: "Search words")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task {
+                        await syncManager.syncNow(modelContext: modelContext)
+                    }
+                } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .symbolEffect(.bounce, value: syncManager.isSyncing)
+                }
+                .disabled(syncManager.isSyncing)
+            }
+        }
         .onAppear(perform: migrateLegacyMarkedWordsIfNeeded)
         .navigationDestination(item: $reviewDeck) { deck in
             GameView(
@@ -177,14 +189,7 @@ struct SavedStudyWordsView: View {
     }
 
     private func deleteSavedWord(_ word: SavedStudyWord) {
-        let wordID = word.id
         savedStudyWordManager.delete(word, in: modelContext)
-        Task {
-            try? await authManager.supabase.from("saved_study_words")
-                .delete()
-                .eq("id", value: wordID)
-                .execute()
-        }
     }
 
     private func migrateLegacyMarkedWordsIfNeeded() {
@@ -598,18 +603,10 @@ private struct SavedStudyWordDetailView: View {
     }
 
     private func deleteSavedWord() {
-        let wordID = word.id
         activeClipEnd = nil
         audioManager.pauseStream()
         savedStudyWordManager.delete(word, in: modelContext)
         dismiss()
-
-        Task {
-            try? await authManager.supabase.from("saved_study_words")
-                .delete()
-                .eq("id", value: wordID)
-                .execute()
-        }
     }
 
     @ViewBuilder

@@ -220,6 +220,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
     @State private var selectedRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
+    @State private var savedStudyRevision = 0
 
     func body(content: Content) -> some View {
         content
@@ -273,6 +274,7 @@ private struct StoryWordLookupHostModifier: ViewModifier {
     }
 
     private var isSelectedWordSaved: Bool {
+        _ = savedStudyRevision
         guard let userID = authManager.currentUser,
               let selectedWord else { return false }
         return savedStudyWordManager.isSaved(
@@ -389,7 +391,8 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
+        savedStudyRevision += 1
     }
 
     private func beginPhraseSelection() {

@@ -770,7 +770,7 @@ struct StorySessionView: View {
             audioSentenceFile: story.audioFilename,
             deckFolderName: nil
         )
-        savedStudyWordManager.save(capture: capture, in: modelContext)
+        savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
         savedStudyRevision += 1
     }
 
@@ -3505,6 +3505,17 @@ struct WordLookupSheet: View {
 
                 Spacer()
 
+                if let onMarkForStudy {
+                    SaveForStudyControl(
+                        isSaved: isMarkedForStudy,
+                        style: .prominentButton,
+                        action: onMarkForStudy
+                    )
+                    .disabled(isLoading)
+                    .padding(.horizontal)
+                    .padding(.bottom, onSelectPhrase == nil && seekTime == nil ? 20 : 8)
+                }
+
                 if let onSelectPhrase {
                     Button {
                         onSelectPhrase()
@@ -3542,23 +3553,6 @@ struct WordLookupSheet: View {
             .navigationTitle("Word Lookup")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if let onMarkForStudy {
-                        Button {
-                            if !isMarkedForStudy {
-                                onMarkForStudy()
-                            }
-                        } label: {
-                            Label(
-                                isMarkedForStudy ? "Saved" : "Mark for study",
-                                systemImage: isMarkedForStudy ? "star.fill" : "star"
-                            )
-                            .foregroundStyle(isMarkedForStudy ? .yellow : .blue)
-                        }
-                        .disabled(isLoading)
-                        .accessibilityLabel(isMarkedForStudy ? "Saved for study" : "Mark for study")
-                    }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }

@@ -512,7 +512,7 @@ extension DashboardView {
             title: " Story Learning",
             subTitle: "Generate, Read, & Listen",
             accentColor: .purple,
-            icon: "sparkles.rectangle.stack.fill",
+            icon: "book.closed.fill",
             destination: StoryListView(),
             appliesHorizontalPadding: false
         ) {

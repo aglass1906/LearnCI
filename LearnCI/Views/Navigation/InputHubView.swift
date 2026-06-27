@@ -43,7 +43,7 @@ struct InputHubView: View {
                     HubPanel(
                         title: "Stories",
                         subtitle: "Interactive reading",
-                        icon: "sparkles.rectangle.stack.fill",
+                        icon: "book.closed.fill",
                         gradient: Gradient(colors: [.blue, .cyan])
                     )
                 }

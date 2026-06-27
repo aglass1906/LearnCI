@@ -140,8 +140,58 @@ struct VideoView: View {
         }
     }
 
+    private var activeFilterChips: [(title: String, systemImage: String)] {
+        var chips: [(String, String)] = [
+            (sourceScope.rawValue, sourceIcon)
+        ]
+
+        switch sourceScope {
+        case .all:
+            chips.append((mode.rawValue, modeIcon))
+            if mode == .discovery {
+                chips.append((selectedCategory, "tag"))
+            }
+        case .favorites:
+            chips.append((favoritesBrowseMode.rawValue, "heart"))
+        case .playlists:
+            break
+        }
+
+        if showsShortsFilter {
+            chips.append((shortsFilter.rawValue, "line.3.horizontal.decrease.circle"))
+        }
+
+        return chips
+    }
+
+    private var sourceIcon: String {
+        switch sourceScope {
+        case .all:
+            return "play.rectangle"
+        case .playlists:
+            return "list.bullet.rectangle"
+        case .favorites:
+            return "heart"
+        }
+    }
+
+    private var modeIcon: String {
+        switch mode {
+        case .subscriptions:
+            return "sparkles.tv"
+        case .channels:
+            return "person.2"
+        case .discovery:
+            return "magnifyingglass"
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
+            if selectedChannel == nil {
+                activeFilterBar
+            }
+
             if sourceScope == .all && mode == .discovery {
                 discoveryCategoryBar
             }
@@ -291,6 +341,26 @@ struct VideoView: View {
                 }
             )
         }
+    }
+
+    private var activeFilterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Array(activeFilterChips.enumerated()), id: \.offset) { _, chip in
+                    Label(chip.title, systemImage: chip.systemImage)
+                        .font(.caption.weight(.medium))
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .foregroundStyle(.primary)
+                        .background(Color.gray.opacity(0.11))
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.vertical, 8)
+        .background(.background)
     }
     
     var notConnectedView: some View {
@@ -644,7 +714,7 @@ struct VideoView: View {
             }
         }
     }
-    
+
     var discoveryContentView: some View {
         Group {
             if youtubeManager.isDiscoveryLoading {

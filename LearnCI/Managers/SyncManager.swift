@@ -1235,9 +1235,9 @@ struct CoachingCheckInDTO: Codable {
                 existing.prompt = dto.prompt
                 existing.userID = dto.user_id.uuidString
                 existing.isFavorite = dto.is_favorite
-                existing.languageRaw = dto.language
-                existing.nativeLanguageRaw = dto.native_language?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().isEmpty == false
-                    ? dto.native_language!.lowercased()
+                existing.languageRaw = Language.fromStoredValue(dto.language).rawValue
+                existing.nativeLanguageRaw = dto.native_language?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+                    ? Language.code(fromStoredValue: dto.native_language!)
                     : "en"
                 existing.textGenPrompt = dto.text_gen_prompt
                 existing.imageGenPrompt = dto.image_gen_prompt
@@ -1341,8 +1341,8 @@ struct CoachingCheckInDTO: Codable {
                     ciProfileJSON: dto.ci_profile_json?.jsonString,
                     bibleJSON: dto.bible_json?.jsonString,
                     sceneBreakdownJSON: dto.scene_breakdown_json?.jsonString,
-                    language: Language(rawValue: dto.language) ?? .spanish,
-                    nativeLanguageCode: dto.native_language ?? "en",
+                    language: Language.fromStoredValue(dto.language),
+                    nativeLanguageCode: Language.code(fromStoredValue: dto.native_language ?? "en"),
                     level: dto.level,
                     createdAt: dto.created_at
                 )

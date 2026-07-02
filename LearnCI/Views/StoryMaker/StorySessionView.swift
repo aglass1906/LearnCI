@@ -1526,7 +1526,7 @@ struct StorySessionView: View {
         Button {
             selectedLanguage = selectedLanguage == .native ? .target : .native
         } label: {
-            Text(selectedLanguage == .native ? "EN" : story.language.rawValue.uppercased())
+            Text(selectedLanguage == .native ? story.nativeLanguageCode.uppercased() : story.languageBadgeAbbrev)
                 .font(.caption.bold())
                 .frame(minWidth: 36, minHeight: 32)
         }

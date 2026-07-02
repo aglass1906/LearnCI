@@ -19,6 +19,7 @@
 		AGT000000000000000000001 /* StoryReadingSpineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT000000000000000000002 /* StoryReadingSpineTests.swift */; };
 		AGT00000000000000000000E /* DialogStoryBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT00000000000000000000F /* DialogStoryBuilderTests.swift */; };
 		AGT000000000000000000010 /* UserProfileOnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT000000000000000000011 /* UserProfileOnboardingTests.swift */; };
+		AGT000000000000000000012 /* LanguageParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGT000000000000000000013 /* LanguageParsingTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,7 @@
 		AGT000000000000000000003 /* LearnCITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnCITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AGT00000000000000000000F /* DialogStoryBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialogStoryBuilderTests.swift; sourceTree = "<group>"; };
 		AGT000000000000000000011 /* UserProfileOnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileOnboardingTests.swift; sourceTree = "<group>"; };
+		AGT000000000000000000013 /* LanguageParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageParsingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -178,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				AGT00000000000000000000F /* DialogStoryBuilderTests.swift */,
+				AGT000000000000000000013 /* LanguageParsingTests.swift */,
 				AGT000000000000000000002 /* StoryReadingSpineTests.swift */,
 				AGT000000000000000000011 /* UserProfileOnboardingTests.swift */,
 			);
@@ -305,6 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AGT00000000000000000000E /* DialogStoryBuilderTests.swift in Sources */,
+				AGT000000000000000000012 /* LanguageParsingTests.swift in Sources */,
 				AGT000000000000000000001 /* StoryReadingSpineTests.swift in Sources */,
 				AGT000000000000000000010 /* UserProfileOnboardingTests.swift in Sources */,
 			);

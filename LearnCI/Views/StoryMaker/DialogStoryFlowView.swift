@@ -179,7 +179,7 @@ struct DialogStoryFlowView: View {
             Button {
                 displayLanguage = displayLanguage == .native ? .target : .native
             } label: {
-                Text(showEnglish ? "EN" : story.languageRaw.uppercased())
+                Text(showEnglish ? story.nativeLanguageCode.uppercased() : story.languageBadgeAbbrev)
                     .font(.caption.bold())
                     .frame(width: 44, height: 36)
             }

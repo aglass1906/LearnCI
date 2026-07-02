@@ -171,7 +171,7 @@ final class Story: Identifiable {
     var isDramatized: Bool { taggedTargetText != nil }
     // Computed properties for type safety, matching existing app patterns
     var language: Language {
-        get { Language(rawValue: languageRaw) ?? .spanish }
+        get { Language.fromStoredValue(languageRaw) }
         set { languageRaw = newValue.rawValue }
     }
 
@@ -179,9 +179,15 @@ final class Story: Identifiable {
         language.code.lowercased()
     }
 
+    /// Short badge for reader language toggles (e.g. FR, ES).
+    var languageBadgeAbbrev: String {
+        language.code.uppercased()
+    }
+
     var nativeLanguageCode: String {
-        let trimmed = nativeLanguageRaw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return trimmed.isEmpty ? "en" : trimmed
+        let trimmed = nativeLanguageRaw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "en" }
+        return Language.code(fromStoredValue: trimmed).lowercased()
     }
     
     // Using Int for level to match existing systems (1-6) or strict enum if preferred

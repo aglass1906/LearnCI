@@ -23,6 +23,25 @@ enum Language: String, Codable, CaseIterable, Identifiable, Hashable {
     }
     
     var code: String { self.rawValue }
+
+    /// Resolves a value from Supabase or legacy rows — ISO code (`fr`) or display name (`French`).
+    static func fromStoredValue(_ value: String) -> Language {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .spanish }
+        let lower = trimmed.lowercased()
+        if let match = Language.allCases.first(where: { $0.rawValue.lowercased() == lower }) {
+            return match
+        }
+        if let match = Language.allCases.first(where: { $0.displayName.lowercased() == lower }) {
+            return match
+        }
+        return .spanish
+    }
+
+    /// ISO 639-1 code for any stored language string (code or display name).
+    static func code(fromStoredValue value: String) -> String {
+        fromStoredValue(value).code
+    }
     
     var displayName: String {
         switch self {

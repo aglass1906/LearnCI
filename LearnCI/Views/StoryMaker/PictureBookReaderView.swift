@@ -269,8 +269,8 @@ struct PictureBookReaderView: View {
 
     private var pictureBookLanguageToggle: some View {
         Picker("Language", selection: $selectedLanguage) {
-            Text(story.language.rawValue.uppercased()).tag(StorySessionView.DisplayLanguage.target)
-            Text("EN").tag(StorySessionView.DisplayLanguage.native)
+            Text(story.languageBadgeAbbrev).tag(StorySessionView.DisplayLanguage.target)
+            Text(story.nativeLanguageCode.uppercased()).tag(StorySessionView.DisplayLanguage.native)
         }
         .pickerStyle(.segmented)
         .frame(width: 88)

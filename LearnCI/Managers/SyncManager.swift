@@ -1214,18 +1214,14 @@ struct CoachingCheckInDTO: Codable {
         
         let serverIDs = Set(dtos.map { $0.id })
         
-        let ownedDescriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.userID == userID })
-        let ownedLocalStories = try context.fetch(ownedDescriptor)
         let localStories = try context.fetch(FetchDescriptor<Story>())
-        
-        // Handle Deletions: If a local story WAS synced to the server previously, but is now missing,
-        // it means the user deleted it from the server.
-        for local in ownedLocalStories {
-            let wasSynced = (local.remoteAudioPath != nil || local.remoteCoverPath != nil || local.remoteVideoPath != nil)
-            if wasSynced && !serverIDs.contains(local.id) {
-                print("[Sync] Stories: Deleting local story '\(local.title)' as it is no longer on the server.")
-                context.delete(local)
-            }
+
+        // Server catalog is the source of truth for the learner library. Drop any local row
+        // that is not in this pull (deleted on server, old account, or orphaned simulator data).
+        for local in localStories where !serverIDs.contains(local.id) {
+            print("[Sync] Stories: Removing stale local '\(local.title)' (\(local.id)) — not on server.")
+            _ = StoryReaderDataAdapter.deleteCachedStoryMedia(storyID: local.id)
+            context.delete(local)
         }
         
         for dto in dtos {
@@ -1234,6 +1230,10 @@ struct CoachingCheckInDTO: Codable {
                 let previousUpdatedAt = existing.updatedAt
                 let previousChaptersJSON = existing.chaptersJSON
                 existing.title = dto.title
+                existing.targetLanguageText = dto.target_text
+                existing.nativeLanguageText = dto.native_text
+                existing.prompt = dto.prompt
+                existing.userID = dto.user_id.uuidString
                 existing.isFavorite = dto.is_favorite
                 existing.languageRaw = dto.language
                 existing.nativeLanguageRaw = dto.native_language?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().isEmpty == false
@@ -1248,9 +1248,11 @@ struct CoachingCheckInDTO: Codable {
                 // Always accept server remote paths as the source of truth
                 if dto.remote_audio_path != existing.remoteAudioPath {
                     existing.remoteAudioPath = dto.remote_audio_path
+                    existing.audioFilename = nil
                 }
                 if dto.remote_cover_path != existing.remoteCoverPath {
                     existing.remoteCoverPath = dto.remote_cover_path
+                    existing.coverArt = nil
                 }
                 // Video path: always accept the server value (server is source of truth).
                 // If the path changed (including being nulled), delete the local remote cache so we re-download/re-upload.

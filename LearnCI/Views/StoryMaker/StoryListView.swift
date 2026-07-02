@@ -101,6 +101,22 @@ private struct StoryTypeBadge: View {
     }
 }
 
+// MARK: - Story Language Badge
+
+private struct StoryLanguageBadge: View {
+    let code: String
+
+    var body: some View {
+        Text(code)
+            .font(.system(size: 10, weight: .bold))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.mint.opacity(0.12))
+            .foregroundStyle(.mint)
+            .cornerRadius(4)
+    }
+}
+
 // MARK: - Story List
 
 struct StoryListView: View {
@@ -361,8 +377,6 @@ struct StoryListView: View {
                     }
                 }
                 HStack(spacing: 4) {
-                    Text(story.language.displayName)
-                    Text("·")
                     Text("Level \(story.level)")
                     Text("·")
                     Text(story.preferences.genre.rawValue)
@@ -370,7 +384,10 @@ struct StoryListView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-                StoryTypeBadge(storyType: story.preferences.storyType)
+                HStack(spacing: 8) {
+                    StoryTypeBadge(storyType: story.preferences.storyType)
+                    StoryLanguageBadge(code: story.languageBadgeAbbrev)
+                }
                 let isDramatized = story.preferences.audioStyle == .dramatized
                 HStack(spacing: 8) {
                     if !story.chapters.isEmpty {

@@ -67,6 +67,9 @@ enum StoryReaderRequirementIssue: Equatable {
 struct StoryReaderDataAdapter {
     let story: Story
 
+    var targetCode: String { story.targetLanguageCode }
+    var nativeCode: String { story.nativeLanguageCode }
+
     var spine: StoryReadingSpine {
         StoryReadingSpine.make(for: story)
     }
@@ -113,12 +116,16 @@ struct StoryReaderDataAdapter {
         page: ReadingMatterPage,
         preferNative: Bool
     ) -> StorySceneAudioClip? {
-        guard let urlString = page.audioUrlForPlayback(preferNative: preferNative) else { return nil }
-        let title = StoryReadingSpineTitles.readingMatterTitle(for: page)
-        let body = preferNative
-            ? (page.bodyNative?.trimmedNilIfEmpty ?? page.bodyTarget?.trimmedNilIfEmpty)
-            : page.bodyTarget?.trimmedNilIfEmpty
-        let timedDuration = page.wordTimingsForPlayback(preferNative: preferNative).last?.end
+        let langCode = preferNative ? nativeCode : targetCode
+        guard let urlString = page.audioUrlFor(langCode) else { return nil }
+        let title = StoryReadingSpineTitles.readingMatterTitle(
+            for: page,
+            targetCode: targetCode,
+            nativeCode: nativeCode,
+            preferNative: preferNative
+        )
+        let body = page.bodyFor(langCode).trimmedNilIfEmpty
+        let timedDuration = page.wordTimingsFor(langCode).last?.end
         return StorySceneAudioClip(
             id: "matter-\(pageIndex)-\(page.id)",
             chapterIndex: -1,
@@ -139,13 +146,8 @@ struct StoryReaderDataAdapter {
     }
 
     func readingMatterImageURL(for page: ReadingMatterPage) -> URL? {
-        if let imagePath = page.imageUrl?.trimmedNilIfEmpty,
-           let url = AppConfig.chapterCoverURL(imagePath) {
-            return url
-        }
-
         guard !story.chapters.isEmpty else { return nil }
-        let chapterIndex = page.isBackMatter ? story.chapters.count - 1 : 0
+        let chapterIndex = page.placement == .afterChapters ? story.chapters.count - 1 : 0
         return chapterImageURL(forChapterAt: chapterIndex)
     }
 
@@ -165,16 +167,16 @@ struct StoryReaderDataAdapter {
 
         switch mode {
         case .storyBook:
-            guard chapters.allSatisfy({ !$0.bodyTextTargetForReading.isEmpty }) else { return .incompleteSceneText }
-            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+            guard chapters.allSatisfy({ !$0.bodyTextForLanguage(targetCode).isEmpty }) else { return .incompleteSceneText }
+            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForLanguage(targetCode) }) else { return .incompleteSceneAudio }
         case .audioBook:
-            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForPlayback }) else { return .incompleteSceneAudio }
+            guard chapters.allSatisfy({ $0.bodyNarrationClipsCompleteForLanguage(targetCode) }) else { return .incompleteSceneAudio }
         case .dialogStory:
             guard chapters.allSatisfy({ chapter in
                 chapter.scenes.allSatisfy { scene in
-                    !scene.dialogues.isEmpty
-                        || scene.scriptTargetLanguage?.trimmedNilIfEmpty != nil
-                        || scene.captionTarget?.trimmedNilIfEmpty != nil
+                    !scene.dialoguesFor(targetCode).isEmpty
+                        || scene.scriptFor(targetCode)?.trimmedNilIfEmpty != nil
+                        || scene.captionFor(targetCode).trimmedNilIfEmpty != nil
                 }
             }) else { return .incompleteSceneText }
         case .pictureBook:
@@ -198,9 +200,9 @@ struct StoryReaderDataAdapter {
     func text(for chapter: StoryChapter, language: StorySessionView.DisplayLanguage) -> String {
         switch language {
         case .target:
-            return chapter.bodyTextTargetForReading
+            return chapter.bodyTextForLanguage(targetCode)
         case .native:
-            return chapter.bodyTextEnglishForReading
+            return chapter.bodyTextForLanguage(nativeCode)
         }
     }
 
@@ -220,7 +222,7 @@ struct StoryReaderDataAdapter {
         if clip.isChapterIntro {
             let intro = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
             if !intro.isEmpty { return intro }
-            return chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return chapter.chapterIntroTextForLanguage(targetCode)
         }
 
         let caption = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -229,7 +231,7 @@ struct StoryReaderDataAdapter {
         guard let scene = chapter.scenes.first(where: { $0.sceneIndex == clip.sceneIndex }) else {
             return ""
         }
-        return scene.spokenTranscriptText(preferences: story.preferences)
+        return scene.spokenTranscriptText(preferences: story.preferences, targetCode: targetCode)
     }
 
     func chapterIntroAudioClip(forChapterAt chapterIndex: Int) -> StorySceneAudioClip? {
@@ -242,10 +244,10 @@ struct StoryReaderDataAdapter {
         var clips: [StorySceneAudioClip] = []
         var offset = 0.0
 
-        if let introPath = chapter.chapterIntroAudioUrl?.trimmedNilIfEmpty {
+        if let introPath = chapter.chapterIntroAudioUrlForLanguage(targetCode) {
             let introDuration = Self.resolvedSceneDuration(
                 published: nil,
-                timed: chapter.chapterIntroWordTimings?.last?.end
+                timed: chapter.chapterIntroWordTimingsForLanguage(targetCode).last?.end
             )
             clips.append(
                 StorySceneAudioClip(
@@ -256,8 +258,8 @@ struct StoryReaderDataAdapter {
                     urlString: introPath,
                     duration: introDuration,
                     startOffset: offset,
-                    title: chapter.titleTargetLanguage.isEmpty ? "Chapter \(chapterIndex + 1)" : chapter.titleTargetLanguage,
-                    caption: chapter.chapterIntroText?.trimmedNilIfEmpty ?? "",
+                    title: chapter.titleFor(targetCode) == "Chapter" ? "Chapter \(chapterIndex + 1)" : chapter.titleFor(targetCode),
+                    caption: chapter.chapterIntroTextForLanguage(targetCode).trimmedNilIfEmpty ?? "",
                     imageURL: chapterImageURL(forChapterAt: chapterIndex)
                 )
             )
@@ -288,9 +290,10 @@ struct StoryReaderDataAdapter {
             .sorted { $0.sceneIndex < $1.sceneIndex }
             .enumerated()
             .compactMap { ordinal, scene in
-                guard let audioUrl = scene.audioUrl?.trimmedNilIfEmpty else { return nil }
-                let publishedDuration = scene.audioDurationMs.map { Double($0) / 1000.0 }
-                let timingDuration = scene.wordTimings.last?.end
+                guard let audioUrl = scene.audioUrlForLanguage(targetCode) else { return nil }
+                let durationMs = scene.audioDurationMsFor(targetCode)
+                let publishedDuration = durationMs > 0 ? Double(durationMs) / 1000.0 : nil
+                let timingDuration = scene.wordTimingsFor(targetCode).last?.end
                 let duration = Self.resolvedSceneDuration(published: publishedDuration, timed: timingDuration)
                 defer { offset += duration ?? 0 }
                 return StorySceneAudioClip(
@@ -301,8 +304,8 @@ struct StoryReaderDataAdapter {
                     urlString: audioUrl,
                     duration: duration,
                     startOffset: offset,
-                    title: chapter.titleTargetLanguage.isEmpty ? "Scene \(scene.sceneIndex + 1)" : chapter.titleTargetLanguage,
-                    caption: scene.captionTarget?.trimmedNilIfEmpty ?? scene.scriptTargetLanguage?.trimmedNilIfEmpty ?? "",
+                    title: chapter.titleFor(targetCode) == "Chapter" ? "Scene \(scene.sceneIndex + 1)" : chapter.titleFor(targetCode),
+                    caption: scene.captionFor(targetCode).trimmedNilIfEmpty ?? scene.scriptFor(targetCode)?.trimmedNilIfEmpty ?? "",
                     imageURL: sceneImageURL(scene: scene, chapterIndex: chapterIndex)
                 )
             }

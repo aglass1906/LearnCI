@@ -45,7 +45,12 @@ final class StorySupplementalAudioPlayback {
         self.story = story
         self.adapter = StoryReaderDataAdapter(story: story)
         self.audioManager = audioManager
-        self.languageCode = story.languageRaw
+        self.languageCode = story.targetLanguageCode
+    }
+
+    private var activeLanguageCode: String {
+        guard let story else { return languageCode }
+        return preferNative ? story.nativeLanguageCode : story.targetLanguageCode
     }
 
     func prepareReadingMatter(pageIndex: Int, page: ReadingMatterPage, preferNative: Bool) {
@@ -73,9 +78,9 @@ final class StorySupplementalAudioPlayback {
     var wordTimings: [WordTiming] {
         switch activeContent {
         case .readingMatter:
-            return readingMatterPage?.wordTimingsForPlayback(preferNative: preferNative) ?? []
+            return readingMatterPage?.wordTimingsFor(activeLanguageCode) ?? []
         case .chapterIntro:
-            return chapter?.chapterIntroWordTimings ?? []
+            return chapter?.chapterIntroWordTimingsForLanguage(activeLanguageCode) ?? []
         case .none:
             return []
         }
@@ -88,10 +93,10 @@ final class StorySupplementalAudioPlayback {
     func hasGeneratedAudio(preferNative: Bool) -> Bool {
         switch activeContent {
         case .readingMatter:
-            return readingMatterPage?.hasGeneratedAudio(preferNative: preferNative) ?? false
+            return readingMatterPage?.audioUrlFor(preferNative ? (story?.nativeLanguageCode ?? "en") : (story?.targetLanguageCode ?? languageCode)) != nil
         case .chapterIntro:
             guard let chapter else { return false }
-            return !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+            return chapter.chapterIntroAudioUrlForLanguage(activeLanguageCode) != nil
         case .none:
             return false
         }
@@ -354,15 +359,15 @@ final class StorySupplementalAudioPlayback {
     }
 
     private var speechLanguageCode: String {
-        if preferNative { return "en-US" }
-        switch languageCode {
+        let code = activeLanguageCode
+        switch code {
         case "es": return "es-MX"
         case "ja": return "ja-JP"
         case "ko": return "ko-KR"
         case "fr": return "fr-FR"
         case "vi": return "vi-VN"
         case "en": return "en-US"
-        default: return languageCode
+        default: return code
         }
     }
 

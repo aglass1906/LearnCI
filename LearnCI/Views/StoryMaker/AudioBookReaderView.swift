@@ -323,10 +323,11 @@ struct AudioBookReaderView: View {
 
             case .readingMatterPage:
                 guard let page = adapter.readingMatterPage(for: item) else { return nil }
-                let title = page.titleTarget?.nilIfEmptyAudioBook
-                    ?? page.titleNative?.nilIfEmptyAudioBook
+                let title = page.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook
+                    ?? page.titleFor(story.nativeLanguageCode).nilIfEmptyAudioBook
                     ?? "Reading Matter"
-                let body = page.bodyTarget?.nilIfEmptyAudioBook ?? page.bodyNative?.nilIfEmptyAudioBook
+                let body = page.bodyFor(story.targetLanguageCode).nilIfEmptyAudioBook
+                    ?? page.bodyFor(story.nativeLanguageCode).nilIfEmptyAudioBook
                 let subtitle: String? = {
                     guard let body else { return nil }
                     let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -346,7 +347,7 @@ struct AudioBookReaderView: View {
 
             case .chapter(let index):
                 guard let chapter = adapter.chapter(for: item) else { return nil }
-                let title = chapter.titleTargetLanguage.nilIfEmptyAudioBook
+                let title = chapter.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook
                     ?? "Chapter \(index + 1)"
                 let subtitle = chapter.tableOfContentsOverview
                     ?? clips.first(where: { $0.chapterIndex == index })?.caption.nilIfEmptyAudioBook
@@ -369,7 +370,7 @@ struct AudioBookReaderView: View {
                     spineItem: item,
                     kind: .chapterQuiz,
                     title: "Chapter Quiz",
-                    subtitle: chapter.titleTargetLanguage.nilIfEmptyAudioBook,
+                    subtitle: chapter.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook,
                     imageURL: adapter.chapterImageURL(forChapterAt: index),
                     chapterIndex: index,
                     firstClipIndex: nil
@@ -383,7 +384,7 @@ struct AudioBookReaderView: View {
                     spineItem: item,
                     kind: .chapterVocabulary,
                     title: "Word Focus",
-                    subtitle: chapter.titleTargetLanguage.nilIfEmptyAudioBook,
+                    subtitle: chapter.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook,
                     imageURL: adapter.chapterImageURL(forChapterAt: index),
                     chapterIndex: index,
                     firstClipIndex: nil
@@ -569,7 +570,7 @@ struct AudioBookReaderView: View {
             if let chapterIndex = item.chapterIndex,
                story.chapters.indices.contains(chapterIndex) {
                 InlineChapterVocabularyView(
-                    vocabularyNote: story.chapters[chapterIndex].vocabularyNote ?? "",
+                    vocabularyNote: story.chapters[chapterIndex].vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
                     title: "Chapter Word Focus"
                 )
                 .frame(maxWidth: .infinity, maxHeight: 360, alignment: .top)
@@ -819,15 +820,17 @@ struct AudioBookReaderView: View {
     private var currentReadingMatterCanPlay: Bool {
         guard let item = selectedNavItem,
               let page = readerAdapter.readingMatterPage(for: item.spineItem) else { return false }
-        return page.hasGeneratedAudio(preferNative: false) || readingMatterSpeakableText(for: page) != nil
+        return page.audioUrlFor(story.targetLanguageCode) != nil || readingMatterSpeakableText(for: page) != nil
     }
 
     private func readingMatterSpeakableText(for page: ReadingMatterPage) -> String? {
         var parts: [String] = []
-        if let title = page.titleTarget?.nilIfEmptyAudioBook ?? page.titleNative?.nilIfEmptyAudioBook {
+        if let title = page.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook
+            ?? page.titleFor(story.nativeLanguageCode).nilIfEmptyAudioBook {
             parts.append(title)
         }
-        if let body = page.bodyTarget?.nilIfEmptyAudioBook ?? page.bodyNative?.nilIfEmptyAudioBook {
+        if let body = page.bodyFor(story.targetLanguageCode).nilIfEmptyAudioBook
+            ?? page.bodyFor(story.nativeLanguageCode).nilIfEmptyAudioBook {
             parts.append(body)
         }
         let text = parts.joined(separator: ". ")
@@ -1608,7 +1611,7 @@ struct AudioBookReaderView: View {
 
     private func readingMatterItemCanAutoplay(_ item: AudioBookNavItem) -> Bool {
         guard let page = readerAdapter.readingMatterPage(for: item.spineItem) else { return false }
-        return page.hasGeneratedAudio(preferNative: false)
+        return page.audioUrlFor(story.targetLanguageCode) != nil
             || readingMatterSpeakableText(for: page) != nil
     }
 }
@@ -2079,7 +2082,7 @@ private struct AudioBookChapterTracklistSheet: View {
                     }
                 }
             }
-            .navigationTitle(chapter?.titleTargetLanguage.nilIfEmptyAudioBook ?? "Chapter \(chapterIndex + 1)")
+            .navigationTitle(chapter?.titleFor(story.targetLanguageCode).nilIfEmptyAudioBook ?? "Chapter \(chapterIndex + 1)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -2278,14 +2281,14 @@ private struct AudioBookTranscriptSheet: View {
                     )
                 ]
             }
-            let targetBody = page.bodyTarget?.nilIfEmptyAudioBook
+            let targetBody = page.bodyFor(story.targetLanguageCode).nilIfEmptyAudioBook
             let body = targetBody
-                ?? page.bodyNative?.nilIfEmptyAudioBook
+                ?? page.bodyFor(story.nativeLanguageCode).nilIfEmptyAudioBook
                 ?? ""
             return [
                 AudioBookTranscriptSection(
                     id: "reading-matter",
-                    heading: page.titleTarget,
+                    heading: page.titleFor(story.targetLanguageCode),
                     body: body,
                     segments: [],
                     isNowPlaying: false,
@@ -2301,14 +2304,14 @@ private struct AudioBookTranscriptSheet: View {
 
             var sections: [AudioBookTranscriptSection] = []
 
-            if chapter.hasChapterIntroContent,
-               let introText = chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines),
+            let introText = chapter.chapterIntroTextForLanguage(story.targetLanguageCode).trimmingCharacters(in: .whitespacesAndNewlines)
+            if chapter.hasChapterIntroContentForLanguage(story.targetLanguageCode),
                !introText.isEmpty {
                 let isIntroCurrent = currentClip?.isChapterIntro == true
                     && currentClip?.chapterIndex == chapterIndex
                 let introSegments: [StorySegmentTiming]
+                let timings = chapter.chapterIntroWordTimingsForLanguage(story.targetLanguageCode)
                 if isIntroCurrent,
-                   let timings = chapter.chapterIntroWordTimings,
                    !timings.isEmpty {
                     introSegments = [
                         StorySegmentTiming(
@@ -2316,7 +2319,7 @@ private struct AudioBookTranscriptSheet: View {
                             text: introText,
                             startTime: 0,
                             endTime: .greatestFiniteMagnitude,
-                            timings: chapter.chapterIntroBodyWordTimings(preferNative: false)
+                            timings: chapter.chapterIntroBodyWordTimingsForLanguage(story.targetLanguageCode)
                         )
                     ]
                 } else {
@@ -2335,14 +2338,14 @@ private struct AudioBookTranscriptSheet: View {
             }
 
             let scenes = chapter.scenes
-                .filter(\.hasNarrationAudio)
+                .filter { $0.audioUrlForLanguage(story.targetLanguageCode) != nil }
                 .sorted { $0.sceneIndex < $1.sceneIndex }
 
             if scenes.isEmpty, sections.isEmpty {
-                let body = chapter.bodyScriptOrNarrativeForAlignment
+                let body = chapter.bodyScriptOrNarrativeForAlignment(story.targetLanguageCode)
                 let segments = ScriptParser.parseSegments(
                     scriptText: body,
-                    globalTimings: chapter.bodyWordTimingsForPlayback
+                    globalTimings: chapter.bodyWordTimingsForLanguage(story.targetLanguageCode)
                 )
                 let isCurrent = currentClip?.chapterIndex == chapterIndex
                     && currentClip?.isChapterIntro != true
@@ -2365,13 +2368,13 @@ private struct AudioBookTranscriptSheet: View {
                 let heading = isCurrent
                     ? "Scene \(scene.sceneIndex + 1) · Now Playing"
                     : "Scene \(scene.sceneIndex + 1)"
-                let text = scene.spokenTranscriptText(preferences: story.preferences)
+                let text = scene.spokenTranscriptText(preferences: story.preferences, targetCode: story.targetLanguageCode)
                 guard !text.isEmpty else { return nil }
                 return AudioBookTranscriptSection(
                     id: "chapter-\(chapterIndex)-scene-\(scene.sceneIndex)",
                     heading: heading,
                     body: text,
-                    segments: isCurrent ? scene.transcriptSegments(preferences: story.preferences) : [],
+                    segments: isCurrent ? scene.transcriptSegments(preferences: story.preferences, targetCode: story.targetLanguageCode) : [],
                     isNowPlaying: isCurrent,
                     allowsWordLookup: true
                 )
@@ -2408,7 +2411,7 @@ private struct AudioBookTranscriptSheet: View {
                 AudioBookTranscriptSection(
                     id: "chapter-\(chapterIndex)-vocab",
                     heading: "Word Focus",
-                    body: chapter.vocabularyNote ?? "",
+                    body: chapter.vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
                     segments: [],
                     isNowPlaying: false,
                     allowsWordLookup: true

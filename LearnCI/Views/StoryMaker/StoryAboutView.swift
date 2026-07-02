@@ -34,6 +34,12 @@ struct StoryAboutView: View {
     @State private var navigateToReader = false
     @State private var isOpeningReader = false
 
+    private var canonicalStoryBodyText: String {
+        story.chapters
+            .map { $0.bodyTextForLanguage(story.targetLanguageCode) }
+            .joined(separator: "\n\n")
+    }
+
     var body: some View {
         GeometryReader { fullGeo in
             scrollContent(heroHeight: fullGeo.size.height * 0.42)
@@ -330,7 +336,7 @@ struct StoryAboutView: View {
                     Divider()
 
                     Button {
-                        UIPasteboard.general.string = story.targetLanguageText
+                        UIPasteboard.general.string = canonicalStoryBodyText
                     } label: {
                         Label("Copy Story (\(story.language.displayName))", systemImage: "doc.on.doc")
                     }
@@ -415,6 +421,8 @@ struct StoryAboutView: View {
                 ChapterTableOfContentsRow(
                     chapter: chapter,
                     chapterIndex: index,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     imageURL: adapter.chapterImageURL(forChapterAt: index)
                 )
             }
@@ -461,7 +469,7 @@ struct StoryAboutView: View {
     }
 
     private var storyWordCount: String? {
-        let combined = story.chapters.map { $0.bodyTextTargetForReading }.joined(separator: " ")
+        let combined = story.chapters.map { $0.bodyTextForLanguage(story.targetLanguageCode) }.joined(separator: " ")
         let count = combined.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.count
         guard count > 0 else { return nil }
         return "\(count) words"
@@ -480,12 +488,12 @@ struct StoryAboutView: View {
             let veoPrompt: String
             if VideoPromptModel.saved == .gemini {
                 veoPrompt = try await veoService.generateVeoPrompt(
-                    storyText: story.targetLanguageText,
+                    storyText: canonicalStoryBodyText,
                     style: style.promptStyle
                 )
             } else {
                 veoPrompt = try await openAIService.generateVeoPrompt(
-                    storyText: story.targetLanguageText,
+                    storyText: canonicalStoryBodyText,
                     style: style.promptStyle
                 )
             }
@@ -523,6 +531,8 @@ struct StoryAboutView: View {
 private struct ChapterTableOfContentsRow: View {
     let chapter: StoryChapter
     let chapterIndex: Int
+    let targetCode: String
+    let nativeCode: String
     let imageURL: URL?
 
     private var chapterBadgeLabel: String {
@@ -538,7 +548,7 @@ private struct ChapterTableOfContentsRow: View {
     }
 
     private var displayTitle: String {
-        let title = chapter.titleTargetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
+        let title = chapter.titleFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
         if !title.isEmpty { return title }
         if chapter.isPrologue { return "Prologue" }
         if chapter.isEpilogue { return "Epilogue" }
@@ -546,9 +556,9 @@ private struct ChapterTableOfContentsRow: View {
     }
 
     private var englishSubtitle: String? {
-        let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !english.isEmpty, english != displayTitle else { return nil }
-        return english
+        let native = chapter.titleFor(nativeCode).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !native.isEmpty, native != displayTitle else { return nil }
+        return native
     }
 
     var body: some View {

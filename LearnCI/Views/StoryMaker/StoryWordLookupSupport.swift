@@ -79,48 +79,45 @@ enum StoryStudyWordAudioResolver {
 
     private static func makeCandidates(story: Story) -> [Candidate] {
         var candidates: [Candidate] = []
+        let targetCode = story.targetLanguageCode
 
         for chapter in story.chapters {
-            let chapterText = chapter.bodyTextTargetForReading.trimmingCharacters(in: .whitespacesAndNewlines)
+            let chapterText = chapter.bodyTextForLanguage(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
             if !chapterText.isEmpty {
                 candidates.append(Candidate(
                     text: chapterText,
-                    timings: chapter.bodyWordTimingsForPlayback,
-                    sourceUrl: chapter.audioUrl
+                    timings: chapter.bodyWordTimingsForLanguage(targetCode),
+                    sourceUrl: nil
                 ))
             }
 
-            if let script = chapter.scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !script.isEmpty,
-               let timings = chapter.wordTimings,
-               !timings.isEmpty {
-                candidates.append(Candidate(text: script, timings: timings, sourceUrl: chapter.audioUrl))
+            let script = chapter.bodyScriptForLanguage(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
+            let scriptTimings = chapter.bodyWordTimingsForLanguage(targetCode)
+            if !script.isEmpty, !scriptTimings.isEmpty {
+                candidates.append(Candidate(text: script, timings: scriptTimings, sourceUrl: nil))
             }
 
             for scene in chapter.scenes.sorted(by: { $0.sceneIndex < $1.sceneIndex }) {
-                let text = (scene.targetTextForReading ?? scene.scriptTargetLanguage ?? scene.captionTarget ?? "")
+                let caption = scene.captionFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
+                let text = (caption.isEmpty ? scene.scriptFor(targetCode) ?? "" : caption)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                if !text.isEmpty, !scene.wordTimings.isEmpty {
-                    candidates.append(Candidate(text: text, timings: scene.wordTimings, sourceUrl: scene.audioUrl))
+                let timings = scene.wordTimingsFor(targetCode)
+                if !text.isEmpty, !timings.isEmpty {
+                    candidates.append(Candidate(text: text, timings: timings, sourceUrl: scene.audioUrlForLanguage(targetCode)))
                 }
             }
         }
 
         for page in story.readingMatterPages {
-            let text = page.bodyTarget?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let timings = page.bodyWordTimingsForPlayback(preferNative: false)
+            let text = page.bodyFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
+            let timings = page.bodyWordTimingsFor(targetCode)
             if !text.isEmpty, !timings.isEmpty {
                 candidates.append(Candidate(
                     text: text,
                     timings: timings,
-                    sourceUrl: page.audioUrlForPlayback(preferNative: false)
+                    sourceUrl: page.audioUrlFor(targetCode)
                 ))
             }
-        }
-
-        let legacyText = story.targetLanguageText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !legacyText.isEmpty, !story.wordTimings.isEmpty {
-            candidates.append(Candidate(text: legacyText, timings: story.wordTimings, sourceUrl: story.remoteAudioPath))
         }
 
         return candidates.filter { !$0.timings.isEmpty }
@@ -383,12 +380,12 @@ private struct StoryWordLookupHostModifier: ViewModifier {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: audioResolution?.sourceUrl ?? story.remoteAudioPath,
+            sourceUrl: audioResolution?.sourceUrl,
             blockIndex: selectedRequest?.wordIndex,
             mediaStart: selectedWordTime ?? audioResolution?.mediaStart,
             mediaEnd: selectedRequest?.endTime ?? audioResolution?.mediaEnd,
             audioWordFile: nil,
-            audioSentenceFile: story.audioFilename,
+            audioSentenceFile: nil,
             deckFolderName: nil
         )
         savedStudyWordManager.toggleSave(capture: capture, in: modelContext)

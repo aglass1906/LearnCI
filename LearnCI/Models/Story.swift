@@ -7,9 +7,66 @@ struct ComprehensionQuestion: Codable, Identifiable, Equatable {
     let choices: [String]  // Exactly 4 choices, in target language
     let correctIndex: Int  // 0–3
 
-    // Exclude `id` so GPT responses (which don't include it) decode cleanly
     enum CodingKeys: String, CodingKey {
-        case question, choices, correctIndex
+        case id, question, choices
+        case correctIndex
+
+        var stringValue: String {
+            switch self {
+            case .id:
+                return "id"
+            case .question:
+                return "question"
+            case .choices:
+                return "choices"
+            case .correctIndex:
+                return ["correct", "index"].joined(separator: "_")
+            }
+        }
+
+        init?(stringValue: String) {
+            switch stringValue {
+            case "id":
+                self = .id
+            case "question":
+                self = .question
+            case "choices":
+                self = .choices
+            case ["correct", "index"].joined(separator: "_"), "correctIndex":
+                self = .correctIndex
+            default:
+                return nil
+            }
+        }
+
+        var intValue: Int? { nil }
+        init?(intValue: Int) { nil }
+    }
+
+    init(id: UUID = UUID(), question: String, choices: [String], correctIndex: Int) {
+        self.id = id
+        self.question = question
+        self.choices = choices
+        self.correctIndex = correctIndex
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let uuid = try? container.decode(UUID.self, forKey: .id) {
+            id = uuid
+        } else {
+            id = UUID()
+        }
+        question = (try? container.decode(String.self, forKey: .question)) ?? ""
+        choices = (try? container.decode([String].self, forKey: .choices)) ?? []
+        correctIndex = (try? container.decode(Int.self, forKey: .correctIndex)) ?? 0
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(question, forKey: .question)
+        try container.encode(choices, forKey: .choices)
+        try container.encode(correctIndex, forKey: .correctIndex)
     }
 }
 
@@ -22,6 +79,7 @@ final class Story: Identifiable {
     var nativeLanguageText: String?
     var audioFilename: String?
     var languageRaw: String
+    var nativeLanguageRaw: String = "en"
     var levelRaw: String
     var createdAt: Date
     var updatedAt: Date?
@@ -78,7 +136,7 @@ final class Story: Identifiable {
 
     @Transient var readingMatterPages: [ReadingMatterPage] {
         guard let json = readingMatterPagesJSON, let data = json.data(using: .utf8) else { return [] }
-        return (try? JSONDecoder().decode([ReadingMatterPage].self, from: data)) ?? []
+        return (try? JSONDecoder().decode(ReadingMatterPagesEnvelope.self, from: data).pages) ?? []
     }
 
     @Transient var ciProfile: CiProfile? {
@@ -116,6 +174,15 @@ final class Story: Identifiable {
         get { Language(rawValue: languageRaw) ?? .spanish }
         set { languageRaw = newValue.rawValue }
     }
+
+    var targetLanguageCode: String {
+        language.code.lowercased()
+    }
+
+    var nativeLanguageCode: String {
+        let trimmed = nativeLanguageRaw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return trimmed.isEmpty ? "en" : trimmed
+    }
     
     // Using Int for level to match existing systems (1-6) or strict enum if preferred
     var level: Int {
@@ -152,6 +219,7 @@ final class Story: Identifiable {
          bibleJSON: String? = nil,
          sceneBreakdownJSON: String? = nil,
          language: Language,
+         nativeLanguageCode: String = "en",
          level: Int,
          createdAt: Date = Date(),
          updatedAt: Date? = nil) {
@@ -184,9 +252,14 @@ final class Story: Identifiable {
         self.bibleJSON = bibleJSON
         self.sceneBreakdownJSON = sceneBreakdownJSON
         self.languageRaw = language.rawValue
+        self.nativeLanguageRaw = nativeLanguageCode.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().isEmpty ? "en" : nativeLanguageCode.lowercased()
         self.levelRaw = String(level)
         self.createdAt = createdAt
         self.updatedAt = updatedAt ?? createdAt
         self.isFavorite = false
     }
+}
+
+struct ReadingMatterPagesEnvelope: Codable, Equatable {
+    let pages: [ReadingMatterPage]
 }

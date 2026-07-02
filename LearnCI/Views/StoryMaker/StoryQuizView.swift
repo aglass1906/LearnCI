@@ -257,7 +257,9 @@ struct StoryQuizView: View {
         Task {
             let level = LevelManager.shared.description(for: story.level)
             let generated = try? await OpenAIService().generateComprehensionQuestions(
-                storyText: story.targetLanguageText,
+                storyText: story.chapters
+                    .map { $0.bodyTextForLanguage(story.targetLanguageCode) }
+                    .joined(separator: "\n\n"),
                 language: story.language.displayName,
                 level: level
             )

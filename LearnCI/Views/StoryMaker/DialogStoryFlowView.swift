@@ -337,7 +337,9 @@ struct DialogStoryFlowView: View {
            let chapter = story.chapters[safeDialogFlow: index] {
             return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
                 chapter: chapter,
-                preferNative: showEnglish
+                preferNative: showEnglish,
+                targetCode: story.targetLanguageCode,
+                nativeCode: story.nativeLanguageCode
             )
         }
         return nil
@@ -458,7 +460,7 @@ struct DialogStoryFlowView: View {
                                     text: body,
                                     startTime: 0,
                                     endTime: .greatestFiniteMagnitude,
-                                    timings: page.bodyWordTimingsForPlayback(preferNative: showEnglish)
+                                    timings: page.bodyWordTimingsFor(languageCode(forNativePreference: showEnglish))
                                 ),
                                 currentTime: supplementalPlayback.currentTime,
                                 includesPadding: false
@@ -514,6 +516,8 @@ struct DialogStoryFlowView: View {
                 ChapterInfoCardView(
                     chapter: chapter,
                     heroImage: chapterHeroImage,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     selectedLanguage: $displayLanguage,
                     playbackTime: supplementalPlayback.currentTime
                 )
@@ -570,22 +574,26 @@ struct DialogStoryFlowView: View {
 
     private func readingMatterTitle(for page: ReadingMatterPage) -> String? {
         if showEnglish {
-            return page.titleNative?.dialogFlowTrimmedNil ?? page.titleTarget?.dialogFlowTrimmedNil
+            return page.titleFor(story.nativeLanguageCode).dialogFlowTrimmedNil
         }
-        return page.titleTarget?.dialogFlowTrimmedNil
+        return page.titleFor(story.targetLanguageCode).dialogFlowTrimmedNil
     }
 
     private func readingMatterBody(for page: ReadingMatterPage) -> String? {
         if showEnglish {
-            return page.bodyNative?.dialogFlowTrimmedNil ?? page.bodyTarget?.dialogFlowTrimmedNil
+            return page.bodyFor(story.nativeLanguageCode).dialogFlowTrimmedNil
         }
-        return page.bodyTarget?.dialogFlowTrimmedNil
+        return page.bodyFor(story.targetLanguageCode).dialogFlowTrimmedNil
     }
 
     private var currentReadingMatterCanPlay: Bool {
         guard let item = currentSpineItem,
               let page = adapter.readingMatterPage(for: item) else { return false }
-        return page.hasGeneratedAudio(preferNative: showEnglish) || currentReadingMatterSpeakableText != nil
+        return page.audioUrlFor(languageCode(forNativePreference: showEnglish)) != nil || currentReadingMatterSpeakableText != nil
+    }
+
+    private func languageCode(forNativePreference preferNative: Bool) -> String {
+        preferNative ? story.nativeLanguageCode : story.targetLanguageCode
     }
 
     private var currentReadingMatterSpeakableText: String? {
@@ -603,16 +611,14 @@ struct DialogStoryFlowView: View {
             return "Chapter \(index + 1)"
         }
         let title = showEnglish
-            ? (chapter.titleEnglish.dialogFlowTrimmedNil ?? chapter.titleTargetLanguage)
-            : chapter.titleTargetLanguage
+            ? chapter.titleFor(story.nativeLanguageCode)
+            : chapter.titleFor(story.targetLanguageCode)
         return "Chapter \(index + 1) · \(title)"
     }
 
     private func chapterHasIntroContent(at index: Int) -> Bool {
         guard let chapter = story.chapters[safeDialogFlow: index] else { return false }
-        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        let hasText = !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        return hasAudio || hasText
+        return chapter.hasChapterIntroContentForLanguage(story.targetLanguageCode)
     }
 
     private func loadChapterHeroImage(for chapter: StoryChapter) {
@@ -669,7 +675,7 @@ struct DialogStoryFlowView: View {
             if let item = currentSpineItem,
                let chapter = adapter.chapter(for: item) {
                 InlineChapterVocabularyView(
-                    vocabularyNote: chapter.vocabularyNote ?? "",
+                    vocabularyNote: chapter.vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
                     title: "Chapter Word Focus"
                 )
             } else {

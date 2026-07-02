@@ -206,6 +206,7 @@ struct ComicBookRenderer {
                         panel: panel,
                         scene: scene,
                         chapter: story.chapters[safe: panel.chapterIndex],
+                        targetCode: story.targetLanguageCode,
                         imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: panel.chapterIndex)
                     )
                 }
@@ -249,15 +250,17 @@ struct ComicPanelModel: Identifiable, Equatable {
     let panel: PanelLayout
     let scene: StoryScene
     let chapter: StoryChapter?
+    let targetCode: String
     let imageURL: URL?
 
     var title: String {
-        chapter?.titleTargetLanguage ?? "Scene \(scene.sceneIndex + 1)"
+        let title = chapter?.titleFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
+        return title?.isEmpty == false && title != "Chapter" ? title! : "Scene \(scene.sceneIndex + 1)"
     }
 
     var caption: String {
-        scene.captionTarget?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
-            ?? scene.scriptTargetLanguage?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+        scene.captionFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+            ?? scene.scriptFor(targetCode)?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
             ?? ""
     }
 }
@@ -294,9 +297,12 @@ private struct ComicBookSegmentView: View {
             if let page = story.readingMatterPages[safe: index] {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(page.titleTarget ?? page.titleNative ?? "Reading Matter")
+                        Text(page.titleFor(story.targetLanguageCode).comicBookTrimmedNil
+                             ?? page.titleFor(story.nativeLanguageCode).comicBookTrimmedNil
+                             ?? "Reading Matter")
                             .font(.title3.weight(.semibold))
-                        if let body = page.bodyTarget ?? page.bodyNative {
+                        if let body = page.bodyFor(story.targetLanguageCode).comicBookTrimmedNil
+                            ?? page.bodyFor(story.nativeLanguageCode).comicBookTrimmedNil {
                             TappableStoryText(text: body, font: .body)
                         }
                     }
@@ -307,9 +313,10 @@ private struct ComicBookSegmentView: View {
             if let chapter = story.chapters[safe: chapterIndex] {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex))
+                        Text(StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex, targetCode: story.targetLanguageCode))
                             .font(.title3.weight(.semibold))
-                        if let intro = chapter.chapterIntroText {
+                        let intro = chapter.chapterIntroTextForLanguage(story.targetLanguageCode)
+                        if !intro.isEmpty {
                             TappableStoryText(text: intro, font: .body)
                         }
                     }
@@ -331,7 +338,7 @@ private struct ComicBookSegmentView: View {
             if let chapter = story.chapters[safe: chapterIndex] {
                 ScrollView {
                     InlineChapterVocabularyView(
-                        vocabularyNote: chapter.vocabularyNote ?? "",
+                        vocabularyNote: chapter.vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
                         title: "Chapter Word Focus"
                     )
                     .padding()
@@ -400,7 +407,7 @@ private struct ComicPanelView: View {
                         .lineLimit(4)
                 }
 
-                ForEach(panel.scene.dialogues.prefix(2)) { dialogue in
+                ForEach(panel.scene.dialoguesFor(panel.targetCode).prefix(2)) { dialogue in
                     TappableStoryText(
                         text: "\(dialogue.character): \(dialogue.text)",
                         font: .caption2,
@@ -480,9 +487,10 @@ private struct ComicPanelDetailView: View {
                     TappableStoryText(text: panel.caption, font: .body)
                 }
 
-                if !panel.scene.dialogues.isEmpty {
+                let dialogues = panel.scene.dialoguesFor(panel.targetCode)
+                if !dialogues.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(panel.scene.dialogues) { dialogue in
+                        ForEach(dialogues) { dialogue in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(dialogue.character)
                                     .font(.caption.weight(.bold))
@@ -570,5 +578,10 @@ private extension Collection {
 private extension String {
     var nilIfEmpty: String? {
         isEmpty ? nil : self
+    }
+
+    var comicBookTrimmedNil: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

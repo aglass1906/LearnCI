@@ -45,6 +45,7 @@ struct StoryDTO: Codable {
     let ambient_sound_id: String?
     let ambient_volume: Float?
     let language: String
+    let native_language: String?
     let level: Int
     let remote_audio_path: String?
     let remote_cover_path: String?
@@ -149,6 +150,7 @@ struct PushStoryDTO: Codable {
     let ambient_sound_id: String?
     let ambient_volume: Float?
     let language: String
+    let native_language: String?
     let level: Int
     let remote_audio_path: String?
     let remote_cover_path: String?
@@ -181,6 +183,7 @@ struct PushStoryPipelineDTO: Codable {
     let ambient_sound_id: String?
     let ambient_volume: Double?
     let language: String
+    let native_language: String?
     let level: Int
     let remote_audio_path: String?
     let remote_cover_path: String?
@@ -1175,6 +1178,7 @@ struct CoachingCheckInDTO: Codable {
             ambient_sound_id: story.ambientSoundId,
             ambient_volume: Double(story.ambientVolume),
             language: story.languageRaw,
+            native_language: story.nativeLanguageCode,
             level: Int(story.levelRaw) ?? 1,
             remote_audio_path: story.remoteAudioPath,
             remote_cover_path: story.remoteCoverPath,
@@ -1231,6 +1235,10 @@ struct CoachingCheckInDTO: Codable {
                 let previousChaptersJSON = existing.chaptersJSON
                 existing.title = dto.title
                 existing.isFavorite = dto.is_favorite
+                existing.languageRaw = dto.language
+                existing.nativeLanguageRaw = dto.native_language?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().isEmpty == false
+                    ? dto.native_language!.lowercased()
+                    : "en"
                 existing.textGenPrompt = dto.text_gen_prompt
                 existing.imageGenPrompt = dto.image_gen_prompt
                 if let style = dto.video_style { existing.videoStyle = style }
@@ -1332,6 +1340,7 @@ struct CoachingCheckInDTO: Codable {
                     bibleJSON: dto.bible_json?.jsonString,
                     sceneBreakdownJSON: dto.scene_breakdown_json?.jsonString,
                     language: Language(rawValue: dto.language) ?? .spanish,
+                    nativeLanguageCode: dto.native_language ?? "en",
                     level: dto.level,
                     createdAt: dto.created_at
                 )
@@ -1404,30 +1413,29 @@ struct CoachingCheckInDTO: Codable {
     private func downloadChapterAudio(for story: Story, context: ModelContext) {
         let storyID = story.id
         let chapters = story.chapters
+        let targetCode = story.targetLanguageCode
         
         for chapter in chapters {
-            guard let remotePath = chapter.audioUrl else { continue }
-            
-            // Derive extension from remote path
-            let ext = (remotePath as NSString).pathExtension
-            let finalExt = ext.isEmpty ? "mp3" : ext
-            let filename = "story_\(storyID.uuidString)_chapter_\(chapter.id.uuidString).\(finalExt)"
-            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let url = docs.appendingPathComponent(filename)
-            
-            // Skip if already exists
-            if FileManager.default.fileExists(atPath: url.path) { continue }
-            
-            Task {
-                do {
-                    let data = try await authManager.supabase.storage
-                        .from("audio-stories")
-                        .download(path: remotePath)
+            for scene in chapter.scenes {
+                guard let remotePath = scene.audioUrlForLanguage(targetCode) else { continue }
+                let ext = (remotePath as NSString).pathExtension
+                let finalExt = ext.isEmpty ? "m4a" : ext
+                let filename = "story_\(storyID.uuidString)_chapter_\(chapter.id)_scene_\(scene.sceneIndex).\(finalExt)"
+                let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let url = docs.appendingPathComponent(filename)
+                if FileManager.default.fileExists(atPath: url.path) { continue }
 
-                    try data.write(to: url)
-                    print("[Sync] Downloaded chapter audio for \(story.title): \(filename)")
-                } catch {
-                    print("[Sync] Failed to download chapter audio (\(chapter.titleTargetLanguage)) for \(story.title): \(error)")
+                Task {
+                    do {
+                        let data = try await authManager.supabase.storage
+                            .from("audio-stories")
+                            .download(path: remotePath)
+
+                        try data.write(to: url)
+                        print("[Sync] Downloaded scene audio for \(story.title): \(filename)")
+                    } catch {
+                        print("[Sync] Failed to download scene audio (\(chapter.titleFor(targetCode))) for \(story.title): \(error)")
+                    }
                 }
             }
         }

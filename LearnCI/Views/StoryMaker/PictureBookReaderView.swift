@@ -385,7 +385,8 @@ struct PictureBookReaderView: View {
 
     private var currentReadingMatterCanPlay: Bool {
         guard let page = currentSpread?.readingMatterPage else { return false }
-        return page.hasGeneratedAudio(preferNative: preferNativeLanguage) || currentReadingMatterSpeakableText != nil
+        let code = preferNativeLanguage ? story.nativeLanguageCode : story.targetLanguageCode
+        return page.audioUrlFor(code) != nil || currentReadingMatterSpeakableText != nil
     }
 
     private var currentReadingMatterSpeakableText: String? {
@@ -395,7 +396,8 @@ struct PictureBookReaderView: View {
 
     private var currentChapterIntroCanPlay: Bool {
         guard let chapter = currentSpread?.chapter else { return false }
-        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        let code = preferNativeLanguage ? story.nativeLanguageCode : story.targetLanguageCode
+        let hasAudio = chapter.chapterIntroAudioUrlForLanguage(code) != nil
         return hasAudio || currentChapterIntroSpeakableText != nil
     }
 
@@ -403,7 +405,9 @@ struct PictureBookReaderView: View {
         guard let chapter = currentSpread?.chapter else { return nil }
         return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
             chapter: chapter,
-            preferNative: preferNativeLanguage
+            preferNative: preferNativeLanguage,
+            targetCode: story.targetLanguageCode,
+            nativeCode: story.nativeLanguageCode
         )
     }
 
@@ -880,6 +884,8 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
@@ -898,22 +904,24 @@ struct PictureBookRenderer {
                 )
             case .readingMatterPage:
                 guard let page = adapter.readingMatterPage(for: item) else { return nil }
-                let title = page.titleTarget?.nilIfEmptyForPictureBook
-                    ?? page.titleNative?.nilIfEmptyForPictureBook
+                let title = page.titleFor(story.targetLanguageCode).nilIfEmptyForPictureBook
+                    ?? page.titleFor(story.nativeLanguageCode).nilIfEmptyForPictureBook
                     ?? page.id.nilIfEmptyForPictureBook
                 return PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: nil,
                     chapterTitle: nil,
                     sceneTitle: nil,
-                    spinePrimaryTitle: StoryReadingSpineTitles.readingMatterTitle(for: page),
+                    spinePrimaryTitle: StoryReadingSpineTitles.readingMatterTitle(for: page, targetCode: story.targetLanguageCode, nativeCode: story.nativeLanguageCode),
                     spineContextLabel: "Reading Matter",
                     title: title,
                     subtitle: nil,
-                    body: page.bodyTarget?.nilIfEmptyForPictureBook,
+                    body: page.bodyFor(story.targetLanguageCode).nilIfEmptyForPictureBook,
                     readingMatterPage: page,
                     chapter: nil,
                     scene: nil,
@@ -924,26 +932,29 @@ struct PictureBookRenderer {
                 )
             case .chapter(let chapterIndex):
                 guard let chapter = story.chapters[safeForPictureBook: chapterIndex],
-                      chapter.hasChapterIntroContent else { return nil }
-                let chapterTitle = chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                      chapter.hasChapterIntroContentForLanguage(story.targetLanguageCode) else { return nil }
+                let chapterTitle = chapter.titleFor(story.targetLanguageCode).nilIfEmptyForPictureBook
                 let regularChapterCount = story.chapters.filter { !$0.isPrologue && !$0.isEpilogue }.count
                 return PictureBookSpreadModel(
                     id: item.id,
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
                     sceneTitle: nil,
-                    spinePrimaryTitle: StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex),
+                    spinePrimaryTitle: StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex, targetCode: story.targetLanguageCode),
                     spineContextLabel: StoryReadingSpineTitles.chapterKindLabel(
                         for: chapter,
                         index: chapterIndex,
-                        regularChapterCount: regularChapterCount
+                        regularChapterCount: regularChapterCount,
+                        targetCode: story.targetLanguageCode
                     ),
                     title: chapterTitle,
                     subtitle: "Chapter Intro",
-                    body: chapter.chapterIntroText?.nilIfEmptyForPictureBook,
+                    body: chapter.chapterIntroTextForLanguage(story.targetLanguageCode).nilIfEmptyForPictureBook,
                     readingMatterPage: nil,
                     chapter: chapter,
                     scene: nil,
@@ -955,7 +966,7 @@ struct PictureBookRenderer {
             case .scene(let chapterIndex, let sceneIndex):
                 guard let scene = adapter.scene(for: item) else { return nil }
                 let chapter = story.chapters[safeForPictureBook: chapterIndex]
-                let chapterTitle = chapter?.titleTargetLanguage.nilIfEmptyForPictureBook
+                let chapterTitle = chapter?.titleFor(story.targetLanguageCode).nilIfEmptyForPictureBook
                 let breakdownTitle = StoryReadingSpineTitles.sceneTitleFromBreakdown(
                     story: story,
                     chapterIndex: chapterIndex,
@@ -964,6 +975,7 @@ struct PictureBookRenderer {
                 let sceneTitle = StoryReadingSpineTitles.sceneTitle(
                     from: scene,
                     sceneIndex: sceneIndex,
+                    targetCode: story.targetLanguageCode,
                     breakdownTitle: breakdownTitle
                 )
                 return PictureBookSpreadModel(
@@ -971,6 +983,8 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
                     sceneTitle: sceneTitle,
@@ -978,11 +992,12 @@ struct PictureBookRenderer {
                     spineContextLabel: StoryReadingSpineTitles.sceneContextLabel(
                         chapter: chapter,
                         chapterIndex: chapterIndex,
-                        sceneIndex: sceneIndex
+                        sceneIndex: sceneIndex,
+                        targetCode: story.targetLanguageCode
                     ),
                     title: chapterTitle,
                     subtitle: nil,
-                    body: scene.captionTarget?.nilIfEmptyForPictureBook,
+                    body: scene.captionFor(story.targetLanguageCode).nilIfEmptyForPictureBook,
                     readingMatterPage: nil,
                     chapter: nil,
                     scene: scene,
@@ -998,8 +1013,10 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: chapterIndex,
-                    chapterTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                    chapterTitle: chapter.titleFor(story.targetLanguageCode).nilIfEmptyForPictureBook,
                     sceneTitle: nil,
                     spinePrimaryTitle: "Chapter Quiz",
                     spineContextLabel: StoryReadingSpineTitles.spineContextLabel(for: item, story: story, adapter: adapter),
@@ -1021,14 +1038,16 @@ struct PictureBookRenderer {
                     spineItem: item,
                     spreadIndex: spreadIndex,
                     storyTitle: story.title,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     chapterIndex: chapterIndex,
-                    chapterTitle: chapter.titleTargetLanguage.nilIfEmptyForPictureBook,
+                    chapterTitle: chapter.titleFor(story.targetLanguageCode).nilIfEmptyForPictureBook,
                     sceneTitle: nil,
                     spinePrimaryTitle: "Word Focus",
                     spineContextLabel: StoryReadingSpineTitles.spineContextLabel(for: item, story: story, adapter: adapter),
                     title: "Word Focus",
                     subtitle: nil,
-                    body: chapter.vocabularyNote,
+                    body: chapter.vocabularyNoteForLanguage(story.targetLanguageCode),
                     readingMatterPage: nil,
                     chapter: chapter,
                     scene: nil,
@@ -1096,6 +1115,8 @@ struct PictureBookSpreadModel: Identifiable {
     let spineItem: StoryReadingSpineItem
     let spreadIndex: Int
     let storyTitle: String
+    let targetCode: String
+    let nativeCode: String
     let chapterIndex: Int?
     let chapterTitle: String?
     let sceneTitle: String?
@@ -1129,10 +1150,9 @@ struct PictureBookSpreadModel: Identifiable {
                 guard let chapter else { return chapterTitle }
                 switch language {
                 case .target:
-                    return chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                    return chapter.titleFor(targetCode).nilIfEmptyForPictureBook
                 case .native:
-                    let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
-                    return english.nilIfEmptyForPictureBook ?? chapter.titleTargetLanguage.nilIfEmptyForPictureBook
+                    return chapter.titleFor(nativeCode).nilIfEmptyForPictureBook
                 }
             }()
             return [resolvedChapterTitle, sceneTitle]
@@ -1150,22 +1170,21 @@ struct PictureBookSpreadModel: Identifiable {
             guard let page = readingMatterPage else { return body }
             switch language {
             case .target:
-                return page.bodyTarget?.nilIfEmptyForPictureBook
+                return page.bodyFor(targetCode).nilIfEmptyForPictureBook
             case .native:
-                return page.bodyNative?.nilIfEmptyForPictureBook ?? page.bodyTarget?.nilIfEmptyForPictureBook
+                return page.bodyFor(nativeCode).nilIfEmptyForPictureBook
             }
         case .chapter:
             guard let chapter else { return body }
             switch language {
             case .target:
-                return chapter.chapterIntroText?.nilIfEmptyForPictureBook
+                return chapter.chapterIntroTextForLanguage(targetCode).nilIfEmptyForPictureBook
             case .native:
-                return chapter.chapterIntroTextEnglish?.nilIfEmptyForPictureBook
-                    ?? chapter.chapterIntroText?.nilIfEmptyForPictureBook
+                return chapter.chapterIntroTextForLanguage(nativeCode).nilIfEmptyForPictureBook
             }
         case .scene:
             guard let scene else { return body }
-            return scene.pictureBookPreviewText(english: language == .native)
+            return scene.pictureBookPreviewText(langCode: language == .native ? nativeCode : targetCode)
         default:
             return body
         }
@@ -1175,9 +1194,9 @@ struct PictureBookSpreadModel: Identifiable {
         guard let page = readingMatterPage else { return title?.nilIfEmptyForPictureBook }
         switch language {
         case .target:
-            return page.titleTarget?.nilIfEmptyForPictureBook
+            return page.titleFor(targetCode).nilIfEmptyForPictureBook
         case .native:
-            return page.titleNative?.nilIfEmptyForPictureBook ?? page.titleTarget?.nilIfEmptyForPictureBook
+            return page.titleFor(nativeCode).nilIfEmptyForPictureBook
         }
     }
 
@@ -1394,7 +1413,7 @@ private struct PictureBookSpreadView: View {
 
     private func chapterVocabularyLayout(in frame: CGRect) -> some View {
         InlineChapterVocabularyView(
-            vocabularyNote: spread.chapter?.vocabularyNote ?? "",
+            vocabularyNote: spread.chapter?.vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
             title: "Chapter Word Focus"
         )
         .padding(.horizontal, 8)
@@ -1403,10 +1422,12 @@ private struct PictureBookSpreadView: View {
 
     private var supplementalWordTimings: [WordTiming] {
         if spread.isChapterIntro, let chapter = spread.chapter {
-            return chapter.chapterIntroBodyWordTimings(preferNative: selectedLanguage == .native)
+            let code = selectedLanguage == .native ? story.nativeLanguageCode : story.targetLanguageCode
+            return chapter.chapterIntroBodyWordTimingsForLanguage(code)
         }
         if let page = spread.readingMatterPage {
-            return page.bodyWordTimingsForPlayback(preferNative: selectedLanguage == .native)
+            let code = selectedLanguage == .native ? story.nativeLanguageCode : story.targetLanguageCode
+            return page.bodyWordTimingsFor(code)
         }
         return supplementalPlayback?.wordTimings ?? []
     }
@@ -1711,37 +1732,19 @@ private extension String {
 }
 
 private extension StoryScene {
-    func pictureBookPreviewText(english: Bool) -> String? {
+    func pictureBookPreviewText(langCode: String) -> String? {
         var lines: [String] = []
 
-        if english {
-            if let caption = captionNative?.nilIfEmptyForPictureBook {
-                lines.append(caption)
-            }
-            for dialogue in dialogues {
-                guard !dialogue.character.isEmpty else { continue }
-                let line = dialogue.textEnglish?.nilIfEmptyForPictureBook
-                    ?? dialogue.text.nilIfEmptyForPictureBook
-                guard let line else { continue }
-                lines.append("\(dialogue.character): \(line)")
-            }
-            if lines.isEmpty {
-                let script = scriptEnglish?.nilIfEmptyForPictureBook
-                    ?? scriptTargetLanguage?.nilIfEmptyForPictureBook
-                if let script { lines.append(script) }
-            }
-        } else {
-            if let caption = captionTarget?.nilIfEmptyForPictureBook {
-                lines.append(caption)
-            }
-            for dialogue in dialogues {
-                guard !dialogue.character.isEmpty,
-                      let line = dialogue.text.nilIfEmptyForPictureBook else { continue }
-                lines.append("\(dialogue.character): \(line)")
-            }
-            if lines.isEmpty, let script = scriptTargetLanguage?.nilIfEmptyForPictureBook {
-                lines.append(script)
-            }
+        if let caption = captionFor(langCode).nilIfEmptyForPictureBook {
+            lines.append(caption)
+        }
+        for dialogue in dialoguesFor(langCode) {
+            guard !dialogue.character.isEmpty,
+                  let line = dialogue.text.nilIfEmptyForPictureBook else { continue }
+            lines.append("\(dialogue.character): \(line)")
+        }
+        if lines.isEmpty, let script = scriptFor(langCode)?.nilIfEmptyForPictureBook {
+            lines.append(script)
         }
 
         return lines.isEmpty ? nil : lines.joined(separator: "\n")

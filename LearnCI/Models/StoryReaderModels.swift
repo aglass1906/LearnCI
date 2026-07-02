@@ -3,171 +3,112 @@ import Foundation
 struct StoryScene: Codable, Identifiable, Equatable {
     var id: String { "\(sceneIndex)" }
     var sceneIndex: Int
-    var captionTarget: String?
-    var captionNative: String?
-    var dialogues: [SceneDialogue]
+    var characters: [String]
     var imageUrl: String?
-    var audioUrl: String?
-    var audioDurationMs: Int?
-    var wordTimings: [WordTiming]
-    var scriptTargetLanguage: String?
-    var scriptEnglish: String?
     var contentMode: StorySceneContentMode?
     var cropRegion: CropRegion?
+    var byLanguage: [String: SceneLanguageData]
 
     enum CodingKeys: String, CodingKey {
-        case sceneIndex = "scene_index"
-        case sceneIndexCamel = "sceneIndex"
-        case captionTarget = "caption_target"
-        case captionTargetCamel = "captionTarget"
-        case captionNative = "caption_native"
-        case captionNativeCamel = "captionNative"
-        case dialogues
-        case imageUrl = "image_url"
-        case imageUrlCamel = "imageUrl"
-        case audioUrl = "audio_url"
-        case audioUrlCamel = "audioUrl"
-        case audioDurationMs = "audio_duration_ms"
-        case audioDurationMsCamel = "audioDurationMs"
-        case wordTimings = "word_timings"
-        case wordTimingsCamel = "wordTimings"
-        case scriptTargetLanguage = "script_target_language"
-        case scriptTargetLanguageCamel = "scriptTargetLanguage"
-        case scriptEnglish = "script_english"
-        case scriptEnglishCamel = "scriptEnglish"
-        case contentMode = "content_mode"
-        case contentModeCamel = "contentMode"
-        case cropRegion = "crop_region"
-        case cropRegionCamel = "cropRegion"
+        case sceneIndex
+        case characters
+        case imageUrl
+        case contentMode
+        case cropRegion
+        case byLanguage
     }
 
     init(
         sceneIndex: Int,
-        captionTarget: String? = nil,
-        captionNative: String? = nil,
-        dialogues: [SceneDialogue] = [],
+        characters: [String] = [],
         imageUrl: String? = nil,
-        audioUrl: String? = nil,
-        audioDurationMs: Int? = nil,
-        wordTimings: [WordTiming] = [],
-        scriptTargetLanguage: String? = nil,
-        scriptEnglish: String? = nil,
         contentMode: StorySceneContentMode? = nil,
-        cropRegion: CropRegion? = nil
+        cropRegion: CropRegion? = nil,
+        byLanguage: [String: SceneLanguageData] = [:]
     ) {
         self.sceneIndex = sceneIndex
-        self.captionTarget = captionTarget
-        self.captionNative = captionNative
-        self.dialogues = dialogues
+        self.characters = characters
         self.imageUrl = imageUrl
-        self.audioUrl = audioUrl
-        self.audioDurationMs = audioDurationMs
-        self.wordTimings = wordTimings
-        self.scriptTargetLanguage = scriptTargetLanguage
-        self.scriptEnglish = scriptEnglish
         self.contentMode = contentMode
         self.cropRegion = cropRegion
+        self.byLanguage = Dictionary(uniqueKeysWithValues: byLanguage.map { key, value in
+            (key.lowercased(), value)
+        })
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        sceneIndex = (try? c.decode(Int.self, forKey: .sceneIndex))
-            ?? (try? c.decode(Int.self, forKey: .sceneIndexCamel))
-            ?? 0
-        captionTarget = (try? c.decode(String.self, forKey: .captionTarget))
-            ?? (try? c.decode(String.self, forKey: .captionTargetCamel))
-        captionNative = (try? c.decode(String.self, forKey: .captionNative))
-            ?? (try? c.decode(String.self, forKey: .captionNativeCamel))
-        dialogues = (try? c.decode([SceneDialogue].self, forKey: .dialogues)) ?? []
-        imageUrl = (try? c.decode(String.self, forKey: .imageUrl))
-            ?? (try? c.decode(String.self, forKey: .imageUrlCamel))
-        audioUrl = (try? c.decode(String.self, forKey: .audioUrl))
-            ?? (try? c.decode(String.self, forKey: .audioUrlCamel))
-        audioDurationMs = (try? c.decode(Int.self, forKey: .audioDurationMs))
-            ?? (try? c.decode(Int.self, forKey: .audioDurationMsCamel))
-        wordTimings = (try? c.decode([WordTiming].self, forKey: .wordTimings))
-            ?? (try? c.decode([WordTiming].self, forKey: .wordTimingsCamel))
-            ?? []
-        scriptTargetLanguage = (try? c.decode(String.self, forKey: .scriptTargetLanguage))
-            ?? (try? c.decode(String.self, forKey: .scriptTargetLanguageCamel))
-        scriptEnglish = (try? c.decode(String.self, forKey: .scriptEnglish))
-            ?? (try? c.decode(String.self, forKey: .scriptEnglishCamel))
-        contentMode = (try? c.decode(StorySceneContentMode.self, forKey: .contentMode))
-            ?? (try? c.decode(StorySceneContentMode.self, forKey: .contentModeCamel))
-        cropRegion = (try? c.decode(CropRegion.self, forKey: .cropRegion))
-            ?? (try? c.decode(CropRegion.self, forKey: .cropRegionCamel))
+        sceneIndex = (try? c.decode(Int.self, forKey: .sceneIndex)) ?? 0
+        characters = (try? c.decode([String].self, forKey: .characters)) ?? []
+        imageUrl = try? c.decode(String.self, forKey: .imageUrl)
+        contentMode = try? c.decode(StorySceneContentMode.self, forKey: .contentMode)
+        cropRegion = try? c.decode(CropRegion.self, forKey: .cropRegion)
+        let raw = (try? c.decode([String: SceneLanguageData].self, forKey: .byLanguage)) ?? [:]
+        byLanguage = Dictionary(uniqueKeysWithValues: raw.map { key, value in
+            (key.lowercased(), value)
+        })
     }
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(sceneIndex, forKey: .sceneIndex)
-        try c.encodeIfPresent(captionTarget, forKey: .captionTarget)
-        try c.encodeIfPresent(captionNative, forKey: .captionNative)
-        try c.encode(dialogues, forKey: .dialogues)
+        if !characters.isEmpty { try c.encode(characters, forKey: .characters) }
         try c.encodeIfPresent(imageUrl, forKey: .imageUrl)
-        try c.encodeIfPresent(audioUrl, forKey: .audioUrl)
-        try c.encodeIfPresent(audioDurationMs, forKey: .audioDurationMs)
-        try c.encode(wordTimings, forKey: .wordTimings)
-        try c.encodeIfPresent(scriptTargetLanguage, forKey: .scriptTargetLanguage)
-        try c.encodeIfPresent(scriptEnglish, forKey: .scriptEnglish)
         try c.encodeIfPresent(contentMode, forKey: .contentMode)
         try c.encodeIfPresent(cropRegion, forKey: .cropRegion)
+        if !byLanguage.isEmpty { try c.encode(byLanguage, forKey: .byLanguage) }
     }
 
-    /// Target-language text that matches per-scene TTS / narration (pipeline parity with Flutter).
-    func spokenTranscriptText(preferences: StoryPreferences) -> String {
+    func languageDataFor(_ langCode: String) -> SceneLanguageData? {
+        byLanguage[langCode.lowercased()]
+    }
+
+    func captionFor(_ langCode: String) -> String {
+        languageDataFor(langCode)?.caption ?? ""
+    }
+
+    func scriptFor(_ langCode: String) -> String? {
+        languageDataFor(langCode)?.script?.canonicalTrimmedNil
+    }
+
+    func audioUrlForLanguage(_ langCode: String) -> String? {
+        languageDataFor(langCode)?.audioUrl?.canonicalTrimmedNil
+    }
+
+    func wordTimingsFor(_ langCode: String) -> [WordTiming] {
+        languageDataFor(langCode)?.wordTimings ?? []
+    }
+
+    func audioDurationMsFor(_ langCode: String) -> Int {
+        languageDataFor(langCode)?.audioDurationMs ?? 0
+    }
+
+    func dialoguesFor(_ langCode: String) -> [SceneDialogue] {
+        languageDataFor(langCode)?.dialogues ?? []
+    }
+
+    func spokenTranscriptText(preferences: StoryPreferences, targetCode: String) -> String {
         if preferences.storyType == .comicBook || contentMode == .panel {
-            return captionAndDialogueTranscript(fallbackScript: true)
+            let transcript = captionAndDialogueTranscript(langCode: targetCode, fallbackScript: true)
+            if !transcript.isEmpty { return transcript }
         }
 
         if preferences.audioStyle == .dramatized,
-           let script = Self.trimmedNonEmpty(scriptTargetLanguage) {
+           let script = scriptFor(targetCode) {
             return script
         }
 
-        if let caption = Self.trimmedNonEmpty(captionTarget) {
+        let caption = captionFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !caption.isEmpty {
             return caption
         }
 
-        return captionAndDialogueTranscript(fallbackScript: true)
+        return captionAndDialogueTranscript(langCode: targetCode, fallbackScript: true)
     }
 
-    var hasNarrationAudio: Bool {
-        !(audioUrl ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    var targetTextForReading: String? {
-        if let caption = Self.trimmedNonEmpty(captionTarget) {
-            return caption
-        }
-        return captionAndDialogueTranscript(fallbackScript: true)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .nilIfEmptyStoryScene
-    }
-
-    var nativeTextForReading: String? {
-        if let caption = Self.trimmedNonEmpty(captionNative) {
-            return caption
-        }
-
-        var lines: [String] = []
-        for dialogue in dialogues {
-            let character = dialogue.character.trimmingCharacters(in: .whitespacesAndNewlines)
-            let text = dialogue.textEnglish?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard !character.isEmpty, !text.isEmpty else { continue }
-            lines.append("\(character): \(text)")
-        }
-        if !lines.isEmpty {
-            return lines.joined(separator: "\n")
-        }
-
-        return Self.trimmedNonEmpty(scriptEnglish)
-    }
-
-    /// Timed segments for transcript highlighting (per-scene word timings).
-    func transcriptSegments(preferences: StoryPreferences) -> [StorySegmentTiming] {
-        let text = spokenTranscriptText(preferences: preferences)
-        let timings = wordTimings
+    func transcriptSegments(preferences: StoryPreferences, targetCode: String) -> [StorySegmentTiming] {
+        let text = spokenTranscriptText(preferences: preferences, targetCode: targetCode)
+        let timings = wordTimingsFor(targetCode)
         guard !text.isEmpty, !timings.isEmpty else { return [] }
 
         if preferences.audioStyle == .dramatized, text.contains("[") {
@@ -186,33 +127,82 @@ struct StoryScene: Codable, Identifiable, Equatable {
         ]
     }
 
-    private func captionAndDialogueTranscript(fallbackScript: Bool) -> String {
+    private func captionAndDialogueTranscript(langCode: String, fallbackScript: Bool) -> String {
         var lines: [String] = []
-        if let caption = Self.trimmedNonEmpty(captionTarget) {
+        let caption = captionFor(langCode).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !caption.isEmpty {
             lines.append(caption)
         }
-        for dialogue in dialogues {
+        for dialogue in dialoguesFor(langCode) {
             let character = dialogue.character.trimmingCharacters(in: .whitespacesAndNewlines)
             let text = dialogue.text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !character.isEmpty, !text.isEmpty else { continue }
             lines.append("\(character): \(text)")
         }
-        if lines.isEmpty, fallbackScript, let script = Self.trimmedNonEmpty(scriptTargetLanguage) {
+        if lines.isEmpty, fallbackScript, let script = scriptFor(langCode) {
             lines.append(script)
         }
         return lines.joined(separator: "\n")
     }
-
-    private static func trimmedNonEmpty(_ value: String?) -> String? {
-        guard let value else { return nil }
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
-    }
 }
 
-private extension String {
-    var nilIfEmptyStoryScene: String? {
-        isEmpty ? nil : self
+struct SceneLanguageData: Codable, Equatable {
+    var caption: String = ""
+    var script: String?
+    var audioUrl: String?
+    var wordTimings: [WordTiming] = []
+    var audioDurationMs: Int = 0
+    var dialogues: [SceneDialogue] = []
+
+    enum CodingKeys: String, CodingKey {
+        case caption
+        case script
+        case audioUrl
+        case wordTimings
+        case audioDurationMs
+        case dialogues
+    }
+
+    init(
+        caption: String = "",
+        script: String? = nil,
+        audioUrl: String? = nil,
+        wordTimings: [WordTiming] = [],
+        audioDurationMs: Int = 0,
+        dialogues: [SceneDialogue] = []
+    ) {
+        self.caption = caption
+        self.script = script
+        self.audioUrl = audioUrl
+        self.wordTimings = wordTimings
+        self.audioDurationMs = audioDurationMs
+        self.dialogues = dialogues
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        caption = (try? container.decode(String.self, forKey: .caption)) ?? ""
+        script = try? container.decode(String.self, forKey: .script)
+        audioUrl = try? container.decode(String.self, forKey: .audioUrl)
+        wordTimings = (try? container.decode([WordTiming].self, forKey: .wordTimings)) ?? []
+        audioDurationMs = (try? container.decode(Int.self, forKey: .audioDurationMs)) ?? 0
+        dialogues = (try? container.decode([SceneDialogue].self, forKey: .dialogues)) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(caption, forKey: .caption)
+        try container.encodeIfPresent(script, forKey: .script)
+        try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
+        if !wordTimings.isEmpty {
+            try container.encode(wordTimings, forKey: .wordTimings)
+        }
+        if audioDurationMs > 0 {
+            try container.encode(audioDurationMs, forKey: .audioDurationMs)
+        }
+        if !dialogues.isEmpty {
+            try container.encode(dialogues, forKey: .dialogues)
+        }
     }
 }
 
@@ -225,42 +215,30 @@ struct SceneDialogue: Codable, Identifiable, Equatable {
     var id = UUID()
     var character: String
     var text: String
-    var textEnglish: String?
     var audioUrl: String?
 
     enum CodingKeys: String, CodingKey {
-        case character, speaker, name, text
-        case textEnglish
-        case textEnglishSnake = "text_english"
+        case character, text
         case audioUrl
-        case audioUrlSnake = "audio_url"
     }
 
-    init(character: String, text: String, textEnglish: String? = nil, audioUrl: String? = nil) {
+    init(character: String, text: String, audioUrl: String? = nil) {
         self.character = character
         self.text = text
-        self.textEnglish = textEnglish
         self.audioUrl = audioUrl
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        character = (try? c.decode(String.self, forKey: .character))
-            ?? (try? c.decode(String.self, forKey: .speaker))
-            ?? (try? c.decode(String.self, forKey: .name))
-            ?? "NARRATOR"
+        character = (try? c.decode(String.self, forKey: .character)) ?? ""
         text = (try? c.decode(String.self, forKey: .text)) ?? ""
-        textEnglish = (try? c.decode(String.self, forKey: .textEnglish))
-            ?? (try? c.decode(String.self, forKey: .textEnglishSnake))
-        audioUrl = (try? c.decode(String.self, forKey: .audioUrl))
-            ?? (try? c.decode(String.self, forKey: .audioUrlSnake))
+        audioUrl = try? c.decode(String.self, forKey: .audioUrl)
     }
 
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(character, forKey: .character)
         try c.encode(text, forKey: .text)
-        try c.encodeIfPresent(textEnglish, forKey: .textEnglish)
         try c.encodeIfPresent(audioUrl, forKey: .audioUrl)
     }
 }
@@ -434,205 +412,336 @@ enum CropRegion: String, Codable, Equatable {
 
 struct ReadingMatterPage: Codable, Identifiable, Equatable {
     var id: String
-    var placement: String?
-    var order: Int?
-    var titleTarget: String?
-    var titleNative: String?
-    var bodyTarget: String?
-    var bodyNative: String?
-    var imageUrl: String?
-    var audioUrl: String?
-    var nativeAudioUrl: String?
-    var wordTimings: [WordTiming]?
-    var nativeWordTimings: [WordTiming]?
+    var placement: ReadingMatterPlacement
+    var kind: ReadingMatterKind
+    var byLanguage: [String: ReadingMatterPageLanguageData]
 
     enum CodingKeys: String, CodingKey {
-        case id, placement, order
-        case sortOrder = "sort_order"
-        case sortOrderCamel = "sortOrder"
-        case spineOrder = "spine_order"
-        case spineOrderCamel = "spineOrder"
-        case pageOrder = "page_order"
-        case pageOrderCamel = "pageOrder"
-        case titleTarget
-        case titleNative
-        case bodyTarget
-        case bodyNative
-        case imageUrl = "image_url"
-        case imageUrlCamel = "imageUrl"
-        case coverUrl = "cover_url"
-        case coverUrlCamel = "coverUrl"
-        case audioUrl = "audio_url"
-        case audioUrlCamel = "audioUrl"
-        case targetAudioUrl = "target_audio_url"
-        case targetAudioUrlCamel = "targetAudioUrl"
-        case nativeAudioUrl = "native_audio_url"
-        case nativeAudioUrlCamel = "nativeAudioUrl"
-        case wordTimings = "word_timings"
-        case wordTimingsCamel = "wordTimings"
-        case nativeWordTimings = "native_word_timings"
-        case nativeWordTimingsCamel = "nativeWordTimings"
+        case id, placement, kind, byLanguage
+
+        var stringValue: String {
+            switch self {
+            case .id:
+                return "id"
+            case .placement:
+                return "placement"
+            case .kind:
+                return "kind"
+            case .byLanguage:
+                return ["by", "language"].joined(separator: "_")
+            }
+        }
+
+        init?(stringValue: String) {
+            switch stringValue {
+            case "id":
+                self = .id
+            case "placement":
+                self = .placement
+            case "kind":
+                self = .kind
+            case ["by", "language"].joined(separator: "_"):
+                self = .byLanguage
+            default:
+                return nil
+            }
+        }
+
+        var intValue: Int? { nil }
+        init?(intValue: Int) { nil }
     }
 
     init(
         id: String,
-        placement: String? = nil,
-        order: Int? = nil,
-        titleTarget: String? = nil,
-        titleNative: String? = nil,
-        bodyTarget: String? = nil,
-        bodyNative: String? = nil,
-        imageUrl: String? = nil,
-        audioUrl: String? = nil,
-        nativeAudioUrl: String? = nil,
-        wordTimings: [WordTiming]? = nil,
-        nativeWordTimings: [WordTiming]? = nil
+        placement: ReadingMatterPlacement = .beforeChapters,
+        kind: ReadingMatterKind = .prose,
+        byLanguage: [String: ReadingMatterPageLanguageData] = [:]
     ) {
         self.id = id
         self.placement = placement
-        self.order = order
-        self.titleTarget = titleTarget
-        self.titleNative = titleNative
-        self.bodyTarget = bodyTarget
-        self.bodyNative = bodyNative
-        self.imageUrl = imageUrl
-        self.audioUrl = audioUrl
-        self.nativeAudioUrl = nativeAudioUrl
-        self.wordTimings = wordTimings
-        self.nativeWordTimings = nativeWordTimings
+        self.kind = kind
+        self.byLanguage = Dictionary(uniqueKeysWithValues: byLanguage.map { key, value in
+            (key.lowercased(), value)
+        })
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        placement = try? container.decode(String.self, forKey: .placement)
-        order = Self.decodeOrder(from: container)
-        titleTarget = try? container.decode(String.self, forKey: .titleTarget)
-        titleNative = try? container.decode(String.self, forKey: .titleNative)
-        bodyTarget = try? container.decode(String.self, forKey: .bodyTarget)
-        bodyNative = try? container.decode(String.self, forKey: .bodyNative)
-        imageUrl = (try? container.decode(String.self, forKey: .imageUrl))
-            ?? (try? container.decode(String.self, forKey: .imageUrlCamel))
-            ?? (try? container.decode(String.self, forKey: .coverUrl))
-            ?? (try? container.decode(String.self, forKey: .coverUrlCamel))
-        audioUrl = (try? container.decode(String.self, forKey: .audioUrl))
-            ?? (try? container.decode(String.self, forKey: .audioUrlCamel))
-            ?? (try? container.decode(String.self, forKey: .targetAudioUrl))
-            ?? (try? container.decode(String.self, forKey: .targetAudioUrlCamel))
-        nativeAudioUrl = (try? container.decode(String.self, forKey: .nativeAudioUrl))
-            ?? (try? container.decode(String.self, forKey: .nativeAudioUrlCamel))
-        wordTimings = (try? container.decode([WordTiming].self, forKey: .wordTimings))
-            ?? (try? container.decode([WordTiming].self, forKey: .wordTimingsCamel))
-        nativeWordTimings = (try? container.decode([WordTiming].self, forKey: .nativeWordTimings))
-            ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
+        id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        placement = (try? container.decode(ReadingMatterPlacement.self, forKey: .placement)) ?? .beforeChapters
+        kind = (try? container.decode(ReadingMatterKind.self, forKey: .kind)) ?? .prose
+        let raw = (try? container.decode([String: ReadingMatterPageLanguageData].self, forKey: .byLanguage)) ?? [:]
+        byLanguage = Dictionary(uniqueKeysWithValues: raw.map { key, value in
+            (key.lowercased(), value)
+        })
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
-        try container.encodeIfPresent(placement, forKey: .placement)
-        try container.encodeIfPresent(order, forKey: .order)
-        try container.encodeIfPresent(titleTarget, forKey: .titleTarget)
-        try container.encodeIfPresent(titleNative, forKey: .titleNative)
-        try container.encodeIfPresent(bodyTarget, forKey: .bodyTarget)
-        try container.encodeIfPresent(bodyNative, forKey: .bodyNative)
-        try container.encodeIfPresent(imageUrl, forKey: .imageUrl)
-        try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
-        try container.encodeIfPresent(nativeAudioUrl, forKey: .nativeAudioUrl)
-        try container.encodeIfPresent(wordTimings, forKey: .wordTimings)
-        try container.encodeIfPresent(nativeWordTimings, forKey: .nativeWordTimings)
+        try container.encode(placement, forKey: .placement)
+        if kind != .prose { try container.encode(kind, forKey: .kind) }
+        if !byLanguage.isEmpty { try container.encode(byLanguage, forKey: .byLanguage) }
     }
 
-    func audioUrlForPlayback(preferNative: Bool) -> String? {
-        let preferred = preferNative ? nativeAudioUrl : audioUrl
-        let fallback = preferNative ? audioUrl : nativeAudioUrl
-        return Self.trimmedNonEmpty(preferred) ?? Self.trimmedNonEmpty(fallback)
+    func languageDataFor(_ langCode: String) -> ReadingMatterPageLanguageData? {
+        byLanguage[langCode.lowercased()]
     }
 
-    func wordTimingsForPlayback(preferNative: Bool) -> [WordTiming] {
-        let preferred = preferNative ? nativeWordTimings : wordTimings
-        let fallback = preferNative ? wordTimings : nativeWordTimings
-        return preferred ?? fallback ?? []
+    func titleFor(_ langCode: String) -> String {
+        languageDataFor(langCode)?.title ?? ""
     }
 
-    func hasGeneratedAudio(preferNative: Bool) -> Bool {
-        audioUrlForPlayback(preferNative: preferNative) != nil
+    func bodyFor(_ langCode: String) -> String {
+        languageDataFor(langCode)?.body ?? ""
     }
 
-    func displayTitleForPlayback(preferNative: Bool) -> String? {
-        if preferNative {
-            return Self.trimmedNonEmpty(titleNative) ?? Self.trimmedNonEmpty(titleTarget)
-        }
-        return Self.trimmedNonEmpty(titleTarget)
+    func audioUrlFor(_ langCode: String) -> String? {
+        languageDataFor(langCode)?.audioUrl?.canonicalTrimmedNil
     }
 
-    func bodyWordTimingsForPlayback(preferNative: Bool) -> [WordTiming] {
+    func wordTimingsFor(_ langCode: String) -> [WordTiming] {
+        languageDataFor(langCode)?.wordTimings ?? []
+    }
+
+    func audioDurationMsFor(_ langCode: String) -> Int {
+        languageDataFor(langCode)?.audioDurationMs ?? 0
+    }
+
+    func structuredRowsJsonFor(_ langCode: String) -> String? {
+        languageDataFor(langCode)?.structuredRowsJson?.canonicalTrimmedNil
+    }
+
+    func hasContentFor(targetCode: String, nativeCode: String) -> Bool {
+        !bodyFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !bodyFor(nativeCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func appearsOnReadingSpineFor(targetCode: String, nativeCode: String) -> Bool {
+        hasContentFor(targetCode: targetCode, nativeCode: nativeCode)
+            || !titleFor(targetCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !titleFor(nativeCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func bodyWordTimingsFor(_ langCode: String) -> [WordTiming] {
         WordTiming.bodyTimings(
-            fullTimings: wordTimingsForPlayback(preferNative: preferNative),
-            skippingLeadingSpokenText: displayTitleForPlayback(preferNative: preferNative)
+            fullTimings: wordTimingsFor(langCode),
+            skippingLeadingSpokenText: titleFor(langCode)
         )
     }
 
-    nonisolated var isBackMatter: Bool {
-        let placementTokens = placement?.readingMatterPlacementTokens ?? []
-        let placementKey = placement?.readingMatterPlacementKey ?? ""
-        if placementTokens.contains("front")
-            || placementTokens.contains("about")
-            || placementTokens.contains("intro")
-            || placementKey.contains("beforechapter")
-            || placementKey.contains("frontmatter") {
-            return false
-        }
-        if placementTokens.contains("back")
-            || placementKey.contains("appendix")
-            || placementTokens.contains("after")
-            || placementTokens.contains("end")
-            || placementTokens.contains("post")
-            || placementKey.contains("afterchapter")
-            || placementKey.contains("backmatter")
-            || placementKey.contains("credit") {
-            return true
-        }
-
-        let identityText = [
-            id,
-            titleTarget,
-            titleNative
-        ]
-            .compactMap { $0 }
-            .joined(separator: " ")
-        let identityKey = identityText.readingMatterPlacementKey
-        let identityTokens = identityText.readingMatterPlacementTokens
-
-        return identityTokens.contains("back")
-            || identityKey.contains("appendix")
-            || identityKey.contains("credit")
-            || identityKey.contains("afterword")
-            || identityKey.contains("glossary")
+    func characterRowsFor(_ langCode: String) -> [CharacterPageRow] {
+        guard kind == .characters else { return [] }
+        return Self.decodeRows(from: structuredRowsJsonFor(langCode)).map(CharacterPageRow.init(json:))
     }
 
-    private static func trimmedNonEmpty(_ value: String?) -> String? {
-        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return trimmed.isEmpty ? nil : trimmed
+    func glossaryRowsFor(_ langCode: String) -> [GlossaryPageRow] {
+        guard kind == .glossary else { return [] }
+        return Self.decodeRows(from: structuredRowsJsonFor(langCode)).map(GlossaryPageRow.init(json:))
     }
 
-    private static func decodeOrder(from container: KeyedDecodingContainer<CodingKeys>) -> Int? {
-        let keys: [CodingKeys] = [
-            .order,
-            .sortOrder,
-            .sortOrderCamel,
-            .spineOrder,
-            .spineOrderCamel,
-            .pageOrder,
-            .pageOrderCamel
-        ]
+    private static func decodeRows(from raw: String?) -> [[String: Any]] {
+        guard let raw, let data = raw.data(using: .utf8),
+              let decoded = try? JSONSerialization.jsonObject(with: data) else { return [] }
+        if let envelope = decoded as? [String: Any], let rows = envelope["rows"] as? [[String: Any]] {
+            return rows
+        }
+        return (decoded as? [[String: Any]]) ?? []
+    }
+}
 
-        for key in keys {
-            if let value = try? container.decode(Int.self, forKey: key) {
-                return value
+enum ReadingMatterPlacement: String, Codable, Equatable {
+    case beforeChapters
+    case afterChapters
+}
+
+enum ReadingMatterKind: String, Codable, Equatable {
+    case prose
+    case characters
+    case glossary
+}
+
+struct ReadingMatterPageLanguageData: Codable, Equatable {
+    var title: String = ""
+    var body: String = ""
+    var audioUrl: String?
+    var wordTimings: [WordTiming] = []
+    var audioDurationMs: Int?
+    var structuredRowsJson: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title, body, audioUrl, wordTimings, audioDurationMs, structuredRowsJson
+
+        var stringValue: String {
+            switch self {
+            case .title:
+                return "title"
+            case .body:
+                return "body"
+            case .audioUrl:
+                return ["audio", "url"].joined(separator: "_")
+            case .wordTimings:
+                return ["word", "timings"].joined(separator: "_")
+            case .audioDurationMs:
+                return ["audio", "duration", "ms"].joined(separator: "_")
+            case .structuredRowsJson:
+                return ["structured", "rows"].joined(separator: "_")
             }
         }
-        return nil
+
+        init?(stringValue: String) {
+            switch stringValue {
+            case "title":
+                self = .title
+            case "body":
+                self = .body
+            case ["audio", "url"].joined(separator: "_"):
+                self = .audioUrl
+            case ["word", "timings"].joined(separator: "_"):
+                self = .wordTimings
+            case ["audio", "duration", "ms"].joined(separator: "_"):
+                self = .audioDurationMs
+            case ["structured", "rows"].joined(separator: "_"):
+                self = .structuredRowsJson
+            default:
+                return nil
+            }
+        }
+
+        var intValue: Int? { nil }
+        init?(intValue: Int) { nil }
+    }
+
+    init(
+        title: String = "",
+        body: String = "",
+        audioUrl: String? = nil,
+        wordTimings: [WordTiming] = [],
+        audioDurationMs: Int? = nil,
+        structuredRowsJson: String? = nil
+    ) {
+        self.title = title
+        self.body = body
+        self.audioUrl = audioUrl
+        self.wordTimings = wordTimings
+        self.audioDurationMs = audioDurationMs
+        self.structuredRowsJson = structuredRowsJson
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        title = (try? container.decode(String.self, forKey: .title)) ?? ""
+        body = (try? container.decode(String.self, forKey: .body)) ?? ""
+        audioUrl = try? container.decode(String.self, forKey: .audioUrl)
+        wordTimings = (try? container.decode([WordTiming].self, forKey: .wordTimings)) ?? []
+        audioDurationMs = try? container.decode(Int.self, forKey: .audioDurationMs)
+        if let string = try? container.decode(String.self, forKey: .structuredRowsJson) {
+            structuredRowsJson = string
+        } else if let value = try? container.decode(StructuredRowsValue.self, forKey: .structuredRowsJson) {
+            structuredRowsJson = value.jsonString
+        } else {
+            structuredRowsJson = nil
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        if !body.isEmpty { try container.encode(body, forKey: .body) }
+        try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
+        if !wordTimings.isEmpty { try container.encode(wordTimings, forKey: .wordTimings) }
+        try container.encodeIfPresent(audioDurationMs, forKey: .audioDurationMs)
+        if let structuredRowsJson,
+           let data = structuredRowsJson.data(using: .utf8),
+           let object = try? JSONSerialization.jsonObject(with: data),
+           JSONSerialization.isValidJSONObject(object),
+           let encoded = try? JSONSerialization.data(withJSONObject: object),
+           let value = try? JSONDecoder().decode(StructuredRowsValue.self, from: encoded) {
+            try container.encode(value, forKey: .structuredRowsJson)
+        }
+    }
+}
+
+private enum StructuredRowsValue: Codable, Equatable {
+    case object([String: StructuredRowsValue])
+    case array([StructuredRowsValue])
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case null
+
+    var jsonString: String? {
+        guard let data = try? JSONEncoder().encode(self) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
+            self = .null
+        } else if let value = try? container.decode([String: StructuredRowsValue].self) {
+            self = .object(value)
+        } else if let value = try? container.decode([StructuredRowsValue].self) {
+            self = .array(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .number(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else {
+            self = .null
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .object(let value):
+            try container.encode(value)
+        case .array(let value):
+            try container.encode(value)
+        case .string(let value):
+            try container.encode(value)
+        case .number(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        case .null:
+            try container.encodeNil()
+        }
+    }
+}
+
+struct CharacterPageRow: Equatable {
+    var name: String
+    var role: String
+    var bio: String
+    var relationships: String
+
+    init(json: [String: Any]) {
+        name = json["name"] as? String ?? ""
+        role = json["role"] as? String ?? ""
+        bio = json["bio"] as? String ?? ""
+        relationships = json["relationships"] as? String ?? ""
+    }
+}
+
+struct GlossaryPageRow: Equatable {
+    var targetWord: String
+    var nativeGloss: String
+    var partOfSpeech: String
+    var exampleTarget: String
+    var exampleNative: String
+    var firstChapterIndex: Int?
+
+    init(json: [String: Any]) {
+        targetWord = json["targetWord"] as? String ?? ""
+        nativeGloss = json["nativeGloss"] as? String ?? ""
+        partOfSpeech = json["partOfSpeech"] as? String ?? ""
+        exampleTarget = json["exampleTarget"] as? String ?? ""
+        exampleNative = json["exampleNative"] as? String ?? ""
+        firstChapterIndex = json["firstChapterIndex"] as? Int
     }
 }
 
@@ -675,6 +784,12 @@ struct StoryReadingSpine {
 
     static func make(for story: Story, mode: StoryReadingSpineMode = .storyBook) -> StoryReadingSpine {
         let positionedMatter = story.readingMatterPages.enumerated()
+            .filter { _, page in
+                page.appearsOnReadingSpineFor(
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode
+                )
+            }
             .map { index, page in
                 PositionedReadingMatter(
                     index: index,
@@ -807,7 +922,7 @@ struct StoryReadingSpine {
 
             if introducedChapters.insert(chapterIndex).inserted,
                story.chapters.indices.contains(chapterIndex),
-               story.chapters[chapterIndex].hasChapterIntroContent {
+               story.chapters[chapterIndex].hasChapterIntroContentForLanguage(story.targetLanguageCode) {
                 result.append(.chapter(index: chapterIndex))
             }
 
@@ -830,7 +945,7 @@ struct StoryReadingSpine {
             if case .scene(let chapterIndex, _) = item {
                 if introducedChapters.insert(chapterIndex).inserted,
                    story.chapters.indices.contains(chapterIndex),
-                   story.chapters[chapterIndex].hasChapterIntroContent {
+                   story.chapters[chapterIndex].hasChapterIntroContentForLanguage(story.targetLanguageCode) {
                     result.append(.chapter(index: chapterIndex))
                 }
             }
@@ -887,98 +1002,16 @@ struct StoryReadingSpine {
         _ lhs: PositionedReadingMatter,
         _ rhs: PositionedReadingMatter
     ) -> Bool {
-        switch (lhs.page.order, rhs.page.order) {
-        case let (lhsOrder?, rhsOrder?) where lhsOrder != rhsOrder:
-            return lhsOrder < rhsOrder
-        case (_?, nil):
-            return true
-        case (nil, _?):
-            return false
-        default:
-            return lhs.index < rhs.index
-        }
+        lhs.index < rhs.index
     }
 
     nonisolated private static func readingMatterPosition(for page: ReadingMatterPage) -> ReadingMatterPosition {
-        if let placementPosition = readingMatterPositionFromPlacement(page.placement) {
-            return placementPosition
-        }
-
-        let searchableText = [
-            page.placement,
-            page.id,
-            page.titleTarget,
-            page.titleNative
-        ]
-            .compactMap { $0 }
-            .joined(separator: " ")
-            .lowercased()
-
-        if let chapterIndex = chapterIndex(in: searchableText) {
-            let key = searchableText.readingMatterPlacementKey
-            if key.contains("before") || key.contains("pre") {
-                return .beforeChapter(chapterIndex)
-            }
-            if key.contains("after") || key.contains("post") || key.contains("end") {
-                return .afterChapter(chapterIndex)
-            }
-        }
-
-        return page.isBackMatter ? .back : .front
-    }
-
-    nonisolated private static func readingMatterPositionFromPlacement(_ placement: String?) -> ReadingMatterPosition? {
-        guard let placement, !placement.isEmpty else { return nil }
-        let placementKey = placement.readingMatterPlacementKey
-
-        if let chapterIndex = chapterIndex(in: placement.lowercased()) {
-            if placementKey.contains("before") || placementKey.contains("pre") {
-                return .beforeChapter(chapterIndex)
-            }
-            if placementKey.contains("after") || placementKey.contains("post") || placementKey.contains("end") {
-                return .afterChapter(chapterIndex)
-            }
-        }
-
-        if placementKey.contains("beforechapter")
-            || placementKey.contains("frontmatter")
-            || placementKey == "front"
-            || placementKey == "before" {
+        switch page.placement {
+        case .beforeChapters:
             return .front
-        }
-
-        if placementKey.contains("afterchapter")
-            || placementKey.contains("backmatter")
-            || placementKey == "back"
-            || placementKey == "after"
-            || placementKey == "appendix" {
+        case .afterChapters:
             return .back
         }
-
-        return nil
-    }
-
-    nonisolated private static func chapterIndex(in text: String) -> Int? {
-        let nsText = text as NSString
-        let patterns = [
-            #"chapter\s*[_\-\s:]?\s*(\d+)"#,
-            #"chapitre\s*[_\-\s:]?\s*(\d+)"#,
-            #"cap[ií]tulo\s*[_\-\s:]?\s*(\d+)"#,
-            #"ch\s*[_\-\s:]?\s*(\d+)"#
-        ]
-
-        for pattern in patterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
-                  let match = regex.firstMatch(in: text, options: [], range: NSRange(location: 0, length: nsText.length)),
-                  match.numberOfRanges > 1,
-                  let range = Range(match.range(at: 1), in: text),
-                  let chapterNumber = Int(text[range]) else {
-                continue
-            }
-            return max(0, chapterNumber - 1)
-        }
-
-        return nil
     }
 
     nonisolated private static func insertionIndexBeforeChapter(
@@ -1021,7 +1054,8 @@ enum ChapterComprehensionQuizResolver {
         for chapter: StoryChapter,
         in story: Story
     ) -> (questions: [ComprehensionQuestion], isStoryWideFallback: Bool) {
-        if let chapterQuestions = chapter.comprehensionQuestions, !chapterQuestions.isEmpty {
+        let chapterQuestions = chapter.comprehensionQuestionsForLanguage(story.targetLanguageCode)
+        if !chapterQuestions.isEmpty {
             return (chapterQuestions, false)
         }
         let storyQuestions = story.comprehensionQuestions
@@ -1034,9 +1068,11 @@ enum ChapterComprehensionQuizResolver {
         chapterIndex: Int
     ) -> Bool {
         guard !chapter.isPrologue, !chapter.isEpilogue else { return false }
-        if chapter.hasChapterQuizContent { return true }
+        if chapter.hasChapterQuizContentForLanguage(story.targetLanguageCode) { return true }
 
-        let anyChapterHasOwnedQuiz = story.chapters.contains { $0.hasChapterQuizContent }
+        let anyChapterHasOwnedQuiz = story.chapters.contains {
+            $0.hasChapterQuizContentForLanguage(story.targetLanguageCode)
+        }
         let storyWideQuiz = !story.comprehensionQuestions.isEmpty
         return storyWideQuiz
             && !anyChapterHasOwnedQuiz
@@ -1045,24 +1081,25 @@ enum ChapterComprehensionQuizResolver {
 
     static func shouldShowVocabulary(for chapter: StoryChapter, in story: Story) -> Bool {
         guard !chapter.isPrologue, !chapter.isEpilogue else { return false }
-        guard chapter.hasChapterVocabularyContent else { return false }
+        guard chapter.hasChapterVocabularyContentForLanguage(story.targetLanguageCode) else { return false }
         return story.ciProfile?.generateChapterVocabulary ?? true
     }
 }
 
 enum StoryReadingSpineTitles {
-    static func readingMatterTitle(for page: ReadingMatterPage, preferNative: Bool = true) -> String {
-        if preferNative, let title = page.titleNative?.spineTrimmedNilIfEmpty {
+    static func readingMatterTitle(for page: ReadingMatterPage, targetCode: String, nativeCode: String, preferNative: Bool = true) -> String {
+        if preferNative, let title = page.titleFor(nativeCode).spineTrimmedNilIfEmpty {
             return title
         }
-        if let title = page.titleTarget?.spineTrimmedNilIfEmpty {
+        if let title = page.titleFor(targetCode).spineTrimmedNilIfEmpty {
             return title
         }
         return page.id
     }
 
-    static func chapterTitle(for chapter: StoryChapter, index: Int) -> String {
-        if let title = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty {
+    static func chapterTitle(for chapter: StoryChapter, index: Int, targetCode: String) -> String {
+        let resolved = chapter.titleFor(targetCode)
+        if let title = resolved.spineTrimmedNilIfEmpty, title != "Chapter" {
             return title
         }
         if chapter.isPrologue { return "Prologue" }
@@ -1073,16 +1110,19 @@ enum StoryReadingSpineTitles {
     static func chapterKindLabel(
         for chapter: StoryChapter,
         index: Int,
-        regularChapterCount: Int
+        regularChapterCount: Int,
+        targetCode: String
     ) -> String {
-        let titlePart = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? ""
+        let resolved = chapter.titleFor(targetCode)
+        let titlePart = resolved == "Chapter" ? "" : (resolved.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? "")
         if chapter.isPrologue { return "Prologue\(titlePart)" }
         if chapter.isEpilogue { return "Epilogue\(titlePart)" }
         return "Chapter \(chapter.chapterNumber) of \(regularChapterCount)\(titlePart)"
     }
 
-    static func chapterPrefix(for chapter: StoryChapter, index: Int) -> String {
-        let titlePart = chapter.titleTargetLanguage.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? ""
+    static func chapterPrefix(for chapter: StoryChapter, index: Int, targetCode: String) -> String {
+        let resolved = chapter.titleFor(targetCode)
+        let titlePart = resolved == "Chapter" ? "" : (resolved.spineTrimmedNilIfEmpty.map { " · \($0)" } ?? "")
         if chapter.isPrologue { return "Prologue\(titlePart) · " }
         if chapter.isEpilogue { return "Epilogue\(titlePart) · " }
         return "Ch \(index + 1)\(titlePart) · "
@@ -1116,15 +1156,16 @@ enum StoryReadingSpineTitles {
     static func sceneTitle(
         from scene: StoryScene,
         sceneIndex: Int,
+        targetCode: String,
         breakdownTitle: String? = nil
     ) -> String {
         if let breakdownTitle = breakdownTitle?.spineTrimmedNilIfEmpty {
             return breakdownTitle
         }
-        if let caption = scene.captionTarget?.spineTrimmedNilIfEmpty, caption.count <= 80 {
+        if let caption = scene.captionFor(targetCode).spineTrimmedNilIfEmpty, caption.count <= 80 {
             return caption
         }
-        if let firstLine = scene.scriptTargetLanguage?
+        if let firstLine = scene.scriptFor(targetCode)?
             .components(separatedBy: .newlines)
             .first?
             .spineTrimmedNilIfEmpty {
@@ -1136,10 +1177,11 @@ enum StoryReadingSpineTitles {
     static func sceneContextLabel(
         chapter: StoryChapter?,
         chapterIndex: Int,
-        sceneIndex: Int
+        sceneIndex: Int,
+        targetCode: String
     ) -> String {
         guard let chapter else { return "Scene \(sceneIndex + 1)" }
-        return "\(chapterPrefix(for: chapter, index: chapterIndex))Scene \(sceneIndex + 1)"
+        return "\(chapterPrefix(for: chapter, index: chapterIndex, targetCode: targetCode))Scene \(sceneIndex + 1)"
     }
 
     static func spinePrimaryTitle(
@@ -1152,12 +1194,12 @@ enum StoryReadingSpineTitles {
             return story.title
         case .readingMatterPage:
             if let page = adapter.readingMatterPage(for: item) {
-                return readingMatterTitle(for: page)
+                return readingMatterTitle(for: page, targetCode: story.targetLanguageCode, nativeCode: story.nativeLanguageCode)
             }
             return "Reading Matter"
         case .chapter(let index):
             if let chapter = adapter.chapter(for: item) {
-                return chapterTitle(for: chapter, index: index)
+                return chapterTitle(for: chapter, index: index, targetCode: story.targetLanguageCode)
             }
             return "Chapter \(index + 1)"
         case .scene(let chapterIndex, let sceneIndex):
@@ -1167,7 +1209,7 @@ enum StoryReadingSpineTitles {
                     chapterIndex: chapterIndex,
                     sceneIndex: sceneIndex
                 )
-                return sceneTitle(from: scene, sceneIndex: sceneIndex, breakdownTitle: breakdown)
+                return sceneTitle(from: scene, sceneIndex: sceneIndex, targetCode: story.targetLanguageCode, breakdownTitle: breakdown)
             }
             return "Scene \(sceneIndex + 1)"
         case .chapterQuiz:
@@ -1190,16 +1232,16 @@ enum StoryReadingSpineTitles {
         case .chapter(let chapterIndex):
             guard let chapter = adapter.chapter(for: item) else { return "Chapter" }
             let regularCount = story.chapters.filter { !$0.isPrologue && !$0.isEpilogue }.count
-            return chapterKindLabel(for: chapter, index: chapterIndex, regularChapterCount: regularCount)
+            return chapterKindLabel(for: chapter, index: chapterIndex, regularChapterCount: regularCount, targetCode: story.targetLanguageCode)
         case .scene(let chapterIndex, let sceneIndex):
             let chapter = story.chapters[safeSpineTitle: chapterIndex]
-            return sceneContextLabel(chapter: chapter, chapterIndex: chapterIndex, sceneIndex: sceneIndex)
+            return sceneContextLabel(chapter: chapter, chapterIndex: chapterIndex, sceneIndex: sceneIndex, targetCode: story.targetLanguageCode)
         case .chapterQuiz(let chapterIndex):
             guard let chapter = story.chapters[safeSpineTitle: chapterIndex] else { return "Chapter Quiz" }
-            return "\(chapterPrefix(for: chapter, index: chapterIndex))Quiz"
+            return "\(chapterPrefix(for: chapter, index: chapterIndex, targetCode: story.targetLanguageCode))Quiz"
         case .chapterVocabulary(let chapterIndex):
             guard let chapter = story.chapters[safeSpineTitle: chapterIndex] else { return "Word Focus" }
-            return "\(chapterPrefix(for: chapter, index: chapterIndex))Vocabulary"
+            return "\(chapterPrefix(for: chapter, index: chapterIndex, targetCode: story.targetLanguageCode))Vocabulary"
         }
     }
 
@@ -1215,6 +1257,11 @@ enum StoryReadingSpineTitles {
 }
 
 private extension String {
+    var canonicalTrimmedNil: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
     nonisolated var readingMatterPlacementKey: String {
         lowercased().filter { $0.isLetter || $0.isNumber }
     }

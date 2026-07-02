@@ -419,7 +419,7 @@ private struct StoryReaderStartLocation: Identifiable, Equatable {
             guard story.chapters.indices.contains(chapterIndex) else {
                 return "Chapter \(chapterIndex + 1)"
             }
-            return StoryReadingSpineTitles.chapterTitle(for: story.chapters[chapterIndex], index: chapterIndex)
+            return StoryReadingSpineTitles.chapterTitle(for: story.chapters[chapterIndex], index: chapterIndex, targetCode: story.targetLanguageCode)
         case .chapterPage(let page):
             return comicSubtitle(for: page)
         }

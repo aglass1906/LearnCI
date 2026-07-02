@@ -5,6 +5,8 @@ import SwiftUI
 struct ChapterInfoCardView: View {
     let chapter: StoryChapter
     let heroImage: UIImage?
+    let targetCode: String
+    let nativeCode: String
     @Binding var selectedLanguage: StorySessionView.DisplayLanguage
     var playbackTime: Double = 0
     var onUserScroll: (() -> Void)? = nil
@@ -89,22 +91,21 @@ struct ChapterInfoCardView: View {
     private var displayTitle: String {
         switch selectedLanguage {
         case .target:
-            return chapter.titleTargetLanguage
+            return chapter.titleFor(targetCode)
         case .native:
-            let english = chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines)
-            return english.isEmpty ? chapter.titleTargetLanguage : english
+            return chapter.titleFor(nativeCode)
         }
     }
 
     private var displayIntroText: String? {
-        let text: String?
+        let text: String
         switch selectedLanguage {
         case .target:
-            text = chapter.chapterIntroText
+            text = chapter.chapterIntroTextForLanguage(targetCode)
         case .native:
-            text = chapter.chapterIntroTextEnglish ?? chapter.chapterIntroText
+            text = chapter.chapterIntroTextForLanguage(nativeCode)
         }
-        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
     }
 
@@ -112,17 +113,15 @@ struct ChapterInfoCardView: View {
     private func introTextView(proseWidth: CGFloat) -> some View {
         if let intro = displayIntroText {
             if selectedLanguage == .target,
-               let timings = chapter.chapterIntroWordTimings, !timings.isEmpty,
-               chapter.chapterIntroAudioUrl != nil {
+               !chapter.chapterIntroWordTimingsForLanguage(targetCode).isEmpty,
+               chapter.chapterIntroAudioUrlForLanguage(targetCode) != nil {
                 TimedTextView(
                     segment: StorySegmentTiming(
                         speaker: "",
                         text: intro,
                         startTime: 0,
                         endTime: .greatestFiniteMagnitude,
-                        timings: chapter.chapterIntroBodyWordTimings(
-                            preferNative: selectedLanguage == .native
-                        )
+                        timings: chapter.chapterIntroBodyWordTimingsForLanguage(targetCode)
                     ),
                     currentTime: playbackTime,
                     includesPadding: false
@@ -186,16 +185,13 @@ struct ChapterInfoCardView: View {
 extension StorySupplementalAudioPlayback {
     static func chapterIntroSpeakableText(
         chapter: StoryChapter,
-        preferNative: Bool
+        preferNative: Bool,
+        targetCode: String,
+        nativeCode: String
     ) -> String? {
-        let intro: String?
-        if preferNative {
-            intro = chapter.chapterIntroTextEnglish ?? chapter.chapterIntroText
-        } else {
-            intro = chapter.chapterIntroText
-        }
+        let intro = chapter.chapterIntroTextForLanguage(preferNative ? nativeCode : targetCode)
 
-        let trimmed = intro?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let trimmed = intro.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
     }
 }

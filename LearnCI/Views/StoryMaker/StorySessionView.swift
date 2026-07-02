@@ -116,6 +116,15 @@ struct StorySessionView: View {
         StoryReaderDataAdapter(story: story)
     }
 
+    private func languageCode(for displayLanguage: DisplayLanguage) -> String {
+        switch displayLanguage {
+        case .target:
+            return story.targetLanguageCode
+        case .native:
+            return story.nativeLanguageCode
+        }
+    }
+
     private var storyBookSpineItems: [StoryReadingSpineItem] {
         adapter.items(for: .storyBook)
     }
@@ -762,12 +771,12 @@ struct StorySessionView: View {
             sourceType: .story,
             sourceId: story.id.uuidString,
             sourceTitle: story.title,
-            sourceUrl: audioCapture.sourceUrl ?? story.remoteAudioPath,
+            sourceUrl: audioCapture.sourceUrl,
             blockIndex: selectedWordRequest?.wordIndex,
             mediaStart: audioCapture.mediaStart,
             mediaEnd: audioCapture.mediaEnd,
             audioWordFile: nil,
-            audioSentenceFile: story.audioFilename,
+            audioSentenceFile: nil,
             deckFolderName: nil
         )
         savedStudyWordManager.toggleSave(capture: capture, in: modelContext)
@@ -874,7 +883,7 @@ struct StorySessionView: View {
     }
 
     private func sentenceContaining(word: String) -> String? {
-        let text = currentChapter?.bodyTextTargetForReading ?? ""
+        let text = currentChapter?.bodyTextForLanguage(story.targetLanguageCode) ?? ""
         let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?。！？\n"))
         return sentences.first(where: { $0.localizedCaseInsensitiveContains(word) })?.trimmingCharacters(in: .whitespaces)
     }
@@ -892,7 +901,7 @@ struct StorySessionView: View {
         Task {
             let level = LevelManager.shared.description(for: story.level)
             let questions = try? await OpenAIService().generateComprehensionQuestions(
-                storyText: storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n"),
+                storyText: storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextForLanguage(story.targetLanguageCode) }.joined(separator: "\n\n"),
                 language: story.language.displayName,
                 level: level
             )
@@ -998,14 +1007,14 @@ struct StorySessionView: View {
         guard isOnReadingMatterSpineItem,
               let item = currentSpineItem,
               let page = adapter.readingMatterPage(for: item) else { return false }
-        return page.hasGeneratedAudio(preferNative: selectedLanguage == .native)
+        return page.audioUrlFor(languageCode(for: selectedLanguage)) != nil
             || readingMatterSpeakableText(for: page) != nil
     }
 
     private var currentReadingMatterPageHasGeneratedAudio: Bool {
         guard let item = currentSpineItem,
               let page = adapter.readingMatterPage(for: item) else { return false }
-        return page.hasGeneratedAudio(preferNative: selectedLanguage == .native)
+        return page.audioUrlFor(languageCode(for: selectedLanguage)) != nil
     }
 
     private var canSeekCurrentSpinePlayback: Bool {
@@ -1082,9 +1091,9 @@ struct StorySessionView: View {
 
             Button(action: {
                 if selectedLanguage == .target {
-                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextTargetForReading }.joined(separator: "\n\n")
+                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextForLanguage(story.targetLanguageCode) }.joined(separator: "\n\n")
                 } else {
-                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextEnglishForReading }.joined(separator: "\n\n")
+                    UIPasteboard.general.string = storyBookChapterItems.compactMap { adapter.chapter(for: $0)?.bodyTextForLanguage(story.nativeLanguageCode) }.joined(separator: "\n\n")
                 }
             }) {
                 Label(
@@ -1208,19 +1217,17 @@ struct StorySessionView: View {
 
     private var currentChapterHasEnglishContent: Bool {
         guard let chapter = currentChapter else { return false }
-        if !chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
-        if let intro = chapter.chapterIntroTextEnglish,
-           !intro.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
-        if let script = chapter.scriptEnglish,
-           !script.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
-        return !chapter.bodyTextEnglishForReading.isEmpty
+        if chapter.titleFor(story.nativeLanguageCode) != "Chapter" { return true }
+        if !chapter.chapterIntroTextForLanguage(story.nativeLanguageCode).isEmpty { return true }
+        if !chapter.bodyScriptForLanguage(story.nativeLanguageCode).isEmpty { return true }
+        return !chapter.bodyTextForLanguage(story.nativeLanguageCode).isEmpty
     }
 
     private var currentReadingMatterHasEnglishContent: Bool {
         guard let item = currentSpineItem,
               let page = adapter.readingMatterPage(for: item) else { return false }
-        if let title = page.titleNative, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
-        if let body = page.bodyNative, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if !page.titleFor(story.nativeLanguageCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
+        if !page.bodyFor(story.nativeLanguageCode).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
         return false
     }
 
@@ -1232,8 +1239,8 @@ struct StorySessionView: View {
         case .readingMatterPage:
             if let page = adapter.readingMatterPage(for: item) {
                 let title = selectedLanguage == .native
-                    ? (readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget))
-                    : readerMatterText(page.titleTarget)
+                    ? readerMatterText(page.titleFor(story.nativeLanguageCode))
+                    : readerMatterText(page.titleFor(story.targetLanguageCode))
                 let base = title ?? "Reading Matter"
                 return base
             }
@@ -1241,10 +1248,8 @@ struct StorySessionView: View {
         case .chapter(let index):
             if let chapter = story.chapters[safeStorySession: index] {
                 let title = selectedLanguage == .native
-                    ? (chapter.titleEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        ? chapter.titleTargetLanguage
-                        : chapter.titleEnglish)
-                    : chapter.titleTargetLanguage
+                    ? chapter.titleFor(story.nativeLanguageCode)
+                    : chapter.titleFor(story.targetLanguageCode)
                 let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
                 let chapterLabel = trimmed.isEmpty ? "Chapter \(index + 1)" : "Chapter \(index + 1) · \(trimmed)"
                 if isShowingChapterIntro {
@@ -1282,7 +1287,7 @@ struct StorySessionView: View {
         if let item = currentSpineItem,
            let chapter = adapter.chapter(for: item) {
             InlineChapterVocabularyView(
-                vocabularyNote: chapter.vocabularyNote ?? "",
+                vocabularyNote: chapter.vocabularyNoteForLanguage(story.targetLanguageCode) ?? "",
                 title: "Chapter Word Focus"
             )
         } else {
@@ -1402,18 +1407,18 @@ struct StorySessionView: View {
     private func readingMatterDisplayTitle(for page: ReadingMatterPage) -> String? {
         switch selectedLanguage {
         case .target:
-            return readerMatterText(page.titleTarget)
+            return readerMatterText(page.titleFor(story.targetLanguageCode))
         case .native:
-            return readerMatterText(page.titleNative) ?? readerMatterText(page.titleTarget)
+            return readerMatterText(page.titleFor(story.nativeLanguageCode))
         }
     }
 
     private func readingMatterDisplayBody(for page: ReadingMatterPage) -> String? {
         switch selectedLanguage {
         case .target:
-            return readerMatterText(page.bodyTarget)
+            return readerMatterText(page.bodyFor(story.targetLanguageCode))
         case .native:
-            return readerMatterText(page.bodyNative) ?? readerMatterText(page.bodyTarget)
+            return readerMatterText(page.bodyFor(story.nativeLanguageCode))
         }
     }
 
@@ -1471,7 +1476,9 @@ struct StorySessionView: View {
         if isShowingChapterIntro, let chapter = currentChapter {
             return StorySupplementalAudioPlayback.chapterIntroSpeakableText(
                 chapter: chapter,
-                preferNative: selectedLanguage == .native
+                preferNative: selectedLanguage == .native,
+                targetCode: story.targetLanguageCode,
+                nativeCode: story.nativeLanguageCode
             )
         }
 
@@ -1535,7 +1542,7 @@ struct StorySessionView: View {
                     ParagraphView(
                         chunk: chunk,
                         activeWordIndex: activeWordIndex,
-                        timings: currentChapter?.bodyWordTimingsForPlayback ?? [],
+                        timings: currentChapter?.bodyWordTimingsForLanguage(story.targetLanguageCode) ?? [],
                         wordMatches: wordMatches,
                         onSeek: seekTo,
                         onWordTap: handleWordLookupRequest
@@ -1544,7 +1551,7 @@ struct StorySessionView: View {
                 }
             }
         } else if let currentChapter {
-            let nativeText = currentChapter.bodyTextEnglishForReading
+            let nativeText = currentChapter.bodyTextForLanguage(story.nativeLanguageCode)
             VStack(alignment: .leading, spacing: 20) {
                 Text(nativeText)
                     .font(.system(size: 18, weight: .regular, design: .serif))
@@ -1562,6 +1569,8 @@ struct StorySessionView: View {
                 ChapterInfoCardView(
                     chapter: chapter,
                     heroImage: heroImage,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode,
                     selectedLanguage: $selectedLanguage,
                     playbackTime: supplementalPlayback.currentTime,
                     onUserScroll: minimizePlayerForReading
@@ -1633,9 +1642,7 @@ struct StorySessionView: View {
 
     private var hasChapterIntroContent: Bool {
         guard let chapter = currentChapter else { return false }
-        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        let hasText = !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        return hasAudio || hasText
+        return chapter.hasChapterIntroContentForLanguage(story.targetLanguageCode)
     }
 
     private func finishChapterIntro(andPlayBody: Bool) {
@@ -1908,9 +1915,7 @@ struct StorySessionView: View {
     private func chapterHasIntroContent(at chapterIndex: Int) -> Bool {
         guard story.chapters.indices.contains(chapterIndex) else { return false }
         let chapter = story.chapters[chapterIndex]
-        let hasAudio = !(chapter.chapterIntroAudioUrl?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        let hasText = !(chapter.chapterIntroText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
-        return hasAudio || hasText
+        return chapter.hasChapterIntroContentForLanguage(story.targetLanguageCode)
     }
 
     private func shouldShowChapterCard(forSpineIndex index: Int) -> Bool {
@@ -1998,7 +2003,7 @@ struct StorySessionView: View {
     }
     
     private var storyParagraphs: [ParagraphChunk] {
-        let text = currentChapter?.bodyTextTargetForReading ?? ""
+        let text = currentChapter?.bodyTextForLanguage(story.targetLanguageCode) ?? ""
         var chunks: [ParagraphChunk] = []
         var currentOffset = 0
         
@@ -2018,13 +2023,13 @@ struct StorySessionView: View {
     
     private var wordMatches: [NSTextCheckingResult] {
         let regex = try? NSRegularExpression(pattern: "\\p{L}+", options: [])
-        let text = currentChapter?.bodyTextTargetForReading ?? ""
+        let text = currentChapter?.bodyTextForLanguage(story.targetLanguageCode) ?? ""
         let nsString = text as NSString
         return regex?.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length)) ?? []
     }
     
     private func updateScrollState(time: Double) {
-        let timings = currentChapter?.bodyWordTimingsForPlayback ?? []
+        let timings = currentChapter?.bodyWordTimingsForLanguage(story.targetLanguageCode) ?? []
         
         if let idx = timings.firstIndex(where: { time >= $0.start && time <= $0.end }) {
             if activeWordIndex != idx {

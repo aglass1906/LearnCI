@@ -45,52 +45,62 @@ final class DialogStoryBuilderTests: XCTestCase {
         )
     }
 
+    func testDialogPairsTargetAndNativeRowsByIndex() throws {
+        let story = try makeDialogStory()
+        let adapter = StoryReaderDataAdapter(story: story)
+        let scene = try XCTUnwrap(adapter.scene(for: .scene(chapterIndex: 0, sceneIndex: 1)))
+
+        XCTAssertEqual(scene.dialoguesFor(story.targetLanguageCode).map(\.text), ["Que tal?", "Bien"])
+        XCTAssertEqual(scene.dialoguesFor(story.nativeLanguageCode).map(\.text), ["How are you?", "Fine"])
+    }
+
     private func makeDialogStory() throws -> Story {
         let chapters = [
-            StoryChapter(
-                chapterNumber: 1,
-                titleTargetLanguage: "Capitulo Uno",
-                titleEnglish: "Chapter One",
+            testChapter(
+                number: 1,
+                targetTitle: "Capitulo Uno",
+                nativeTitle: "Chapter One",
                 scenes: [
-                    StoryScene(
-                        sceneIndex: 0,
-                        dialogues: [
-                            SceneDialogue(character: "LUZ", text: "Hola", textEnglish: "Hello")
-                        ]
+                    testScene(
+                        index: 0,
+                        targetCaption: "Saludo",
+                        nativeCaption: "Greeting",
+                        targetDialogues: [SceneDialogue(character: "LUZ", text: "Hola")],
+                        nativeDialogues: [SceneDialogue(character: "LUZ", text: "Hello")]
                     ),
-                    StoryScene(
-                        sceneIndex: 1,
-                        dialogues: [
-                            SceneDialogue(character: "MATEO", text: "Que tal?", textEnglish: "How are you?"),
-                            SceneDialogue(character: "LUZ", text: "Bien", textEnglish: "Fine")
+                    testScene(
+                        index: 1,
+                        targetCaption: "Encuentro",
+                        nativeCaption: "Meeting",
+                        targetDialogues: [
+                            SceneDialogue(character: "MATEO", text: "Que tal?"),
+                            SceneDialogue(character: "LUZ", text: "Bien")
+                        ],
+                        nativeDialogues: [
+                            SceneDialogue(character: "MATEO", text: "How are you?"),
+                            SceneDialogue(character: "LUZ", text: "Fine")
                         ]
                     )
                 ]
             ),
-            StoryChapter(
-                chapterNumber: 2,
-                titleTargetLanguage: "Capitulo Dos",
-                titleEnglish: "Chapter Two",
+            testChapter(
+                number: 2,
+                targetTitle: "Capitulo Dos",
+                nativeTitle: "Chapter Two",
                 scenes: [
-                    StoryScene(
-                        sceneIndex: 0,
-                        dialogues: [
-                            SceneDialogue(character: "LUZ", text: "Adios", textEnglish: "Bye")
-                        ]
+                    testScene(
+                        index: 0,
+                        targetCaption: "Despedida",
+                        nativeCaption: "Goodbye",
+                        targetDialogues: [SceneDialogue(character: "LUZ", text: "Adios")],
+                        nativeDialogues: [SceneDialogue(character: "LUZ", text: "Bye")]
                     )
                 ]
             )
         ]
 
         let readingMatterPages = [
-            ReadingMatterPage(
-                id: "about",
-                placement: nil,
-                titleTarget: "Acerca",
-                titleNative: nil,
-                bodyTarget: "Intro",
-                bodyNative: nil
-            )
+            testReadingMatterPage(id: "about", targetTitle: "Acerca", targetBody: "Intro")
         ]
 
         return Story(
@@ -98,14 +108,64 @@ final class DialogStoryBuilderTests: XCTestCase {
             title: "Dialog Test",
             targetLanguageText: "",
             chaptersJSON: try encode(chapters),
-            readingMatterPagesJSON: try encode(readingMatterPages),
+            readingMatterPagesJSON: try encodePages(readingMatterPages),
             language: .spanish,
+            nativeLanguageCode: "en",
             level: 1
+        )
+    }
+
+    private func testChapter(
+        number: Int,
+        targetTitle: String,
+        nativeTitle: String,
+        scenes: [StoryScene]
+    ) -> StoryChapter {
+        StoryChapter(
+            chapterNumber: number,
+            scenes: scenes,
+            title: ChapterLangEnvelope(byLanguage: [
+                "es": ChapterTitleLang(text: targetTitle),
+                "en": ChapterTitleLang(text: nativeTitle)
+            ])
+        )
+    }
+
+    private func testScene(
+        index: Int,
+        targetCaption: String,
+        nativeCaption: String,
+        targetDialogues: [SceneDialogue],
+        nativeDialogues: [SceneDialogue]
+    ) -> StoryScene {
+        StoryScene(
+            sceneIndex: index,
+            byLanguage: [
+                "es": SceneLanguageData(caption: targetCaption, dialogues: targetDialogues),
+                "en": SceneLanguageData(caption: nativeCaption, dialogues: nativeDialogues)
+            ]
+        )
+    }
+
+    private func testReadingMatterPage(id: String, targetTitle: String, targetBody: String) -> ReadingMatterPage {
+        ReadingMatterPage(
+            id: id,
+            placement: .beforeChapters,
+            byLanguage: [
+                "es": ReadingMatterPageLanguageData(title: targetTitle, body: targetBody)
+            ]
         )
     }
 
     private func encode<T: Encodable>(_ value: T) throws -> String {
         let data = try JSONEncoder().encode(value)
         return try XCTUnwrap(String(data: data, encoding: .utf8))
+    }
+
+    private func encodePages(_ pages: [ReadingMatterPage]) throws -> String {
+        struct Envelope: Encodable {
+            let pages: [ReadingMatterPage]
+        }
+        return try encode(Envelope(pages: pages))
     }
 }

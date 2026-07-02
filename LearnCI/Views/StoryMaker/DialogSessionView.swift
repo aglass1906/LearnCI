@@ -387,7 +387,7 @@ struct DialogBubble {
     let id: String
     let character: String
     let text: String
-    let textEnglish: String?
+    let nativeText: String?
     let color: Color
     let isRightAligned: Bool
     let portraitURL: URL?
@@ -431,7 +431,7 @@ struct DialogStoryBuilder {
             builtItems.append(.sceneHeader(DialogSceneHeader(
                 id: "scene-header-\(chapterIndex)-\(sceneIndex)",
                 ordinal: sceneOrdinal,
-                chapterTitle: chapter.titleTargetLanguage.nilIfEmptyDialogReader ?? "Chapter \(chapterIndex + 1)",
+                chapterTitle: chapter.titleFor(story.targetLanguageCode).nilIfEmptyDialogReader ?? "Chapter \(chapterIndex + 1)",
                 imageURL: adapter.sceneImageURL(scene: scene, chapterIndex: chapterIndex)
             )))
 
@@ -460,7 +460,7 @@ struct DialogStoryBuilder {
         let dialogues = resolvedDialogues(for: scene)
         let hasLineAudio = dialogues.contains { $0.audioUrl?.nilIfEmptyDialogReader != nil }
         let sceneFallbackClip = hasLineAudio ? nil : makeClip(
-            urlString: scene.audioUrl,
+            urlString: scene.audioUrlForLanguage(story.targetLanguageCode),
             chapter: chapter,
             chapterIndex: chapterIndex,
             sceneIndex: sceneIndex,
@@ -484,7 +484,7 @@ struct DialogStoryBuilder {
                 id: "bubble-\(chapterIndex)-\(sceneIndex)-\(lineIndex)",
                 character: dialogue.character,
                 text: dialogue.text,
-                textEnglish: dialogue.textEnglish,
+                nativeText: nativeDialogueText(for: scene, at: lineIndex),
                 color: style.color,
                 isRightAligned: style.rightAligned,
                 portraitURL: portraitURL(for: dialogue.character, scene: scene, chapterIndex: chapterIndex),
@@ -525,7 +525,7 @@ struct DialogStoryBuilder {
             urlString: urlString,
             duration: nil,
             startOffset: 0,
-            title: title.nilIfEmptyDialogReader ?? chapter.titleTargetLanguage,
+            title: title.nilIfEmptyDialogReader ?? chapter.titleFor(story.targetLanguageCode),
             caption: "",
             imageURL: nil
         )
@@ -624,7 +624,7 @@ struct DialogStoryBuilder {
     }
 
     private func resolvedDialogues(for scene: StoryScene) -> [SceneDialogue] {
-        let structured = scene.dialogues.filter {
+        let structured = scene.dialoguesFor(story.targetLanguageCode).filter {
             !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
         if !structured.isEmpty {
@@ -632,8 +632,8 @@ struct DialogStoryBuilder {
         }
 
         let parsed = parseTaggedScript(
-            target: scene.scriptTargetLanguage,
-            english: scene.scriptEnglish
+            target: scene.scriptFor(story.targetLanguageCode),
+            native: scene.scriptFor(story.nativeLanguageCode)
         )
         if !parsed.isEmpty {
             return parsed
@@ -642,14 +642,21 @@ struct DialogStoryBuilder {
         return []
     }
 
-    private func parseTaggedScript(target: String?, english: String?) -> [SceneDialogue] {
+    private func nativeDialogueText(for scene: StoryScene, at index: Int) -> String? {
+        let nativeDialogues = scene.dialoguesFor(story.nativeLanguageCode)
+        if let text = nativeDialogues[safeDialogReader: index]?.text.nilIfEmptyDialogReader {
+            return text
+        }
+        let nativeLines = scene.scriptFor(story.nativeLanguageCode)?.components(separatedBy: .newlines) ?? []
+        return nativeLines[safeDialogReader: index].flatMap { parseTaggedLine($0)?.text ?? $0.nilIfEmptyDialogReader }
+    }
+
+    private func parseTaggedScript(target: String?, native: String?) -> [SceneDialogue] {
         let targetLines = target?.components(separatedBy: .newlines) ?? []
-        let englishLines = english?.components(separatedBy: .newlines) ?? []
 
         return targetLines.enumerated().compactMap { index, line in
             guard let parsed = parseTaggedLine(line) else { return nil }
-            let englishText = englishLines[safeDialogReader: index].flatMap { parseTaggedLine($0)?.text ?? $0.nilIfEmptyDialogReader }
-            return SceneDialogue(character: parsed.speaker, text: parsed.text, textEnglish: englishText)
+            return SceneDialogue(character: parsed.speaker, text: parsed.text)
         }
     }
 
@@ -747,8 +754,8 @@ private struct DialogBubbleView: View {
     }
 
     private var displayText: String {
-        if showEnglish, let english = bubble.textEnglish?.nilIfEmptyDialogReader {
-            return english
+        if showEnglish, let native = bubble.nativeText?.nilIfEmptyDialogReader {
+            return native
         }
         return bubble.text
     }

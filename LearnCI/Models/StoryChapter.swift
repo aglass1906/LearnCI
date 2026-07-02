@@ -193,50 +193,45 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         return map.keys.sorted().first
     }
 
-    private static func applyV10GroupedLanguage(from container: KeyedDecodingContainer<CodingKeys>,
-                                                titleTarget: inout String,
-                                                titleEnglish: inout String,
-                                                chapterIntroText: inout String?,
-                                                chapterIntroTextEnglish: inout String?,
-                                                chapterIntroAudioUrl: inout String?,
-                                                chapterIntroWordTimings: inout [WordTiming]?,
-                                                comprehensionQuestions: inout [ComprehensionQuestion]?,
-                                                vocabularyNote: inout String?) throws {
+    private static func decodeGroupedLanguage(from container: KeyedDecodingContainer<CodingKeys>,
+                                              titleTarget: inout String,
+                                              titleEnglish: inout String,
+                                              chapterIntroText: inout String?,
+                                              chapterIntroTextEnglish: inout String?,
+                                              chapterIntroAudioUrl: inout String?,
+                                              chapterIntroWordTimings: inout [WordTiming]?,
+                                              comprehensionQuestions: inout [ComprehensionQuestion]?,
+                                              vocabularyNote: inout String?) throws {
         if let titleBlock = try? container.decode(V10LangEnvelope<V10TitleEntry>.self, forKey: .titleGrouped) {
             let map = titleBlock.byLanguage
-            if titleTarget.isEmpty, let code = primaryLangCode(from: map), let text = map[code]?.text {
+            if let code = primaryLangCode(from: map), let text = map[code]?.text {
                 titleTarget = text
             }
-            if titleEnglish.isEmpty, let text = map["en"]?.text {
+            if let text = map["en"]?.text {
                 titleEnglish = text
             }
         }
 
         if let introBlock = try? container.decode(V10LangEnvelope<V10IntroEntry>.self, forKey: .introGrouped) {
             let map = introBlock.byLanguage
-            if chapterIntroText == nil || chapterIntroText?.isEmpty == true,
-               let code = primaryLangCode(from: map) {
+            if let code = primaryLangCode(from: map) {
                 chapterIntroText = map[code]?.text
                 chapterIntroAudioUrl = map[code]?.audioUrl
                 chapterIntroWordTimings = map[code]?.wordTimings
             }
-            if chapterIntroTextEnglish == nil || chapterIntroTextEnglish?.isEmpty == true {
-                chapterIntroTextEnglish = map["en"]?.text
-            }
+            chapterIntroTextEnglish = map["en"]?.text
         }
 
         if let vocabBlock = try? container.decode(V10LangEnvelope<V10VocabEntry>.self, forKey: .vocabularyGrouped) {
             let map = vocabBlock.byLanguage
-            if vocabularyNote == nil || vocabularyNote?.isEmpty == true,
-               let code = primaryLangCode(from: map) {
+            if let code = primaryLangCode(from: map) {
                 vocabularyNote = map[code]?.note
             }
         }
 
         if let compBlock = try? container.decode(V10LangEnvelope<V10ComprehensionEntry>.self, forKey: .comprehensionGrouped) {
             let map = compBlock.byLanguage
-            if comprehensionQuestions == nil || comprehensionQuestions?.isEmpty == true,
-               let code = primaryLangCode(from: map) {
+            if let code = primaryLangCode(from: map) {
                 comprehensionQuestions = map[code]?.questions
             }
         }
@@ -247,32 +242,30 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         id = (try? container.decode(UUID.self, forKey: .id)) ?? UUID()
         chapterNumber = (try? container.decode(Int.self, forKey: .chapterNumber)) ?? 1
         chapterType = (try? container.decode(String.self, forKey: .chapterType)) ?? "chapter"
-        titleTargetLanguage = (try? container.decode(String.self, forKey: .titleTargetLanguage)) ?? ""
-        titleEnglish = (try? container.decode(String.self, forKey: .titleEnglish)) ?? ""
+        titleTargetLanguage = ""
+        titleEnglish = ""
         scriptTargetLanguage = try? container.decode(String.self, forKey: .scriptTargetLanguage)
         scriptEnglish = try? container.decode(String.self, forKey: .scriptEnglish)
         audioUrl = try? container.decode(String.self, forKey: .audioUrl)
         wordTimings = try? container.decode([WordTiming].self, forKey: .wordTimings)
         plotSummaryTarget = try? container.decode(String.self, forKey: .plotSummaryTarget)
-        // Fall back to legacy "plot_summary" key if new key is absent
         plotSummaryEnglish = (try? container.decode(String.self, forKey: .plotSummaryEnglish))
             ?? (try? container.decode(String.self, forKey: .plotSummaryLegacy))
         chapterImagePrompt = try? container.decode(String.self, forKey: .chapterImagePrompt)
         coverUrl = try? container.decode(String.self, forKey: .coverUrl)
-        chapterIntroText = try? container.decode(String.self, forKey: .chapterIntroText)
-        chapterIntroTextEnglish = try? container.decode(String.self, forKey: .chapterIntroTextEnglish)
-        chapterIntroAudioUrl = try? container.decode(String.self, forKey: .chapterIntroAudioUrl)
-        chapterIntroWordTimings = (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimings))
-            ?? (try? container.decode([WordTiming].self, forKey: .chapterIntroWordTimingsCamel))
+        chapterIntroText = nil
+        chapterIntroTextEnglish = nil
+        chapterIntroAudioUrl = nil
+        chapterIntroWordTimings = nil
         scenes = (try? container.decode([StoryScene].self, forKey: .scenes)) ?? []
         nativeAudioUrl = (try? container.decode(String.self, forKey: .nativeAudioUrl))
             ?? (try? container.decode(String.self, forKey: .nativeAudioUrlCamel))
         nativeWordTimings = (try? container.decode([WordTiming].self, forKey: .nativeWordTimings))
             ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
-        comprehensionQuestions = try? container.decode([ComprehensionQuestion].self, forKey: .comprehensionQuestions)
-        vocabularyNote = try? container.decode(String.self, forKey: .vocabularyNote)
+        comprehensionQuestions = nil
+        vocabularyNote = nil
 
-        try Self.applyV10GroupedLanguage(
+        try Self.decodeGroupedLanguage(
             from: container,
             titleTarget: &titleTargetLanguage,
             titleEnglish: &titleEnglish,

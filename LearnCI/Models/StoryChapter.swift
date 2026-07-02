@@ -147,6 +147,99 @@ struct StoryChapter: Codable, Identifiable, Equatable {
         case nativeWordTimingsCamel = "nativeWordTimings"
         case comprehensionQuestions = "comprehension_questions"
         case vocabularyNote = "vocabulary_note"
+        // v10 grouped language blocks
+        case titleGrouped = "title"
+        case introGrouped = "intro"
+        case vocabularyGrouped = "vocabulary"
+        case comprehensionGrouped = "comprehension"
+    }
+
+    private struct V10LangEnvelope<T: Decodable>: Decodable {
+        let byLanguage: [String: T]
+
+        enum CodingKeys: String, CodingKey {
+            case byLanguage = "by_language"
+        }
+    }
+
+    private struct V10TitleEntry: Decodable {
+        let text: String?
+    }
+
+    private struct V10IntroEntry: Decodable {
+        let text: String?
+        let audioUrl: String?
+        let wordTimings: [WordTiming]?
+
+        enum CodingKeys: String, CodingKey {
+            case text
+            case audioUrl = "audio_url"
+            case wordTimings = "word_timings"
+        }
+    }
+
+    private struct V10VocabEntry: Decodable {
+        let note: String?
+    }
+
+    private struct V10ComprehensionEntry: Decodable {
+        let questions: [ComprehensionQuestion]?
+    }
+
+    private static func primaryLangCode<T>(from map: [String: T]) -> String? {
+        if map["en"] != nil, map.count > 1 {
+            return map.keys.first { $0.lowercased() != "en" }
+        }
+        return map.keys.sorted().first
+    }
+
+    private static func applyV10GroupedLanguage(from container: KeyedDecodingContainer<CodingKeys>,
+                                                titleTarget: inout String,
+                                                titleEnglish: inout String,
+                                                chapterIntroText: inout String?,
+                                                chapterIntroTextEnglish: inout String?,
+                                                chapterIntroAudioUrl: inout String?,
+                                                chapterIntroWordTimings: inout [WordTiming]?,
+                                                comprehensionQuestions: inout [ComprehensionQuestion]?,
+                                                vocabularyNote: inout String?) throws {
+        if let titleBlock = try? container.decode(V10LangEnvelope<V10TitleEntry>.self, forKey: .titleGrouped) {
+            let map = titleBlock.byLanguage
+            if titleTarget.isEmpty, let code = primaryLangCode(from: map), let text = map[code]?.text {
+                titleTarget = text
+            }
+            if titleEnglish.isEmpty, let text = map["en"]?.text {
+                titleEnglish = text
+            }
+        }
+
+        if let introBlock = try? container.decode(V10LangEnvelope<V10IntroEntry>.self, forKey: .introGrouped) {
+            let map = introBlock.byLanguage
+            if chapterIntroText == nil || chapterIntroText?.isEmpty == true,
+               let code = primaryLangCode(from: map) {
+                chapterIntroText = map[code]?.text
+                chapterIntroAudioUrl = map[code]?.audioUrl
+                chapterIntroWordTimings = map[code]?.wordTimings
+            }
+            if chapterIntroTextEnglish == nil || chapterIntroTextEnglish?.isEmpty == true {
+                chapterIntroTextEnglish = map["en"]?.text
+            }
+        }
+
+        if let vocabBlock = try? container.decode(V10LangEnvelope<V10VocabEntry>.self, forKey: .vocabularyGrouped) {
+            let map = vocabBlock.byLanguage
+            if vocabularyNote == nil || vocabularyNote?.isEmpty == true,
+               let code = primaryLangCode(from: map) {
+                vocabularyNote = map[code]?.note
+            }
+        }
+
+        if let compBlock = try? container.decode(V10LangEnvelope<V10ComprehensionEntry>.self, forKey: .comprehensionGrouped) {
+            let map = compBlock.byLanguage
+            if comprehensionQuestions == nil || comprehensionQuestions?.isEmpty == true,
+               let code = primaryLangCode(from: map) {
+                comprehensionQuestions = map[code]?.questions
+            }
+        }
     }
 
     init(from decoder: Decoder) throws {
@@ -178,6 +271,18 @@ struct StoryChapter: Codable, Identifiable, Equatable {
             ?? (try? container.decode([WordTiming].self, forKey: .nativeWordTimingsCamel))
         comprehensionQuestions = try? container.decode([ComprehensionQuestion].self, forKey: .comprehensionQuestions)
         vocabularyNote = try? container.decode(String.self, forKey: .vocabularyNote)
+
+        try Self.applyV10GroupedLanguage(
+            from: container,
+            titleTarget: &titleTargetLanguage,
+            titleEnglish: &titleEnglish,
+            chapterIntroText: &chapterIntroText,
+            chapterIntroTextEnglish: &chapterIntroTextEnglish,
+            chapterIntroAudioUrl: &chapterIntroAudioUrl,
+            chapterIntroWordTimings: &chapterIntroWordTimings,
+            comprehensionQuestions: &comprehensionQuestions,
+            vocabularyNote: &vocabularyNote
+        )
     }
 
     func encode(to encoder: Encoder) throws {

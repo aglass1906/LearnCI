@@ -372,10 +372,11 @@ struct StorySessionView: View {
     }
 
     private var storyBookReaderStack: some View {
-        ZStack(alignment: .bottom) {
-            VStack(spacing: 0) {
-                storyBookSpineHeader
+        VStack(spacing: 0) {
+            storyBookSpineHeader
+                .zIndex(1)
 
+            ZStack(alignment: .bottom) {
                 Group {
                     switch currentSpineItem {
                     case .cover:
@@ -396,9 +397,9 @@ struct StorySessionView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
 
-            stickyPlayerView
+                stickyPlayerView
+            }
         }
     }
 
@@ -1066,6 +1067,8 @@ struct StorySessionView: View {
 
     private var readerHeaderBackButton: some View {
         Button {
+            cancelScheduledAutoAdvance()
+            cleanupSession()
             dismiss()
         } label: {
             Image(systemName: "chevron.left")

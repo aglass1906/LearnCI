@@ -199,11 +199,12 @@ struct PictureBookReaderView: View {
     }
 
     private var pictureBookBody: some View {
-        ZStack(alignment: .bottom) {
-            Color(.systemBackground).ignoresSafeArea()
+        VStack(spacing: 0) {
+            compactReaderHeader
+                .zIndex(1)
 
-            VStack(spacing: 0) {
-                compactReaderHeader
+            ZStack(alignment: .bottom) {
+                Color(.systemBackground).ignoresSafeArea()
 
                 if spreads.indices.contains(currentSpreadIndex) {
                     PictureBookSpreadView(
@@ -216,10 +217,11 @@ struct PictureBookReaderView: View {
                     .id("\(spreads[currentSpreadIndex].id)-\(selectedLanguage.rawValue)")
                     .transition(.opacity)
                 }
-            }
 
-            playbackControls
+                playbackControls
+            }
         }
+        .background(Color(.systemBackground))
     }
 
     @ViewBuilder
@@ -228,6 +230,8 @@ struct PictureBookReaderView: View {
 
         HStack(spacing: 10) {
             Button {
+                cancelScheduledAutoAdvance()
+                cleanupSession()
                 dismiss()
             } label: {
                 Image(systemName: "chevron.left")

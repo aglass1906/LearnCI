@@ -66,11 +66,13 @@ struct ChapterTitleLang: Codable, Equatable {
 }
 
 struct ChapterIntroLang: Codable, Equatable {
+    var title: String?
     var text: String = ""
     var audioUrl: String?
     var wordTimings: [WordTiming] = []
 
     enum CodingKeys: String, CodingKey {
+        case title
         case text
         case audioUrl
         case wordTimings
@@ -103,7 +105,8 @@ struct ChapterIntroLang: Codable, Equatable {
         init?(intValue: Int) { nil }
     }
 
-    init(text: String = "", audioUrl: String? = nil, wordTimings: [WordTiming] = []) {
+    init(title: String? = nil, text: String = "", audioUrl: String? = nil, wordTimings: [WordTiming] = []) {
+        self.title = title?.trimmedStoryChapterNil
         self.text = text
         self.audioUrl = audioUrl
         self.wordTimings = wordTimings
@@ -111,6 +114,7 @@ struct ChapterIntroLang: Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        title = (try? container.decode(String.self, forKey: .title))?.trimmedStoryChapterNil
         text = (try? container.decode(String.self, forKey: .text)) ?? ""
         audioUrl = try? container.decode(String.self, forKey: .audioUrl)
         wordTimings = (try? container.decode([WordTiming].self, forKey: .wordTimings)) ?? []
@@ -118,6 +122,7 @@ struct ChapterIntroLang: Codable, Equatable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(title, forKey: .title)
         try container.encode(text, forKey: .text)
         try container.encodeIfPresent(audioUrl, forKey: .audioUrl)
         if !wordTimings.isEmpty {
@@ -336,6 +341,10 @@ struct StoryChapter: Codable, Identifiable, Equatable {
 
     func chapterIntroTextForLanguage(_ langCode: String) -> String {
         intro.forCode(langCode)?.text.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
+    func chapterIntroTitleForLanguage(_ langCode: String) -> String? {
+        intro.forCode(langCode)?.title?.trimmedStoryChapterNil
     }
 
     func chapterIntroAudioUrlForLanguage(_ langCode: String) -> String? {

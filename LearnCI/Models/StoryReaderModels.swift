@@ -3,6 +3,7 @@ import Foundation
 struct StoryScene: Codable, Identifiable, Equatable {
     var id: String { "\(sceneIndex)" }
     var sceneIndex: Int
+    var title: String?
     var characters: [String]
     var imageUrl: String?
     var contentMode: StorySceneContentMode?
@@ -11,6 +12,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case sceneIndex
+        case title
         case characters
         case imageUrl
         case contentMode
@@ -20,6 +22,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
 
     init(
         sceneIndex: Int,
+        title: String? = nil,
         characters: [String] = [],
         imageUrl: String? = nil,
         contentMode: StorySceneContentMode? = nil,
@@ -27,6 +30,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
         byLanguage: [String: SceneLanguageData] = [:]
     ) {
         self.sceneIndex = sceneIndex
+        self.title = title?.trimmingCharacters(in: .whitespacesAndNewlines).spineTrimmedNilIfEmpty
         self.characters = characters
         self.imageUrl = imageUrl
         self.contentMode = contentMode
@@ -39,6 +43,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         sceneIndex = (try? c.decode(Int.self, forKey: .sceneIndex)) ?? 0
+        title = (try? c.decode(String.self, forKey: .title))?.spineTrimmedNilIfEmpty
         characters = (try? c.decode([String].self, forKey: .characters)) ?? []
         imageUrl = try? c.decode(String.self, forKey: .imageUrl)
         contentMode = try? c.decode(StorySceneContentMode.self, forKey: .contentMode)
@@ -52,6 +57,7 @@ struct StoryScene: Codable, Identifiable, Equatable {
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(sceneIndex, forKey: .sceneIndex)
+        try c.encodeIfPresent(title, forKey: .title)
         if !characters.isEmpty { try c.encode(characters, forKey: .characters) }
         try c.encodeIfPresent(imageUrl, forKey: .imageUrl)
         try c.encodeIfPresent(contentMode, forKey: .contentMode)
@@ -1107,6 +1113,22 @@ enum StoryReadingSpineTitles {
         return "Chapter \(index + 1)"
     }
 
+    static func introSpineTitle(
+        for chapter: StoryChapter,
+        targetCode: String,
+        nativeCode: String,
+        preferNative: Bool = true
+    ) -> String {
+        if preferNative,
+           let title = chapter.chapterIntroTitleForLanguage(nativeCode)?.spineTrimmedNilIfEmpty {
+            return title
+        }
+        if let title = chapter.chapterIntroTitleForLanguage(targetCode)?.spineTrimmedNilIfEmpty {
+            return title
+        }
+        return "Intro"
+    }
+
     static func chapterKindLabel(
         for chapter: StoryChapter,
         index: Int,
@@ -1159,6 +1181,9 @@ enum StoryReadingSpineTitles {
         targetCode: String,
         breakdownTitle: String? = nil
     ) -> String {
+        if let persisted = scene.title?.spineTrimmedNilIfEmpty {
+            return persisted
+        }
         if let breakdownTitle = breakdownTitle?.spineTrimmedNilIfEmpty {
             return breakdownTitle
         }
@@ -1199,9 +1224,13 @@ enum StoryReadingSpineTitles {
             return "Reading Matter"
         case .chapter(let index):
             if let chapter = adapter.chapter(for: item) {
-                return chapterTitle(for: chapter, index: index, targetCode: story.targetLanguageCode)
+                return introSpineTitle(
+                    for: chapter,
+                    targetCode: story.targetLanguageCode,
+                    nativeCode: story.nativeLanguageCode
+                )
             }
-            return "Chapter \(index + 1)"
+            return "Intro"
         case .scene(let chapterIndex, let sceneIndex):
             if let scene = adapter.scene(for: item) {
                 let breakdown = sceneTitleFromBreakdown(

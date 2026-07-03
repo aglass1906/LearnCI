@@ -949,7 +949,11 @@ struct PictureBookRenderer {
                     chapterIndex: chapterIndex,
                     chapterTitle: chapterTitle,
                     sceneTitle: nil,
-                    spinePrimaryTitle: StoryReadingSpineTitles.chapterTitle(for: chapter, index: chapterIndex, targetCode: story.targetLanguageCode),
+                    spinePrimaryTitle: StoryReadingSpineTitles.introSpineTitle(
+                        for: chapter,
+                        targetCode: story.targetLanguageCode,
+                        nativeCode: story.nativeLanguageCode
+                    ),
                     spineContextLabel: StoryReadingSpineTitles.chapterKindLabel(
                         for: chapter,
                         index: chapterIndex,

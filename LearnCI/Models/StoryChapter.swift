@@ -79,6 +79,8 @@ struct ChapterIntroLang: Codable, Equatable {
 
         var stringValue: String {
             switch self {
+            case .title:
+                return "title"
             case .text:
                 return "text"
             case .audioUrl:
@@ -90,6 +92,8 @@ struct ChapterIntroLang: Codable, Equatable {
 
         init?(stringValue: String) {
             switch stringValue {
+            case "title":
+                self = .title
             case "text":
                 self = .text
             case ["audio", "url"].joined(separator: "_"):

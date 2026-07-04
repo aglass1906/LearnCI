@@ -80,8 +80,10 @@ class DataManager {
     // Cache for loaded decks to avoid reloading
     private var deckCache: [String: CardDeck] = [:]
     
-    // Cache for resource URLs to avoid repeated recursive searches
-    private var resourceURLCache: [String: URL] = [:]
+    // Cache for resource URLs to avoid repeated recursive searches.
+    // Misses are cached as nil so a missing file doesn't re-trigger the
+    // recursive bundle scan on every lookup.
+    private var resourceURLCache: [String: URL?] = [:]
     
     // Cache for discovered decks to avoid repeated filesystem scans
     private var discoveryCache: [DiscoveryKey: [DeckMetadata]] = [:]
@@ -138,6 +140,28 @@ class DataManager {
         deckCache[deck.id] = deck
     }
     
+    /// Loads a deck for scanning (tags, virtual decks, word of day) using the
+    /// shared cache, WITHOUT touching `loadedDeck` — so background scans never
+    /// clobber the deck the UI is currently displaying.
+    private func loadDeckCached(_ metadata: DeckMetadata) -> CardDeck? {
+        if let cached = deckCache[metadata.id] {
+            return cached
+        }
+        guard let url = resolveURL(folderName: metadata.folderName, filename: metadata.filename) else {
+            return nil
+        }
+        do {
+            let data = try Data(contentsOf: url)
+            var deck = try JSONDecoder().decode(CardDeck.self, from: data)
+            deck.baseFolderName = metadata.folderName
+            deckCache[metadata.id] = deck
+            return deck
+        } catch {
+            print("Error loading deck \(metadata.title): \(error)")
+            return nil
+        }
+    }
+
     func loadDeck(from metadata: DeckMetadata) -> CardDeck? {
         // 1. Check Cache
         if let cached = deckCache[metadata.id] {
@@ -195,26 +219,18 @@ class DataManager {
         }
         
         var tagCounts = [String: Int]()
-        
+
         for meta in decks {
-             // We need to load the deck to see its cards/tags
-             if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
-                 do {
-                     let data = try Data(contentsOf: url)
-                     let deck = try JSONDecoder().decode(CardDeck.self, from: data)
-                     for card in deck.cards {
-                         if let cardTags = card.tags {
-                             for tag in cardTags {
-                                 tagCounts[tag] = (tagCounts[tag] ?? 0) + 1
-                             }
-                         }
-                     }
-                 } catch {
-                     print("Error scanning tags for \(meta.title): \(error)")
-                 }
-             }
+            guard let deck = loadDeckCached(meta) else { continue }
+            for card in deck.cards {
+                if let cardTags = card.tags {
+                    for tag in cardTags {
+                        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1
+                    }
+                }
+            }
         }
-        
+
         return tagCounts
     }
     
@@ -301,21 +317,14 @@ class DataManager {
         var seenCardIds = Set<String>()
 
         for meta in decks {
-            if let url = resolveURL(folderName: meta.folderName, filename: meta.filename) {
-                do {
-                    let data = try Data(contentsOf: url)
-                    let deck = try JSONDecoder().decode(CardDeck.self, from: data)
-                    let matching = deck.cards.filter { card in
-                        guard let cardTags = card.tags else { return false }
-                        return !tags.isDisjoint(with: cardTags)
-                    }
-                    for card in matching where !seenCardIds.contains(card.id) {
-                        seenCardIds.insert(card.id)
-                        combinedCards.append(card)
-                    }
-                } catch {
-                    print("Error loading deck for virtual creation: \(error)")
-                }
+            guard let deck = loadDeckCached(meta) else { continue }
+            let matching = deck.cards.filter { card in
+                guard let cardTags = card.tags else { return false }
+                return !tags.isDisjoint(with: cardTags)
+            }
+            for card in matching where !seenCardIds.contains(card.id) {
+                seenCardIds.insert(card.id)
+                combinedCards.append(card)
             }
         }
 
@@ -547,7 +556,8 @@ class DataManager {
         }
         
         // If file not found in bundle, it might be in Assets.xcassets.
-        return nil 
+        resourceURLCache.updateValue(nil, forKey: cacheKey)
+        return nil
     }
     
     // NEW: Helper to load image transparently from either File or Asset
@@ -608,25 +618,16 @@ class DataManager {
             return nil 
         }
         
-        guard let finalURL = resolveURL(folderName: metadata.folderName, filename: metadata.filename) else { return nil }
-        
-        do {
-            let data = try Data(contentsOf: finalURL)
-            let deck = try JSONDecoder().decode(CardDeck.self, from: data)
-            guard !deck.cards.isEmpty else { return nil }
-            
-            // Seed based on current date
-            let calendar = Calendar.current
-            let day = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
-            let year = calendar.component(.year, from: Date())
-            let seed = day + year
-            
-            let index = seed % deck.cards.count
-            return (deck.cards[index], metadata.folderName, metadata.title, metadata.description)
-        } catch {
-            print("Error fetching word of day: \(error)")
-            return nil
-        }
+        guard let deck = loadDeckCached(metadata), !deck.cards.isEmpty else { return nil }
+
+        // Seed based on current date
+        let calendar = Calendar.current
+        let day = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        let year = calendar.component(.year, from: Date())
+        let seed = day + year
+
+        let index = seed % deck.cards.count
+        return (deck.cards[index], metadata.folderName, metadata.title, metadata.description)
     }
     
     // Inspirational Quotes support

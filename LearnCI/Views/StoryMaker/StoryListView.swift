@@ -423,12 +423,27 @@ struct StoryListView: View {
     }
     
     private func deleteStories(offsets: IndexSet) {
+        var remoteIDsToDelete: [UUID] = []
         withAnimation {
             for index in offsets {
                 let story = filteredStories[index]
                 // Only allow deleting own stories
                 if let currentUserID = authManager.currentUser, story.userID == currentUserID {
+                    remoteIDsToDelete.append(story.id)
                     storyManager.deleteStory(story, context: modelContext)
+                }
+            }
+        }
+
+        // Delete the server rows too — pullStories treats the server catalog as
+        // the source of truth and would re-insert these stories on the next sync.
+        guard !remoteIDsToDelete.isEmpty else { return }
+        Task {
+            for id in remoteIDsToDelete {
+                do {
+                    try await syncManager.deleteRemoteStory(id: id)
+                } catch {
+                    print("Failed to delete remote story \(id): \(error)")
                 }
             }
         }

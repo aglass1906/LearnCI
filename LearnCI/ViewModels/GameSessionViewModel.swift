@@ -427,11 +427,9 @@ class GameSessionViewModel {
             }
         }
 
-        if config.order == .smart {
-            smartSessionManager.startSession(cards: workingSet)
-            return smartSessionManager.activeQueue
-        }
-
+        // Note: callers (startSession / handleDeckLoaded) start the
+        // SmartSessionManager session for .smart order — doing it here too
+        // would reset the smart queue twice per session start.
         return workingSet
     }
 

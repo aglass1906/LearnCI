@@ -579,6 +579,11 @@ class StoryManager {
         
         // Delete object
         context.delete(story)
+        do {
+            try context.save()
+        } catch {
+            print("Failed to persist story deletion: \(error)")
+        }
     }
     
     // MARK: - Helpers

@@ -75,6 +75,19 @@ struct ContentView: View {
 
     @MainActor
     private func prepareAuthenticatedUser(_ userID: String) async {
+        // Returning user with a local profile: enter the app immediately and let
+        // the sync run in the background instead of blocking on the network.
+        if let existingProfile = profile(for: userID) {
+            onboardingUserID = existingProfile.hasCompletedOnboarding == false ? userID : nil
+            preparedUserID = userID
+            Task {
+                await syncManager.syncNow(modelContext: modelContext)
+            }
+            return
+        }
+
+        // First launch for this user on this device: sync first so an existing
+        // server profile is pulled down before we create a fresh one.
         await syncManager.syncNow(modelContext: modelContext)
 
         var profile = profile(for: userID)

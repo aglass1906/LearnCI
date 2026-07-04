@@ -41,8 +41,10 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var wasPlayingBeforeInterruption = false
     private var wasStreamingBeforeInterruption = false
     
-    // Caching resolved URLs to avoid repeated recursive searches
-    private var audioURLCache: [String: URL] = [:]
+    // Caching resolved URLs to avoid repeated recursive searches.
+    // Misses are cached as nil — otherwise every missing file (e.g. cards that
+    // rely on TTS fallback) re-triggers a full recursive bundle scan.
+    private var audioURLCache: [String: URL?] = [:]
     
     // TTS Synthesizer
     private let synthesizer = AVSpeechSynthesizer()
@@ -327,7 +329,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
                 }
             }
         }
-        
+
+        audioURLCache.updateValue(nil, forKey: cacheKey)
         return nil
     }
     
@@ -372,17 +375,18 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     func playAudio(named filename: String, folderName: String? = nil, text: String? = nil, language: Language? = nil, voiceGender: String? = nil, useFallback: Bool = false, ttsRate: Float = 0.5, completion: (() -> Void)? = nil) {
         // Avoid restarting if this specific file is already playing as a single intent
-        if let player = player, player.isPlaying, currentSequence == [AudioItem(filename: filename, text: text, language: language)] {
+        let requestedItem = AudioItem(filename: filename, text: text, language: language, voiceGender: voiceGender)
+        if let player = player, player.isPlaying, currentSequence == [requestedItem] {
             return
         }
-        
+
         // If speaking, checking synthesizer state might be needed, but usually we just stop and restart
         if synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
-        
+
         stopAudio()
-        self.currentSequence = [AudioItem(filename: filename, text: text, language: language)]
+        self.currentSequence = [requestedItem]
         
         playInternal(filename: filename, folderName: folderName, text: text, language: language, voiceGender: voiceGender, useFallback: useFallback, ttsRate: ttsRate, completion: completion)
     }

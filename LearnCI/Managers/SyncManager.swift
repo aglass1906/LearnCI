@@ -1195,7 +1195,20 @@ struct CoachingCheckInDTO: Codable {
             
         print("[Sync] Pipeline: Pushed metadata for '\(story.title)' successfully.")
     }
-    
+
+    /// Deletes a story row on the server. Must be called when the user deletes a
+    /// locally-owned story: `pullStories` treats the server catalog as the source
+    /// of truth and would otherwise re-insert the story on the next sync.
+    @MainActor
+    func deleteRemoteStory(id: UUID) async throws {
+        guard authManager.currentUser != nil else { throw SyncError.notAuthenticated }
+        try await authManager.supabase.from("stories")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+        print("[Sync] Stories: Deleted remote story \(id.uuidString).")
+    }
+
     @MainActor
     private func pullStories(context: ModelContext, userID: String) async throws {
         guard let uid = UUID(uuidString: userID) else { return }

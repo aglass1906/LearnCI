@@ -174,6 +174,19 @@ struct StoryPathBottomBar: View {
     var secondaryTitle: String? = nil
     var secondaryAction: (() -> Void)? = nil
     var caption: String? = nil
+    /// When set, tapping the primary button asks for confirmation first (guards
+    /// against an accidental Continue advancing a stage).
+    var confirmMessage: String? = nil
+
+    @State private var showConfirm = false
+
+    private func onPrimaryTap() {
+        if confirmMessage != nil {
+            showConfirm = true
+        } else {
+            primaryAction()
+        }
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -189,7 +202,7 @@ struct StoryPathBottomBar: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                 }
-                Button(action: primaryAction) {
+                Button(action: onPrimaryTap) {
                     HStack(spacing: 6) {
                         Text(primaryTitle)
                         Image(systemName: "arrow.right")
@@ -205,5 +218,17 @@ struct StoryPathBottomBar: View {
         .padding(.top, 12)
         .padding(.bottom, 16)
         .background(.thinMaterial)
+        .confirmationDialog(
+            "Move on to the next stage?",
+            isPresented: $showConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(primaryTitle) { primaryAction() }
+            Button("Not yet", role: .cancel) {}
+        } message: {
+            if let confirmMessage {
+                Text(confirmMessage)
+            }
+        }
     }
 }

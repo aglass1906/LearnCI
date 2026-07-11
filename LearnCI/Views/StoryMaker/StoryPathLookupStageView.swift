@@ -42,6 +42,11 @@ struct StoryPathLookupStageView: View {
             ? "Tap words to save them, or continue when you're ready."
             : "Ready for a quick self-check on the words you marked?"
     }
+    // Only confirm the direct-advance case; when words exist the primary opens
+    // the review sheet, which is already a deliberate step.
+    private var lookupConfirmMessage: String? {
+        savedWords.isEmpty ? "You'll move to shadowing. You can come back with the ← button." : nil
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -76,7 +81,8 @@ struct StoryPathLookupStageView: View {
                 primaryAction: primaryTapped,
                 secondaryTitle: lookupSecondaryTitle,
                 secondaryAction: lookupSecondaryAction,
-                caption: lookupCaption
+                caption: lookupCaption,
+                confirmMessage: lookupConfirmMessage
             )
         }
         .sheet(isPresented: $showMiniReview) {

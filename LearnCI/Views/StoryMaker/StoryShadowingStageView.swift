@@ -1,9 +1,9 @@
 import SwiftUI
 import AVFoundation
 
-/// Stage 4 — Shadow two lines. Auto-picks two short scenes from the current
-/// chapter that have generated audio, and walks the user through Play →
-/// Record → Play Mine → Retake for each.
+/// Stage 4 — Shadow a couple of passages. Picks two scene-length passages (a
+/// paragraph / few sentences) from the current chapter that have audio, and
+/// walks the learner through Play → Pause → say it out loud → Record → compare.
 struct StoryShadowingStageView: View {
     @Bindable var vm: StoryPathSessionViewModel
 
@@ -13,7 +13,7 @@ struct StoryShadowingStageView: View {
     @State private var permissionSheet: PermissionState = .idle
     @State private var lineStates: [String: LineState] = [:]
     @State private var lines: [ShadowLine] = []
-    @State private var currentIndex: Int = 0
+    @State private var playingLineID: String?
     @State private var showMicExplainer: Bool = false
     @State private var pendingLineID: String?
 
@@ -48,14 +48,13 @@ struct StoryShadowingStageView: View {
                 .padding(.vertical, 16)
             }
             StoryPathBottomBar(
-                primaryTitle: canAdvance ? "Continue to Plan" : "Continue",
+                primaryTitle: "Continue to Plan",
                 primaryEnabled: true,
                 primaryAction: onContinue,
-                secondaryTitle: nil,
-                secondaryAction: nil,
-                caption: canAdvance
-                    ? "Great — you've recorded \(vm.shadowRecordedLineIDs.count) of \(lines.count)."
-                    : "Record each line, then compare. Skip anytime."
+                caption: vm.shadowRecordedLineIDs.isEmpty
+                    ? "Play a passage, pause, and say it out loud. Record to compare — or skip."
+                    : "Recorded \(vm.shadowRecordedLineIDs.count) of \(lines.count).",
+                confirmMessage: "You'll move to planning your next session. You can come back with the ← button."
             )
         }
         .onAppear { bootstrap() }
@@ -84,18 +83,16 @@ struct StoryShadowingStageView: View {
                 }
             }
         } message: {
-            Text("Enable microphone access in Settings to shadow lines. You can also skip this stage.")
+            Text("Enable microphone access in Settings to shadow passages. You can also skip this stage.")
         }
     }
-
-    private var canAdvance: Bool { true }
 
     // MARK: - Sub-views
 
     @ViewBuilder
     private var header: some View {
         HStack {
-            Label("Shadow \(lines.count) line\(lines.count == 1 ? "" : "s")", systemImage: "mic.fill")
+            Label("Shadow \(lines.count) passage\(lines.count == 1 ? "" : "s")", systemImage: "mic.fill")
                 .font(.subheadline.weight(.medium))
             Spacer()
             Text("\(vm.shadowRecordedLineIDs.count) of \(lines.count) done")
@@ -112,7 +109,7 @@ struct StoryShadowingStageView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Say it out loud")
                 .font(.title3.weight(.semibold))
-            Text("Listen, then repeat as closely as you can. Record yourself, compare, retake if you want.")
+            Text("Press play to hear a passage, pause it, then repeat it aloud. Record yourself and compare — retake as many times as you like.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -122,12 +119,12 @@ struct StoryShadowingStageView: View {
     @ViewBuilder
     private func lineCard(index: Int, line: ShadowLine) -> some View {
         let state = lineStates[line.id] ?? LineState()
-        let isCurrent = currentIndex == index
         let isRecordingThisLine = recorder.isRecording && recorder.currentLineID == line.id
+        let isPlayingThis = playingLineID == line.id && audioManager.isStreaming
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Line \(index + 1)")
+                Text("Passage \(index + 1)")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -138,15 +135,28 @@ struct StoryShadowingStageView: View {
                 }
             }
 
+            if let imageURL = line.imageURL {
+                CachedAsyncImage(url: imageURL) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Rectangle().fill(Color(uiColor: .tertiarySystemFill))
+                }
+                .frame(height: 130)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
             Text(line.text)
-                .font(.system(size: 20, design: .serif))
+                .font(.system(size: 19, design: .serif))
                 .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 10) {
                 Button {
-                    playOriginal(line)
+                    togglePlayOriginal(line)
                 } label: {
-                    Label("Play", systemImage: "play.fill").frame(maxWidth: .infinity)
+                    Label(isPlayingThis ? "Pause" : "Play", systemImage: isPlayingThis ? "pause.fill" : "play.fill")
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
@@ -176,10 +186,6 @@ struct StoryShadowingStageView: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color(uiColor: .secondarySystemBackground))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(isCurrent ? Color.accentColor.opacity(0.4) : Color.clear, lineWidth: 2)
-        )
     }
 
     // MARK: - Actions
@@ -198,13 +204,29 @@ struct StoryShadowingStageView: View {
         }
     }
 
-    private func playOriginal(_ line: ShadowLine) {
+    /// Play, pause, or resume the original narration for a passage so the
+    /// learner can listen, stop, and repeat aloud.
+    private func togglePlayOriginal(_ line: ShadowLine) {
         recorder.stopPlayback()
-        if let url = line.audioURL {
-            audioManager.onStreamFinished = nil
-            audioManager.streamAudio(url: url)
-            audioManager.playStream()
+
+        // Same passage currently playing → pause.
+        if playingLineID == line.id, audioManager.isStreaming {
+            audioManager.pauseStream()
+            return
         }
+        // Same passage, loaded but paused → resume.
+        if playingLineID == line.id, audioManager.streamPlayer != nil {
+            audioManager.playStream()
+            return
+        }
+        // Different (or first) passage → load and play.
+        guard let url = line.audioURL else { return }
+        audioManager.onStreamFinished = {
+            playingLineID = nil
+        }
+        audioManager.streamAudio(url: url)
+        audioManager.playStream()
+        playingLineID = line.id
     }
 
     private func toggleRecord(_ line: ShadowLine) {
@@ -222,7 +244,7 @@ struct StoryShadowingStageView: View {
         // Permission gate
         switch recorder.micPermission {
         case .granted:
-            audioManager.stopStream()
+            stopOriginalPlayback()
             _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: line.id)
         case .undetermined:
             // Friendly explainer before the system permission prompt.
@@ -240,7 +262,7 @@ struct StoryShadowingStageView: View {
             await MainActor.run {
                 pendingLineID = nil
                 if granted {
-                    audioManager.stopStream()
+                    stopOriginalPlayback()
                     _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: lineID)
                 } else {
                     permissionSheet = .denied
@@ -251,8 +273,13 @@ struct StoryShadowingStageView: View {
 
     private func playMine(_ line: ShadowLine) {
         guard let url = lineStates[line.id]?.recordingURL else { return }
-        audioManager.stopStream()
+        stopOriginalPlayback()
         recorder.playRecording(at: url)
+    }
+
+    private func stopOriginalPlayback() {
+        audioManager.stopStream()
+        playingLineID = nil
     }
 
     private func onContinue() {
@@ -262,30 +289,38 @@ struct StoryShadowingStageView: View {
         vm.advanceToNextStage()
     }
 
-    // MARK: - Line selection
+    // MARK: - Passage selection
 
+    /// Choose up to `shadowLineCount` scene-length passages (a paragraph / few
+    /// sentences) from the chapter, in reading order, resolving playable audio
+    /// URLs the same way the readers do (cached local file → remote storage).
     private func chooseLines() -> [ShadowLine] {
-        guard let chapter = vm.chapter else { return [] }
-        let langCode = vm.story.targetLanguageCode
-        let candidates = chapter.scenes
-            .sorted { $0.sceneIndex < $1.sceneIndex }
-            .compactMap { scene -> ShadowLine? in
-                let text = scene.captionFor(langCode).trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !text.isEmpty else { return nil }
-                let wordCount = text.split(whereSeparator: { $0.isWhitespace }).count
-                guard wordCount >= 4 else { return nil }
-                guard let audioUrlString = scene.audioUrlForLanguage(langCode),
-                      let url = URL(string: audioUrlString) else { return nil }
-                return ShadowLine(
-                    id: "\(chapter.chapterNumber)-\(scene.sceneIndex)",
-                    text: text,
-                    audioURL: url,
-                    wordCount: wordCount
-                )
-            }
-        // Pick shortest 2 for the least intimidating first attempt.
-        let picked = candidates.sorted { $0.wordCount < $1.wordCount }.prefix(vm.shadowLineCount)
-        return picked.sorted { $0.id < $1.id }
+        let adapter = StoryReaderDataAdapter(story: vm.story)
+        let clips = adapter.audioClips(forChapter: vm.chapterArrayIndex)
+
+        let candidates: [ShadowLine] = clips.compactMap { clip in
+            let text = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            let wordCount = text.split(whereSeparator: { $0.isWhitespace }).count
+            let url = StoryReaderDataAdapter.cachedAudioURL(
+                storyID: vm.story.id,
+                clip: clip,
+                storyUpdatedAt: vm.story.updatedAt
+            ) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString)
+            guard let url else { return nil }
+            return ShadowLine(
+                id: "\(vm.chapterNumber)-\(clip.sceneIndex)",
+                text: text,
+                audioURL: url,
+                imageURL: clip.imageURL,
+                wordCount: wordCount
+            )
+        }
+
+        // Prefer passages with a few sentences of substance; keep reading order.
+        let meaty = candidates.filter { $0.wordCount >= 8 }
+        let pool = meaty.count >= vm.shadowLineCount ? meaty : candidates
+        return Array(pool.prefix(vm.shadowLineCount))
     }
 }
 
@@ -293,6 +328,7 @@ private struct ShadowLine: Identifiable, Hashable {
     let id: String
     let text: String
     let audioURL: URL?
+    let imageURL: URL?
     let wordCount: Int
 }
 
@@ -311,7 +347,7 @@ private struct MicExplainerSheet: View {
             Text("Record your speaking")
                 .font(.title3.weight(.semibold))
 
-            Text("Shadowing means saying a line out loud and comparing it to the original. LearnCI needs microphone access to record you. Recordings stay on your device — they're never uploaded.")
+            Text("Shadowing means saying a passage out loud and comparing it to the original. LearnCI needs microphone access to record you. Recordings stay on your device — they're never uploaded.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

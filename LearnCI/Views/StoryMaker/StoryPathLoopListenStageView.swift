@@ -10,6 +10,7 @@ struct StoryPathLoopListenStageView: View {
     @State private var transcriptVisible: Bool = false
     @State private var chapterPlayer: StoryChapterAudioPlayer?
     @State private var listenTimer: Timer?
+    @State private var fallbackImageURL: URL?
 
     private var chapter: StoryChapter? { vm.chapter }
     private var languageCode: String { vm.story.targetLanguageCode }
@@ -21,6 +22,7 @@ struct StoryPathLoopListenStageView: View {
     }
     private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
     private var isPlaying: Bool { chapterPlayer?.isPlaying ?? false }
+    private var heroImageURL: URL? { chapterPlayer?.currentImageURL ?? fallbackImageURL }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -51,7 +53,8 @@ struct StoryPathLoopListenStageView: View {
                 secondaryAction: { transcriptVisible.toggle() },
                 caption: canAdvance
                     ? "You've completed \(vm.currentLoopIndex) of \(vm.totalLoops) loops."
-                    : "Let your ear lead. Text is hidden by default."
+                    : "Let your ear lead. Text is hidden by default.",
+                confirmMessage: "You'll move to word lookup. You can come back with the ← button."
             )
         }
         .onAppear {
@@ -90,12 +93,32 @@ struct StoryPathLoopListenStageView: View {
     private var heroCard: some View {
         VStack(spacing: 20) {
             ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.15))
-                    .frame(width: 220, height: 220)
-                Image(systemName: "headphones")
-                    .font(.system(size: 84, weight: .light))
-                    .foregroundStyle(Color.accentColor)
+                if let url = heroImageURL {
+                    CachedAsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.accentColor.opacity(0.12))
+                            .overlay(ProgressView())
+                    }
+                    .frame(width: 240, height: 240)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "headphones")
+                            .font(.title2)
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(.black.opacity(0.45), in: Circle())
+                            .padding(10)
+                    }
+                } else {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.15))
+                        .frame(width: 220, height: 220)
+                    Image(systemName: "headphones")
+                        .font(.system(size: 84, weight: .light))
+                        .foregroundStyle(Color.accentColor)
+                }
             }
 
             HStack(spacing: 6) {
@@ -138,6 +161,8 @@ struct StoryPathLoopListenStageView: View {
             vm.recordLoopCompleted()
         }
         chapterPlayer = player
+        fallbackImageURL = StoryReaderDataAdapter(story: vm.story)
+            .chapterImageURL(forChapterAt: vm.chapterArrayIndex)
         // Auto-start remaining loops when arriving mid-way through.
         if hasChapterAudio, vm.currentLoopIndex < vm.totalLoops {
             player.start(totalLoops: vm.totalLoops, fromLoop: vm.currentLoopIndex)

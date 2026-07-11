@@ -42,6 +42,15 @@ final class StoryChapterAudioPlayer {
 
     var hasAudio: Bool { !clips.isEmpty }
 
+    /// Image for the scene currently being narrated (falls back to the first
+    /// clip's image). Used to show the right visual while listening.
+    var currentImageURL: URL? {
+        if clips.indices.contains(currentClipIndex) {
+            return clips[currentClipIndex].imageURL
+        }
+        return clips.first?.imageURL
+    }
+
     /// Resolve the chapter's body scene clips. `chapterIndex` is the index into
     /// `story.chapters`, not the chapter number.
     func configure(story: Story, chapterIndex: Int) {

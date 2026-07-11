@@ -1,16 +1,17 @@
 import SwiftUI
 
-/// Stage 1 — Read for ~5 minutes. Renders the chapter body with tappable
-/// words + optional listen-along audio (full chapter, word-synced) for
-/// combined seeing+hearing input.
+/// Stage 1 — Read for ~5 minutes. Shows the chapter/scene image, a play/pause
+/// narration control (word-synced highlighting), and the tappable body text so
+/// the learner gets combined seeing + hearing input.
 struct StoryPathReadStageView: View {
     @Bindable var vm: StoryPathSessionViewModel
 
     @Environment(AudioManager.self) private var audioManager
 
     @State private var timer: Timer?
-    @State private var listenAlong: Bool = false
     @State private var chapterPlayer: StoryChapterAudioPlayer?
+    @State private var audioStarted: Bool = false
+    @State private var fallbackImageURL: URL?
 
     private var chapter: StoryChapter? { vm.chapter }
     private var languageCode: String { vm.story.targetLanguageCode }
@@ -21,22 +22,16 @@ struct StoryPathReadStageView: View {
         chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
     }
     private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
+    private var isPlaying: Bool { chapterPlayer?.isPlaying ?? false }
 
-    // Hoisted out of `body` with explicit types — ternaries mixing method
-    // references / nil otherwise overwhelm the SwiftUI body type-checker.
+    private var heroImageURL: URL? {
+        chapterPlayer?.currentImageURL ?? fallbackImageURL
+    }
     private var highlightTime: Double? {
-        listenAlong ? chapterPlayer?.chapterTime : nil
+        audioStarted ? chapterPlayer?.chapterTime : nil
     }
     private var primaryTitle: String {
         vm.readTargetReached ? "Continue to Listen Loop" : "I'm Ready"
-    }
-    private var listenSecondaryTitle: String? {
-        guard hasChapterAudio else { return nil }
-        return listenAlong ? "Stop Audio" : "Listen Along"
-    }
-    private var listenSecondaryAction: (() -> Void)? {
-        guard hasChapterAudio else { return nil }
-        return { toggleListenAlong() }
     }
     private var bottomCaption: String {
         vm.readTargetReached
@@ -47,14 +42,15 @@ struct StoryPathReadStageView: View {
     var body: some View {
         VStack(spacing: 0) {
             timerHeader
+            if hasChapterAudio { audioBar }
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    heroImage
                     if let plotSummary = chapter?.plotSummary?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !plotSummary.isEmpty {
                         Text(plotSummary)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                            .padding(.bottom, 4)
                     }
                     TappableStoryText(
                         text: bodyText,
@@ -73,9 +69,8 @@ struct StoryPathReadStageView: View {
                 primaryTitle: primaryTitle,
                 primaryEnabled: true,
                 primaryAction: onContinue,
-                secondaryTitle: listenSecondaryTitle,
-                secondaryAction: listenSecondaryAction,
-                caption: bottomCaption
+                caption: bottomCaption,
+                confirmMessage: "You'll move to the listening loop. You can come back with the ← button."
             )
         }
         .onAppear {
@@ -103,6 +98,51 @@ struct StoryPathReadStageView: View {
         .background(Color(uiColor: .secondarySystemBackground))
     }
 
+    @ViewBuilder
+    private var audioBar: some View {
+        HStack(spacing: 14) {
+            Button(action: togglePlay) {
+                Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.accentColor)
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(isPlaying ? "Listening along…" : (audioStarted ? "Paused" : "Play the narration"))
+                    .font(.subheadline.weight(.medium))
+                ProgressView(value: progressFraction)
+                    .tint(.accentColor)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(Color(uiColor: .secondarySystemBackground).opacity(0.6))
+    }
+
+    @ViewBuilder
+    private var heroImage: some View {
+        if let url = heroImageURL {
+            CachedAsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                Rectangle()
+                    .fill(Color(uiColor: .secondarySystemBackground))
+                    .overlay(ProgressView())
+            }
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+    }
+
+    private var progressFraction: Double {
+        guard let player = chapterPlayer, player.chapterDuration > 0 else { return 0 }
+        return min(1, max(0, player.chapterTime / player.chapterDuration))
+    }
+
     // MARK: - Actions
 
     private func setupPlayer() {
@@ -110,9 +150,25 @@ struct StoryPathReadStageView: View {
         let player = StoryChapterAudioPlayer(audioManager: audioManager)
         player.configure(story: vm.story, chapterIndex: vm.chapterArrayIndex)
         player.onFinished = {
-            listenAlong = false
+            // Leave audioStarted true so the highlight rests at the end.
         }
         chapterPlayer = player
+        fallbackImageURL = StoryReaderDataAdapter(story: vm.story)
+            .chapterImageURL(forChapterAt: vm.chapterArrayIndex)
+    }
+
+    private func togglePlay() {
+        guard let player = chapterPlayer, player.hasAudio else { return }
+        if player.isPlaying {
+            player.pause()
+        } else {
+            if audioManager.streamPlayer == nil || player.completedLoops >= player.totalLoops {
+                player.start(totalLoops: 1)
+            } else {
+                player.play()
+            }
+            audioStarted = true
+        }
     }
 
     private func onContinue() {
@@ -120,18 +176,8 @@ struct StoryPathReadStageView: View {
         vm.advanceToNextStage()
     }
 
-    private func toggleListenAlong() {
-        listenAlong.toggle()
-        if listenAlong {
-            chapterPlayer?.start(totalLoops: 1)
-        } else {
-            chapterPlayer?.stop()
-        }
-    }
-
     private func stopAudio() {
         chapterPlayer?.stop()
-        listenAlong = false
     }
 
     private func startTimer() {

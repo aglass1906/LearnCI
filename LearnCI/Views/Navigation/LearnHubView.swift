@@ -142,4 +142,7 @@ private struct ContinueYourStoryRow: View {
 
 #Preview {
     LearnHubView()
+        .modelContainer(for: [Story.self, StoryPathProgress.self], inMemory: true)
+        .environment(AuthManager())
+        .environment(StoryPathProgressStore())
 }

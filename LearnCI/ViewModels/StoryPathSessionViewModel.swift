@@ -42,9 +42,19 @@ final class StoryPathSessionViewModel {
 
     let story: Story
     let chapterNumber: Int
+    let userID: String?
     private(set) var progress: StoryPathProgress
-    private unowned let context: ModelContext
-    private unowned let progressStore: StoryPathProgressStore
+    private let context: ModelContext
+    private let progressStore: StoryPathProgressStore
+
+    /// Wall-clock timestamp for when the current stage was entered — used to
+    /// estimate per-stage activity minutes for stages that don't run an
+    /// explicit timer.
+    private var stageEnteredAt: Date = Date()
+
+    /// Accumulated seconds spent actively listening in stage 2 (drives the
+    /// `.listening` activity row).
+    var listenElapsedSeconds: Int = 0
 
     // MARK: - Config
 
@@ -84,6 +94,12 @@ final class StoryPathSessionViewModel {
             ?? story.chapters.first
     }
 
+    /// Index into `story.chapters` for the active chapter (adapters are
+    /// index-based, not chapterNumber-based).
+    var chapterArrayIndex: Int {
+        story.chapters.firstIndex(where: { $0.chapterNumber == chapterNumber }) ?? 0
+    }
+
     var nextChapterOptions: [StoryChapter] {
         story.chapters.sorted { $0.chapterNumber < $1.chapterNumber }
     }
@@ -107,6 +123,7 @@ final class StoryPathSessionViewModel {
         self.story = story
         self.context = context
         self.progressStore = progressStore
+        self.userID = userID
 
         let effectiveChapterNumber = chapterNumber
             ?? story.chapters.first?.chapterNumber
@@ -136,25 +153,79 @@ final class StoryPathSessionViewModel {
 
     // MARK: - Persistence
 
+    /// Whether there's enough real activity to bother persisting a row. Prevents
+    /// "just opened then bailed" sessions from cluttering the resume lists.
+    private var hasMeaningfulProgress: Bool {
+        currentStage != .read
+            || readElapsedSeconds >= 20
+            || !wordsMarkedThisSession.isEmpty
+            || !shadowRecordedLineIDs.isEmpty
+            || progress.stageCompletion.contains(true)
+    }
+
     func persist() {
         progress.currentStage = currentStage.rawValue
-        progress.readMinutesAccumulated = max(1, readElapsedSeconds / 60)
+        progress.readMinutesAccumulated = readElapsedSeconds / 60
         progress.loopsCompleted = currentLoopIndex
         progress.wordsMarkedInSession = wordsMarkedThisSession.map(\.uuidString)
         progress.shadowLineIDsRecorded = Array(shadowRecordedLineIDs)
-        progressStore.save(progress, in: context)
+        progressStore.save(progress, in: context, allowInsert: hasMeaningfulProgress)
     }
 
     func markStageComplete(_ stage: Stage) {
         var flags = progress.stageCompletion
+        let wasComplete = flags[stage.rawValue - 1]
         flags[stage.rawValue - 1] = true
         progress.stageCompletion = flags
+        if !wasComplete {
+            logActivity(for: stage)
+        }
         persist()
     }
 
     func advance(to stage: Stage) {
         currentStage = stage
+        stageEnteredAt = Date()
         persist()
+    }
+
+    // MARK: - Activity logging
+
+    /// Log a `UserActivity` for a completed stage so guided-path work feeds
+    /// streaks and the dashboard breakdown, matching the plan's stage→type map.
+    private func logActivity(for stage: Stage) {
+        let activityType: ActivityType
+        let minutes: Int
+        switch stage {
+        case .read:
+            activityType = .reading
+            minutes = max(1, readElapsedSeconds / 60)
+        case .loopListen:
+            activityType = .listening
+            minutes = max(1, listenElapsedSeconds / 60)
+        case .lookup:
+            activityType = .flashcards
+            minutes = elapsedMinutesInStage()
+        case .shadow:
+            activityType = .shadowing
+            minutes = elapsedMinutesInStage()
+        case .planNext:
+            return // Planning isn't study time.
+        }
+
+        let activity = UserActivity(
+            minutes: minutes,
+            activityType: activityType,
+            language: story.language,
+            userID: userID,
+            comment: "Guided Path · \(story.title) · Ch \(chapterNumber)"
+        )
+        context.insert(activity)
+        try? context.save()
+    }
+
+    private func elapsedMinutesInStage() -> Int {
+        max(1, Int(Date().timeIntervalSince(stageEnteredAt) / 60))
     }
 
     func advanceToNextStage() {

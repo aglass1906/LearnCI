@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Stage 1 — Read for ~5 minutes. Renders the chapter body with tappable
-/// words + optional listen-along audio for combined seeing+hearing input.
+/// words + optional listen-along audio (full chapter, word-synced) for
+/// combined seeing+hearing input.
 struct StoryPathReadStageView: View {
     @Bindable var vm: StoryPathSessionViewModel
 
@@ -9,8 +10,7 @@ struct StoryPathReadStageView: View {
 
     @State private var timer: Timer?
     @State private var listenAlong: Bool = false
-    @State private var currentAudioTime: Double? = nil
-    @State private var timeObserver: Timer?
+    @State private var chapterPlayer: StoryChapterAudioPlayer?
 
     private var chapter: StoryChapter? { vm.chapter }
     private var languageCode: String { vm.story.targetLanguageCode }
@@ -20,19 +20,7 @@ struct StoryPathReadStageView: View {
     private var wordTimings: [WordTiming] {
         chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
     }
-    private var chapterAudioURL: URL? {
-        // Prefer first scene audio; fall back to chapter intro audio.
-        if let scene = chapter?.scenes.sorted(by: { $0.sceneIndex < $1.sceneIndex }).first(where: { $0.audioUrlForLanguage(languageCode) != nil }),
-           let urlString = scene.audioUrlForLanguage(languageCode),
-           let url = URL(string: urlString) {
-            return url
-        }
-        if let urlString = chapter?.chapterIntroAudioUrlForLanguage(languageCode),
-           let url = URL(string: urlString) {
-            return url
-        }
-        return nil
-    }
+    private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -51,7 +39,7 @@ struct StoryPathReadStageView: View {
                         font: .system(size: 20, weight: .regular, design: .serif),
                         lineSpacing: 8,
                         timings: wordTimings,
-                        currentTime: listenAlong ? currentAudioTime : nil,
+                        currentTime: listenAlong ? (chapterPlayer?.chapterTime) : nil,
                         activeColor: .accentColor,
                         pastOpacity: 0.5
                     )
@@ -63,14 +51,17 @@ struct StoryPathReadStageView: View {
                 primaryTitle: vm.readTargetReached ? "Continue to Listen Loop" : "I'm Ready",
                 primaryEnabled: true,
                 primaryAction: onContinue,
-                secondaryTitle: audioSecondaryTitle,
-                secondaryAction: chapterAudioURL == nil ? nil : toggleListenAlong,
+                secondaryTitle: hasChapterAudio ? (listenAlong ? "Stop Audio" : "Listen Along") : nil,
+                secondaryAction: hasChapterAudio ? toggleListenAlong : nil,
                 caption: vm.readTargetReached
                     ? "Nice work — you've hit \(vm.targetReadMinutes) min of reading."
                     : "Read at your own pace. Tap a word to look it up."
             )
         }
-        .onAppear { startTimer() }
+        .onAppear {
+            setupPlayer()
+            startTimer()
+        }
         .onDisappear { stopTimer(); stopAudio() }
     }
 
@@ -92,11 +83,17 @@ struct StoryPathReadStageView: View {
         .background(Color(uiColor: .secondarySystemBackground))
     }
 
-    private var audioSecondaryTitle: String {
-        chapterAudioURL == nil ? "" : (listenAlong ? "Stop Audio" : "Listen Along")
-    }
-
     // MARK: - Actions
+
+    private func setupPlayer() {
+        guard chapterPlayer == nil else { return }
+        let player = StoryChapterAudioPlayer(audioManager: audioManager)
+        player.configure(story: vm.story, chapterIndex: vm.chapterArrayIndex)
+        player.onFinished = {
+            listenAlong = false
+        }
+        chapterPlayer = player
+    }
 
     private func onContinue() {
         stopAudio()
@@ -106,33 +103,15 @@ struct StoryPathReadStageView: View {
     private func toggleListenAlong() {
         listenAlong.toggle()
         if listenAlong {
-            guard let url = chapterAudioURL else { return }
-            audioManager.streamRepeatCount = 1
-            audioManager.streamAudio(url: url)
-            audioManager.onStreamFinished = {
-                listenAlong = false
-                currentAudioTime = nil
-            }
-            startAudioClockObserver()
+            chapterPlayer?.start(totalLoops: 1)
         } else {
-            stopAudio()
-        }
-    }
-
-    private func startAudioClockObserver() {
-        timeObserver?.invalidate()
-        timeObserver = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            Task { @MainActor in
-                currentAudioTime = audioManager.streamCurrentTime
-            }
+            chapterPlayer?.stop()
         }
     }
 
     private func stopAudio() {
-        timeObserver?.invalidate()
-        timeObserver = nil
-        audioManager.stopStream()
-        currentAudioTime = nil
+        chapterPlayer?.stop()
+        listenAlong = false
     }
 
     private func startTimer() {

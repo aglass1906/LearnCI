@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Stage 2 — loop the chapter audio N times (default 4) like a podcast.
+/// Stage 2 — loop the whole chapter audio N times (default 4) like a podcast.
 /// The transcript is hidden by default so the ear takes the lead.
 struct StoryPathLoopListenStageView: View {
     @Bindable var vm: StoryPathSessionViewModel
@@ -8,10 +8,8 @@ struct StoryPathLoopListenStageView: View {
     @Environment(AudioManager.self) private var audioManager
 
     @State private var transcriptVisible: Bool = false
-    @State private var isPlaying: Bool = false
-    @State private var currentTime: Double = 0
-    @State private var duration: Double = 0
-    @State private var timeObserver: Timer?
+    @State private var chapterPlayer: StoryChapterAudioPlayer?
+    @State private var listenTimer: Timer?
 
     private var chapter: StoryChapter? { vm.chapter }
     private var languageCode: String { vm.story.targetLanguageCode }
@@ -21,18 +19,8 @@ struct StoryPathLoopListenStageView: View {
     private var wordTimings: [WordTiming] {
         chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
     }
-    private var chapterAudioURL: URL? {
-        if let scene = chapter?.scenes.sorted(by: { $0.sceneIndex < $1.sceneIndex }).first(where: { $0.audioUrlForLanguage(languageCode) != nil }),
-           let urlString = scene.audioUrlForLanguage(languageCode),
-           let url = URL(string: urlString) {
-            return url
-        }
-        if let urlString = chapter?.chapterIntroAudioUrlForLanguage(languageCode),
-           let url = URL(string: urlString) {
-            return url
-        }
-        return nil
-    }
+    private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
+    private var isPlaying: Bool { chapterPlayer?.isPlaying ?? false }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -46,7 +34,7 @@ struct StoryPathLoopListenStageView: View {
                             font: .system(size: 18, design: .serif),
                             lineSpacing: 6,
                             timings: wordTimings,
-                            currentTime: currentTime,
+                            currentTime: chapterPlayer?.chapterTime,
                             activeColor: .accentColor,
                             pastOpacity: 0.5
                         )
@@ -66,7 +54,10 @@ struct StoryPathLoopListenStageView: View {
                     : "Let your ear lead. Text is hidden by default."
             )
         }
-        .onAppear { startPlaybackIfNeeded() }
+        .onAppear {
+            setupPlayer()
+            startListenClock()
+        }
         .onDisappear { teardown() }
     }
 
@@ -74,15 +65,19 @@ struct StoryPathLoopListenStageView: View {
         vm.currentLoopIndex >= vm.totalLoops
     }
 
+    private var displayLoop: Int {
+        min(vm.currentLoopIndex + (isPlaying ? 1 : 0), vm.totalLoops)
+    }
+
     // MARK: - Sub-views
 
     @ViewBuilder
     private var loopHeader: some View {
         HStack {
-            Label("Loop \(min(vm.currentLoopIndex + (isPlaying ? 1 : 0), vm.totalLoops)) of \(vm.totalLoops)", systemImage: "arrow.triangle.2.circlepath")
+            Label("Loop \(displayLoop) of \(vm.totalLoops)", systemImage: "arrow.triangle.2.circlepath")
                 .font(.subheadline.weight(.medium))
             Spacer()
-            Text(timeString(currentTime) + " / " + timeString(duration))
+            Text(timeString(chapterPlayer?.chapterTime ?? 0) + " / " + timeString(chapterPlayer?.chapterDuration ?? 0))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
@@ -104,7 +99,7 @@ struct StoryPathLoopListenStageView: View {
             }
 
             HStack(spacing: 6) {
-                ForEach(0..<vm.totalLoops, id: \.self) { i in
+                ForEach(0..<max(1, vm.totalLoops), id: \.self) { i in
                     Circle()
                         .fill(i < vm.currentLoopIndex ? Color.green : (i == vm.currentLoopIndex && isPlaying ? Color.accentColor : Color(uiColor: .tertiarySystemFill)))
                         .frame(width: 10, height: 10)
@@ -120,10 +115,11 @@ struct StoryPathLoopListenStageView: View {
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
+                .disabled(!hasChapterAudio)
             }
             .padding(.top, 4)
 
-            if chapterAudioURL == nil {
+            if !hasChapterAudio {
                 Text("No audio available for this chapter yet.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -134,48 +130,40 @@ struct StoryPathLoopListenStageView: View {
 
     // MARK: - Actions
 
-    private func startPlaybackIfNeeded() {
-        guard vm.currentLoopIndex < vm.totalLoops else { return }
-        guard let url = chapterAudioURL else { return }
-        let remaining = max(1, vm.totalLoops - vm.currentLoopIndex)
-        audioManager.streamRepeatCount = remaining
-        audioManager.onStreamLoopCompleted = { completed, _ in
-            Task { @MainActor in
-                vm.recordLoopCompleted()
-            }
+    private func setupPlayer() {
+        guard chapterPlayer == nil else { return }
+        let player = StoryChapterAudioPlayer(audioManager: audioManager)
+        player.configure(story: vm.story, chapterIndex: vm.chapterArrayIndex)
+        player.onLoopCompleted = { _, _ in
+            vm.recordLoopCompleted()
         }
-        audioManager.onStreamFinished = {
-            Task { @MainActor in
-                isPlaying = false
-            }
+        chapterPlayer = player
+        // Auto-start remaining loops when arriving mid-way through.
+        if hasChapterAudio, vm.currentLoopIndex < vm.totalLoops {
+            player.start(totalLoops: vm.totalLoops, fromLoop: vm.currentLoopIndex)
         }
-        audioManager.streamAudio(url: url)
-        audioManager.playStream()
-        isPlaying = true
-        startClock()
     }
 
     private func togglePlayback() {
-        if isPlaying {
-            audioManager.pauseStream()
-            isPlaying = false
-        } else {
-            if audioManager.streamPlayer == nil {
-                startPlaybackIfNeeded()
+        guard let player = chapterPlayer else { return }
+        if player.isPlaying {
+            player.pause()
+        } else if vm.currentLoopIndex < vm.totalLoops {
+            if player.completedLoops >= player.totalLoops || audioManager.streamPlayer == nil {
+                player.start(totalLoops: vm.totalLoops, fromLoop: vm.currentLoopIndex)
             } else {
-                audioManager.playStream()
-                isPlaying = true
-                startClock()
+                player.play()
             }
         }
     }
 
-    private func startClock() {
-        timeObserver?.invalidate()
-        timeObserver = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+    private func startListenClock() {
+        listenTimer?.invalidate()
+        listenTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             Task { @MainActor in
-                currentTime = audioManager.streamCurrentTime
-                duration = audioManager.streamDuration
+                if chapterPlayer?.isPlaying == true {
+                    vm.listenElapsedSeconds += 1
+                }
             }
         }
     }
@@ -186,10 +174,10 @@ struct StoryPathLoopListenStageView: View {
     }
 
     private func teardown() {
-        timeObserver?.invalidate()
-        timeObserver = nil
-        audioManager.stopStream()
-        isPlaying = false
+        listenTimer?.invalidate()
+        listenTimer = nil
+        chapterPlayer?.stop()
+        vm.persist()
     }
 
     private func timeString(_ seconds: Double) -> String {

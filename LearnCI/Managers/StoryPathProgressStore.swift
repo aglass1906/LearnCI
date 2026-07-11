@@ -61,9 +61,10 @@ final class StoryPathProgressStore {
         return (try? context.fetch(descriptor)) ?? []
     }
 
-    /// Return the existing in-progress row for this (story, chapter, user) or
-    /// insert a fresh one. Does NOT save the context — callers save on
-    /// meaningful transitions.
+    /// Return the existing in-progress row for this (story, chapter, user), or a
+    /// fresh **un-inserted** instance. The fresh instance is only persisted once
+    /// `save(_:allowInsert:)` is called with meaningful progress, so merely
+    /// opening the path and backing out leaves no resume clutter.
     @discardableResult
     func resumeOrCreate(
         storyID: String,
@@ -77,20 +78,23 @@ final class StoryPathProgressStore {
            existing.completedAt == nil {
             return existing
         }
-        let fresh = StoryPathProgress(
+        return StoryPathProgress(
             userID: userID,
             storyID: storyID,
             storyTitle: storyTitle,
             chapterNumber: chapterNumber,
             sceneIndex: sceneIndex
         )
-        context.insert(fresh)
-        try? context.save()
-        return fresh
     }
 
-    /// Persist any mutations made to the row. Bump `updatedAt`.
-    func save(_ progress: StoryPathProgress, in context: ModelContext) {
+    /// Persist mutations. Inserts the row on first meaningful save; once
+    /// inserted, subsequent saves always persist.
+    func save(_ progress: StoryPathProgress, in context: ModelContext, allowInsert: Bool = true) {
+        let alreadyInserted = progress.modelContext != nil
+        guard alreadyInserted || allowInsert else { return }
+        if !alreadyInserted {
+            context.insert(progress)
+        }
         progress.updatedAt = Date()
         progress.isSynced = false
         try? context.save()
@@ -98,6 +102,9 @@ final class StoryPathProgressStore {
 
     /// Mark all 5 stages complete and set `completedAt`.
     func complete(_ progress: StoryPathProgress, in context: ModelContext) {
+        if progress.modelContext == nil {
+            context.insert(progress)
+        }
         progress.stageCompletion = [true, true, true, true, true]
         progress.currentStage = 5
         progress.completedAt = Date()
@@ -109,6 +116,7 @@ final class StoryPathProgressStore {
     /// Discards an in-progress row so a new fresh path can begin on the same
     /// chapter. Used by the "Start Over" menu item.
     func discard(_ progress: StoryPathProgress, in context: ModelContext) {
+        guard progress.modelContext != nil else { return }
         context.delete(progress)
         try? context.save()
     }

@@ -34,15 +34,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     var streamLoadError: String?
     var streamIsBuffering: Bool = false
     var onStreamFinished: (() -> Void)?
-    /// When >1, the current stream item automatically restarts from 0 at
-    /// end-of-item until it has played the requested total number of times.
-    /// `onStreamFinished` only fires after the FINAL playthrough.
-    var streamRepeatCount: Int = 1
-    /// Fires each time a single loop through the item completes, EXCLUDING
-    /// the terminal completion that fires `onStreamFinished`. Useful for
-    /// updating "Loop N of M" indicators.
-    var onStreamLoopCompleted: ((_ completedLoops: Int, _ totalLoops: Int) -> Void)?
-    private(set) var streamCompletedLoops: Int = 0
     private var streamTimeObserver: Any?
     private var streamItemObservations: [NSKeyValueObservation] = []
     private var playStreamWhenItemReady = false
@@ -579,7 +570,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     func streamAudio(url: URL, startAt: Double = 0) {
         activatePlaybackSession()
         streamFinished = false
-        streamCompletedLoops = 0
         streamLoadError = nil
 
         if let player = streamPlayer {
@@ -759,9 +749,6 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         isStreaming = false
         streamFinished = false
         onStreamFinished = nil
-        onStreamLoopCompleted = nil
-        streamRepeatCount = 1
-        streamCompletedLoops = 0
         streamDuration = 0
         streamCurrentTime = 0
         streamPlaybackRate = 1.0
@@ -883,21 +870,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     }
 
     @objc private func streamDidFinish() {
-        streamCompletedLoops += 1
-        // If more loops requested, seek back to 0 and continue.
-        if streamRepeatCount > 1, streamCompletedLoops < streamRepeatCount {
-            onStreamLoopCompleted?(streamCompletedLoops, streamRepeatCount)
-            seekStream(to: 0)
-            streamPlayer?.play()
-            if streamPlaybackRate != 1.0 { streamPlayer?.rate = streamPlaybackRate }
-            isStreaming = true
-            streamFinished = false
-            return
-        }
         isStreaming = false
         streamFinished = true
-        let totalLoops = max(1, streamRepeatCount)
-        onStreamLoopCompleted?(streamCompletedLoops, totalLoops)
         onStreamFinished?()
     }
 

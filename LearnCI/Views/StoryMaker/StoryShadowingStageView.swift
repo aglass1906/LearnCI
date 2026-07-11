@@ -14,6 +14,8 @@ struct StoryShadowingStageView: View {
     @State private var lineStates: [String: LineState] = [:]
     @State private var lines: [ShadowLine] = []
     @State private var currentIndex: Int = 0
+    @State private var showMicExplainer: Bool = false
+    @State private var pendingLineID: String?
 
     private enum PermissionState: Equatable {
         case idle, prompting, denied
@@ -60,6 +62,19 @@ struct StoryShadowingStageView: View {
         .onDisappear {
             recorder.stopPlayback()
             audioManager.stopStream()
+        }
+        .sheet(isPresented: $showMicExplainer) {
+            MicExplainerSheet(
+                onContinue: {
+                    showMicExplainer = false
+                    beginRecordingAfterExplainer()
+                },
+                onCancel: {
+                    showMicExplainer = false
+                    pendingLineID = nil
+                }
+            )
+            .presentationDetents([.height(340)])
         }
         .alert("Microphone access needed", isPresented: Binding(get: { permissionSheet == .denied }, set: { _ in permissionSheet = .idle })) {
             Button("OK", role: .cancel) {}
@@ -186,7 +201,7 @@ struct StoryShadowingStageView: View {
     private func playOriginal(_ line: ShadowLine) {
         recorder.stopPlayback()
         if let url = line.audioURL {
-            audioManager.streamRepeatCount = 1
+            audioManager.onStreamFinished = nil
             audioManager.streamAudio(url: url)
             audioManager.playStream()
         }
@@ -210,21 +225,27 @@ struct StoryShadowingStageView: View {
             audioManager.stopStream()
             _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: line.id)
         case .undetermined:
-            permissionSheet = .prompting
-            Task {
-                let granted = await recorder.requestMicPermission()
-                await MainActor.run {
-                    if granted {
-                        permissionSheet = .idle
-                        audioManager.stopStream()
-                        _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: line.id)
-                    } else {
-                        permissionSheet = .denied
-                    }
-                }
-            }
+            // Friendly explainer before the system permission prompt.
+            pendingLineID = line.id
+            showMicExplainer = true
         case .denied:
             permissionSheet = .denied
+        }
+    }
+
+    private func beginRecordingAfterExplainer() {
+        guard let lineID = pendingLineID else { return }
+        Task {
+            let granted = await recorder.requestMicPermission()
+            await MainActor.run {
+                pendingLineID = nil
+                if granted {
+                    audioManager.stopStream()
+                    _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: lineID)
+                } else {
+                    permissionSheet = .denied
+                }
+            }
         }
     }
 
@@ -273,4 +294,46 @@ private struct ShadowLine: Identifiable, Hashable {
     let text: String
     let audioURL: URL?
     let wordCount: Int
+}
+
+/// One-time friendly explainer shown before the OS microphone prompt.
+private struct MicExplainerSheet: View {
+    let onContinue: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "mic.badge.plus")
+                .font(.system(size: 52))
+                .foregroundStyle(Color.accentColor)
+                .padding(.top, 28)
+
+            Text("Record your speaking")
+                .font(.title3.weight(.semibold))
+
+            Text("Shadowing means saying a line out loud and comparing it to the original. LearnCI needs microphone access to record you. Recordings stay on your device — they're never uploaded.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            Spacer()
+
+            VStack(spacing: 10) {
+                Button(action: onContinue) {
+                    Text("Continue").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+
+                Button(action: onCancel) {
+                    Text("Not now").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 20)
+        }
+    }
 }

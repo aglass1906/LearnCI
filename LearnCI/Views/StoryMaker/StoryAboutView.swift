@@ -6,9 +6,35 @@ struct StoryAboutView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(StoryPathProgressStore.self) private var pathProgressStore
 
     // Hero image state
     @State private var heroImage: UIImage? = nil
+    @State private var navigateToGuidedPath = false
+    @State private var showStartOverConfirm = false
+
+    private var activePathProgress: StoryPathProgress? {
+        pathProgressStore.mostRecentActive(
+            for: story.id.uuidString,
+            userID: authManager.currentUser,
+            in: modelContext
+        )
+    }
+
+    private var guidedPathButtonTitle: String {
+        if let progress = activePathProgress {
+            return "Resume Guided Path (Stage \(progress.currentStage) of 5)"
+        }
+        return "Start Guided Path"
+    }
+
+    private var guidedPathButtonSubtitle: String {
+        if let progress = activePathProgress {
+            return "Chapter \(progress.chapterNumber) · Picks up where you left off"
+        }
+        return "Read → Listen → Look Up → Shadow → Plan"
+    }
 
     // Story / audio regeneration
     @State private var storyManager = StoryManager()
@@ -130,7 +156,53 @@ struct StoryAboutView: View {
 
                     // ── Play Options ──────────────────────────────────────
                     VStack(spacing: 12) {
-                        // Read & Listen
+                        // Guided Learning Path — primary CTA
+                        Button {
+                            navigateToGuidedPath = true
+                        } label: {
+                            HStack(alignment: .center, spacing: 12) {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(guidedPathButtonTitle)
+                                        .font(.headline)
+                                    Text(guidedPathButtonSubtitle)
+                                        .font(.caption)
+                                        .opacity(0.85)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                        }
+
+                        if activePathProgress != nil {
+                            Button {
+                                showStartOverConfirm = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "arrow.counterclockwise")
+                                    Text("Start Guided Path Over")
+                                }
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                            }
+                        }
+
+                        // Read & Listen (free-read)
                         if story.preferences.storyType == .audioStory {
                             Button {
                                 isOpeningReader = true
@@ -258,6 +330,27 @@ struct StoryAboutView: View {
         .navigationDestination(isPresented: $navigateToReader) {
             StoryReaderFactoryView(story: story)
                 .onAppear { isOpeningReader = false }
+        }
+        .navigationDestination(isPresented: $navigateToGuidedPath) {
+            StoryPathContainerView(
+                story: story,
+                startAtChapter: activePathProgress?.chapterNumber
+            )
+        }
+        .confirmationDialog(
+            "Start guided path over?",
+            isPresented: $showStartOverConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Discard Progress & Start Over", role: .destructive) {
+                if let progress = activePathProgress {
+                    pathProgressStore.discard(progress, in: modelContext)
+                }
+                navigateToGuidedPath = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Your saved stage progress for this story will be cleared. Saved words are kept.")
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

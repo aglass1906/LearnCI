@@ -37,5 +37,7 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to show where you are on the board and connect you with local learners.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>LearnCI uses your microphone so you can record and compare your speaking practice during the guided story learning path.</string>
 </dict>
 </plist>

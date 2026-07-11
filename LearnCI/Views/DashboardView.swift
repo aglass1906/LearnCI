@@ -11,6 +11,10 @@ struct DashboardView: View {
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \CoachingCheckIn.date, order: .reverse) private var coachingHistory: [CoachingCheckIn]
+    @Query private var allStories: [Story]
+
+    @Environment(NextSessionPlanManager.self) private var planManager
+    @Environment(StoryPathProgressStore.self) private var pathProgressStore
     
     var activities: [UserActivity] {
         allActivities.filter { $0.userID == authManager.currentUser }
@@ -118,6 +122,8 @@ struct DashboardView: View {
         VStack(spacing: 20) {
             greetingSection
 
+            todaysPlanSection
+
             LearningStatsCard(stats: learningStats, appliesHorizontalPadding: false)
 
             DashboardCardGrid(usesTwoColumns: usesTwoColumns) {
@@ -134,6 +140,129 @@ struct DashboardView: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 32)
+    }
+
+    @ViewBuilder
+    private var todaysPlanSection: some View {
+        let plan = planManager.todaysPlan(for: authManager.currentUser, in: modelContext)
+        let activePaths = pathProgressStore.activeInProgress(
+            for: authManager.currentUser,
+            in: modelContext,
+            limit: 3
+        )
+        if plan != nil || !activePaths.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                if let plan {
+                    todaysPlanCard(plan: plan)
+                }
+                ForEach(activePaths.filter { plan?.sourceID != $0.storyID }, id: \.id) { progress in
+                    inProgressPathCard(progress: progress)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func todaysPlanCard(plan: NextSessionPlan) -> some View {
+        let story = allStories.first { $0.id.uuidString == plan.sourceID }
+        Group {
+            if let story {
+                NavigationLink {
+                    StoryPathContainerView(story: story, startAtChapter: plan.chapterNumber)
+                } label: {
+                    todaysPlanCardBody(plan: plan)
+                }
+                .buttonStyle(.plain)
+            } else {
+                todaysPlanCardBody(plan: plan)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func todaysPlanCardBody(plan: NextSessionPlan) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(LinearGradient(colors: [.pink, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 48, height: 48)
+                Image(systemName: "sunrise.fill")
+                    .foregroundStyle(.white)
+                    .font(.title3)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Today's Plan")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                Text(plan.sourceTitle)
+                    .font(.headline)
+                    .lineLimit(1)
+                Text(planDetailLine(plan: plan))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "arrow.right.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.accentColor)
+        }
+        .padding(14)
+        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func planDetailLine(plan: NextSessionPlan) -> String {
+        var parts: [String] = []
+        if let chap = plan.chapterNumber { parts.append("Ch. \(chap)") }
+        parts.append("\(plan.targetMinutes) min")
+        if plan.wordReviewCount > 0 { parts.append("\(plan.wordReviewCount) words") }
+        return parts.joined(separator: " · ")
+    }
+
+    @ViewBuilder
+    private func inProgressPathCard(progress: StoryPathProgress) -> some View {
+        let story = allStories.first { $0.id.uuidString == progress.storyID }
+        Group {
+            if let story {
+                NavigationLink {
+                    StoryPathContainerView(story: story, startAtChapter: progress.chapterNumber)
+                } label: {
+                    inProgressPathBody(progress: progress)
+                }
+                .buttonStyle(.plain)
+            } else {
+                inProgressPathBody(progress: progress)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func inProgressPathBody(progress: StoryPathProgress) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.accentColor.opacity(0.15))
+                    .frame(width: 48, height: 48)
+                Image(systemName: "hourglass")
+                    .foregroundStyle(Color.accentColor)
+                    .font(.title3)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text("In Progress")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                Text(progress.storyTitle)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                Text("Ch. \(progress.chapterNumber) · Stage \(progress.currentStage) of 5")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.tertiary)
+        }
+        .padding(12)
+        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
     }
 
     @ViewBuilder

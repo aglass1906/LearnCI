@@ -25,6 +25,23 @@ struct StoryPathLookupStageView: View {
         chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
     }
 
+    // Hoisted out of `body` with explicit types to keep the SwiftUI body
+    // type-checker fast (nil/closure ternaries are the usual offenders).
+    private var lookupPrimaryTitle: String {
+        savedWords.isEmpty ? "Continue" : "Review \(savedWords.count) Word\(savedWords.count == 1 ? "" : "s")"
+    }
+    private var lookupSecondaryTitle: String? {
+        savedWords.isEmpty ? nil : "Skip Review"
+    }
+    private var lookupSecondaryAction: (() -> Void)? {
+        savedWords.isEmpty ? nil : { onContinue() }
+    }
+    private var lookupCaption: String {
+        savedWords.isEmpty
+            ? "Tap words to save them, or continue when you're ready."
+            : "Ready for a quick self-check on the words you marked?"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -53,14 +70,12 @@ struct StoryPathLookupStageView: View {
                 .padding(.vertical, 16)
             }
             StoryPathBottomBar(
-                primaryTitle: savedWords.isEmpty ? "Continue" : "Review \(savedWords.count) Word\(savedWords.count == 1 ? "" : "s")",
+                primaryTitle: lookupPrimaryTitle,
                 primaryEnabled: true,
                 primaryAction: primaryTapped,
-                secondaryTitle: savedWords.isEmpty ? nil : "Skip Review",
-                secondaryAction: savedWords.isEmpty ? nil : { onContinue() },
-                caption: savedWords.isEmpty
-                    ? "Tap words to save them, or continue when you're ready."
-                    : "Ready for a quick self-check on the words you marked?"
+                secondaryTitle: lookupSecondaryTitle,
+                secondaryAction: lookupSecondaryAction,
+                caption: lookupCaption
             )
         }
         .sheet(isPresented: $showMiniReview) {

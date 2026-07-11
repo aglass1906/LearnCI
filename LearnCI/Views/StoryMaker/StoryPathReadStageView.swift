@@ -22,6 +22,27 @@ struct StoryPathReadStageView: View {
     }
     private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
 
+    // Hoisted out of `body` with explicit types — ternaries mixing method
+    // references / nil otherwise overwhelm the SwiftUI body type-checker.
+    private var highlightTime: Double? {
+        listenAlong ? chapterPlayer?.chapterTime : nil
+    }
+    private var primaryTitle: String {
+        vm.readTargetReached ? "Continue to Listen Loop" : "I'm Ready"
+    }
+    private var listenSecondaryTitle: String? {
+        guard hasChapterAudio else { return nil }
+        return listenAlong ? "Stop Audio" : "Listen Along"
+    }
+    private var listenSecondaryAction: (() -> Void)? {
+        hasChapterAudio ? toggleListenAlong : nil
+    }
+    private var bottomCaption: String {
+        vm.readTargetReached
+            ? "Nice work — you've hit \(vm.targetReadMinutes) min of reading."
+            : "Read at your own pace. Tap a word to look it up."
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             timerHeader
@@ -39,7 +60,7 @@ struct StoryPathReadStageView: View {
                         font: .system(size: 20, weight: .regular, design: .serif),
                         lineSpacing: 8,
                         timings: wordTimings,
-                        currentTime: listenAlong ? (chapterPlayer?.chapterTime) : nil,
+                        currentTime: highlightTime,
                         activeColor: .accentColor,
                         pastOpacity: 0.5
                     )
@@ -48,14 +69,12 @@ struct StoryPathReadStageView: View {
                 .padding(.vertical, 16)
             }
             StoryPathBottomBar(
-                primaryTitle: vm.readTargetReached ? "Continue to Listen Loop" : "I'm Ready",
+                primaryTitle: primaryTitle,
                 primaryEnabled: true,
                 primaryAction: onContinue,
-                secondaryTitle: hasChapterAudio ? (listenAlong ? "Stop Audio" : "Listen Along") : nil,
-                secondaryAction: hasChapterAudio ? toggleListenAlong : nil,
-                caption: vm.readTargetReached
-                    ? "Nice work — you've hit \(vm.targetReadMinutes) min of reading."
-                    : "Read at your own pace. Tap a word to look it up."
+                secondaryTitle: listenSecondaryTitle,
+                secondaryAction: listenSecondaryAction,
+                caption: bottomCaption
             )
         }
         .onAppear {

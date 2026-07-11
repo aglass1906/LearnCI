@@ -16,6 +16,27 @@ struct StoryPathPlanNextStageView: View {
     @State private var errorMessage: String?
     @State private var focusNote: String = ""
 
+    // Hoisted out of `body` with explicit types to keep the SwiftUI body
+    // type-checker fast (nil/closure ternaries are the usual offenders).
+    private var planPrimaryTitle: String {
+        if didSave { return "Done" }
+        return isSaving ? "Saving..." : "Save Plan"
+    }
+    private var planPrimaryAction: () -> Void {
+        didSave ? { finish() } : { save() }
+    }
+    private var planSecondaryTitle: String? {
+        didSave ? nil : "Skip"
+    }
+    private var planSecondaryAction: (() -> Void)? {
+        didSave ? nil : { finish() }
+    }
+    private var planCaption: String {
+        didSave
+            ? "Your plan is queued. See you tomorrow."
+            : "This shows up as \"Today's Plan\" on your Dashboard tomorrow."
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -79,14 +100,12 @@ struct StoryPathPlanNextStageView: View {
                 }
             }
             StoryPathBottomBar(
-                primaryTitle: didSave ? "Done" : (isSaving ? "Saving..." : "Save Plan"),
+                primaryTitle: planPrimaryTitle,
                 primaryEnabled: !isSaving,
-                primaryAction: didSave ? { finish() } : { save() },
-                secondaryTitle: didSave ? nil : "Skip",
-                secondaryAction: didSave ? nil : { finish() },
-                caption: didSave
-                    ? "Your plan is queued. See you tomorrow."
-                    : "This shows up as \"Today's Plan\" on your Dashboard tomorrow."
+                primaryAction: planPrimaryAction,
+                secondaryTitle: planSecondaryTitle,
+                secondaryAction: planSecondaryAction,
+                caption: planCaption
             )
         }
     }

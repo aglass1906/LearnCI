@@ -34,7 +34,8 @@ struct StoryPathLookupStageView: View {
         savedWords.isEmpty ? nil : "Skip Review"
     }
     private var lookupSecondaryAction: (() -> Void)? {
-        savedWords.isEmpty ? nil : { onContinue() }
+        guard !savedWords.isEmpty else { return nil }
+        return { onContinue() }
     }
     private var lookupCaption: String {
         savedWords.isEmpty

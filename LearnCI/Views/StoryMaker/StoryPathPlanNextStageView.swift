@@ -23,13 +23,15 @@ struct StoryPathPlanNextStageView: View {
         return isSaving ? "Saving..." : "Save Plan"
     }
     private var planPrimaryAction: () -> Void {
-        didSave ? { finish() } : { save() }
+        if didSave { return { finish() } }
+        return { save() }
     }
     private var planSecondaryTitle: String? {
         didSave ? nil : "Skip"
     }
     private var planSecondaryAction: (() -> Void)? {
-        didSave ? nil : { finish() }
+        guard !didSave else { return nil }
+        return { finish() }
     }
     private var planCaption: String {
         didSave

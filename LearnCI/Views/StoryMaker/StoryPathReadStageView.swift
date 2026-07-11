@@ -35,7 +35,8 @@ struct StoryPathReadStageView: View {
         return listenAlong ? "Stop Audio" : "Listen Along"
     }
     private var listenSecondaryAction: (() -> Void)? {
-        hasChapterAudio ? toggleListenAlong : nil
+        guard hasChapterAudio else { return nil }
+        return { toggleListenAlong() }
     }
     private var bottomCaption: String {
         vm.readTargetReached

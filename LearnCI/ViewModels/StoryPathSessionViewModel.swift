@@ -237,6 +237,19 @@ final class StoryPathSessionViewModel {
         }
     }
 
+    var canGoBack: Bool { currentStage != .read }
+
+    /// Step back one stage (e.g. Continue was tapped by accident). Intentionally
+    /// does NOT un-complete the stage or un-log its activity — re-advancing is
+    /// guarded against double-logging, so stepping back and forward is a no-op
+    /// for streaks.
+    func goToPreviousStage() {
+        guard let prev = Stage(rawValue: currentStage.rawValue - 1) else { return }
+        currentStage = prev
+        stageEnteredAt = Date()
+        persist()
+    }
+
     func complete() {
         markStageComplete(currentStage)
         progressStore.complete(progress, in: context)

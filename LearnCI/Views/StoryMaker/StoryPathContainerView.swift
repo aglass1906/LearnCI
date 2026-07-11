@@ -64,15 +64,29 @@ struct StoryPathContainerView: View {
     @ViewBuilder
     private func header(vm: StoryPathSessionViewModel) -> some View {
         VStack(spacing: 8) {
-            HStack {
+            HStack(spacing: 10) {
                 Button {
                     showExitConfirmation = true
                 } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.title3.weight(.semibold))
+                    Image(systemName: "xmark")
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .frame(width: 36, height: 36)
                         .background(Color(uiColor: .secondarySystemBackground), in: Circle())
+                }
+                .accessibilityLabel("Exit guided path")
+
+                if vm.canGoBack {
+                    Button {
+                        vm.goToPreviousStage()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 36, height: 36)
+                            .background(Color.accentColor.opacity(0.12), in: Circle())
+                    }
+                    .accessibilityLabel("Back to previous stage")
                 }
 
                 VStack(alignment: .leading, spacing: 2) {

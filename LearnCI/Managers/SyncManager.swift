@@ -322,6 +322,20 @@ struct CoachingCheckInDTO: Codable {
                 try await pullSavedStudyWords(context: modelContext, userID: userID)
             }
 
+            // Guided-path plans + resume progress (optional until migration applied)
+            try await runSyncStep("Next session plans push", allowMissingTable: true) {
+                try await syncNextSessionPlans(context: modelContext, userID: userID)
+            }
+            try await runSyncStep("Next session plans pull", allowMissingTable: true) {
+                try await pullNextSessionPlans(context: modelContext, userID: userID)
+            }
+            try await runSyncStep("Story path progress push", allowMissingTable: true) {
+                try await syncStoryPathProgress(context: modelContext, userID: userID)
+            }
+            try await runSyncStep("Story path progress pull", allowMissingTable: true) {
+                try await pullStoryPathProgress(context: modelContext, userID: userID)
+            }
+
             // 5. Final Pull (Update Profile Totals after Push triggers)
             try await pullProfile(context: modelContext, userID: userID)
             
@@ -885,6 +899,213 @@ struct CoachingCheckInDTO: Codable {
         word.createdAt = dto.created_at
         word.updatedAt = dto.updated_at
         word.isSynced = true
+    }
+
+    // MARK: - Next Session Plans (guided path)
+
+    @MainActor
+    private func syncNextSessionPlans(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<NextSessionPlan>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSynced = try context.fetch(descriptor)
+        guard !unSynced.isEmpty, let uid = UUID(uuidString: userID) else { return }
+
+        let dtos = unSynced.map { plan in
+            NextSessionPlanDTO(
+                id: plan.id,
+                user_id: uid,
+                created_at: plan.createdAt,
+                scheduled_for: plan.scheduledFor,
+                source_type: plan.sourceTypeRaw,
+                source_id: plan.sourceID,
+                source_title: plan.sourceTitle,
+                chapter_number: plan.chapterNumber,
+                scene_index: plan.sceneIndex,
+                target_minutes: plan.targetMinutes,
+                word_review_count: plan.wordReviewCount,
+                focus_note: plan.focusNote,
+                notification_time: plan.notificationTime,
+                notification_id: plan.notificationID,
+                status: plan.statusRaw
+            )
+        }
+
+        try await authManager.supabase.from("next_session_plans")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+
+        for plan in unSynced { plan.isSynced = true }
+        try context.save()
+    }
+
+    @MainActor
+    private func pullNextSessionPlans(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+        let response = try await authManager.supabase.from("next_session_plans")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let serverPlans = try decoder.decode([NextSessionPlanDTO].self, from: response.data)
+        let serverIDs = Set(serverPlans.map { $0.id })
+        let descriptor = FetchDescriptor<NextSessionPlan>(predicate: #Predicate { $0.userID == userID })
+        let localPlans = try context.fetch(descriptor)
+
+        for local in localPlans where local.isSynced && !serverIDs.contains(local.id) {
+            context.delete(local)
+        }
+
+        for dto in serverPlans {
+            if let existing = localPlans.first(where: { $0.id == dto.id }) {
+                apply(dto: dto, to: existing)
+            } else {
+                let plan = NextSessionPlan(
+                    id: dto.id,
+                    userID: userID,
+                    createdAt: dto.created_at,
+                    scheduledFor: dto.scheduled_for,
+                    sourceType: NextSessionSourceType(rawValue: dto.source_type) ?? .story,
+                    sourceID: dto.source_id,
+                    sourceTitle: dto.source_title,
+                    chapterNumber: dto.chapter_number,
+                    sceneIndex: dto.scene_index,
+                    targetMinutes: dto.target_minutes,
+                    wordReviewCount: dto.word_review_count,
+                    focusNote: dto.focus_note,
+                    notificationTime: dto.notification_time,
+                    notificationID: dto.notification_id,
+                    status: NextSessionPlanStatus(rawValue: dto.status) ?? .pending
+                )
+                plan.isSynced = true
+                context.insert(plan)
+            }
+        }
+        try context.save()
+    }
+
+    private func apply(dto: NextSessionPlanDTO, to plan: NextSessionPlan) {
+        plan.createdAt = dto.created_at
+        plan.scheduledFor = dto.scheduled_for
+        plan.sourceTypeRaw = dto.source_type
+        plan.sourceID = dto.source_id
+        plan.sourceTitle = dto.source_title
+        plan.chapterNumber = dto.chapter_number
+        plan.sceneIndex = dto.scene_index
+        plan.targetMinutes = dto.target_minutes
+        plan.wordReviewCount = dto.word_review_count
+        plan.focusNote = dto.focus_note
+        plan.notificationTime = dto.notification_time
+        plan.notificationID = dto.notification_id
+        plan.statusRaw = dto.status
+        plan.isSynced = true
+    }
+
+    // MARK: - Story Path Progress (guided path resume state)
+
+    @MainActor
+    private func syncStoryPathProgress(context: ModelContext, userID: String) async throws {
+        let descriptor = FetchDescriptor<StoryPathProgress>(
+            predicate: #Predicate { $0.userID == userID && $0.isSynced == false }
+        )
+        let unSynced = try context.fetch(descriptor)
+        guard !unSynced.isEmpty, let uid = UUID(uuidString: userID) else { return }
+
+        let dtos = unSynced.map { p in
+            StoryPathProgressDTO(
+                id: p.id,
+                user_id: uid,
+                story_id: p.storyID,
+                story_title: p.storyTitle,
+                chapter_number: p.chapterNumber,
+                scene_index: p.sceneIndex,
+                current_stage: p.currentStage,
+                stage_completion: p.stageCompletion,
+                read_minutes_accumulated: p.readMinutesAccumulated,
+                loops_completed: p.loopsCompleted,
+                words_marked: p.wordsMarkedInSession,
+                shadow_lines: p.shadowLineIDsRecorded,
+                started_at: p.startedAt,
+                updated_at: p.updatedAt,
+                completed_at: p.completedAt
+            )
+        }
+
+        try await authManager.supabase.from("story_path_progress")
+            .upsert(dtos, onConflict: "id")
+            .execute()
+
+        for p in unSynced { p.isSynced = true }
+        try context.save()
+    }
+
+    @MainActor
+    private func pullStoryPathProgress(context: ModelContext, userID: String) async throws {
+        guard let uid = UUID(uuidString: userID) else { return }
+        let response = try await authManager.supabase.from("story_path_progress")
+            .select()
+            .eq("user_id", value: uid)
+            .execute()
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let serverRows = try decoder.decode([StoryPathProgressDTO].self, from: response.data)
+        let serverIDs = Set(serverRows.map { $0.id })
+        let descriptor = FetchDescriptor<StoryPathProgress>(predicate: #Predicate { $0.userID == userID })
+        let localRows = try context.fetch(descriptor)
+
+        for local in localRows where local.isSynced && !serverIDs.contains(local.id) {
+            context.delete(local)
+        }
+
+        for dto in serverRows {
+            if let existing = localRows.first(where: { $0.id == dto.id }) {
+                // Last-writer-wins on updatedAt to avoid clobbering fresher local edits.
+                if dto.updated_at >= existing.updatedAt {
+                    apply(dto: dto, to: existing)
+                }
+            } else {
+                let row = StoryPathProgress(
+                    id: dto.id,
+                    userID: userID,
+                    storyID: dto.story_id,
+                    storyTitle: dto.story_title,
+                    chapterNumber: dto.chapter_number,
+                    sceneIndex: dto.scene_index,
+                    currentStage: dto.current_stage,
+                    stageCompletion: dto.stage_completion,
+                    readMinutesAccumulated: dto.read_minutes_accumulated,
+                    loopsCompleted: dto.loops_completed,
+                    wordsMarkedInSession: dto.words_marked,
+                    shadowLineIDsRecorded: dto.shadow_lines,
+                    startedAt: dto.started_at,
+                    updatedAt: dto.updated_at,
+                    completedAt: dto.completed_at
+                )
+                row.isSynced = true
+                context.insert(row)
+            }
+        }
+        try context.save()
+    }
+
+    private func apply(dto: StoryPathProgressDTO, to row: StoryPathProgress) {
+        row.storyID = dto.story_id
+        row.storyTitle = dto.story_title
+        row.chapterNumber = dto.chapter_number
+        row.sceneIndex = dto.scene_index
+        row.currentStage = dto.current_stage
+        row.stageCompletion = dto.stage_completion
+        row.readMinutesAccumulated = dto.read_minutes_accumulated
+        row.loopsCompleted = dto.loops_completed
+        row.wordsMarkedInSession = dto.words_marked
+        row.shadowLineIDsRecorded = dto.shadow_lines
+        row.startedAt = dto.started_at
+        row.updatedAt = dto.updated_at
+        row.completedAt = dto.completed_at
+        row.isSynced = true
     }
 
     @MainActor
@@ -1778,6 +1999,42 @@ struct SavedStudyWordDTO: Codable {
     let deck_folder_name: String?
     let created_at: Date
     let updated_at: Date
+}
+
+struct NextSessionPlanDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let created_at: Date
+    let scheduled_for: Date
+    let source_type: String
+    let source_id: String
+    let source_title: String
+    let chapter_number: Int?
+    let scene_index: Int?
+    let target_minutes: Int
+    let word_review_count: Int
+    let focus_note: String?
+    let notification_time: Date?
+    let notification_id: String?
+    let status: String
+}
+
+struct StoryPathProgressDTO: Codable {
+    let id: UUID
+    let user_id: UUID
+    let story_id: String
+    let story_title: String
+    let chapter_number: Int
+    let scene_index: Int?
+    let current_stage: Int
+    let stage_completion: [Bool]
+    let read_minutes_accumulated: Int
+    let loops_completed: Int
+    let words_marked: [String]
+    let shadow_lines: [String]
+    let started_at: Date
+    let updated_at: Date
+    let completed_at: Date?
 }
 
 struct PodcastShowDTO: Codable {

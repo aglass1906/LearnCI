@@ -6,9 +6,35 @@ struct StoryAboutView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AmbientSoundManager.self) private var ambientSoundManager
+    @Environment(AuthManager.self) private var authManager
+    @Environment(StoryPathProgressStore.self) private var pathProgressStore
 
     // Hero image state
     @State private var heroImage: UIImage? = nil
+    @State private var navigateToGuidedPath = false
+    @State private var showUnstudyConfirm = false
+
+    private var studyState: StoryStudyState? {
+        pathProgressStore.studyState(
+            for: story.id.uuidString,
+            userID: authManager.currentUser,
+            in: modelContext
+        )
+    }
+
+    private var guidedPathButtonTitle: String {
+        if let state = studyState {
+            return "Resume Study (Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks)))"
+        }
+        return "Study This Story"
+    }
+
+    private var guidedPathButtonSubtitle: String {
+        if studyState != nil {
+            return "Picks up at your current scene"
+        }
+        return "Scene by scene: Read → Listen → Look Up → Shadow"
+    }
 
     // Story / audio regeneration
     @State private var storyManager = StoryManager()
@@ -130,7 +156,52 @@ struct StoryAboutView: View {
 
                     // ── Play Options ──────────────────────────────────────
                     VStack(spacing: 12) {
-                        // Read & Listen
+                        // Guided Learning Path — primary CTA
+                        Button {
+                            navigateToGuidedPath = true
+                        } label: {
+                            HStack(alignment: .center, spacing: 12) {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(guidedPathButtonTitle)
+                                        .font(.headline)
+                                    Text(guidedPathButtonSubtitle)
+                                        .font(.caption)
+                                        .opacity(0.85)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                        }
+
+                        if studyState != nil {
+                            Button(role: .destructive) {
+                                showUnstudyConfirm = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "minus.circle")
+                                    Text("Remove from Study Mode")
+                                }
+                                .font(.subheadline.weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                            }
+                        }
+
+                        // Read & Listen (free-read)
                         if story.preferences.storyType == .audioStory {
                             Button {
                                 isOpeningReader = true
@@ -258,6 +329,23 @@ struct StoryAboutView: View {
         .navigationDestination(isPresented: $navigateToReader) {
             StoryReaderFactoryView(story: story)
                 .onAppear { isOpeningReader = false }
+        }
+        .navigationDestination(isPresented: $navigateToGuidedPath) {
+            StoryPathContainerView(story: story)
+        }
+        .confirmationDialog(
+            "Remove from Study Mode?",
+            isPresented: $showUnstudyConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Remove & Clear Progress", role: .destructive) {
+                if let state = studyState {
+                    pathProgressStore.unstudy(state, in: modelContext)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This story will leave Study Mode and its scene progress will be cleared. Saved words are kept.")
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

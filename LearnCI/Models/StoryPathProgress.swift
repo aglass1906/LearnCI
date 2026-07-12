@@ -31,18 +31,21 @@ final class StoryPathProgress {
     var completedAt: Date?
     var isSynced: Bool
 
+    /// Number of stages in the per-chunk rail (Read, Listen, Look Up, Shadow).
+    static let stageCount = 4
+
     var stageCompletion: [Bool] {
         get {
             guard let data = stageCompletionJSON.data(using: .utf8),
                   let arr = try? JSONDecoder().decode([Bool].self, from: data),
-                  arr.count == 5 else {
-                return [false, false, false, false, false]
+                  arr.count == Self.stageCount else {
+                return Array(repeating: false, count: Self.stageCount)
             }
             return arr
         }
         set {
-            let clamped = Array(newValue.prefix(5))
-            let padded = clamped + Array(repeating: false, count: max(0, 5 - clamped.count))
+            let clamped = Array(newValue.prefix(Self.stageCount))
+            let padded = clamped + Array(repeating: false, count: max(0, Self.stageCount - clamped.count))
             if let data = try? JSONEncoder().encode(padded), let json = String(data: data, encoding: .utf8) {
                 stageCompletionJSON = json
             }
@@ -85,7 +88,7 @@ final class StoryPathProgress {
         chapterNumber: Int,
         sceneIndex: Int? = nil,
         currentStage: Int = 1,
-        stageCompletion: [Bool] = [false, false, false, false, false],
+        stageCompletion: [Bool] = [false, false, false, false],
         readMinutesAccumulated: Int = 0,
         loopsCompleted: Int = 0,
         wordsMarkedInSession: [String] = [],

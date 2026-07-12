@@ -48,13 +48,13 @@ struct StoryShadowingStageView: View {
                 .padding(.vertical, 16)
             }
             StoryPathBottomBar(
-                primaryTitle: "Continue to Plan",
+                primaryTitle: "Finish Scene",
                 primaryEnabled: true,
                 primaryAction: onContinue,
                 caption: vm.shadowRecordedLineIDs.isEmpty
-                    ? "Play a passage, pause, and say it out loud. Record to compare — or skip."
-                    : "Recorded \(vm.shadowRecordedLineIDs.count) of \(lines.count).",
-                confirmMessage: "You'll move to planning your next session. You can come back with the ← button."
+                    ? "Play the passage, pause, and say it out loud. Record to compare — or skip."
+                    : "Recorded this passage. Nice speaking practice!",
+                confirmMessage: "You'll finish this scene. You can come back with the ← button."
             )
         }
         .onAppear { bootstrap() }
@@ -291,36 +291,36 @@ struct StoryShadowingStageView: View {
 
     // MARK: - Passage selection
 
-    /// Choose up to `shadowLineCount` scene-length passages (a paragraph / few
-    /// sentences) from the chapter, in reading order, resolving playable audio
-    /// URLs the same way the readers do (cached local file → remote storage).
+    /// The passage to shadow is the current Study Mode chunk (this scene). If
+    /// the scene has no audio clip, returns empty.
     private func chooseLines() -> [ShadowLine] {
         let adapter = StoryReaderDataAdapter(story: vm.story)
-        let clips = adapter.audioClips(forChapter: vm.chapterArrayIndex)
+        guard let clip = adapter
+            .audioClips(forChapter: vm.chunkChapterArrayIndex)
+            .first(where: { $0.sceneIndex == vm.chunkSceneIndex })
+        else {
+            return []
+        }
 
-        let candidates: [ShadowLine] = clips.compactMap { clip in
-            let text = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !text.isEmpty else { return nil }
-            let wordCount = text.split(whereSeparator: { $0.isWhitespace }).count
-            let url = StoryReaderDataAdapter.cachedAudioURL(
-                storyID: vm.story.id,
-                clip: clip,
-                storyUpdatedAt: vm.story.updatedAt
-            ) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString)
-            guard let url else { return nil }
-            return ShadowLine(
-                id: "\(vm.chapterNumber)-\(clip.sceneIndex)",
+        let text = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return [] }
+
+        let url = StoryReaderDataAdapter.cachedAudioURL(
+            storyID: vm.story.id,
+            clip: clip,
+            storyUpdatedAt: vm.story.updatedAt
+        ) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString)
+        guard let url else { return [] }
+
+        return [
+            ShadowLine(
+                id: "\(vm.currentChunk?.chapterNumber ?? 0)-\(clip.sceneIndex)",
                 text: text,
                 audioURL: url,
                 imageURL: clip.imageURL,
-                wordCount: wordCount
+                wordCount: text.split(whereSeparator: { $0.isWhitespace }).count
             )
-        }
-
-        // Prefer passages with a few sentences of substance; keep reading order.
-        let meaty = candidates.filter { $0.wordCount >= 8 }
-        let pool = meaty.count >= vm.shadowLineCount ? meaty : candidates
-        return Array(pool.prefix(vm.shadowLineCount))
+        ]
     }
 }
 

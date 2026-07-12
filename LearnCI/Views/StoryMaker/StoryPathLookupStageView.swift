@@ -16,14 +16,8 @@ struct StoryPathLookupStageView: View {
     @State private var showMiniReview: Bool = false
     @State private var refreshTimer: Timer?
 
-    private var chapter: StoryChapter? { vm.chapter }
-    private var languageCode: String { vm.story.targetLanguageCode }
-    private var bodyText: String {
-        chapter?.bodyTextForLanguage(languageCode) ?? vm.story.targetLanguageText
-    }
-    private var wordTimings: [WordTiming] {
-        chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
-    }
+    private var bodyText: String { vm.chunkText }
+    private var wordTimings: [WordTiming] { vm.chunkWordTimings }
 
     // Hoisted out of `body` with explicit types to keep the SwiftUI body
     // type-checker fast (nil/closure ternaries are the usual offenders).
@@ -206,7 +200,7 @@ private struct StoryPathMiniReviewSheet: View {
         NavigationStack {
             VStack(spacing: 24) {
                 if words.isEmpty {
-                    ContentUnavailableView("No words yet", systemImage: "star", description: Text("Tap some words on the chapter and come back."))
+                    ContentUnavailableView("No words yet", systemImage: "star", description: Text("Tap some words in the scene and come back."))
                 } else {
                     ProgressView(value: Double(index + 1), total: Double(words.count))
                         .padding(.horizontal)

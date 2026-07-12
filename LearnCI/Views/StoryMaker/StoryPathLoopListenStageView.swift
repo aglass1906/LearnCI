@@ -12,14 +12,8 @@ struct StoryPathLoopListenStageView: View {
     @State private var listenTimer: Timer?
     @State private var fallbackImageURL: URL?
 
-    private var chapter: StoryChapter? { vm.chapter }
-    private var languageCode: String { vm.story.targetLanguageCode }
-    private var bodyText: String {
-        chapter?.bodyTextForLanguage(languageCode) ?? vm.story.targetLanguageText
-    }
-    private var wordTimings: [WordTiming] {
-        chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
-    }
+    private var bodyText: String { vm.chunkText }
+    private var wordTimings: [WordTiming] { vm.chunkWordTimings }
     private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
     private var isPlaying: Bool { chapterPlayer?.isPlaying ?? false }
     private var heroImageURL: URL? { chapterPlayer?.currentImageURL ?? fallbackImageURL }
@@ -143,7 +137,7 @@ struct StoryPathLoopListenStageView: View {
             .padding(.top, 4)
 
             if !hasChapterAudio {
-                Text("No audio available for this chapter yet.")
+                Text("No audio available for this scene yet.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -156,13 +150,17 @@ struct StoryPathLoopListenStageView: View {
     private func setupPlayer() {
         guard chapterPlayer == nil else { return }
         let player = StoryChapterAudioPlayer(audioManager: audioManager)
-        player.configure(story: vm.story, chapterIndex: vm.chapterArrayIndex)
+        player.configureScene(story: vm.story, chapterIndex: vm.chunkChapterArrayIndex, sceneIndex: vm.chunkSceneIndex)
         player.onLoopCompleted = { _, _ in
             vm.recordLoopCompleted()
         }
         chapterPlayer = player
-        fallbackImageURL = StoryReaderDataAdapter(story: vm.story)
-            .chapterImageURL(forChapterAt: vm.chapterArrayIndex)
+        let adapter = StoryReaderDataAdapter(story: vm.story)
+        if let scene = vm.scene {
+            fallbackImageURL = adapter.sceneImageURL(scene: scene, chapterIndex: vm.chunkChapterArrayIndex)
+        } else {
+            fallbackImageURL = adapter.chapterImageURL(forChapterAt: vm.chunkChapterArrayIndex)
+        }
         // Auto-start remaining loops when arriving mid-way through.
         if hasChapterAudio, vm.currentLoopIndex < vm.totalLoops {
             player.start(totalLoops: vm.totalLoops, fromLoop: vm.currentLoopIndex)

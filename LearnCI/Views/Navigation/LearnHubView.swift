@@ -11,20 +11,18 @@ struct LearnHubView: View {
     @Environment(StoryPathProgressStore.self) private var pathProgressStore
 
     @Query private var stories: [Story]
+    @Query(sort: \StoryStudyState.updatedAt, order: .reverse) private var allStudyStates: [StoryStudyState]
 
-    private var activePaths: [StoryPathProgress] {
-        pathProgressStore.activeInProgress(
-            for: authManager.currentUser,
-            in: modelContext
-        )
+    private var studyStates: [StoryStudyState] {
+        allStudyStates.filter { $0.isActive && $0.userID == authManager.currentUser }
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if !activePaths.isEmpty {
-                        continueYourStorySection
+                    if !studyStates.isEmpty {
+                        studyingSection
                     }
 
                     LazyVGrid(columns: columns, spacing: 16) {
@@ -58,28 +56,34 @@ struct LearnHubView: View {
     }
 
     @ViewBuilder
-    private var continueYourStorySection: some View {
+    private var studyingSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Continue Your Story")
+                Text("Studying")
                     .font(.title3.weight(.semibold))
                 Spacer()
-                Text("\(activePaths.count) in progress")
+                Text("\(studyStates.count) stor\(studyStates.count == 1 ? "y" : "ies")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             VStack(spacing: 10) {
-                ForEach(activePaths, id: \.id) { progress in
-                    if let story = story(withID: progress.storyID) {
+                ForEach(studyStates, id: \.id) { state in
+                    if let story = story(withID: state.storyID) {
                         NavigationLink {
-                            StoryPathContainerView(story: story, startAtChapter: progress.chapterNumber)
+                            StoryPathContainerView(story: story)
                         } label: {
-                            ContinueYourStoryRow(progress: progress, story: story)
+                            StudyingRow(state: state)
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                pathProgressStore.unstudy(state, in: modelContext)
+                            } label: {
+                                Label("Remove from Study Mode", systemImage: "minus.circle")
+                            }
+                        }
                     } else {
-                        ContinueYourStoryRow(progress: progress, story: nil)
-                            .opacity(0.6)
+                        StudyingRow(state: state).opacity(0.6)
                     }
                 }
             }
@@ -92,19 +96,13 @@ struct LearnHubView: View {
     }
 }
 
-private struct ContinueYourStoryRow: View {
-    let progress: StoryPathProgress
-    let story: Story?
-
-    private var stageLabel: String {
-        let stage = StoryPathSessionViewModel.Stage(rawValue: progress.currentStage) ?? .read
-        return stage.label
-    }
+private struct StudyingRow: View {
+    let state: StoryStudyState
 
     private var lastTouchedText: String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .short
-        return formatter.localizedString(for: progress.updatedAt, relativeTo: Date())
+        return formatter.localizedString(for: state.updatedAt, relativeTo: Date())
     }
 
     var body: some View {
@@ -118,15 +116,16 @@ private struct ContinueYourStoryRow: View {
                         .font(.title2)
                 )
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(progress.storyTitle)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(state.storyTitle)
                     .font(.headline)
                     .lineLimit(1)
-                Text("Chapter \(progress.chapterNumber) · \(stageLabel) · Stage \(progress.currentStage) of 5")
+                Text("Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text("Last opened \(lastTouchedText)")
+                ProgressView(value: state.progressFraction)
+                    .tint(.accentColor)
+                Text("Last studied \(lastTouchedText)")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -142,7 +141,7 @@ private struct ContinueYourStoryRow: View {
 
 #Preview {
     LearnHubView()
-        .modelContainer(for: [Story.self, StoryPathProgress.self], inMemory: true)
+        .modelContainer(for: [Story.self, StoryPathProgress.self, StoryStudyState.self], inMemory: true)
         .environment(AuthManager())
         .environment(StoryPathProgressStore())
 }

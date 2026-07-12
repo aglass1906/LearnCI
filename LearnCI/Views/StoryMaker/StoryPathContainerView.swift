@@ -1,12 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// Outer shell for the 5-stage Story Guided Learning Path. Owns the
-/// `StoryPathSessionViewModel`, hides the tab bar for the immersive flow, and
-/// switches between the stage views based on `vm.currentStage`.
+/// Outer shell for Study Mode's guided flow. Owns the
+/// `StoryPathSessionViewModel`, hides the tab bar, and renders by phase:
+/// per-chunk stages → chunk-complete decision → session wrap-up → finished.
 struct StoryPathContainerView: View {
     let story: Story
-    let startAtChapter: Int?
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -16,9 +15,8 @@ struct StoryPathContainerView: View {
     @State private var vm: StoryPathSessionViewModel?
     @State private var showExitConfirmation = false
 
-    init(story: Story, startAtChapter: Int? = nil) {
+    init(story: Story) {
         self.story = story
-        self.startAtChapter = startAtChapter
     }
 
     var body: some View {
@@ -41,11 +39,11 @@ struct StoryPathContainerView: View {
         VStack(spacing: 0) {
             header(vm: vm)
             Divider()
-            stageBody(vm: vm)
+            phaseBody(vm: vm)
         }
         .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         .confirmationDialog(
-            "Exit guided path?",
+            "Exit study session?",
             isPresented: $showExitConfirmation,
             titleVisibility: .visible
         ) {
@@ -53,9 +51,9 @@ struct StoryPathContainerView: View {
                 vm.persist()
                 dismiss()
             }
-            Button("Keep Learning", role: .cancel) {}
+            Button("Keep Studying", role: .cancel) {}
         } message: {
-            Text("Your progress is saved automatically. You can pick up on this stage from the Learn tab.")
+            Text("Your progress is saved. This story stays in Study Mode — pick up from the Learn tab or the story page.")
         }
     }
 
@@ -74,9 +72,9 @@ struct StoryPathContainerView: View {
                         .frame(width: 36, height: 36)
                         .background(Color(uiColor: .secondarySystemBackground), in: Circle())
                 }
-                .accessibilityLabel("Exit guided path")
+                .accessibilityLabel("Exit study session")
 
-                if vm.canGoBack {
+                if vm.phase == .studying, vm.canGoBack {
                     Button {
                         vm.goToPreviousStage()
                     } label: {
@@ -93,18 +91,20 @@ struct StoryPathContainerView: View {
                     Text(story.title)
                         .font(.headline)
                         .lineLimit(1)
-                    Text(vm.chapterTitleDisplay)
+                    Text(vm.chunkTitleDisplay)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 Spacer()
-                Text("Stage \(vm.currentStage.rawValue) of 5")
+                Text(vm.chunkPositionLabel)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
-            stageRail(vm: vm)
+            if vm.phase == .studying {
+                stageRail(vm: vm)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -132,7 +132,21 @@ struct StoryPathContainerView: View {
         }
     }
 
-    // MARK: - Stage body dispatch
+    // MARK: - Phase dispatch
+
+    @ViewBuilder
+    private func phaseBody(vm: StoryPathSessionViewModel) -> some View {
+        switch vm.phase {
+        case .studying:
+            stageBody(vm: vm)
+        case .chunkComplete:
+            StoryChunkCompleteView(vm: vm)
+        case .wrapUp:
+            StorySessionWrapUpView(vm: vm, onExit: { dismiss() })
+        case .finished:
+            StoryStudyFinishedView(story: story, onDone: { dismiss() })
+        }
+    }
 
     @ViewBuilder
     private func stageBody(vm: StoryPathSessionViewModel) -> some View {
@@ -145,24 +159,204 @@ struct StoryPathContainerView: View {
             StoryPathLookupStageView(vm: vm)
         case .shadow:
             StoryShadowingStageView(vm: vm)
-        case .planNext:
-            StoryPathPlanNextStageView(vm: vm)
         }
     }
 
     // MARK: - Bootstrap
 
     private func bootstrap() {
-        let effectiveChapter = startAtChapter
-            ?? story.chapters.first?.chapterNumber
-            ?? 1
         vm = StoryPathSessionViewModel(
             story: story,
-            chapterNumber: effectiveChapter,
             userID: authManager.currentUser,
             context: modelContext,
-            progressStore: progressStore
+            store: progressStore
         )
+    }
+}
+
+// MARK: - Chunk complete decision
+
+private struct StoryChunkCompleteView: View {
+    @Bindable var vm: StoryPathSessionViewModel
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(Color.green)
+            Text("Scene complete")
+                .font(.title2.weight(.semibold))
+            Text(vm.chunkPositionLabel)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            if vm.isLastChunk {
+                Text("That's the last scene of this story — nice work.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+            Spacer()
+
+            VStack(spacing: 10) {
+                if vm.isLastChunk {
+                    Button {
+                        vm.beginWrapUp()
+                    } label: {
+                        Text("Wrap Up & Finish Story").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                } else {
+                    Button {
+                        vm.studyNextChunk()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("Study Next Scene")
+                            Image(systemName: "arrow.right")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+
+                    Button {
+                        vm.beginWrapUp()
+                    } label: {
+                        Text("Finish for Today").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+        }
+    }
+}
+
+// MARK: - Session wrap-up (plan / reminder)
+
+private struct StorySessionWrapUpView: View {
+    @Bindable var vm: StoryPathSessionViewModel
+    let onExit: () -> Void
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Environment(NextSessionPlanManager.self) private var planManager
+
+    @State private var isSaving = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 20) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 52))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.top, 24)
+                    Text(vm.isLastChunk ? "Story finished!" : "Great session")
+                        .font(.title2.weight(.semibold))
+                    Text(vm.isLastChunk
+                         ? "You've studied every scene in this story."
+                         : "Come back tomorrow to keep your streak going.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28)
+
+                    VStack(spacing: 12) {
+                        Toggle("Remind me tomorrow", isOn: $vm.remindTomorrow)
+                        if vm.remindTomorrow {
+                            DatePicker("Time", selection: $vm.reminderTime, displayedComponents: [.hourAndMinute])
+                        }
+                    }
+                    .padding(16)
+                    .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                }
+            }
+            StoryPathBottomBar(
+                primaryTitle: isSaving ? "Saving…" : (vm.isLastChunk ? "Finish" : "Done for Today"),
+                primaryEnabled: !isSaving,
+                primaryAction: finish
+            )
+        }
+    }
+
+    private func finish() {
+        isSaving = true
+        Task {
+            if vm.remindTomorrow {
+                await scheduleReminder()
+            }
+            await MainActor.run {
+                isSaving = false
+                if vm.isLastChunk {
+                    vm.finishStory()      // → phase .finished (container shows finished view)
+                } else {
+                    vm.finishForToday()
+                    onExit()
+                }
+            }
+        }
+    }
+
+    private func scheduleReminder() async {
+        let calendar = Calendar.current
+        let scheduledFor = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date())) ?? Date().addingTimeInterval(86_400)
+        let comps = calendar.dateComponents([.hour, .minute], from: vm.reminderTime)
+        let notifTime = calendar.date(bySettingHour: comps.hour ?? 8, minute: comps.minute ?? 0, second: 0, of: scheduledFor)
+
+        _ = await planManager.upsertPlan(
+            userID: authManager.currentUser,
+            scheduledFor: scheduledFor,
+            sourceType: .story,
+            sourceID: vm.story.id.uuidString,
+            sourceTitle: vm.story.title,
+            chapterNumber: vm.currentChunk?.chapterNumber,
+            sceneIndex: vm.currentChunk?.sceneIndex,
+            targetMinutes: 10,
+            wordReviewCount: 5,
+            focusNote: nil,
+            notificationTime: notifTime,
+            in: modelContext
+        )
+    }
+}
+
+// MARK: - Finished
+
+private struct StoryStudyFinishedView: View {
+    let story: Story
+    let onDone: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 72))
+                .foregroundStyle(.yellow)
+            Text("Story complete")
+                .font(.title.weight(.bold))
+            Text("You finished studying \(story.title). It's no longer in Study Mode.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            Spacer()
+            Button {
+                onDone()
+            } label: {
+                Text("Done").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+        }
     }
 }
 

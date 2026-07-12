@@ -2,11 +2,11 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-/// Coordinator for the 5-stage Story Guided Learning Path.
-///
-/// This is deliberately a sibling to `GameSessionViewModel` — the card-focused
-/// state on that VM (currentCardIndex, isFlipped, deck) doesn't fit read/loop/
-/// lookup/shadow/plan stages, and shoehorning would obscure both.
+/// Coordinator for Study Mode's guided flow. A story is studied as an ordered
+/// sequence of **chunks** (scenes). Each chunk runs a 4-stage guided pass
+/// (Read → Listen → Look Up → Shadow), after which the learner can move to the
+/// next chunk in-flow or wrap up for the day. The per-story `StoryStudyState`
+/// keeps the story in Study Mode until every chunk is done or it's un-studied.
 @Observable
 @MainActor
 final class StoryPathSessionViewModel {
@@ -15,7 +15,6 @@ final class StoryPathSessionViewModel {
         case loopListen = 2
         case lookup = 3
         case shadow = 4
-        case planNext = 5
 
         var label: String {
             switch self {
@@ -23,7 +22,6 @@ final class StoryPathSessionViewModel {
             case .loopListen: return "Listen"
             case .lookup: return "Look Up"
             case .shadow: return "Shadow"
-            case .planNext: return "Plan Next"
             }
         }
 
@@ -33,108 +31,131 @@ final class StoryPathSessionViewModel {
             case .loopListen: return "headphones"
             case .lookup: return "star.text.square.fill"
             case .shadow: return "mic.fill"
-            case .planNext: return "calendar"
             }
         }
     }
 
-    // MARK: - Inputs / persistence
+    enum Phase {
+        case studying      // working through a chunk's stages
+        case chunkComplete // decision: next chunk or wrap up
+        case wrapUp        // plan/finish for the session
+        case finished      // whole story done
+    }
+
+    // MARK: - Inputs
 
     let story: Story
-    let chapterNumber: Int
     let userID: String?
-    private(set) var progress: StoryPathProgress
     private let context: ModelContext
-    private let progressStore: StoryPathProgressStore
+    private let store: StoryPathProgressStore
+    private let storyChapters: [StoryChapter]
 
-    /// Wall-clock timestamp for when the current stage was entered — used to
-    /// estimate per-stage activity minutes for stages that don't run an
-    /// explicit timer.
-    private var stageEnteredAt: Date = Date()
-
-    /// Accumulated seconds spent actively listening in stage 2 (drives the
-    /// `.listening` activity row).
-    var listenElapsedSeconds: Int = 0
+    let chunks: [StoryStudyChunk]
+    private(set) var studyState: StoryStudyState
+    private(set) var chunkOrdinal: Int
+    private(set) var progress: StoryPathProgress
 
     // MARK: - Config
 
     var targetReadMinutes: Int = 5
     var totalLoops: Int = 4
-    var shadowLineCount: Int = 2
 
-    // MARK: - Live state
+    // MARK: - Flow state
 
+    var phase: Phase = .studying
     var currentStage: Stage
     var isSessionActive: Bool = true
 
-    // Stage 1
+    // Per-chunk live state
     var readElapsedSeconds: Int = 0
     var readTargetReached: Bool = false
-
-    // Stage 2
     var currentLoopIndex: Int = 0
-
-    // Stage 3
     var wordsMarkedThisSession: [UUID] = []
-
-    // Stage 4
     var shadowRecordedLineIDs: Set<String> = []
+    var listenElapsedSeconds: Int = 0
+    private var stageEnteredAt: Date = Date()
 
-    // Stage 5 — draft config for the next-day plan
-    var planNextChapter: Int
-    var planTargetMinutes: Int = 10
-    var planWordCount: Int = 5
-    var planNotificationEnabled: Bool = false
-    var planNotificationTime: Date = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date().addingTimeInterval(86_400)) ?? Date().addingTimeInterval(86_400)
+    // Wrap-up (reminder) draft
+    var remindTomorrow: Bool = false
+    var reminderTime: Date = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date().addingTimeInterval(86_400)) ?? Date().addingTimeInterval(86_400)
 
     // MARK: - Derived
 
-    var chapter: StoryChapter? {
-        story.chapters.first(where: { $0.chapterNumber == chapterNumber })
-            ?? story.chapters.first
+    private var langCode: String { story.targetLanguageCode }
+
+    var currentChunk: StoryStudyChunk? {
+        chunks.indices.contains(chunkOrdinal) ? chunks[chunkOrdinal] : nil
+    }
+    var isLastChunk: Bool { currentChunk?.isLast ?? true }
+    var chunkPositionLabel: String {
+        guard let chunk = currentChunk else { return "" }
+        return "Scene \(chunk.ordinal + 1) of \(chunk.total)"
     }
 
-    /// Index into `story.chapters` for the active chapter (adapters are
-    /// index-based, not chapterNumber-based).
-    var chapterArrayIndex: Int {
-        story.chapters.firstIndex(where: { $0.chapterNumber == chapterNumber }) ?? 0
+    private var chapterForChunk: StoryChapter? {
+        guard let chunk = currentChunk, storyChapters.indices.contains(chunk.chapterArrayIndex) else { return nil }
+        return storyChapters[chunk.chapterArrayIndex]
     }
+    var scene: StoryScene? {
+        guard let sceneIndex = currentChunk?.sceneIndex else { return nil }
+        return chapterForChunk?.scenes.first { $0.sceneIndex == sceneIndex }
+    }
+    var chunkChapterArrayIndex: Int { currentChunk?.chapterArrayIndex ?? 0 }
+    var chunkSceneIndex: Int { currentChunk?.sceneIndex ?? 0 }
 
-    var nextChapterOptions: [StoryChapter] {
-        story.chapters.sorted { $0.chapterNumber < $1.chapterNumber }
+    var chunkText: String {
+        let caption = scene?.captionFor(langCode).trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return caption.isEmpty ? story.targetLanguageText : caption
+    }
+    var chunkWordTimings: [WordTiming] {
+        scene?.wordTimingsFor(langCode) ?? []
+    }
+    var chunkTitleDisplay: String {
+        let chapterTitle = chapterForChunk?.titleFor(langCode) ?? ""
+        let scenePart = "Scene \(chunkSceneIndex + 1)"
+        return chapterTitle.isEmpty ? scenePart : "\(scenePart) · \(chapterTitle)"
     }
 
     var stageCompletion: [Bool] { progress.stageCompletion }
-
-    var overallProgress: Double {
-        let completed = stageCompletion.filter { $0 }.count
-        return Double(completed) / Double(Stage.allCases.count)
-    }
 
     // MARK: - Init
 
     init(
         story: Story,
-        chapterNumber: Int?,
         userID: String?,
         context: ModelContext,
-        progressStore: StoryPathProgressStore
+        store: StoryPathProgressStore
     ) {
         self.story = story
-        self.context = context
-        self.progressStore = progressStore
         self.userID = userID
+        self.context = context
+        self.store = store
+        self.storyChapters = story.chapters
 
-        let effectiveChapterNumber = chapterNumber
-            ?? story.chapters.first?.chapterNumber
-            ?? 1
-        self.chapterNumber = effectiveChapterNumber
+        let allChunks = StoryStudyChunks.chunks(for: story)
+        self.chunks = allChunks
 
-        let record = progressStore.resumeOrCreate(
+        let state = store.startOrResumeStudy(
             storyID: story.id.uuidString,
             storyTitle: story.title,
-            chapterNumber: effectiveChapterNumber,
-            sceneIndex: nil,
+            firstChunk: allChunks.first,
+            userID: userID,
+            in: context
+        )
+        self.studyState = state
+
+        // Locate the chunk the state points at.
+        let ordinal = allChunks.firstIndex(where: {
+            $0.chapterNumber == state.currentChapterNumber && $0.sceneIndex == state.currentSceneIndex
+        }) ?? min(state.currentOrdinal, max(0, allChunks.count - 1))
+        self.chunkOrdinal = allChunks.isEmpty ? 0 : ordinal
+
+        let chunk = allChunks.indices.contains(ordinal) ? allChunks[ordinal] : nil
+        let record = store.resumeOrCreate(
+            storyID: story.id.uuidString,
+            storyTitle: story.title,
+            chapterNumber: chunk?.chapterNumber ?? 0,
+            sceneIndex: chunk?.sceneIndex,
             userID: userID,
             in: context
         )
@@ -144,17 +165,10 @@ final class StoryPathSessionViewModel {
         self.currentLoopIndex = record.loopsCompleted
         self.wordsMarkedThisSession = record.wordsMarkedInSession.compactMap(UUID.init(uuidString:))
         self.shadowRecordedLineIDs = Set(record.shadowLineIDsRecorded)
-
-        // Default plan chapter = current + 1, capped to last chapter's number.
-        let chapters = story.chapters.sorted { $0.chapterNumber < $1.chapterNumber }
-        let last = chapters.last?.chapterNumber ?? effectiveChapterNumber
-        self.planNextChapter = min(effectiveChapterNumber + 1, last)
     }
 
     // MARK: - Persistence
 
-    /// Whether there's enough real activity to bother persisting a row. Prevents
-    /// "just opened then bailed" sessions from cluttering the resume lists.
     private var hasMeaningfulProgress: Bool {
         currentStage != .read
             || readElapsedSeconds >= 20
@@ -169,17 +183,17 @@ final class StoryPathSessionViewModel {
         progress.loopsCompleted = currentLoopIndex
         progress.wordsMarkedInSession = wordsMarkedThisSession.map(\.uuidString)
         progress.shadowLineIDsRecorded = Array(shadowRecordedLineIDs)
-        progressStore.save(progress, in: context, allowInsert: hasMeaningfulProgress)
+        store.save(progress, in: context, allowInsert: hasMeaningfulProgress)
     }
+
+    // MARK: - Stage flow (within a chunk)
 
     func markStageComplete(_ stage: Stage) {
         var flags = progress.stageCompletion
         let wasComplete = flags[stage.rawValue - 1]
         flags[stage.rawValue - 1] = true
         progress.stageCompletion = flags
-        if !wasComplete {
-            logActivity(for: stage)
-        }
+        if !wasComplete { logActivity(for: stage) }
         persist()
     }
 
@@ -189,10 +203,93 @@ final class StoryPathSessionViewModel {
         persist()
     }
 
+    func advanceToNextStage() {
+        if let next = Stage(rawValue: currentStage.rawValue + 1) {
+            markStageComplete(currentStage)
+            advance(to: next)
+        } else {
+            completeChunk()
+        }
+    }
+
+    var canGoBack: Bool { currentStage != .read }
+
+    func goToPreviousStage() {
+        guard let prev = Stage(rawValue: currentStage.rawValue - 1) else { return }
+        currentStage = prev
+        stageEnteredAt = Date()
+        persist()
+    }
+
+    // MARK: - Chunk flow (across scenes)
+
+    private func completeChunk() {
+        markStageComplete(currentStage)
+        store.complete(progress, in: context)
+        // Point Study Mode at the next chunk so resuming later lands there.
+        if let chunk = currentChunk, !chunk.isLast, chunks.indices.contains(chunkOrdinal + 1) {
+            store.advanceStudy(studyState, to: chunks[chunkOrdinal + 1], in: context)
+        }
+        phase = .chunkComplete
+    }
+
+    /// Continue to the next scene without leaving the guided container.
+    func studyNextChunk() {
+        guard chunks.indices.contains(chunkOrdinal + 1) else {
+            beginWrapUp()
+            return
+        }
+        chunkOrdinal += 1
+        loadCurrentChunk()
+        phase = .studying
+    }
+
+    private func loadCurrentChunk() {
+        // Reset per-chunk live state and pull that chunk's saved progress.
+        readElapsedSeconds = 0
+        readTargetReached = false
+        currentLoopIndex = 0
+        wordsMarkedThisSession = []
+        shadowRecordedLineIDs = []
+        listenElapsedSeconds = 0
+        stageEnteredAt = Date()
+
+        let chunk = currentChunk
+        let record = store.resumeOrCreate(
+            storyID: story.id.uuidString,
+            storyTitle: story.title,
+            chapterNumber: chunk?.chapterNumber ?? 0,
+            sceneIndex: chunk?.sceneIndex,
+            userID: userID,
+            in: context
+        )
+        progress = record
+        currentStage = Stage(rawValue: record.currentStage) ?? .read
+        readElapsedSeconds = record.readMinutesAccumulated * 60
+        currentLoopIndex = record.loopsCompleted
+        wordsMarkedThisSession = record.wordsMarkedInSession.compactMap(UUID.init(uuidString:))
+        shadowRecordedLineIDs = Set(record.shadowLineIDsRecorded)
+    }
+
+    func beginWrapUp() {
+        phase = .wrapUp
+    }
+
+    /// Finish the session for now. Study Mode stays active at the current chunk.
+    func finishForToday() {
+        persist()
+        isSessionActive = false
+    }
+
+    /// Finish the whole story — Study Mode ends.
+    func finishStory() {
+        store.completeStudy(studyState, in: context)
+        phase = .finished
+        isSessionActive = false
+    }
+
     // MARK: - Activity logging
 
-    /// Log a `UserActivity` for a completed stage so guided-path work feeds
-    /// streaks and the dashboard breakdown, matching the plan's stage→type map.
     private func logActivity(for stage: Stage) {
         let activityType: ActivityType
         let minutes: Int
@@ -209,8 +306,6 @@ final class StoryPathSessionViewModel {
         case .shadow:
             activityType = .shadowing
             minutes = elapsedMinutesInStage()
-        case .planNext:
-            return // Planning isn't study time.
         }
 
         let activity = UserActivity(
@@ -218,7 +313,7 @@ final class StoryPathSessionViewModel {
             activityType: activityType,
             language: story.language,
             userID: userID,
-            comment: "Guided Path · \(story.title) · Ch \(chapterNumber)"
+            comment: "Study Mode · \(story.title) · \(chunkPositionLabel)"
         )
         context.insert(activity)
         try? context.save()
@@ -228,35 +323,7 @@ final class StoryPathSessionViewModel {
         max(1, Int(Date().timeIntervalSince(stageEnteredAt) / 60))
     }
 
-    func advanceToNextStage() {
-        if let next = Stage(rawValue: currentStage.rawValue + 1) {
-            markStageComplete(currentStage)
-            advance(to: next)
-        } else {
-            complete()
-        }
-    }
-
-    var canGoBack: Bool { currentStage != .read }
-
-    /// Step back one stage (e.g. Continue was tapped by accident). Intentionally
-    /// does NOT un-complete the stage or un-log its activity — re-advancing is
-    /// guarded against double-logging, so stepping back and forward is a no-op
-    /// for streaks.
-    func goToPreviousStage() {
-        guard let prev = Stage(rawValue: currentStage.rawValue - 1) else { return }
-        currentStage = prev
-        stageEnteredAt = Date()
-        persist()
-    }
-
-    func complete() {
-        markStageComplete(currentStage)
-        progressStore.complete(progress, in: context)
-        isSessionActive = false
-    }
-
-    // MARK: - Stage helpers
+    // MARK: - Per-chunk helpers
 
     func tickReadTimer(by seconds: Int) {
         readElapsedSeconds += seconds
@@ -279,9 +346,5 @@ final class StoryPathSessionViewModel {
     func recordShadowLineDone(_ lineID: String) {
         shadowRecordedLineIDs.insert(lineID)
         persist()
-    }
-
-    var chapterTitleDisplay: String {
-        chapter?.titleFor(story.targetLanguageCode) ?? "Chapter \(chapterNumber)"
     }
 }

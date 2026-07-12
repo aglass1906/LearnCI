@@ -12,10 +12,10 @@ struct StoryAboutView: View {
     // Hero image state
     @State private var heroImage: UIImage? = nil
     @State private var navigateToGuidedPath = false
-    @State private var showStartOverConfirm = false
+    @State private var showUnstudyConfirm = false
 
-    private var activePathProgress: StoryPathProgress? {
-        pathProgressStore.mostRecentActive(
+    private var studyState: StoryStudyState? {
+        pathProgressStore.studyState(
             for: story.id.uuidString,
             userID: authManager.currentUser,
             in: modelContext
@@ -23,17 +23,17 @@ struct StoryAboutView: View {
     }
 
     private var guidedPathButtonTitle: String {
-        if let progress = activePathProgress {
-            return "Resume Guided Path (Stage \(progress.currentStage) of 5)"
+        if let state = studyState {
+            return "Resume Study (Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks)))"
         }
-        return "Start Guided Path"
+        return "Study This Story"
     }
 
     private var guidedPathButtonSubtitle: String {
-        if let progress = activePathProgress {
-            return "Chapter \(progress.chapterNumber) · Picks up where you left off"
+        if studyState != nil {
+            return "Picks up at your current scene"
         }
-        return "Read → Listen → Look Up → Shadow → Plan"
+        return "Scene by scene: Read → Listen → Look Up → Shadow"
     }
 
     // Story / audio regeneration
@@ -187,16 +187,15 @@ struct StoryAboutView: View {
                             .cornerRadius(12)
                         }
 
-                        if activePathProgress != nil {
-                            Button {
-                                showStartOverConfirm = true
+                        if studyState != nil {
+                            Button(role: .destructive) {
+                                showUnstudyConfirm = true
                             } label: {
                                 HStack {
-                                    Image(systemName: "arrow.counterclockwise")
-                                    Text("Start Guided Path Over")
+                                    Image(systemName: "minus.circle")
+                                    Text("Remove from Study Mode")
                                 }
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
                             }
@@ -332,25 +331,21 @@ struct StoryAboutView: View {
                 .onAppear { isOpeningReader = false }
         }
         .navigationDestination(isPresented: $navigateToGuidedPath) {
-            StoryPathContainerView(
-                story: story,
-                startAtChapter: activePathProgress?.chapterNumber
-            )
+            StoryPathContainerView(story: story)
         }
         .confirmationDialog(
-            "Start guided path over?",
-            isPresented: $showStartOverConfirm,
+            "Remove from Study Mode?",
+            isPresented: $showUnstudyConfirm,
             titleVisibility: .visible
         ) {
-            Button("Discard Progress & Start Over", role: .destructive) {
-                if let progress = activePathProgress {
-                    pathProgressStore.discard(progress, in: modelContext)
+            Button("Remove & Clear Progress", role: .destructive) {
+                if let state = studyState {
+                    pathProgressStore.unstudy(state, in: modelContext)
                 }
-                navigateToGuidedPath = true
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Your saved stage progress for this story will be cleared. Saved words are kept.")
+            Text("This story will leave Study Mode and its scene progress will be cleared. Saved words are kept.")
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

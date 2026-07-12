@@ -145,18 +145,18 @@ struct DashboardView: View {
     @ViewBuilder
     private var todaysPlanSection: some View {
         let plan = planManager.todaysPlan(for: authManager.currentUser, in: modelContext)
-        let activePaths = pathProgressStore.activeInProgress(
+        let studyStates = pathProgressStore.activeStudyStates(
             for: authManager.currentUser,
             in: modelContext,
             limit: 3
         )
-        if plan != nil || !activePaths.isEmpty {
+        if plan != nil || !studyStates.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
                 if let plan {
                     todaysPlanCard(plan: plan)
                 }
-                ForEach(activePaths.filter { plan?.sourceID != $0.storyID }, id: \.id) { progress in
-                    inProgressPathCard(progress: progress)
+                ForEach(studyStates.filter { plan?.sourceID != $0.storyID }, id: \.id) { state in
+                    studyStateCard(state: state)
                 }
             }
         }
@@ -168,7 +168,7 @@ struct DashboardView: View {
         Group {
             if let story {
                 NavigationLink {
-                    StoryPathContainerView(story: story, startAtChapter: plan.chapterNumber)
+                    StoryPathContainerView(story: story)
                 } label: {
                     todaysPlanCardBody(plan: plan)
                 }
@@ -219,41 +219,41 @@ struct DashboardView: View {
     }
 
     @ViewBuilder
-    private func inProgressPathCard(progress: StoryPathProgress) -> some View {
-        let story = allStories.first { $0.id.uuidString == progress.storyID }
+    private func studyStateCard(state: StoryStudyState) -> some View {
+        let story = allStories.first { $0.id.uuidString == state.storyID }
         Group {
             if let story {
                 NavigationLink {
-                    StoryPathContainerView(story: story, startAtChapter: progress.chapterNumber)
+                    StoryPathContainerView(story: story)
                 } label: {
-                    inProgressPathBody(progress: progress)
+                    studyStateBody(state: state)
                 }
                 .buttonStyle(.plain)
             } else {
-                inProgressPathBody(progress: progress)
+                studyStateBody(state: state)
             }
         }
     }
 
     @ViewBuilder
-    private func inProgressPathBody(progress: StoryPathProgress) -> some View {
+    private func studyStateBody(state: StoryStudyState) -> some View {
         HStack(alignment: .center, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.accentColor.opacity(0.15))
                     .frame(width: 48, height: 48)
-                Image(systemName: "hourglass")
+                Image(systemName: "book.pages.fill")
                     .foregroundStyle(Color.accentColor)
                     .font(.title3)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text("In Progress")
+                Text("Studying")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
-                Text(progress.storyTitle)
+                Text(state.storyTitle)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
-                Text("Ch. \(progress.chapterNumber) · Stage \(progress.currentStage) of 5")
+                Text("Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

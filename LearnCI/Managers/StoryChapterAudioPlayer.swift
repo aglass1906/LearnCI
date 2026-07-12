@@ -61,6 +61,34 @@ final class StoryChapterAudioPlayer {
         chapterDuration = clips.reduce(0) { $0 + ($1.duration ?? 0) }
     }
 
+    /// Configure for a single scene (Study Mode chunk). The clip's timeline is
+    /// normalized to start at 0 so it lines up with the scene's own word
+    /// timings.
+    func configureScene(story: Story, chapterIndex: Int, sceneIndex: Int) {
+        let adapter = StoryReaderDataAdapter(story: story)
+        if let clip = adapter.audioClips(forChapter: chapterIndex).first(where: { $0.sceneIndex == sceneIndex }) {
+            clips = [
+                StorySceneAudioClip(
+                    id: clip.id,
+                    chapterIndex: clip.chapterIndex,
+                    sceneIndex: clip.sceneIndex,
+                    sceneOrdinal: clip.sceneOrdinal,
+                    urlString: clip.urlString,
+                    duration: clip.duration,
+                    startOffset: 0,
+                    title: clip.title,
+                    caption: clip.caption,
+                    imageURL: clip.imageURL
+                )
+            ]
+        } else {
+            clips = []
+        }
+        storyID = story.id
+        storyUpdatedAt = story.updatedAt
+        chapterDuration = clips.reduce(0) { $0 + ($1.duration ?? 0) }
+    }
+
     /// Begin playback, looping the chapter `totalLoops` times. `fromLoop` lets a
     /// resumed session skip loops already completed.
     func start(totalLoops: Int, fromLoop: Int = 0) {

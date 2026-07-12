@@ -13,14 +13,8 @@ struct StoryPathReadStageView: View {
     @State private var audioStarted: Bool = false
     @State private var fallbackImageURL: URL?
 
-    private var chapter: StoryChapter? { vm.chapter }
-    private var languageCode: String { vm.story.targetLanguageCode }
-    private var bodyText: String {
-        chapter?.bodyTextForLanguage(languageCode) ?? vm.story.targetLanguageText
-    }
-    private var wordTimings: [WordTiming] {
-        chapter?.bodyWordTimingsForLanguage(languageCode) ?? vm.story.wordTimings
-    }
+    private var bodyText: String { vm.chunkText }
+    private var wordTimings: [WordTiming] { vm.chunkWordTimings }
     private var hasChapterAudio: Bool { chapterPlayer?.hasAudio ?? false }
     private var isPlaying: Bool { chapterPlayer?.isPlaying ?? false }
 
@@ -46,12 +40,6 @@ struct StoryPathReadStageView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     heroImage
-                    if let plotSummary = chapter?.plotSummary?.trimmingCharacters(in: .whitespacesAndNewlines),
-                       !plotSummary.isEmpty {
-                        Text(plotSummary)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
                     TappableStoryText(
                         text: bodyText,
                         font: .system(size: 20, weight: .regular, design: .serif),
@@ -148,13 +136,17 @@ struct StoryPathReadStageView: View {
     private func setupPlayer() {
         guard chapterPlayer == nil else { return }
         let player = StoryChapterAudioPlayer(audioManager: audioManager)
-        player.configure(story: vm.story, chapterIndex: vm.chapterArrayIndex)
+        player.configureScene(story: vm.story, chapterIndex: vm.chunkChapterArrayIndex, sceneIndex: vm.chunkSceneIndex)
         player.onFinished = {
             // Leave audioStarted true so the highlight rests at the end.
         }
         chapterPlayer = player
-        fallbackImageURL = StoryReaderDataAdapter(story: vm.story)
-            .chapterImageURL(forChapterAt: vm.chapterArrayIndex)
+        let adapter = StoryReaderDataAdapter(story: vm.story)
+        if let scene = vm.scene {
+            fallbackImageURL = adapter.sceneImageURL(scene: scene, chapterIndex: vm.chunkChapterArrayIndex)
+        } else {
+            fallbackImageURL = adapter.chapterImageURL(forChapterAt: vm.chunkChapterArrayIndex)
+        }
     }
 
     private func togglePlay() {

@@ -6,11 +6,14 @@ import SwiftData
 final class StoryPathProgressStore {
     init() {}
 
-    /// Fetch the most-recently-updated progress row for this story + chapter,
+    // MARK: - Per-chunk progress (keyed by story + chapter + scene)
+
+    /// Fetch the most-recently-updated progress row for this chunk (scene),
     /// scoped to the given user. Returns nil if none exists.
     func progress(
         for storyID: String,
         chapterNumber: Int,
+        sceneIndex: Int?,
         userID: String?,
         in context: ModelContext
     ) -> StoryPathProgress? {
@@ -18,6 +21,7 @@ final class StoryPathProgressStore {
             predicate: #Predicate {
                 $0.storyID == storyID &&
                 $0.chapterNumber == chapterNumber &&
+                $0.sceneIndex == sceneIndex &&
                 $0.userID == userID
             },
             sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
@@ -25,46 +29,9 @@ final class StoryPathProgressStore {
         return (try? context.fetch(descriptor))?.first
     }
 
-    /// The most-recently-touched in-progress row for this story (any chapter).
-    /// Used by `StoryAboutView` to relabel its CTA.
-    func mostRecentActive(
-        for storyID: String,
-        userID: String?,
-        in context: ModelContext
-    ) -> StoryPathProgress? {
-        let descriptor = FetchDescriptor<StoryPathProgress>(
-            predicate: #Predicate {
-                $0.storyID == storyID &&
-                $0.userID == userID &&
-                $0.completedAt == nil
-            },
-            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
-        )
-        return (try? context.fetch(descriptor))?.first
-    }
-
-    /// All in-progress rows for the user, most-recently updated first.
-    /// Powers the "Continue Your Story" section on the Learn tab.
-    func activeInProgress(
-        for userID: String?,
-        in context: ModelContext,
-        limit: Int = 20
-    ) -> [StoryPathProgress] {
-        var descriptor = FetchDescriptor<StoryPathProgress>(
-            predicate: #Predicate {
-                $0.userID == userID &&
-                $0.completedAt == nil
-            },
-            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
-        )
-        descriptor.fetchLimit = limit
-        return (try? context.fetch(descriptor)) ?? []
-    }
-
-    /// Return the existing in-progress row for this (story, chapter, user), or a
-    /// fresh **un-inserted** instance. The fresh instance is only persisted once
-    /// `save(_:allowInsert:)` is called with meaningful progress, so merely
-    /// opening the path and backing out leaves no resume clutter.
+    /// Return the existing in-progress row for this chunk, or a fresh
+    /// **un-inserted** instance. The fresh instance is only persisted once
+    /// `save(_:allowInsert:)` is called with meaningful progress.
     @discardableResult
     func resumeOrCreate(
         storyID: String,
@@ -74,7 +41,7 @@ final class StoryPathProgressStore {
         userID: String?,
         in context: ModelContext
     ) -> StoryPathProgress {
-        if let existing = progress(for: storyID, chapterNumber: chapterNumber, userID: userID, in: context),
+        if let existing = progress(for: storyID, chapterNumber: chapterNumber, sceneIndex: sceneIndex, userID: userID, in: context),
            existing.completedAt == nil {
             return existing
         }
@@ -100,24 +67,122 @@ final class StoryPathProgressStore {
         try? context.save()
     }
 
-    /// Mark all 5 stages complete and set `completedAt`.
+    /// Mark every stage complete and set `completedAt`.
     func complete(_ progress: StoryPathProgress, in context: ModelContext) {
         if progress.modelContext == nil {
             context.insert(progress)
         }
-        progress.stageCompletion = [true, true, true, true, true]
-        progress.currentStage = 5
+        progress.stageCompletion = Array(repeating: true, count: StoryPathProgress.stageCount)
+        progress.currentStage = StoryPathProgress.stageCount
         progress.completedAt = Date()
         progress.updatedAt = Date()
         progress.isSynced = false
         try? context.save()
     }
 
-    /// Discards an in-progress row so a new fresh path can begin on the same
-    /// chapter. Used by the "Start Over" menu item.
     func discard(_ progress: StoryPathProgress, in context: ModelContext) {
         guard progress.modelContext != nil else { return }
         context.delete(progress)
+        try? context.save()
+    }
+
+    // MARK: - Study Mode state (per story)
+
+    /// The active Study Mode state for a story, if any.
+    func studyState(
+        for storyID: String,
+        userID: String?,
+        in context: ModelContext
+    ) -> StoryStudyState? {
+        let descriptor = FetchDescriptor<StoryStudyState>(
+            predicate: #Predicate {
+                $0.storyID == storyID &&
+                $0.userID == userID &&
+                $0.isActive == true
+            },
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        return (try? context.fetch(descriptor))?.first
+    }
+
+    /// All active Study Mode states for the user, most-recently-touched first.
+    /// Powers the "Studying" section on the Learn tab.
+    func activeStudyStates(
+        for userID: String?,
+        in context: ModelContext,
+        limit: Int = 50
+    ) -> [StoryStudyState] {
+        var descriptor = FetchDescriptor<StoryStudyState>(
+            predicate: #Predicate {
+                $0.userID == userID &&
+                $0.isActive == true
+            },
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = limit
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
+    /// Resume the active Study Mode state for a story, or start a fresh one at
+    /// the given first chunk. Persisted immediately (marking for study is a
+    /// deliberate action).
+    @discardableResult
+    func startOrResumeStudy(
+        storyID: String,
+        storyTitle: String,
+        firstChunk: StoryStudyChunk?,
+        userID: String?,
+        in context: ModelContext
+    ) -> StoryStudyState {
+        if let existing = studyState(for: storyID, userID: userID, in: context) {
+            return existing
+        }
+        let state = StoryStudyState(
+            userID: userID,
+            storyID: storyID,
+            storyTitle: storyTitle,
+            currentChapterNumber: firstChunk?.chapterNumber ?? 0,
+            currentSceneIndex: firstChunk?.sceneIndex ?? 0,
+            currentOrdinal: firstChunk?.ordinal ?? 0,
+            totalChunks: firstChunk?.total ?? 0
+        )
+        context.insert(state)
+        try? context.save()
+        return state
+    }
+
+    /// Move the study state to a new current chunk.
+    func advanceStudy(_ state: StoryStudyState, to chunk: StoryStudyChunk, in context: ModelContext) {
+        state.currentChapterNumber = chunk.chapterNumber
+        state.currentSceneIndex = chunk.sceneIndex
+        state.currentOrdinal = chunk.ordinal
+        state.totalChunks = chunk.total
+        state.updatedAt = Date()
+        state.isSynced = false
+        try? context.save()
+    }
+
+    /// Mark the whole story finished — Study Mode ends.
+    func completeStudy(_ state: StoryStudyState, in context: ModelContext) {
+        state.currentOrdinal = state.totalChunks
+        state.isActive = false
+        state.completedAt = Date()
+        state.updatedAt = Date()
+        state.isSynced = false
+        try? context.save()
+    }
+
+    /// User chose to un-study a story: drop the state and any per-chunk progress.
+    func unstudy(_ state: StoryStudyState, in context: ModelContext) {
+        let storyID = state.storyID
+        let userID = state.userID
+        context.delete(state)
+        let descriptor = FetchDescriptor<StoryPathProgress>(
+            predicate: #Predicate { $0.storyID == storyID && $0.userID == userID }
+        )
+        if let rows = try? context.fetch(descriptor) {
+            for row in rows { context.delete(row) }
+        }
         try? context.save()
     }
 }

@@ -17,6 +17,12 @@ struct LearnHubView: View {
         allStudyStates.filter { $0.isActive && $0.userID == authManager.currentUser }
     }
 
+    private var studyingSubtitle: String {
+        studyStates.isEmpty
+            ? "Stories you're studying scene by scene"
+            : "\(studyStates.count) in progress — resume where you left off"
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -26,6 +32,16 @@ struct LearnHubView: View {
                     }
 
                     LazyVGrid(columns: columns, spacing: 16) {
+                        NavigationLink(destination: StudyingStoriesView()) {
+                            HubPanelHero(
+                                title: "Studying",
+                                subtitle: studyingSubtitle,
+                                icon: "book.pages.fill",
+                                gradient: Gradient(colors: [.purple, .indigo])
+                            )
+                        }
+                        .buttonStyle(.plain)
+
                         NavigationLink(destination: AboutCIView()) {
                             HubPanelHero(
                                 title: "Comprehensive Learning",
@@ -59,15 +75,16 @@ struct LearnHubView: View {
     private var studyingSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Studying")
+                Text("Continue Studying")
                     .font(.title3.weight(.semibold))
                 Spacer()
-                Text("\(studyStates.count) stor\(studyStates.count == 1 ? "y" : "ies")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                NavigationLink(destination: StudyingStoriesView()) {
+                    Text("See all")
+                        .font(.caption.weight(.semibold))
+                }
             }
             VStack(spacing: 10) {
-                ForEach(studyStates, id: \.id) { state in
+                ForEach(studyStates.prefix(3), id: \.id) { state in
                     if let story = story(withID: state.storyID) {
                         NavigationLink {
                             StoryPathContainerView(story: story)
@@ -87,6 +104,70 @@ struct LearnHubView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func story(withID storyID: String) -> Story? {
+        guard let uuid = UUID(uuidString: storyID) else { return nil }
+        return stories.first(where: { $0.id == uuid })
+    }
+}
+
+/// Dedicated screen listing every story currently in Study Mode.
+struct StudyingStoriesView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Environment(StoryPathProgressStore.self) private var pathProgressStore
+
+    @Query private var stories: [Story]
+    @Query(sort: \StoryStudyState.updatedAt, order: .reverse) private var allStudyStates: [StoryStudyState]
+
+    private var studyStates: [StoryStudyState] {
+        allStudyStates.filter { $0.isActive && $0.userID == authManager.currentUser }
+    }
+
+    var body: some View {
+        Group {
+            if studyStates.isEmpty {
+                ContentUnavailableView {
+                    Label("No stories in Study Mode", systemImage: "book.pages")
+                } description: {
+                    Text("Open a story and tap \u{201C}Study This Story\u{201D} to begin a guided, scene-by-scene study session.")
+                }
+            } else {
+                List {
+                    ForEach(studyStates, id: \.id) { state in
+                        rowView(for: state)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    pathProgressStore.unstudy(state, in: modelContext)
+                                } label: {
+                                    Label("Remove", systemImage: "minus.circle")
+                                }
+                            }
+                    }
+                }
+                .listStyle(.plain)
+            }
+        }
+        .navigationTitle("Studying")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private func rowView(for state: StoryStudyState) -> some View {
+        if let story = story(withID: state.storyID) {
+            NavigationLink {
+                StoryPathContainerView(story: story)
+            } label: {
+                StudyingRow(state: state)
+            }
+            .buttonStyle(.plain)
+        } else {
+            StudyingRow(state: state).opacity(0.6)
         }
     }
 

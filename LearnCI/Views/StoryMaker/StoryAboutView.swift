@@ -22,20 +22,6 @@ struct StoryAboutView: View {
         )
     }
 
-    private var guidedPathButtonTitle: String {
-        if let state = studyState {
-            return "Resume Study (Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks)))"
-        }
-        return "Study This Story"
-    }
-
-    private var guidedPathButtonSubtitle: String {
-        if studyState != nil {
-            return "Picks up at your current scene"
-        }
-        return "Scene by scene: Read → Listen → Look Up → Shadow"
-    }
-
     // Story / audio regeneration
     @State private var storyManager = StoryManager()
 
@@ -58,6 +44,7 @@ struct StoryAboutView: View {
     // Quiz navigation (from menu shortcut)
     @State private var navigateToQuiz = false
     @State private var navigateToReader = false
+    @State private var navigateToListen = false
     @State private var isOpeningReader = false
 
     private var canonicalStoryBodyText: String {
@@ -67,28 +54,13 @@ struct StoryAboutView: View {
     }
 
     var body: some View {
-        GeometryReader { fullGeo in
-            scrollContent(heroHeight: fullGeo.size.height * 0.42)
-        }
+        scrollContent
     }
 
     @ViewBuilder
-    private func scrollContent(heroHeight: CGFloat) -> some View {
+    private var scrollContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-
-                // ── Hero Media ────────────────────────────────────────────
-                HeroMediaView(
-                    story: story,
-                    image: $heroImage,
-                    isGeneratingVideo: isGeneratingVideo,
-                    videoStatus: videoStatusMessage,
-                    videoError: videoGenerationError,
-                    onGenerateVideo: { showVideoGenerator = true },
-                    showGenerateButton: false
-                )
-                .frame(height: heroHeight)
-                .clipped()
 
                 // ── Regeneration Status Banner ────────────────────────────
                 if storyManager.isGenerating, let status = storyManager.statusMessage {
@@ -108,9 +80,8 @@ struct StoryAboutView: View {
                 // ── Story Details ─────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 20) {
                     
-                    // Compact Header Layout
-                    HStack(alignment: .top, spacing: 20) {
-                        // thumbnail on the left
+                    // ── Compact Header: one poster image + title + tags ───
+                    HStack(alignment: .top, spacing: 16) {
                         HeroMediaView(
                             story: story,
                             image: $heroImage,
@@ -120,17 +91,15 @@ struct StoryAboutView: View {
                             onGenerateVideo: { showVideoGenerator = true },
                             showGenerateButton: false
                         )
-                        .frame(width: 120, height: 160)
+                        .frame(width: 110, height: 150)
                         .cornerRadius(12)
                         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            // Title
+
+                        VStack(alignment: .leading, spacing: 10) {
                             Text(story.title)
                                 .font(.system(size: 24, weight: .bold, design: .serif))
                                 .fixedSize(horizontal: false, vertical: true)
-                            
-                            // Character/Setting info if available
+
                             if !story.preferences.protagonistName.isEmpty {
                                 Text("Starring \(story.preferences.protagonistName)")
                                     .font(.subheadline)
@@ -139,156 +108,100 @@ struct StoryAboutView: View {
 
                             StoryWorkspaceMetaChips(story: story)
 
-                            if story.preferences.audioStyle == .dramatized {
-                                Label("Dramatized", systemImage: "person.2.fill")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.teal.opacity(0.12))
-                                    .foregroundStyle(.teal)
-                                    .cornerRadius(4)
+                            FlowLayout(spacing: 6) {
+                                if story.preferences.audioStyle == .dramatized {
+                                    Label("Dramatized", systemImage: "person.2.fill")
+                                        .badgeStyle()
+                                        .foregroundStyle(.teal)
+                                }
+                                if let wordCount = storyWordCount {
+                                    Label(wordCount, systemImage: "doc.text")
+                                        .badgeStyle()
+                                }
+                                if story.preferences.interactiveAudio {
+                                    Label("Dialog Audio", systemImage: "waveform.and.mic")
+                                        .badgeStyle()
+                                        .foregroundStyle(.orange)
+                                }
                             }
                         }
                     }
-                    .padding(.top, 24)
+                    .padding(.top, 12)
 
-                    Divider()
+                    // ── Primary Actions: Read | Listen | Study ───────────
+                    VStack(spacing: 10) {
+                        HStack(spacing: 10) {
+                            StoryActionTile(
+                                icon: story.preferences.storyType.icon,
+                                title: "Read",
+                                isProminent: false,
+                                isBusy: isOpeningReader
+                            ) {
+                                if story.preferences.storyType == .audioStory {
+                                    isOpeningReader = true
+                                }
+                                navigateToReader = true
+                            }
 
-                    // ── Play Options ──────────────────────────────────────
-                    VStack(spacing: 12) {
-                        // Guided Learning Path — primary CTA
-                        Button {
-                            navigateToGuidedPath = true
-                        } label: {
-                            HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: "sparkles")
-                                    .font(.title2)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(guidedPathButtonTitle)
-                                        .font(.headline)
-                                    Text(guidedPathButtonSubtitle)
-                                        .font(.caption)
-                                        .opacity(0.85)
+                            if supportsAudioPlayback {
+                                StoryActionTile(
+                                    icon: "headphones",
+                                    title: "Listen",
+                                    isProminent: false,
+                                    isBusy: false
+                                ) {
+                                    navigateToListen = true
+                                }
+                            }
+
+                            StoryActionTile(
+                                icon: "sparkles",
+                                title: studyState != nil ? "Resume" : "Study",
+                                isProminent: true,
+                                isBusy: false
+                            ) {
+                                navigateToGuidedPath = true
+                            }
+                        }
+
+                        // Studying status — progress at a glance + remove
+                        if let state = studyState {
+                            HStack(spacing: 10) {
+                                Image(systemName: "book.pages.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.accentColor)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Studying · Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks))")
+                                        .font(.caption.weight(.semibold))
+                                    ProgressView(value: state.progressFraction)
+                                        .tint(.accentColor)
                                 }
                                 Spacer()
-                                Image(systemName: "arrow.right")
+                                Button("Remove") {
+                                    showUnstudyConfirm = true
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.red)
                             }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 14)
-                            .padding(.horizontal, 16)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(12)
+                            .padding(10)
+                            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
                         }
 
-                        if studyState != nil {
-                            Button(role: .destructive) {
-                                showUnstudyConfirm = true
-                            } label: {
-                                HStack {
-                                    Image(systemName: "minus.circle")
-                                    Text("Remove from Study Mode")
-                                }
-                                .font(.subheadline.weight(.medium))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                            }
-                        }
-
-                        // Read & Listen (free-read)
-                        if story.preferences.storyType == .audioStory {
-                            Button {
-                                isOpeningReader = true
-                                navigateToReader = true
-                            } label: {
-                                HStack(spacing: 10) {
-                                    if isOpeningReader {
-                                        ProgressView()
-                                            .tint(.white)
-                                    }
-                                    Image(systemName: story.preferences.storyType.icon)
-                                    Text(primaryReaderTitle)
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.accentColor)
-                                .cornerRadius(12)
-                            }
-                            .disabled(isOpeningReader)
-                        } else {
-                            NavigationLink(destination: StoryReaderFactoryView(story: story)) {
-                                HStack {
-                                    Image(systemName: story.preferences.storyType.icon)
-                                    Text(primaryReaderTitle)
-                                }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.accentColor)
-                                .cornerRadius(12)
-                            }
-                        }
-
-                        if supportsAudioPlayback {
-                            NavigationLink(destination: StoryAudioPlaybackView(story: story)) {
-                                HStack {
-                                    Image(systemName: "headphones.circle.fill")
-                                    Text("Listen / CarPlay")
-                                }
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color(.secondarySystemBackground))
-                                .foregroundColor(.primary)
-                                .cornerRadius(12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                )
-                            }
-                        }
-
-                        // Take Quiz
+                        // Quiz — secondary, slim
                         NavigationLink(destination: StoryQuizView(story: story)) {
-                            HStack {
+                            HStack(spacing: 8) {
                                 Image(systemName: "checkmark.circle")
-                                    .font(.title3)
                                 Text("Take the Quiz")
-                                    .font(.headline)
+                                    .font(.subheadline.weight(.medium))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color(.secondarySystemBackground))
                             .foregroundColor(.primary)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                            )
-                        }
-                    }
-
-                    Divider()
-
-                    // Additional Metadata
-                    FlowLayout(spacing: 8) {
-                        if let wordCount = storyWordCount {
-                            Label(wordCount, systemImage: "doc.text")
-                                .badgeStyle()
-                        }
-                        if story.preferences.interactiveAudio {
-                            Label("Dialog Audio", systemImage: "waveform.and.mic")
-                                .badgeStyle()
-                                .foregroundStyle(.orange)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
                         }
                     }
 
@@ -321,14 +234,15 @@ struct StoryAboutView: View {
                 .padding(.horizontal)
             }
         }
-        .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
         // Hide tab bar for the entire immersive story flow
         .toolbar(.hidden, for: .tabBar)
         .navigationDestination(isPresented: $navigateToReader) {
             StoryReaderFactoryView(story: story)
                 .onAppear { isOpeningReader = false }
+        }
+        .navigationDestination(isPresented: $navigateToListen) {
+            StoryAudioPlaybackView(story: story)
         }
         .navigationDestination(isPresented: $navigateToGuidedPath) {
             StoryPathContainerView(story: story)
@@ -475,23 +389,6 @@ struct StoryAboutView: View {
         }
     }
 
-    private var primaryReaderTitle: String {
-        switch story.preferences.storyType {
-        case .comicBook:
-            return "Read Comic Book"
-        case .pictureBook:
-            return "Read Picture Book"
-        case .dialogStory:
-            return "Read Dialog Story"
-        case .audioStory:
-            return "Listen to Audio Story"
-        case .storyBook:
-            return "Read & Listen to the story"
-        case .standard:
-            return "Read & Listen to the story"
-        }
-    }
-
     private var supportsAudioPlayback: Bool {
         StoryReaderDataAdapter(story: story).requirementIssue(for: .audioBook) == nil
     }
@@ -612,6 +509,55 @@ struct StoryAboutView: View {
         isGeneratingVideo = false
     }
 
+}
+
+// MARK: - Primary Action Tile
+
+/// Equal-width tile for the Read | Listen | Study row. The prominent variant
+/// (Study) is accent-filled; the others are neutral.
+private struct StoryActionTile: View {
+    let icon: String
+    let title: String
+    let isProminent: Bool
+    let isBusy: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                if isBusy {
+                    ProgressView()
+                        .tint(isProminent ? .white : Color.accentColor)
+                } else {
+                    Image(systemName: icon)
+                        .font(.title2)
+                }
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(isProminent ? Color.white : Color.primary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 72)
+            .background(
+                Group {
+                    if isProminent {
+                        LinearGradient(
+                            colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    } else {
+                        Color(.secondarySystemBackground)
+                    }
+                },
+                in: RoundedRectangle(cornerRadius: 12)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(isBusy)
+    }
 }
 
 // MARK: - Table of Contents Row

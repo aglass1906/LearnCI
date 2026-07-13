@@ -6,11 +6,8 @@ struct LearnHubView: View {
         GridItem(.flexible(), spacing: 16)
     ]
 
-    @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
-    @Environment(StoryPathProgressStore.self) private var pathProgressStore
 
-    @Query private var stories: [Story]
     @Query(sort: \StoryStudyState.updatedAt, order: .reverse) private var allStudyStates: [StoryStudyState]
 
     private var studyStates: [StoryStudyState] {
@@ -27,10 +24,6 @@ struct LearnHubView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if !studyStates.isEmpty {
-                        studyingSection
-                    }
-
                     LazyVGrid(columns: columns, spacing: 16) {
                         NavigationLink(destination: StudyingStoriesView()) {
                             HubPanelHero(
@@ -71,46 +64,6 @@ struct LearnHubView: View {
         }
     }
 
-    @ViewBuilder
-    private var studyingSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Continue Studying")
-                    .font(.title3.weight(.semibold))
-                Spacer()
-                NavigationLink(destination: StudyingStoriesView()) {
-                    Text("See all")
-                        .font(.caption.weight(.semibold))
-                }
-            }
-            VStack(spacing: 10) {
-                ForEach(studyStates.prefix(3), id: \.id) { state in
-                    if let story = story(withID: state.storyID) {
-                        NavigationLink {
-                            StoryPathContainerView(story: story)
-                        } label: {
-                            StudyingRow(state: state)
-                        }
-                        .buttonStyle(.plain)
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                pathProgressStore.unstudy(state, in: modelContext)
-                            } label: {
-                                Label("Remove from Study Mode", systemImage: "minus.circle")
-                            }
-                        }
-                    } else {
-                        StudyingRow(state: state).opacity(0.6)
-                    }
-                }
-            }
-        }
-    }
-
-    private func story(withID storyID: String) -> Story? {
-        guard let uuid = UUID(uuidString: storyID) else { return nil }
-        return stories.first(where: { $0.id == uuid })
-    }
 }
 
 /// Dedicated screen listing every story currently in Study Mode.

@@ -58,6 +58,7 @@ struct PodcastPlayerView: View {
 
     @State private var showSessionSetup = false
     @State private var showNotes = false
+    @State private var mediaStudyRevision = 0
     @State private var lookupSelection: WordSelection?
     @State private var lookupRevision = 0
     @State private var lookupTranslation: String?
@@ -133,6 +134,13 @@ struct PodcastPlayerView: View {
         }
         .onChange(of: playbackMode) { _, newMode in
             if newMode == .study {
+                // Entering study mode is a deliberate study action — track it.
+                mediaStudyStore.markStudying(
+                    episode: episode,
+                    userID: authManager.currentUser,
+                    in: modelContext
+                )
+                mediaStudyRevision += 1
                 Task {
                     await bootstrapStudyModeIfNeeded()
                     ensurePlaybackAtStudyContentStart()
@@ -246,6 +254,7 @@ struct PodcastPlayerView: View {
                     modePicker
                     artworkView
                     episodeTitleBlock
+                    studyThisSection
                     playbackStatusBlock
 
                     if playbackMode == .study, let note = studyCoverageNote {
@@ -315,10 +324,84 @@ struct PodcastPlayerView: View {
 
             episodeTitleBlock
 
+            studyThisSection
+
             episodeDescriptionContent(isExpanded: false)
 
             playbackStatusBlock
         }
+    }
+
+    private var currentMediaStudyState: MediaStudyState? {
+        _ = mediaStudyRevision
+        return mediaStudyStore.studyState(
+            resourceType: .podcast,
+            resourceId: episode.id.uuidString,
+            userID: authManager.currentUser,
+            in: modelContext
+        )
+    }
+
+    @ViewBuilder
+    private var studyThisSection: some View {
+        if let state = currentMediaStudyState {
+            HStack(spacing: 10) {
+                Image(systemName: "book.pages.fill")
+                    .font(.caption)
+                    .foregroundStyle(Color.accentColor)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(studyingProgressText(for: state))
+                        .font(.caption.weight(.semibold))
+                    ProgressView(value: studyingProgressFraction(for: state))
+                        .tint(.accentColor)
+                }
+                Spacer()
+                Button("Remove") {
+                    mediaStudyStore.unstudy(state, in: modelContext)
+                    mediaStudyRevision += 1
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.red)
+            }
+            .padding(10)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+        } else {
+            Button {
+                mediaStudyStore.markStudying(
+                    episode: episode,
+                    userID: authManager.currentUser,
+                    in: modelContext
+                )
+                mediaStudyRevision += 1
+            } label: {
+                Label("Study This Podcast", systemImage: "sparkles")
+                    .font(.headline)
+                    .foregroundColor(.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor.opacity(0.1))
+                    .cornerRadius(10)
+            }
+        }
+    }
+
+    /// Prefer the live episode's position/duration over the tracked snapshot.
+    private func studyingProgressValues(for state: MediaStudyState) -> (position: Double, total: Double) {
+        let total = episode.duration > 0 ? episode.duration : state.durationSeconds
+        let position = episode.playbackPosition > 0 ? episode.playbackPosition : state.lastPositionSeconds
+        return (position, total)
+    }
+
+    private func studyingProgressFraction(for state: MediaStudyState) -> Double {
+        let values = studyingProgressValues(for: state)
+        guard values.total > 0 else { return 0 }
+        return min(1, max(0, values.position / values.total))
+    }
+
+    private func studyingProgressText(for state: MediaStudyState) -> String {
+        let values = studyingProgressValues(for: state)
+        guard values.total > 0 else { return "Studying" }
+        return "Studying · \(Int(values.position / 60))m of \(max(1, Int(values.total / 60)))m"
     }
 
     private var episodeTitleBlock: some View {

@@ -180,11 +180,11 @@ struct StudyingView: View {
             NavigationLink {
                 StoryPathContainerView(story: story)
             } label: {
-                StudyingRow(state: state)
+                StudyingRow(state: state, story: story)
             }
             .buttonStyle(.plain)
         } else {
-            StudyingRow(state: state).opacity(0.6)
+            StudyingRow(state: state, story: nil).opacity(0.6)
         }
     }
 
@@ -265,6 +265,7 @@ struct StudyingView: View {
 
 private struct StudyingRow: View {
     let state: StoryStudyState
+    var story: Story?
 
     private var lastTouchedText: String {
         let formatter = RelativeDateTimeFormatter()
@@ -274,14 +275,10 @@ private struct StudyingRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(LinearGradient(colors: [.accentColor.opacity(0.75), .accentColor], startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(width: 52, height: 68)
-                .overlay(
-                    Image(systemName: "book.pages.fill")
-                        .foregroundStyle(.white)
-                        .font(.title2)
-                )
+            StoryCoverThumbnail(story: story)
+                .overlay(alignment: .bottomTrailing) {
+                    StudyMediaTypeBadge(systemImage: "book.closed.fill")
+                }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(state.storyTitle)
@@ -351,6 +348,9 @@ private struct MediaStudyingRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
             artwork
+                .overlay(alignment: .bottomTrailing) {
+                    StudyMediaTypeBadge(systemImage: isPodcast ? "mic.fill" : "play.fill")
+                }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(state.title)
@@ -408,6 +408,84 @@ private struct MediaStudyingRow: View {
                     .foregroundStyle(.white)
                     .font(.title2)
             )
+    }
+}
+
+/// 52×68 story cover for Studying rows: local cover file first, then the
+/// remote Supabase cover via CachedAsyncImage, falling back to the accent
+/// gradient. Read-only — no download-and-cache side effects.
+private struct StoryCoverThumbnail: View {
+    var story: Story?
+    @State private var localImage: UIImage?
+
+    var body: some View {
+        Group {
+            if let image = localImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 52, height: 68)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            } else if let remoteURL {
+                CachedAsyncImage(url: remoteURL) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    fallbackArtwork
+                }
+                .frame(width: 52, height: 68)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            } else {
+                fallbackArtwork
+            }
+        }
+        .task(id: story?.id) {
+            loadLocalImage()
+        }
+    }
+
+    private var remoteURL: URL? {
+        if let path = story?.remoteCoverPath, !path.isEmpty {
+            return AppConfig.chapterCoverURL(path)
+        }
+        // coverArt occasionally holds a full URL rather than a local filename.
+        if let coverArt = story?.coverArt, coverArt.hasPrefix("http") {
+            return URL(string: coverArt)
+        }
+        return nil
+    }
+
+    private func loadLocalImage() {
+        guard let coverFilename = story?.coverArt, !coverFilename.isEmpty,
+              !coverFilename.hasPrefix("http") else { return }
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let localURL = documentsDirectory.appendingPathComponent(coverFilename)
+        localImage = UIImage(contentsOfFile: localURL.path)
+    }
+
+    private var fallbackArtwork: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(LinearGradient(colors: [.accentColor.opacity(0.75), .accentColor], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .frame(width: 52, height: 68)
+            .overlay(
+                Image(systemName: "book.pages.fill")
+                    .foregroundStyle(.white)
+                    .font(.title2)
+            )
+    }
+}
+
+/// Tiny corner badge identifying the media type of a Studying row.
+private struct StudyMediaTypeBadge: View {
+    let systemImage: String
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 9, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: 18, height: 18)
+            .background(Color.black.opacity(0.65), in: Circle())
+            .overlay(Circle().strokeBorder(Color.white.opacity(0.35), lineWidth: 0.5))
+            .padding(2)
     }
 }
 

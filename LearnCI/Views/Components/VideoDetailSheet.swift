@@ -573,6 +573,13 @@ struct VideoDetailSheet: View {
 
         if newMode == .study {
             studyPaneDisplayMode = .focus
+            // Entering study mode is a deliberate study action — track it.
+            mediaStudyStore.markStudying(
+                video: video,
+                userID: authManager.currentUser,
+                in: modelContext
+            )
+            mediaStudyRevision += 1
             Task {
                 await bootstrapStudyModeIfNeeded(force: !studyViewModel.canEnterStudyMode)
                 await ensureTranslationsForCurrentCue()

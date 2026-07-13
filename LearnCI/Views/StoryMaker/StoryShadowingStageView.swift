@@ -166,35 +166,37 @@ struct StoryShadowingStageView: View {
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: 10) {
-                Button {
+            HStack(spacing: 24) {
+                ChunkIconButton(
+                    systemImage: isPlayingThis ? "pause.fill" : "play.fill",
+                    tint: .accentColor,
+                    isProminent: false,
+                    accessibility: isPlayingThis ? "Pause" : "Play chunk"
+                ) {
                     togglePlay(chunk)
-                } label: {
-                    Label(isPlayingThis ? "Pause" : "Play", systemImage: isPlayingThis ? "pause.fill" : "play.fill")
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
 
-                Button {
+                ChunkIconButton(
+                    systemImage: isRecordingThis ? "stop.fill" : "mic.fill",
+                    tint: isRecordingThis ? .red : .accentColor,
+                    isProminent: true,
+                    accessibility: isRecordingThis ? "Stop recording" : "Record yourself"
+                ) {
                     toggleRecord(chunk)
-                } label: {
-                    Label(isRecordingThis ? "Stop" : "Record", systemImage: isRecordingThis ? "stop.fill" : "record.circle.fill")
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(isRecordingThis ? .red : .accentColor)
-                .controlSize(.regular)
 
-                Button {
+                ChunkIconButton(
+                    systemImage: "waveform",
+                    tint: .accentColor,
+                    isProminent: false,
+                    accessibility: "Play my recording"
+                ) {
                     playMine(chunk)
-                } label: {
-                    Label("Mine", systemImage: "waveform").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
                 .disabled(state.recordingURL == nil)
+                .opacity(state.recordingURL == nil ? 0.35 : 1)
             }
+            .frame(maxWidth: .infinity)
         }
         .padding(14)
         .background(
@@ -441,6 +443,27 @@ struct StoryShadowingStageView: View {
         let regex = try? NSRegularExpression(pattern: "\\p{L}+")
         let ns = text as NSString
         return regex?.numberOfMatches(in: text, range: NSRange(location: 0, length: ns.length)) ?? 0
+    }
+}
+
+/// Compact circular icon button for the chunk cards (play / record / listen).
+private struct ChunkIconButton: View {
+    let systemImage: String
+    let tint: Color
+    let isProminent: Bool
+    let accessibility: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isProminent ? Color.white : tint)
+                .frame(width: 44, height: 44)
+                .background(isProminent ? tint : tint.opacity(0.12), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibility)
     }
 }
 

@@ -15,6 +15,7 @@ struct DashboardView: View {
 
     @Environment(NextSessionPlanManager.self) private var planManager
     @Environment(StoryPathProgressStore.self) private var pathProgressStore
+    @Environment(MediaStudyStore.self) private var mediaStudyStore
     
     var activities: [UserActivity] {
         allActivities.filter { $0.userID == authManager.currentUser }
@@ -148,15 +149,20 @@ struct DashboardView: View {
         let studyStates = pathProgressStore.activeStudyStates(
             for: authManager.currentUser,
             in: modelContext,
-            limit: 3
+            limit: 50
         )
-        if plan != nil || !studyStates.isEmpty {
+        let mediaStates = mediaStudyStore.activeStudyStates(
+            for: authManager.currentUser,
+            in: modelContext,
+            limit: 50
+        )
+        if plan != nil || !studyStates.isEmpty || !mediaStates.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
                 if let plan {
                     todaysPlanCard(plan: plan)
                 }
-                if !studyStates.isEmpty {
-                    studyModeSummaryCard(studyStates: studyStates)
+                if !studyStates.isEmpty || !mediaStates.isEmpty {
+                    studyModeSummaryCard(studyStates: studyStates, mediaStates: mediaStates)
                 }
             }
         }
@@ -218,17 +224,22 @@ struct DashboardView: View {
         return parts.joined(separator: " · ")
     }
 
-    private func studyModeSummaryCard(studyStates: [StoryStudyState]) -> some View {
+    private func studyModeSummaryCard(studyStates: [StoryStudyState], mediaStates: [MediaStudyState]) -> some View {
         NavigationLink {
-            StudyingStoriesView()
+            StudyingView()
         } label: {
-            studyModeSummaryBody(storyCount: studyStates.count)
+            studyModeSummaryBody(
+                storyCount: studyStates.count,
+                videoCount: mediaStates.filter { $0.resourceType == .youtube }.count,
+                podcastCount: mediaStates.filter { $0.resourceType == .podcast }.count
+            )
         }
         .buttonStyle(.plain)
     }
 
-    private func studyModeSummaryBody(storyCount: Int) -> some View {
-        HStack(alignment: .center, spacing: 14) {
+    private func studyModeSummaryBody(storyCount: Int, videoCount: Int, podcastCount: Int) -> some View {
+        let totalCount = storyCount + videoCount + podcastCount
+        return HStack(alignment: .center, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.accentColor.opacity(0.15))
@@ -241,14 +252,28 @@ struct DashboardView: View {
                 Text("Studying")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
-                Text("\(storyCount) \(storyCount == 1 ? "item" : "items") in Study Mode")
+                Text("\(totalCount) \(totalCount == 1 ? "item" : "items") in Study Mode")
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                 HStack(spacing: 8) {
-                    studyModeTypeChip(
-                        title: "\(storyCount) \(storyCount == 1 ? "story" : "stories")",
-                        systemImage: "book.closed.fill"
-                    )
+                    if storyCount > 0 {
+                        studyModeTypeChip(
+                            title: "\(storyCount) \(storyCount == 1 ? "story" : "stories")",
+                            systemImage: "book.closed.fill"
+                        )
+                    }
+                    if videoCount > 0 {
+                        studyModeTypeChip(
+                            title: "\(videoCount) \(videoCount == 1 ? "video" : "videos")",
+                            systemImage: "play.rectangle.fill"
+                        )
+                    }
+                    if podcastCount > 0 {
+                        studyModeTypeChip(
+                            title: "\(podcastCount) \(podcastCount == 1 ? "podcast" : "podcasts")",
+                            systemImage: "mic.fill"
+                        )
+                    }
                 }
             }
             Spacer()
@@ -681,4 +706,5 @@ private struct DashboardCardGrid<Content: View>: View {
         .environment(DataManager())
         .environment(YouTubeManager())
         .environment(AuthManager())
+        .environment(MediaStudyStore())
 }

@@ -4,9 +4,22 @@ import SwiftData
 struct PodcastShowView: View {
     let show: PodcastShow
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var authManager
+    @Environment(MediaStudyStore.self) private var mediaStudyStore
     @State private var podcastManager = PodcastManager()
     @State private var isRefreshing = false
     @State private var sortedEpisodes: [PodcastEpisode] = []
+    @Query private var allMediaStudyStates: [MediaStudyState]
+
+    private func mediaStudyState(for episode: PodcastEpisode) -> MediaStudyState? {
+        let resourceId = episode.id.uuidString
+        return allMediaStudyStates.first {
+            $0.isActive &&
+            $0.resourceTypeRaw == StudyResourceType.podcast.rawValue &&
+            $0.resourceId == resourceId &&
+            $0.userID == authManager.currentUser
+        }
+    }
 
     var body: some View {
         List {
@@ -47,6 +60,27 @@ struct PodcastShowView: View {
                 ForEach(sortedEpisodes) { episode in
                     NavigationLink(destination: PodcastPlayerView(episode: episode)) {
                         EpisodeRow(episode: episode)
+                    }
+                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                        if let state = mediaStudyState(for: episode) {
+                            Button {
+                                mediaStudyStore.unstudy(state, in: modelContext)
+                            } label: {
+                                Label("Remove", systemImage: "book.pages")
+                            }
+                            .tint(.red)
+                        } else {
+                            Button {
+                                mediaStudyStore.markStudying(
+                                    episode: episode,
+                                    userID: authManager.currentUser,
+                                    in: modelContext
+                                )
+                            } label: {
+                                Label("Study", systemImage: "text.book.closed")
+                            }
+                            .tint(.indigo)
+                        }
                     }
                 }
             }

@@ -23,6 +23,7 @@ struct PodcastPlayerView: View {
     @Environment(AudioManager.self) private var audioManager
     @Environment(AuthManager.self) private var authManager
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
+    @Environment(MediaStudyStore.self) private var mediaStudyStore
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -151,6 +152,16 @@ struct PodcastPlayerView: View {
                 ) { definition in
                     session.startSession(definition)
                     saveSessionRecord(definition: definition)
+                    let state = mediaStudyStore.markStudying(
+                        episode: episode,
+                        userID: authManager.currentUser,
+                        in: modelContext
+                    )
+                    mediaStudyStore.updateProgress(
+                        state,
+                        totalBlockCount: session.blocks.count,
+                        in: modelContext
+                    )
                 }
             }
         }
@@ -1550,6 +1561,23 @@ struct PodcastPlayerView: View {
         let currentTime = audioManager.streamCurrentTime
         episode.playbackPosition = currentTime
         episode.isSynced = false
+
+        // Refresh progress only for episodes already being studied —
+        // plain listening must never add a Studying row.
+        if let state = mediaStudyStore.studyState(
+            resourceType: .podcast,
+            resourceId: episode.id.uuidString,
+            userID: authManager.currentUser,
+            in: modelContext
+        ) {
+            mediaStudyStore.updateProgress(
+                state,
+                positionSeconds: currentTime,
+                durationSeconds: max(episode.duration, duration),
+                completedBlockCount: studySessionViewModel.map { $0.completedBlockIndices.count },
+                in: modelContext
+            )
+        }
 
         if duration > 0 && (currentTime >= duration - 30 || currentTime / duration > 0.95) {
             episode.isPlayed = true

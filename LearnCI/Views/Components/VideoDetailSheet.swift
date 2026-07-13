@@ -9,6 +9,7 @@ struct VideoDetailSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
+    @Environment(MediaStudyStore.self) private var mediaStudyStore
     @Query private var allProfiles: [UserProfile]
 
     private let captionService = YouTubeCaptionService()
@@ -39,6 +40,7 @@ struct VideoDetailSheet: View {
     @State private var studyFocusWindowSize: StudyFocusWindowSize = .sentence
     @State private var layoutSize: CGSize = .zero
     @State private var savedStudyRevision = 0
+    @State private var mediaStudyRevision = 0
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
@@ -189,6 +191,18 @@ struct VideoDetailSheet: View {
                         onStart: { definition in
                             session.startSession(definition)
                             saveSessionRecord(definition: definition)
+                            let state = mediaStudyStore.markStudying(
+                                video: video,
+                                userID: authManager.currentUser,
+                                in: modelContext
+                            )
+                            mediaStudyStore.updateProgress(
+                                state,
+                                positionSeconds: studyViewModel.playback.currentTime,
+                                totalBlockCount: session.blocks.count,
+                                in: modelContext
+                            )
+                            mediaStudyRevision += 1
                         }
                     )
                 }
@@ -210,6 +224,22 @@ struct VideoDetailSheet: View {
                 if !hasLoggedTime && watchDuration > 10 {
                     let minutes = Int(max(1, watchDuration / 60))
                     onLogTime(minutes)
+                }
+                // Refresh progress only for videos already being studied —
+                // plain watching must never add a Studying row.
+                if let state = mediaStudyStore.studyState(
+                    resourceType: .youtube,
+                    resourceId: video.id,
+                    userID: authManager.currentUser,
+                    in: modelContext
+                ) {
+                    mediaStudyStore.updateProgress(
+                        state,
+                        positionSeconds: studyViewModel.playback.currentTime,
+                        durationSeconds: Double(video.durationInSeconds),
+                        completedBlockCount: studySessionViewModel.map { $0.completedBlockIndices.count },
+                        in: modelContext
+                    )
                 }
             }
         }
@@ -454,6 +484,7 @@ struct VideoDetailSheet: View {
             VStack(alignment: .leading, spacing: compactStudyChrome ? 10 : 16) {
                 if !compactStudyChrome {
                     studyStatusBanner
+                    studyThisSection
                 }
 
                 if studyViewModel.mode == .study {
@@ -691,6 +722,66 @@ struct VideoDetailSheet: View {
                 )
             }
         }
+    }
+
+    private var currentMediaStudyState: MediaStudyState? {
+        _ = mediaStudyRevision
+        return mediaStudyStore.studyState(
+            resourceType: .youtube,
+            resourceId: video.id,
+            userID: authManager.currentUser,
+            in: modelContext
+        )
+    }
+
+    @ViewBuilder
+    private var studyThisSection: some View {
+        if let state = currentMediaStudyState {
+            HStack(spacing: 10) {
+                Image(systemName: "book.pages.fill")
+                    .font(.caption)
+                    .foregroundStyle(Color.accentColor)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(studyingProgressText(for: state))
+                        .font(.caption.weight(.semibold))
+                    ProgressView(value: state.progressFraction)
+                        .tint(.accentColor)
+                }
+                Spacer()
+                Button("Remove") {
+                    mediaStudyStore.unstudy(state, in: modelContext)
+                    mediaStudyRevision += 1
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.red)
+            }
+            .padding(10)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+        } else {
+            Button {
+                mediaStudyStore.markStudying(
+                    video: video,
+                    userID: authManager.currentUser,
+                    in: modelContext
+                )
+                mediaStudyRevision += 1
+            } label: {
+                Label("Study This Video", systemImage: "sparkles")
+                    .font(.headline)
+                    .foregroundColor(.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor.opacity(0.1))
+                    .cornerRadius(10)
+            }
+        }
+    }
+
+    private func studyingProgressText(for state: MediaStudyState) -> String {
+        guard state.durationSeconds > 0 else { return "Studying" }
+        let positionMinutes = Int(state.lastPositionSeconds / 60)
+        let totalMinutes = max(1, Int(state.durationSeconds / 60))
+        return "Studying · \(positionMinutes)m of \(totalMinutes)m"
     }
 
     private var actionButtons: some View {

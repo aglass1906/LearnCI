@@ -2364,6 +2364,10 @@ struct HeroMediaView: View {
     /// Set to false to hide the "Generate Video" overlay badge (e.g. when the action
     /// is surfaced via a menu instead). The generating progress overlay still shows.
     var showGenerateButton: Bool = true
+    var coverContentMode: ContentMode = .fill
+    var usesScrollRevealEffect: Bool = true
+    var showsVideo: Bool = true
+    var showsGradientOverlay: Bool = true
 
     @State private var localVideoURL: URL? = nil
 
@@ -2373,23 +2377,25 @@ struct HeroMediaView: View {
     var body: some View {
         GeometryReader { geo in
             let minY = geo.frame(in: .global).minY
+            let mediaHeight = geo.size.height + (usesScrollRevealEffect && minY > 0 ? minY : 0)
+            let mediaOffset = usesScrollRevealEffect && minY > 0 ? -minY : 0
 
             ZStack(alignment: .bottomTrailing) {
                 // 1. Video layer (priority)
-                if let videoURL = localVideoURL {
+                if showsVideo, let videoURL = localVideoURL {
                     LoopingVideoPlayerView(url: videoURL)
-                        .frame(width: geo.size.width, height: geo.size.height + (minY > 0 ? minY : 0))
+                        .frame(width: geo.size.width, height: mediaHeight)
                         .clipped()
-                        .offset(y: minY > 0 ? -minY : 0)
+                        .offset(y: mediaOffset)
 
                 // 2. Static cover image fallback
                 } else if let validImage = image {
                     Image(uiImage: validImage)
                         .resizable()
-                        .scaledToFill()
-                        .frame(width: geo.size.width, height: geo.size.height + (minY > 0 ? minY : 0))
+                        .aspectRatio(contentMode: coverContentMode)
+                        .frame(width: geo.size.width, height: mediaHeight)
                         .clipped()
-                        .offset(y: minY > 0 ? -minY : 0)
+                        .offset(y: mediaOffset)
 
                 // 3. Placeholder while loading
                 } else {
@@ -2399,11 +2405,13 @@ struct HeroMediaView: View {
                 }
 
                 // Gradient for text readability
-                LinearGradient(
-                    colors: [.black.opacity(0.55), .clear, .black.opacity(0.15)],
-                    startPoint: .bottom,
-                    endPoint: .top
-                )
+                if showsGradientOverlay {
+                    LinearGradient(
+                        colors: [.black.opacity(0.55), .clear, .black.opacity(0.15)],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                }
 
                 // Video generation overlay
                 if isGeneratingVideo {
@@ -2412,7 +2420,7 @@ struct HeroMediaView: View {
                 } else if let err = videoError {
                     errorBadge(err)
                         .padding(12)
-                } else if localVideoURL == nil && showGenerateButton {
+                } else if (localVideoURL == nil || !showsVideo) && showGenerateButton {
                     generateButton
                         .padding(12)
                 }
@@ -2476,6 +2484,12 @@ struct HeroMediaView: View {
     // MARK: Media loading
 
     private func loadMedia() {
+        guard showsVideo else {
+            localVideoURL = nil
+            loadCoverImage()
+            return
+        }
+
         let storyLabel = "\(story.title) (\(story.id.uuidString.prefix(8))…)"
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         // Generated video: written by VeoService, uploaded by SyncManager

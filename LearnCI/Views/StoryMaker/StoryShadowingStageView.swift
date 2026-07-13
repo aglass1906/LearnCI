@@ -1,9 +1,10 @@
 import SwiftUI
 import AVFoundation
 
-/// Stage 4 — Shadow a couple of passages. Picks two scene-length passages (a
-/// paragraph / few sentences) from the current chapter that have audio, and
-/// walks the learner through Play → Pause → say it out loud → Record → compare.
+/// Stage 4 — Shadow the scene in paragraph-sized chunks. The scene image sits
+/// at the top; below it, one card per chunk with its own Play / Record / Mine
+/// controls, so the learner can hear a chunk, pause, say it aloud, record and
+/// compare — without scrolling away from the text they're speaking.
 struct StoryShadowingStageView: View {
     @Bindable var vm: StoryPathSessionViewModel
 
@@ -11,17 +12,20 @@ struct StoryShadowingStageView: View {
     @State private var recorder = ShadowRecordingManager()
 
     @State private var permissionSheet: PermissionState = .idle
-    @State private var lineStates: [String: LineState] = [:]
-    @State private var lines: [ShadowLine] = []
-    @State private var playingLineID: String?
+    @State private var chunkStates: [String: ChunkState] = [:]
+    @State private var chunks: [ShadowChunk] = []
+    @State private var sceneAudioURL: URL?
+    @State private var sceneImageURL: URL?
+    @State private var playingChunkID: String?
+    @State private var segmentTimer: Timer?
     @State private var showMicExplainer: Bool = false
-    @State private var pendingLineID: String?
+    @State private var pendingChunkID: String?
 
     private enum PermissionState: Equatable {
         case idle, prompting, denied
     }
 
-    private struct LineState {
+    private struct ChunkState {
         var didRecord: Bool = false
         var recordingURL: URL? = nil
     }
@@ -30,16 +34,17 @@ struct StoryShadowingStageView: View {
         VStack(spacing: 0) {
             header
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
+                    heroImage
                     intro
-                    ForEach(Array(lines.enumerated()), id: \.element.id) { pair in
-                        lineCard(index: pair.offset, line: pair.element)
+                    ForEach(chunks) { chunk in
+                        chunkCard(chunk)
                     }
-                    if lines.isEmpty {
+                    if chunks.isEmpty {
                         ContentUnavailableView(
                             "No audio yet",
                             systemImage: "waveform.slash",
-                            description: Text("This chapter doesn't have scene audio available for shadowing.")
+                            description: Text("This scene doesn't have audio available for shadowing.")
                         )
                         .padding(.top, 32)
                     }
@@ -51,17 +56,12 @@ struct StoryShadowingStageView: View {
                 primaryTitle: "Finish Scene",
                 primaryEnabled: true,
                 primaryAction: onContinue,
-                caption: vm.shadowRecordedLineIDs.isEmpty
-                    ? "Play the passage, pause, and say it out loud. Record to compare — or skip."
-                    : "Recorded this passage. Nice speaking practice!",
+                caption: bottomCaption,
                 confirmMessage: "You'll finish this scene. You can come back with the ← button."
             )
         }
         .onAppear { bootstrap() }
-        .onDisappear {
-            recorder.stopPlayback()
-            audioManager.stopStream()
-        }
+        .onDisappear { teardownAudio() }
         .sheet(isPresented: $showMicExplainer) {
             MicExplainerSheet(
                 onContinue: {
@@ -70,7 +70,7 @@ struct StoryShadowingStageView: View {
                 },
                 onCancel: {
                     showMicExplainer = false
-                    pendingLineID = nil
+                    pendingChunkID = nil
                 }
             )
             .presentationDetents([.height(340)])
@@ -83,8 +83,18 @@ struct StoryShadowingStageView: View {
                 }
             }
         } message: {
-            Text("Enable microphone access in Settings to shadow passages. You can also skip this stage.")
+            Text("Enable microphone access in Settings to shadow. You can also skip this stage.")
         }
+    }
+
+    private var recordedCount: Int {
+        chunks.filter { chunkStates[$0.id]?.didRecord == true }.count
+    }
+
+    private var bottomCaption: String {
+        if chunks.isEmpty { return "No audio for this scene — skip ahead." }
+        if recordedCount == 0 { return "Play a chunk, pause, say it out loud. Record to compare — or skip." }
+        return "Recorded \(recordedCount) of \(chunks.count) chunk\(chunks.count == 1 ? "" : "s")."
     }
 
     // MARK: - Sub-views
@@ -92,10 +102,10 @@ struct StoryShadowingStageView: View {
     @ViewBuilder
     private var header: some View {
         HStack {
-            Label("Shadow \(lines.count) passage\(lines.count == 1 ? "" : "s")", systemImage: "mic.fill")
+            Label("Shadow in \(chunks.count) chunk\(chunks.count == 1 ? "" : "s")", systemImage: "mic.fill")
                 .font(.subheadline.weight(.medium))
             Spacer()
-            Text("\(vm.shadowRecordedLineIDs.count) of \(lines.count) done")
+            Text("\(recordedCount) of \(chunks.count) done")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
@@ -105,11 +115,27 @@ struct StoryShadowingStageView: View {
     }
 
     @ViewBuilder
+    private var heroImage: some View {
+        if let url = sceneImageURL {
+            CachedAsyncImage(url: url) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Rectangle()
+                    .fill(Color(uiColor: .secondarySystemBackground))
+                    .overlay(ProgressView())
+            }
+            .frame(height: 160)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+    }
+
+    @ViewBuilder
     private var intro: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Say it out loud")
                 .font(.title3.weight(.semibold))
-            Text("Press play to hear a passage, pause it, then repeat it aloud. Record yourself and compare — retake as many times as you like.")
+            Text("Each card is one chunk of the scene. Play it, then repeat aloud. Record yourself and compare.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -117,14 +143,14 @@ struct StoryShadowingStageView: View {
     }
 
     @ViewBuilder
-    private func lineCard(index: Int, line: ShadowLine) -> some View {
-        let state = lineStates[line.id] ?? LineState()
-        let isRecordingThisLine = recorder.isRecording && recorder.currentLineID == line.id
-        let isPlayingThis = playingLineID == line.id && audioManager.isStreaming
+    private func chunkCard(_ chunk: ShadowChunk) -> some View {
+        let state = chunkStates[chunk.id] ?? ChunkState()
+        let isRecordingThis = recorder.isRecording && recorder.currentLineID == chunk.id
+        let isPlayingThis = playingChunkID == chunk.id && audioManager.isStreaming
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Passage \(index + 1)")
+                Text("Chunk \(chunk.index + 1) of \(chunks.count)")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -135,120 +161,127 @@ struct StoryShadowingStageView: View {
                 }
             }
 
-            if let imageURL = line.imageURL {
-                CachedAsyncImage(url: imageURL) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    Rectangle().fill(Color(uiColor: .tertiarySystemFill))
-                }
-                .frame(height: 130)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-
-            Text(line.text)
+            Text(chunk.text)
                 .font(.system(size: 19, design: .serif))
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack(spacing: 10) {
-                Button {
-                    togglePlayOriginal(line)
-                } label: {
-                    Label(isPlayingThis ? "Pause" : "Play", systemImage: isPlayingThis ? "pause.fill" : "play.fill")
-                        .frame(maxWidth: .infinity)
+            HStack(spacing: 24) {
+                ChunkIconButton(
+                    systemImage: isPlayingThis ? "pause.fill" : "play.fill",
+                    tint: .accentColor,
+                    isProminent: false,
+                    accessibility: isPlayingThis ? "Pause" : "Play chunk"
+                ) {
+                    togglePlay(chunk)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
 
-                Button {
-                    toggleRecord(line)
-                } label: {
-                    Label(isRecordingThisLine ? "Stop" : "Record", systemImage: isRecordingThisLine ? "stop.fill" : "record.circle.fill")
-                        .frame(maxWidth: .infinity)
+                ChunkIconButton(
+                    systemImage: isRecordingThis ? "stop.fill" : "mic.fill",
+                    tint: isRecordingThis ? .red : .accentColor,
+                    isProminent: true,
+                    accessibility: isRecordingThis ? "Stop recording" : "Record yourself"
+                ) {
+                    toggleRecord(chunk)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(isRecordingThisLine ? .red : .accentColor)
-                .controlSize(.regular)
 
-                Button {
-                    playMine(line)
-                } label: {
-                    Label("Mine", systemImage: "waveform").frame(maxWidth: .infinity)
+                ChunkIconButton(
+                    systemImage: "waveform",
+                    tint: .accentColor,
+                    isProminent: false,
+                    accessibility: "Play my recording"
+                ) {
+                    playMine(chunk)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
                 .disabled(state.recordingURL == nil)
+                .opacity(state.recordingURL == nil ? 0.35 : 1)
             }
+            .frame(maxWidth: .infinity)
         }
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color(uiColor: .secondarySystemBackground))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(isPlayingThis || isRecordingThis ? Color.accentColor.opacity(0.5) : Color.clear, lineWidth: 2)
+        )
     }
 
-    // MARK: - Actions
+    // MARK: - Playback
 
-    private func bootstrap() {
-        lines = chooseLines()
-        for line in lines {
-            let existing = recorder.existingRecordingURL(storyID: vm.story.id.uuidString, lineID: line.id)
-            var state = LineState()
-            if let existing {
-                state.didRecord = true
-                state.recordingURL = existing
-                vm.recordShadowLineDone(line.id)
-            }
-            lineStates[line.id] = state
-        }
-    }
-
-    /// Play, pause, or resume the original narration for a passage so the
-    /// learner can listen, stop, and repeat aloud.
-    private func togglePlayOriginal(_ line: ShadowLine) {
+    /// Play this chunk's segment of the scene audio (word-timing time range),
+    /// or pause if it's currently playing.
+    private func togglePlay(_ chunk: ShadowChunk) {
         recorder.stopPlayback()
 
-        // Same passage currently playing → pause.
-        if playingLineID == line.id, audioManager.isStreaming {
+        if playingChunkID == chunk.id, audioManager.isStreaming {
             audioManager.pauseStream()
+            stopSegmentTimer()
+            playingChunkID = nil
             return
         }
-        // Same passage, loaded but paused → resume.
-        if playingLineID == line.id, audioManager.streamPlayer != nil {
-            audioManager.playStream()
-            return
-        }
-        // Different (or first) passage → load and play.
-        guard let url = line.audioURL else { return }
+
+        guard let url = sceneAudioURL else { return }
+        stopSegmentTimer()
         audioManager.onStreamFinished = {
-            playingLineID = nil
+            playingChunkID = nil
+            stopSegmentTimer()
         }
-        audioManager.streamAudio(url: url)
+        audioManager.streamAudio(url: url, startAt: chunk.startTime ?? 0)
         audioManager.playStream()
-        playingLineID = line.id
+        playingChunkID = chunk.id
+        if let end = chunk.endTime {
+            startSegmentTimer(end: end)
+        }
     }
 
-    private func toggleRecord(_ line: ShadowLine) {
+    /// Poll the stream clock and pause at the chunk's end time.
+    private func startSegmentTimer(end: Double) {
+        segmentTimer?.invalidate()
+        segmentTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            Task { @MainActor in
+                if audioManager.streamCurrentTime >= end - 0.05 {
+                    audioManager.pauseStream()
+                    playingChunkID = nil
+                    stopSegmentTimer()
+                }
+            }
+        }
+    }
+
+    private func stopSegmentTimer() {
+        segmentTimer?.invalidate()
+        segmentTimer = nil
+    }
+
+    private func stopScenePlayback() {
+        stopSegmentTimer()
+        audioManager.stopStream()
+        playingChunkID = nil
+    }
+
+    // MARK: - Recording
+
+    private func toggleRecord(_ chunk: ShadowChunk) {
         if recorder.isRecording {
             if let url = recorder.stopRecording() {
-                var state = lineStates[line.id] ?? LineState()
+                var state = chunkStates[chunk.id] ?? ChunkState()
                 state.didRecord = true
                 state.recordingURL = url
-                lineStates[line.id] = state
-                vm.recordShadowLineDone(line.id)
+                chunkStates[chunk.id] = state
+                vm.recordShadowLineDone(chunk.id)
             }
             return
         }
 
-        // Permission gate
         switch recorder.micPermission {
         case .granted:
-            stopOriginalPlayback()
-            _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: line.id)
+            stopScenePlayback()
+            _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: chunk.id)
         case .undetermined:
-            // Friendly explainer before the system permission prompt.
-            pendingLineID = line.id
+            pendingChunkID = chunk.id
             showMicExplainer = true
         case .denied:
             permissionSheet = .denied
@@ -256,14 +289,14 @@ struct StoryShadowingStageView: View {
     }
 
     private func beginRecordingAfterExplainer() {
-        guard let lineID = pendingLineID else { return }
+        guard let chunkID = pendingChunkID else { return }
         Task {
             let granted = await recorder.requestMicPermission()
             await MainActor.run {
-                pendingLineID = nil
+                pendingChunkID = nil
                 if granted {
-                    stopOriginalPlayback()
-                    _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: lineID)
+                    stopScenePlayback()
+                    _ = recorder.startRecording(storyID: vm.story.id.uuidString, lineID: chunkID)
                 } else {
                     permissionSheet = .denied
                 }
@@ -271,65 +304,178 @@ struct StoryShadowingStageView: View {
         }
     }
 
-    private func playMine(_ line: ShadowLine) {
-        guard let url = lineStates[line.id]?.recordingURL else { return }
-        stopOriginalPlayback()
+    private func playMine(_ chunk: ShadowChunk) {
+        guard let url = chunkStates[chunk.id]?.recordingURL else { return }
+        stopScenePlayback()
         recorder.playRecording(at: url)
-    }
-
-    private func stopOriginalPlayback() {
-        audioManager.stopStream()
-        playingLineID = nil
     }
 
     private func onContinue() {
         recorder.stopPlayback()
         recorder.restorePlaybackSession()
-        audioManager.stopStream()
+        stopScenePlayback()
         vm.advanceToNextStage()
     }
 
-    // MARK: - Passage selection
+    private func teardownAudio() {
+        recorder.stopPlayback()
+        stopScenePlayback()
+    }
 
-    /// The passage to shadow is the current Study Mode chunk (this scene). If
-    /// the scene has no audio clip, returns empty.
-    private func chooseLines() -> [ShadowLine] {
+    // MARK: - Chunk building
+
+    private func bootstrap() {
         let adapter = StoryReaderDataAdapter(story: vm.story)
         guard let clip = adapter
             .audioClips(forChapter: vm.chunkChapterArrayIndex)
             .first(where: { $0.sceneIndex == vm.chunkSceneIndex })
         else {
-            return []
+            chunks = []
+            return
         }
 
-        let text = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return [] }
-
-        let url = StoryReaderDataAdapter.cachedAudioURL(
+        sceneImageURL = clip.imageURL
+        sceneAudioURL = StoryReaderDataAdapter.cachedAudioURL(
             storyID: vm.story.id,
             clip: clip,
             storyUpdatedAt: vm.story.updatedAt
         ) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString)
-        guard let url else { return [] }
 
-        return [
-            ShadowLine(
-                id: "\(vm.currentChunk?.chapterNumber ?? 0)-\(clip.sceneIndex)",
-                text: text,
-                audioURL: url,
-                imageURL: clip.imageURL,
-                wordCount: text.split(whereSeparator: { $0.isWhitespace }).count
+        let text = clip.caption.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, sceneAudioURL != nil else {
+            chunks = []
+            return
+        }
+
+        chunks = Self.buildChunks(
+            sceneText: text,
+            timings: vm.chunkWordTimings,
+            idPrefix: "\(vm.currentChunk?.chapterNumber ?? 0)-\(clip.sceneIndex)"
+        )
+
+        // Restore any existing recordings for these chunks.
+        for chunk in chunks {
+            let existing = recorder.existingRecordingURL(storyID: vm.story.id.uuidString, lineID: chunk.id)
+            var state = ChunkState()
+            if let existing {
+                state.didRecord = true
+                state.recordingURL = existing
+                vm.recordShadowLineDone(chunk.id)
+            }
+            chunkStates[chunk.id] = state
+        }
+    }
+
+    /// Split the scene text into paragraph-sized chunks and map each to a time
+    /// range in the scene audio using word timings (same \p{L}+ word order as
+    /// `TimedTextView`). Chunks without timing coverage get nil times and play
+    /// the whole scene audio from their best-known start.
+    static func buildChunks(sceneText: String, timings: [WordTiming], idPrefix: String) -> [ShadowChunk] {
+        let paragraphs = splitIntoParagraphs(sceneText)
+        var result: [ShadowChunk] = []
+        var wordCursor = 0
+
+        for (index, para) in paragraphs.enumerated() {
+            let count = wordCount(in: para)
+            let startIdx = wordCursor
+            let endIdx = wordCursor + count - 1
+            wordCursor += count
+
+            var start: Double? = nil
+            var end: Double? = nil
+            if count > 0, startIdx < timings.count {
+                start = timings[startIdx].start
+                if endIdx < timings.count {
+                    end = timings[endIdx].end
+                }
+            }
+
+            result.append(
+                ShadowChunk(
+                    id: "\(idPrefix)-p\(index)",
+                    index: index,
+                    text: para,
+                    startTime: start,
+                    endTime: end
+                )
             )
-        ]
+        }
+        return result
+    }
+
+    private static func splitIntoParagraphs(_ text: String) -> [String] {
+        var parts = text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        // Single-block scenes: group sentences into pairs so chunks stay short
+        // enough to say in one breath or two.
+        if parts.count <= 1 {
+            let sentences = splitSentences(text)
+            if sentences.count > 2 {
+                parts = stride(from: 0, to: sentences.count, by: 2).map { start in
+                    sentences[start..<min(start + 2, sentences.count)].joined(separator: " ")
+                }
+            }
+        }
+        return parts.isEmpty ? [text] : parts
+    }
+
+    private static func splitSentences(_ text: String) -> [String] {
+        var result: [String] = []
+        var current = ""
+        for ch in text {
+            current.append(ch)
+            if ".!?。！？".contains(ch) {
+                let trimmed = current.trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty { result.append(trimmed) }
+                current = ""
+            }
+        }
+        let trimmed = current.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty { result.append(trimmed) }
+        return result
+    }
+
+    /// Counts words with the same \p{L}+ pattern `TimedTextView` uses, so word
+    /// indices line up with `WordTiming` order.
+    private static func wordCount(in text: String) -> Int {
+        let regex = try? NSRegularExpression(pattern: "\\p{L}+")
+        let ns = text as NSString
+        return regex?.numberOfMatches(in: text, range: NSRange(location: 0, length: ns.length)) ?? 0
     }
 }
 
-private struct ShadowLine: Identifiable, Hashable {
+/// Compact circular icon button for the chunk cards (play / record / listen).
+private struct ChunkIconButton: View {
+    let systemImage: String
+    let tint: Color
+    let isProminent: Bool
+    let accessibility: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isProminent ? Color.white : tint)
+                .frame(width: 44, height: 44)
+                .background(isProminent ? tint : tint.opacity(0.12), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibility)
+    }
+}
+
+struct ShadowChunk: Identifiable, Equatable {
     let id: String
+    let index: Int
     let text: String
-    let audioURL: URL?
-    let imageURL: URL?
-    let wordCount: Int
+    /// Segment bounds within the scene audio (seconds); nil when word timings
+    /// don't cover this chunk — playback then runs from startTime (or 0) to the
+    /// end of the scene audio.
+    let startTime: Double?
+    let endTime: Double?
 }
 
 /// One-time friendly explainer shown before the OS microphone prompt.
@@ -347,7 +493,7 @@ private struct MicExplainerSheet: View {
             Text("Record your speaking")
                 .font(.title3.weight(.semibold))
 
-            Text("Shadowing means saying a passage out loud and comparing it to the original. LearnCI needs microphone access to record you. Recordings stay on your device — they're never uploaded.")
+            Text("Shadowing means saying a chunk out loud and comparing it to the original. LearnCI needs microphone access to record you. Recordings stay on your device — they're never uploaded.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

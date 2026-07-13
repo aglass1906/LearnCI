@@ -522,6 +522,19 @@ private struct StoryActionTile: View {
     let isBusy: Bool
     let action: () -> Void
 
+    private var backgroundStyle: AnyShapeStyle {
+        if isProminent {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        }
+        return AnyShapeStyle(Color(.secondarySystemBackground))
+    }
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
@@ -540,20 +553,7 @@ private struct StoryActionTile: View {
             .foregroundStyle(isProminent ? Color.white : Color.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 72)
-            .background(
-                Group {
-                    if isProminent {
-                        LinearGradient(
-                            colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    } else {
-                        Color(.secondarySystemBackground)
-                    }
-                },
-                in: RoundedRectangle(cornerRadius: 12)
-            )
+            .background(backgroundStyle, in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
         .disabled(isBusy)

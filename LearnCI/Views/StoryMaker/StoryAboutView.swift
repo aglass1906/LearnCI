@@ -80,8 +80,8 @@ struct StoryAboutView: View {
                 // ── Story Details ─────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 20) {
                     
-                    // ── Compact Header: one poster image + title + tags ───
-                    HStack(alignment: .top, spacing: 16) {
+                    // ── Cover image + title + tags ───────────────────────
+                    VStack(alignment: .leading, spacing: 14) {
                         HeroMediaView(
                             story: story,
                             image: $heroImage,
@@ -89,40 +89,44 @@ struct StoryAboutView: View {
                             videoStatus: videoStatusMessage,
                             videoError: videoGenerationError,
                             onGenerateVideo: { showVideoGenerator = true },
-                            showGenerateButton: false
+                            showGenerateButton: false,
+                            coverContentMode: .fit,
+                            usesScrollRevealEffect: false,
+                            showsVideo: false,
+                            showsGradientOverlay: false
                         )
-                        .frame(width: 110, height: 150)
-                        .cornerRadius(12)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 300)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
 
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(story.title)
-                                .font(.system(size: 24, weight: .bold, design: .serif))
-                                .fixedSize(horizontal: false, vertical: true)
+                        Text(story.title)
+                            .font(.system(size: 24, weight: .bold, design: .serif))
+                            .fixedSize(horizontal: false, vertical: true)
 
-                            if !story.preferences.protagonistName.isEmpty {
-                                Text("Starring \(story.preferences.protagonistName)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                        if !story.preferences.protagonistName.isEmpty {
+                            Text("Starring \(story.preferences.protagonistName)")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        StoryWorkspaceMetaChips(story: story)
+
+                        FlowLayout(spacing: 6) {
+                            if story.preferences.audioStyle == .dramatized {
+                                Label("Dramatized", systemImage: "person.2.fill")
+                                    .badgeStyle()
+                                    .foregroundStyle(.teal)
                             }
-
-                            StoryWorkspaceMetaChips(story: story)
-
-                            FlowLayout(spacing: 6) {
-                                if story.preferences.audioStyle == .dramatized {
-                                    Label("Dramatized", systemImage: "person.2.fill")
-                                        .badgeStyle()
-                                        .foregroundStyle(.teal)
-                                }
-                                if let wordCount = storyWordCount {
-                                    Label(wordCount, systemImage: "doc.text")
-                                        .badgeStyle()
-                                }
-                                if story.preferences.interactiveAudio {
-                                    Label("Dialog Audio", systemImage: "waveform.and.mic")
-                                        .badgeStyle()
-                                        .foregroundStyle(.orange)
-                                }
+                            if let wordCount = storyWordCount {
+                                Label(wordCount, systemImage: "doc.text")
+                                    .badgeStyle()
+                            }
+                            if story.preferences.interactiveAudio {
+                                Label("Dialog Audio", systemImage: "waveform.and.mic")
+                                    .badgeStyle()
+                                    .foregroundStyle(.orange)
                             }
                         }
                     }

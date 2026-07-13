@@ -25,22 +25,22 @@ struct LearnHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        NavigationLink(destination: StudyingStoriesView()) {
-                            HubPanelHero(
-                                title: "Studying",
-                                subtitle: studyingSubtitle,
-                                icon: "book.pages.fill",
-                                gradient: Gradient(colors: [.purple, .indigo])
-                            )
-                        }
-                        .buttonStyle(.plain)
-
                         NavigationLink(destination: AboutCIView()) {
                             HubPanelHero(
                                 title: "Comprehensive Learning",
                                 subtitle: "Study the method behind input-first language learning",
                                 icon: "book.closed.fill",
                                 gradient: Gradient(colors: [.blue, .teal])
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink(destination: StudyingStoriesView()) {
+                            HubPanelHero(
+                                title: "Studying",
+                                subtitle: studyingSubtitle,
+                                icon: "book.pages.fill",
+                                gradient: Gradient(colors: [.purple, .indigo])
                             )
                         }
                         .buttonStyle(.plain)
@@ -140,7 +140,7 @@ private struct StudyingRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
             RoundedRectangle(cornerRadius: 10)
                 .fill(LinearGradient(colors: [.accentColor.opacity(0.75), .accentColor], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 52, height: 68)
@@ -153,7 +153,7 @@ private struct StudyingRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(state.storyTitle)
                     .font(.headline)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -163,10 +163,12 @@ private struct StudyingRow: View {
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
+            .layoutPriority(1)
             Spacer()
             Image(systemName: "arrow.right.circle.fill")
                 .font(.title2)
                 .foregroundStyle(Color.accentColor)
+                .padding(.top, 2)
         }
         .padding(12)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))

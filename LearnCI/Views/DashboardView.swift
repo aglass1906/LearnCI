@@ -155,8 +155,8 @@ struct DashboardView: View {
                 if let plan {
                     todaysPlanCard(plan: plan)
                 }
-                ForEach(studyStates.filter { plan?.sourceID != $0.storyID }, id: \.id) { state in
-                    studyStateCard(state: state)
+                if !studyStates.isEmpty {
+                    studyModeSummaryCard(studyStates: studyStates)
                 }
             }
         }
@@ -218,25 +218,16 @@ struct DashboardView: View {
         return parts.joined(separator: " · ")
     }
 
-    @ViewBuilder
-    private func studyStateCard(state: StoryStudyState) -> some View {
-        let story = allStories.first { $0.id.uuidString == state.storyID }
-        Group {
-            if let story {
-                NavigationLink {
-                    StoryPathContainerView(story: story)
-                } label: {
-                    studyStateBody(state: state)
-                }
-                .buttonStyle(.plain)
-            } else {
-                studyStateBody(state: state)
-            }
+    private func studyModeSummaryCard(studyStates: [StoryStudyState]) -> some View {
+        NavigationLink {
+            StudyingStoriesView()
+        } label: {
+            studyModeSummaryBody(storyCount: studyStates.count)
         }
+        .buttonStyle(.plain)
     }
 
-    @ViewBuilder
-    private func studyStateBody(state: StoryStudyState) -> some View {
+    private func studyModeSummaryBody(storyCount: Int) -> some View {
         HStack(alignment: .center, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
@@ -250,12 +241,15 @@ struct DashboardView: View {
                 Text("Studying")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
-                Text(state.storyTitle)
+                Text("\(storyCount) \(storyCount == 1 ? "item" : "items") in Study Mode")
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
-                Text("Scene \(state.currentOrdinal + 1) of \(max(1, state.totalChunks))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    studyModeTypeChip(
+                        title: "\(storyCount) \(storyCount == 1 ? "story" : "stories")",
+                        systemImage: "book.closed.fill"
+                    )
+                }
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -263,6 +257,13 @@ struct DashboardView: View {
         }
         .padding(12)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func studyModeTypeChip(title: String, systemImage: String) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
     }
 
     @ViewBuilder

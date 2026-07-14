@@ -150,6 +150,7 @@ struct StudyingView: View {
         .sheet(item: $selectedVideo) { video in
             VideoDetailSheet(
                 video: video,
+                startInStudyMode: true,
                 onWatch: {
                     if let url = URL(string: "https://www.youtube.com/watch?v=\(video.id)") {
                         UIApplication.shared.open(url)

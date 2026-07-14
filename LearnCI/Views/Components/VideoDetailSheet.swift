@@ -3,6 +3,7 @@ import SwiftData
 
 struct VideoDetailSheet: View {
     let video: YouTubeVideo
+    let startInStudyMode: Bool
     let onWatch: () -> Void
     let onLogTime: (Int) -> Void
     @Environment(\.dismiss) private var dismiss
@@ -41,6 +42,7 @@ struct VideoDetailSheet: View {
     @State private var layoutSize: CGSize = .zero
     @State private var savedStudyRevision = 0
     @State private var mediaStudyRevision = 0
+    @State private var didApplyInitialStudyMode = false
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
@@ -64,10 +66,12 @@ struct VideoDetailSheet: View {
 
     init(
         video: YouTubeVideo,
+        startInStudyMode: Bool = false,
         onWatch: @escaping () -> Void,
         onLogTime: @escaping (Int) -> Void
     ) {
         self.video = video
+        self.startInStudyMode = startInStudyMode
         self.onWatch = onWatch
         self.onLogTime = onLogTime
         _studyViewModel = State(initialValue: YouTubeStudyViewModel(video: video))
@@ -142,6 +146,10 @@ struct VideoDetailSheet: View {
                 hydrateStudyModeFromCacheIfAvailable()
                 if studyViewModel.mode == .study {
                     syncStudySessionViewModel()
+                }
+                if startInStudyMode && !didApplyInitialStudyMode && studyViewModel.mode == .watch {
+                    didApplyInitialStudyMode = true
+                    setViewingMode(.study)
                 }
             }
             .task {

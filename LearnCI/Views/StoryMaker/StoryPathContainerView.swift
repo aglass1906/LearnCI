@@ -14,6 +14,7 @@ struct StoryPathContainerView: View {
 
     @State private var vm: StoryPathSessionViewModel?
     @State private var showExitConfirmation = false
+    @State private var showScenePicker = false
 
     init(story: Story) {
         self.story = story
@@ -54,6 +55,9 @@ struct StoryPathContainerView: View {
             Button("Keep Studying", role: .cancel) {}
         } message: {
             Text("Your progress is saved. This story stays in Study Mode — pick up from the Learn tab or the story page.")
+        }
+        .sheet(isPresented: $showScenePicker) {
+            StoryScenePickerSheet(vm: vm)
         }
     }
 
@@ -97,9 +101,24 @@ struct StoryPathContainerView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Text(vm.chunkPositionLabel)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                if vm.phase == .studying || vm.phase == .chunkComplete {
+                    Button {
+                        showScenePicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(vm.chunkPositionLabel)
+                                .font(.caption.weight(.semibold))
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption2.weight(.semibold))
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                    .accessibilityLabel("Choose a scene to study")
+                } else {
+                    Text(vm.chunkPositionLabel)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if vm.phase == .studying {
@@ -112,22 +131,35 @@ struct StoryPathContainerView: View {
 
     @ViewBuilder
     private func stageRail(vm: StoryPathSessionViewModel) -> some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .top, spacing: 6) {
             ForEach(StoryPathSessionViewModel.Stage.allCases, id: \.rawValue) { stage in
                 let done = vm.stageCompletion[stage.rawValue - 1]
                 let isCurrent = vm.currentStage == stage
-                Capsule()
-                    .fill(done ? Color.green : (isCurrent ? Color.accentColor : Color(uiColor: .tertiarySystemFill)))
-                    .frame(height: 4)
-                    .overlay(
-                        Group {
-                            if isCurrent {
-                                Capsule()
-                                    .stroke(Color.accentColor.opacity(0.35), lineWidth: 2)
+                VStack(spacing: 4) {
+                    Capsule()
+                        .fill(done ? Color.green : (isCurrent ? Color.accentColor : Color(uiColor: .tertiarySystemFill)))
+                        .frame(height: 4)
+                        .overlay(
+                            Group {
+                                if isCurrent {
+                                    Capsule()
+                                        .stroke(Color.accentColor.opacity(0.35), lineWidth: 2)
+                                }
                             }
-                        }
-                    )
-                    .accessibilityLabel(stage.label)
+                        )
+                    HStack(spacing: 3) {
+                        Image(systemName: stage.systemImage)
+                            .font(.system(size: 9, weight: isCurrent ? .bold : .regular))
+                        Text(stage.label)
+                            .font(.caption2.weight(isCurrent ? .bold : .regular))
+                    }
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .foregroundStyle(isCurrent ? Color.accentColor : (done ? Color.green : Color.secondary))
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(stage.label)\(isCurrent ? ", current stage" : (done ? ", completed" : ""))")
             }
         }
     }
@@ -357,6 +389,59 @@ private struct StoryStudyFinishedView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
+    }
+}
+
+// MARK: - Scene picker
+
+/// Sheet listing every scene of the story; tapping one jumps the guided
+/// study session to it. Completed scenes show a green check, the current
+/// scene is highlighted.
+private struct StoryScenePickerSheet: View {
+    let vm: StoryPathSessionViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                let completed = vm.completedChunkOrdinals()
+                ForEach(Array(vm.chunks.enumerated()), id: \.element.id) { index, chunk in
+                    let isCurrent = index == vm.chunkOrdinal
+                    Button {
+                        vm.jumpToChunk(at: index)
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: completed.contains(index)
+                                  ? "checkmark.circle.fill"
+                                  : (isCurrent ? "book.pages.fill" : "circle"))
+                                .foregroundStyle(completed.contains(index)
+                                                 ? Color.green
+                                                 : (isCurrent ? Color.accentColor : Color.secondary))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(vm.titleForChunk(chunk))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                if isCurrent {
+                                    Text("Currently studying")
+                                        .font(.caption2)
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Scenes")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 

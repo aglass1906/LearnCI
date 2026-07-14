@@ -244,6 +244,45 @@ final class StoryPathSessionViewModel {
         phase = .studying
     }
 
+    /// Jump directly to an arbitrary scene (header scene picker). Saves the
+    /// current chunk's progress first, then points Study Mode at the chosen
+    /// chunk so resuming later lands there.
+    func jumpToChunk(at index: Int) {
+        guard chunks.indices.contains(index), index != chunkOrdinal else { return }
+        persist()
+        chunkOrdinal = index
+        store.advanceStudy(studyState, to: chunks[index], in: context)
+        loadCurrentChunk()
+        phase = .studying
+    }
+
+    /// Display title for an arbitrary chunk (scene picker rows), using the
+    /// story-wide scene number to match `chunkPositionLabel`.
+    func titleForChunk(_ chunk: StoryStudyChunk) -> String {
+        let chapterTitle = storyChapters.indices.contains(chunk.chapterArrayIndex)
+            ? storyChapters[chunk.chapterArrayIndex].titleFor(langCode)
+            : ""
+        let scenePart = "Scene \(chunk.ordinal + 1)"
+        return chapterTitle.isEmpty ? scenePart : "\(scenePart) · \(chapterTitle)"
+    }
+
+    /// Ordinals of chunks whose guided pass is fully complete.
+    func completedChunkOrdinals() -> Set<Int> {
+        var completed: Set<Int> = []
+        for (index, chunk) in chunks.enumerated() {
+            if let record = store.progress(
+                for: story.id.uuidString,
+                chapterNumber: chunk.chapterNumber,
+                sceneIndex: chunk.sceneIndex,
+                userID: userID,
+                in: context
+            ), record.completedAt != nil {
+                completed.insert(index)
+            }
+        }
+        return completed
+    }
+
     private func loadCurrentChunk() {
         // Reset per-chunk live state and pull that chunk's saved progress.
         readElapsedSeconds = 0

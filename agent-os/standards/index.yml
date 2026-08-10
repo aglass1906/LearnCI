@@ -1,0 +1,30 @@
+standards:
+  - id: ios-swiftui
+    name: SwiftUI & State Management
+    description: Standards for SwiftUI views, @Observable managers, and environment injection in LearnCI.
+    path: agent-os/standards/ios-swiftui.md
+    tags: [swiftui, observable, viewmodels, architecture, views]
+
+  - id: data-sync
+    name: Dual Persistence & Supabase Sync
+    description: Rules for SwiftData models, Supabase PostgreSQL, DTO push/pull contracts, and Storage path conventions.
+    path: agent-os/standards/data-sync.md
+    tags: [swiftdata, supabase, dto, sync, database, storage]
+
+  - id: game-engine
+    name: Game Session Lifecycle & Specifications
+    description: 7-stage game lifecycle, universal vs game-specific configuration, GameSessionViewModel states, and card deck handling.
+    path: agent-os/standards/game-engine.md
+    tags: [games, viewmodels, flashcards, memory, linker, wordrain]
+
+  - id: ai-pipeline
+    name: AI Content Generation Pipeline
+    description: Specifications for Python scripts, GPT-4 text generation, ElevenLabs TTS, Whisper word timings, and Google Veo video generation.
+    path: agent-os/standards/ai-pipeline.md
+    tags: [openai, elevenlabs, gemini, veo, whisper, python, scripts]
+
+  - id: testing-build
+    name: Build, CLI & Testing Standards
+    description: CLI xcodebuild commands, simulator destination configurations, and verification criteria for agent work.
+    path: agent-os/standards/testing-build.md
+    tags: [xcodebuild, tests, simulator, verification, cli]

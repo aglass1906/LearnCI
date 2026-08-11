@@ -36,16 +36,16 @@ struct VideoView: View {
     
     @Query(sort: \Favorite.createdAt, order: .reverse) private var allFavorites: [Favorite]
     
-    @State private var sourceScope: VideoSourceScope = .all
-    @State private var favoritesBrowseMode: FavoritesBrowseMode = .feed
-    @State private var mode: VideoTabMode = .subscriptions
-    @State private var selectedCategory: String = "All"
+    @AppStorage("input.youtube.sourceScope") private var sourceScope: VideoSourceScope = .all
+    @AppStorage("input.youtube.favoritesBrowseMode") private var favoritesBrowseMode: FavoritesBrowseMode = .feed
+    @AppStorage("input.youtube.tabMode") private var mode: VideoTabMode = .subscriptions
+    @AppStorage("input.youtube.discoveryCategory") private var selectedCategory: String = "All"
     @State private var selectedVideo: YouTubeVideo?
     @State private var showWatchTimePrompt = false
     @State private var watchMinutes: Double = 10
     @State private var watchComment: String = ""
     @State private var isShowingLogSheet = false
-    @State private var shortsFilter: VideoFilter = .all
+    @AppStorage("input.youtube.formatFilter") private var shortsFilter: VideoFilter = .all
     @State private var selectedChannel: YouTubeChannel?
     
     let categories = ["All", "Vlogs", "Grammar", "Music", "Input"]
@@ -243,6 +243,9 @@ struct VideoView: View {
             refreshDiscovery()
         }
         .task {
+            if !categories.contains(selectedCategory) {
+                selectedCategory = "All"
+            }
             if sourceScope == .favorites {
                 refreshFavoriteSavedVideos()
             }

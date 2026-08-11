@@ -6,9 +6,23 @@ struct FlashcardDeckBrowserView: View {
     @Environment(DataManager.self) private var dataManager
     @Query private var allProfiles: [UserProfile]
 
-    @State private var selectedLanguage: Language = .spanish
-    @State private var selectedLevel: Int?
+    @AppStorage("input.flashcards.languageCode") private var storedLanguageCode = ""
+    @AppStorage("input.flashcards.levelFilter") private var selectedLevel = 0
     @State private var decks: [DeckMetadata] = []
+
+    private var selectedLanguage: Language {
+        if storedLanguageCode.isEmpty {
+            return userProfile?.currentLanguage ?? .spanish
+        }
+        return Language.fromStoredValue(storedLanguageCode)
+    }
+
+    private var languageSelection: Binding<Language> {
+        Binding(
+            get: { selectedLanguage },
+            set: { storedLanguageCode = $0.code }
+        )
+    }
 
     private var userProfile: UserProfile? {
         allProfiles.first { $0.userID == authManager.currentUser }
@@ -16,7 +30,7 @@ struct FlashcardDeckBrowserView: View {
 
     private var groupedDecks: [(level: Int, decks: [DeckMetadata])] {
         let filteredDecks = decks.filter { deck in
-            guard let selectedLevel else { return true }
+            guard selectedLevel > 0 else { return true }
             let deckLevel = deck.proficiencyLevel ?? (deck.level.map { LevelManager.shared.normalize($0) } ?? 1)
             return deckLevel == selectedLevel
         }
@@ -33,7 +47,7 @@ struct FlashcardDeckBrowserView: View {
     var body: some View {
         List {
             Section {
-                Picker("Language", selection: $selectedLanguage) {
+                Picker("Language", selection: languageSelection) {
                     ForEach(Language.allCases) { language in
                         Text("\(language.flag) \(language.displayName)").tag(language)
                     }
@@ -41,9 +55,9 @@ struct FlashcardDeckBrowserView: View {
                 .pickerStyle(.menu)
 
                 Picker("Level", selection: $selectedLevel) {
-                    Text("All").tag(Optional<Int>.none)
+                    Text("All").tag(0)
                     ForEach(1...6, id: \.self) { level in
-                        Text(levelTitle(level)).tag(Optional(level))
+                        Text(levelTitle(level)).tag(level)
                     }
                 }
                 .pickerStyle(.menu)
@@ -70,10 +84,12 @@ struct FlashcardDeckBrowserView: View {
         .navigationTitle("Flashcards")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            selectedLanguage = userProfile?.currentLanguage ?? selectedLanguage
+            if storedLanguageCode.isEmpty {
+                storedLanguageCode = (userProfile?.currentLanguage ?? .spanish).code
+            }
             refreshDecks()
         }
-        .onChange(of: selectedLanguage) { _, _ in
+        .onChange(of: storedLanguageCode) { _, _ in
             refreshDecks()
         }
     }

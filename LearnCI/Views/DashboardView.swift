@@ -11,6 +11,8 @@ struct DashboardView: View {
     @Query private var allProfiles: [UserProfile]
     @Query(sort: \CoachingCheckIn.date, order: .reverse) private var coachingHistory: [CoachingCheckIn]
     @Query private var allStories: [Story]
+    @Query private var allPodcastEpisodes: [PodcastEpisode]
+    @Query(sort: \MediaPlaybackState.updatedAt, order: .reverse) private var mediaPlaybackStates: [MediaPlaybackState]
 
     @Environment(NextSessionPlanManager.self) private var planManager
     @Environment(StoryPathProgressStore.self) private var pathProgressStore
@@ -30,6 +32,35 @@ struct DashboardView: View {
     @State private var wordOfDayDeckTitle: String?
     @State private var wordOfDayDeckDescription: String?
     @State private var isLoadingWordOfDay = false
+    @State private var selectedContinueVideo: ContinueVideoSelection?
+
+    private struct ContinueVideoSelection: Identifiable {
+        let video: YouTubeVideo
+        let startsInStudyMode: Bool
+        var id: String { video.id }
+    }
+
+    private enum ContinueLearningItem: Identifiable {
+        case storyAudio(Story, StoryReaderProgress)
+        case podcast(PodcastEpisode, Date)
+        case youtube(MediaPlaybackState)
+
+        var id: String {
+            switch self {
+            case .storyAudio(let story, _): return "story:\(story.id)"
+            case .podcast(let episode, _): return "podcast:\(episode.id)"
+            case .youtube(let state): return "youtube:\(state.resourceId)"
+            }
+        }
+
+        var updatedAt: Date {
+            switch self {
+            case .storyAudio(_, let progress): return progress.updatedAt
+            case .podcast(_, let date): return date
+            case .youtube(let state): return state.updatedAt
+            }
+        }
+    }
 
     
     var userProfile: UserProfile? {
@@ -101,6 +132,14 @@ struct DashboardView: View {
                         }
                     }
                 }
+                .sheet(item: $selectedContinueVideo) { selection in
+                    VideoDetailSheet(
+                        video: selection.video,
+                        startInStudyMode: selection.startsInStudyMode,
+                        onWatch: { openInYouTube(selection.video) },
+                        onLogTime: { _ in }
+                    )
+                }
             }
 
             // Loading Overlay
@@ -121,6 +160,8 @@ struct DashboardView: View {
 
             todaysPlanSection
 
+            continueInputSection
+
             LearningStatsCard(stats: learningStats, appliesHorizontalPadding: false)
 
             DashboardCardGrid(usesTwoColumns: usesTwoColumns) {
@@ -137,6 +178,172 @@ struct DashboardView: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 32)
+    }
+
+    private var continueInputItems: [ContinueLearningItem] {
+        var candidates: [ContinueLearningItem] = []
+
+        for story in allStories where story.userID.isEmpty || story.userID == authManager.currentUser {
+            if let progress = StoryReaderProgressStore.progress(for: story.id, readerKind: .audioPlayback),
+               SharedListeningEligibility.canResumeStory(progress) {
+                candidates.append(.storyAudio(story, progress))
+            }
+        }
+
+        for episode in allPodcastEpisodes {
+            guard episode.show?.userID == nil || episode.show?.userID == authManager.currentUser,
+                  SharedListeningEligibility.canResumePodcast(
+                    position: episode.playbackPosition,
+                    duration: episode.duration,
+                    isPlayed: episode.isPlayed
+                  ) else { continue }
+            candidates.append(.podcast(episode, episode.publishedDate))
+        }
+
+        candidates += mediaPlaybackStates.compactMap { state in
+            guard state.userID == authManager.currentUser,
+                  state.resourceType == .youtube,
+                  MediaPlaybackStore.canResume(state) else { return nil }
+            return .youtube(state)
+        }
+
+        return recentUniqueItems(from: candidates)
+    }
+
+    private func recentUniqueItems(from candidates: [ContinueLearningItem]) -> [ContinueLearningItem] {
+        var seen = Set<String>()
+        return candidates
+            .sorted { $0.updatedAt > $1.updatedAt }
+            .filter { seen.insert($0.id).inserted }
+            .prefix(3)
+            .map { $0 }
+    }
+
+    @ViewBuilder
+    private var continueInputSection: some View {
+        if !continueInputItems.isEmpty {
+            LayoutCardView(
+                title: "Continue Input",
+                subTitle: "Pick up where you left off",
+                accentColor: .cyan,
+                icon: "play.circle.fill",
+                appliesHorizontalPadding: false
+            ) {
+                VStack(spacing: 8) {
+                    ForEach(continueInputItems) { item in
+                        continueLearningLink(for: item)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func continueLearningLink(for item: ContinueLearningItem) -> some View {
+        switch item {
+        case .storyAudio(let story, let progress):
+            NavigationLink {
+                StoryAudioPlaybackView(story: story)
+            } label: {
+                continueLearningRow(
+                    title: story.title,
+                    subtitle: StoryReaderProgressStore.resumeLabel(for: progress, readerKind: .audioPlayback),
+                    icon: "book.fill",
+                    color: .purple,
+                    progress: storyProgressFraction(progress)
+                )
+            }
+            .buttonStyle(.plain)
+
+        case .podcast(let episode, _):
+            NavigationLink {
+                PodcastPlayerView(episode: episode)
+            } label: {
+                continueLearningRow(
+                    title: episode.title,
+                    subtitle: episode.show?.title ?? "Podcast",
+                    icon: "mic.fill",
+                    color: .indigo,
+                    progress: episode.duration > 0 ? episode.playbackPosition / episode.duration : nil
+                )
+            }
+            .buttonStyle(.plain)
+
+        case .youtube(let state):
+            Button {
+                selectedContinueVideo = .init(video: makeVideo(from: state), startsInStudyMode: false)
+            } label: {
+                continueLearningRow(
+                    title: state.title,
+                    subtitle: state.subtitle ?? "YouTube",
+                    icon: "play.rectangle.fill",
+                    color: .red,
+                    progress: state.progressFraction
+                )
+            }
+            .buttonStyle(.plain)
+
+        }
+    }
+
+    private func continueLearningRow(
+        title: String,
+        subtitle: String,
+        icon: String,
+        color: Color,
+        progress: Double?
+    ) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 34, height: 34)
+                .background(color.gradient, in: RoundedRectangle(cornerRadius: 9))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                if let progress {
+                    ProgressView(value: min(1, max(0, progress)))
+                }
+            }
+            Spacer(minLength: 4)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 10)
+        .background(
+            Color(uiColor: .secondarySystemGroupedBackground).opacity(0.7),
+            in: RoundedRectangle(cornerRadius: 12)
+        )
+    }
+
+    private func storyProgressFraction(_ progress: StoryReaderProgress) -> Double? {
+        guard let total = progress.total, total > 0 else { return nil }
+        return Double(progress.index + 1) / Double(total)
+    }
+
+    private func makeVideo(from state: MediaPlaybackState) -> YouTubeVideo {
+        YouTubeVideo(
+            id: state.resourceId,
+            title: state.title,
+            description: "",
+            thumbnailURL: state.artworkUrl ?? "https://img.youtube.com/vi/\(state.resourceId)/mqdefault.jpg",
+            channelTitle: state.subtitle ?? "YouTube",
+            duration: "PT\(max(0, Int(state.durationSeconds.rounded())))S",
+            publishedAt: state.startedAt
+        )
+    }
+
+    private func openInYouTube(_ video: YouTubeVideo) {
+        guard let url = URL(string: "https://www.youtube.com/watch?v=\(video.id)") else { return }
+        UIApplication.shared.open(url)
     }
 
     @ViewBuilder
@@ -221,63 +428,39 @@ struct DashboardView: View {
     }
 
     private func studyModeSummaryCard(studyStates: [StoryStudyState], mediaStates: [MediaStudyState]) -> some View {
-        NavigationLink {
-            StudyingView()
-        } label: {
-            studyModeSummaryBody(
-                storyCount: studyStates.count,
-                videoCount: mediaStates.filter { $0.resourceType == .youtube }.count,
-                podcastCount: mediaStates.filter { $0.resourceType == .podcast }.count
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func studyModeSummaryBody(storyCount: Int, videoCount: Int, podcastCount: Int) -> some View {
+        let storyCount = studyStates.count
+        let videoCount = mediaStates.filter { $0.resourceType == .youtube }.count
+        let podcastCount = mediaStates.filter { $0.resourceType == .podcast }.count
         let totalCount = storyCount + videoCount + podcastCount
-        return HStack(alignment: .center, spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.accentColor.opacity(0.15))
-                    .frame(width: 48, height: 48)
-                Image(systemName: "book.pages.fill")
-                    .foregroundStyle(Color.accentColor)
-                    .font(.title3)
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Studying")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
-                Text("\(totalCount) \(totalCount == 1 ? "item" : "items") in Study Mode")
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                HStack(spacing: 8) {
-                    if storyCount > 0 {
-                        studyModeTypeChip(
-                            title: "\(storyCount) \(storyCount == 1 ? "story" : "stories")",
-                            systemImage: "book.closed.fill"
-                        )
-                    }
-                    if videoCount > 0 {
-                        studyModeTypeChip(
-                            title: "\(videoCount) \(videoCount == 1 ? "video" : "videos")",
-                            systemImage: "play.rectangle.fill"
-                        )
-                    }
-                    if podcastCount > 0 {
-                        studyModeTypeChip(
-                            title: "\(podcastCount) \(podcastCount == 1 ? "podcast" : "podcasts")",
-                            systemImage: "mic.fill"
-                        )
-                    }
+        return LayoutCardView(
+            title: "Studying",
+            subTitle: "\(totalCount) \(totalCount == 1 ? "item" : "items") in Study Mode",
+            accentColor: .blue,
+            icon: "book.pages.fill",
+            destination: StudyingView(),
+            appliesHorizontalPadding: false
+        ) {
+            HStack(spacing: 8) {
+                if storyCount > 0 {
+                    studyModeTypeChip(
+                        title: "\(storyCount) \(storyCount == 1 ? "story" : "stories")",
+                        systemImage: "book.closed.fill"
+                    )
+                }
+                if videoCount > 0 {
+                    studyModeTypeChip(
+                        title: "\(videoCount) \(videoCount == 1 ? "video" : "videos")",
+                        systemImage: "play.rectangle.fill"
+                    )
+                }
+                if podcastCount > 0 {
+                    studyModeTypeChip(
+                        title: "\(podcastCount) \(podcastCount == 1 ? "podcast" : "podcasts")",
+                        systemImage: "mic.fill"
+                    )
                 }
             }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.tertiary)
         }
-        .padding(12)
-        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
     }
 
     private func studyModeTypeChip(title: String, systemImage: String) -> some View {

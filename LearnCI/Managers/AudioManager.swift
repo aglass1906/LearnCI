@@ -38,8 +38,12 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var streamItemObservations: [NSKeyValueObservation] = []
     private var playStreamWhenItemReady = false
     private var isAudioSessionConfigured = false
+    private var areRemoteCommandsConfigured = false
     private var wasPlayingBeforeInterruption = false
     private var wasStreamingBeforeInterruption = false
+    private var currentStreamRequest: (url: URL, startAt: Double)?
+    var onNextTrackCommand: (() -> Bool)?
+    var onPreviousTrackCommand: (() -> Bool)?
     
     // Caching resolved URLs to avoid repeated recursive searches
     private var audioURLCache: [String: URL] = [:]
@@ -73,6 +77,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
         setupRemoteTransportControls()
         setupInterruptionObserver()
+        setupRouteObservers()
     }
 
     func activatePlaybackSession() {
@@ -92,6 +97,42 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             name: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance()
         )
+    }
+
+    private func setupRouteObservers() {
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteChange(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleMediaServicesReset),
+            name: AVAudioSession.mediaServicesWereResetNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+    }
+
+    @objc private func handleRouteChange(_ notification: Notification) {
+        guard let rawReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: rawReason),
+              reason == .oldDeviceUnavailable else { return }
+
+        if isStreaming {
+            pauseStream()
+        } else if player?.isPlaying == true {
+            player?.pause()
+            isPlaying = false
+            updateNowPlayingInfo()
+        }
+    }
+
+    @objc private func handleMediaServicesReset() {
+        isAudioSessionConfigured = false
+        configureAudioSession()
     }
 
     @objc private func handleAudioInterruption(_ notification: Notification) {
@@ -148,6 +189,8 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     // MARK: - Remote Command Center (Lock Screen)
     
     private func setupRemoteTransportControls() {
+        guard !areRemoteCommandsConfigured else { return }
+        areRemoteCommandsConfigured = true
         let commandCenter = MPRemoteCommandCenter.shared()
         
         // Play
@@ -240,6 +283,20 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
             self.updateNowPlayingInfo()
             return .success
         }
+
+        commandCenter.nextTrackCommand.addTarget { [weak self] _ in
+            self?.onNextTrackCommand?() == true ? .success : .noSuchContent
+        }
+        commandCenter.previousTrackCommand.addTarget { [weak self] _ in
+            self?.onPreviousTrackCommand?() == true ? .success : .noSuchContent
+        }
+        setTrackCommandAvailability(hasPrevious: false, hasNext: false)
+    }
+
+    func setTrackCommandAvailability(hasPrevious: Bool, hasNext: Bool) {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.previousTrackCommand.isEnabled = hasPrevious
+        commandCenter.nextTrackCommand.isEnabled = hasNext
     }
     
     func updateNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil) {
@@ -569,6 +626,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
 
     func streamAudio(url: URL, startAt: Double = 0) {
         activatePlaybackSession()
+        currentStreamRequest = (url, startAt)
         streamFinished = false
         streamLoadError = nil
 
@@ -581,6 +639,14 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         let playerItem = makeStreamPlayerItem(url: url)
         streamPlayer = AVPlayer(playerItem: playerItem)
         configureStreamPlayback(player: streamPlayer!, item: playerItem, startAt: startAt)
+    }
+
+    @discardableResult
+    func retryCurrentStream() -> Bool {
+        guard let request = currentStreamRequest else { return false }
+        streamAudio(url: request.url, startAt: max(streamCurrentTime, request.startAt))
+        playStream()
+        return true
     }
 
     private func stopNonStreamAudio() {
@@ -755,6 +821,7 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         streamLoadError = nil
         streamIsBuffering = false
         playStreamWhenItemReady = false
+        currentStreamRequest = nil
         clearNowPlayingInfo()
     }
 

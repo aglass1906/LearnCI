@@ -31,6 +31,26 @@ struct LearnHubView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     LazyVGrid(columns: columns, spacing: 16) {
+                        NavigationLink(destination: ContinueListeningView()) {
+                            HubPanelHero(
+                                title: "Continue Listening",
+                                subtitle: "Resume stories and podcasts where you left off",
+                                icon: "play.circle.fill",
+                                gradient: Gradient(colors: [.indigo, .purple])
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink(destination: PlaybackQueueView()) {
+                            HubPanelHero(
+                                title: "Listening Queue",
+                                subtitle: "Manage what is playing and coming next",
+                                icon: "text.line.first.and.arrowtriangle.forward",
+                                gradient: Gradient(colors: [.cyan, .blue])
+                            )
+                        }
+                        .buttonStyle(.plain)
+
                         NavigationLink(destination: AboutCIView()) {
                             HubPanelHero(
                                 title: "Comprehensive Learning",

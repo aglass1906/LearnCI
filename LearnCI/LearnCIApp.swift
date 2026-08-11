@@ -7,15 +7,19 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct LearnCIApp: App {
+    @UIApplicationDelegateAdaptor(LearnCIAppDelegate.self) private var appDelegate
     @State private var dataManager = DataManager()
     @State private var youtubeManager = YouTubeManager()
     @State private var authManager: AuthManager
     @State private var syncManager: SyncManager
     @State private var locationManager = LocationManager()
-    @State private var audioManager = AudioManager()
+    @State private var audioManager = AudioManager.shared
+    @State private var playbackQueueManager = PlaybackQueueManager.shared
+    @State private var mediaDownloadManager = MediaDownloadManager.shared
     @State private var ambientSoundManager: AmbientSoundManager
     @State private var savedStudyWordManager: SavedStudyWordManager
     @State private var nextSessionPlanManager = NextSessionPlanManager()
@@ -28,10 +32,11 @@ struct LearnCIApp: App {
         _syncManager = State(initialValue: SyncManager(authManager: auth))
         _ambientSoundManager = State(initialValue: AmbientSoundManager(authManager: auth))
         _savedStudyWordManager = State(initialValue: SavedStudyWordManager(authManager: auth))
+        CarPlayEnvironment.shared.configure(modelContainer: Self.sharedModelContainer)
         print("Documents Directory: \(URL.documentsDirectory.path)")
     }
     
-    var sharedModelContainer: ModelContainer = {
+    static let sharedModelContainer: ModelContainer = {
         let schema = Schema([
             UserActivity.self,
             UserProfile.self,
@@ -63,6 +68,8 @@ struct LearnCIApp: App {
         }
     }()
 
+    var sharedModelContainer: ModelContainer { Self.sharedModelContainer }
+
     @State private var showSplash = true
 
     var body: some Scene {
@@ -80,6 +87,8 @@ struct LearnCIApp: App {
                         .environment(syncManager)
                         .environment(locationManager)
                         .environment(audioManager)
+                        .environment(playbackQueueManager)
+                        .environment(mediaDownloadManager)
                         .environment(ambientSoundManager)
                         .environment(savedStudyWordManager)
                         .environment(nextSessionPlanManager)

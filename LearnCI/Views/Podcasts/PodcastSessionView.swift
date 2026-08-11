@@ -9,6 +9,7 @@ struct PodcastSessionView: View {
 
     @Environment(AudioManager.self) private var audioManager
     @Environment(AuthManager.self) private var authManager
+    @Environment(PlaybackQueueManager.self) private var playbackQueue
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -26,6 +27,7 @@ struct PodcastSessionView: View {
     @State private var toastMessage: String?
     @State private var completedMinutes: Int? = nil  // non-nil triggers completion alert
     @State private var isPlayerMinimized = false
+    @State private var queueSessionID = UUID()
 
     let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
@@ -119,6 +121,7 @@ struct PodcastSessionView: View {
             episodes = initialEpisodes
             currentIndex = resumingFromIndex
             sessionStartTime = Date()
+            configureSharedQueue()
             prepareCurrentEpisode()
         }
         .onDisappear {
@@ -127,6 +130,7 @@ struct PodcastSessionView: View {
             // Don't stop audio if the app is just going to the background (phone lock, etc.)
             // Only stop if the user actually navigated away from the session.
             if scenePhase == .active {
+                playbackQueue.endControlledSession(id: queueSessionID)
                 audioManager.stopStream()
                 logSessionActivity()
             }
@@ -331,6 +335,7 @@ struct PodcastSessionView: View {
             title: episode.title,
             artist: episode.show?.title ?? "Podcast"
         )
+        synchronizeSharedQueue()
 
         // Load artwork for lock screen / Dynamic Island
         if let artworkUrlStr = episode.show?.artworkUrl,
@@ -367,10 +372,12 @@ struct PodcastSessionView: View {
             currentIndex += 1
             sliderValue = 0
             duration = 0
+            prepareCurrentEpisode()
             playCurrentEpisode()
         } else {
             // Session done - all episodes played through
             isPlaying = false
+            playbackQueue.endControlledSession(id: queueSessionID)
             audioManager.stopStream()
             clearSessionState()
             logSessionActivity()
@@ -379,6 +386,71 @@ struct PodcastSessionView: View {
         }
 
         try? modelContext.save()
+    }
+
+    private func configureSharedQueue() {
+        let queueItems = episodes.compactMap(makeQueueItem)
+        guard let episode = currentEpisode,
+              let currentItem = queueItems.first(where: { $0.id == queueID(for: episode) }) else { return }
+
+        audioManager.onStreamFinished = nil
+        playbackQueue.beginControlledSession(
+            id: queueSessionID,
+            items: queueItems,
+            current: currentItem,
+            onSelect: { itemID in selectEpisodeFromSharedQueue(itemID) },
+            onNext: { selectAdjacentEpisode(offset: 1) },
+            onPrevious: { selectAdjacentEpisode(offset: -1) }
+        )
+    }
+
+    private func synchronizeSharedQueue() {
+        guard let episode = currentEpisode else { return }
+        playbackQueue.synchronizeControlledSession(
+            id: queueSessionID,
+            currentItemID: queueID(for: episode)
+        )
+    }
+
+    private func selectEpisodeFromSharedQueue(_ itemID: String) -> Bool {
+        guard let index = episodes.firstIndex(where: { queueID(for: $0) == itemID }) else { return false }
+        return selectEpisode(at: index)
+    }
+
+    private func selectAdjacentEpisode(offset: Int) -> Bool {
+        selectEpisode(at: currentIndex + offset)
+    }
+
+    private func selectEpisode(at index: Int) -> Bool {
+        guard episodes.indices.contains(index), index != currentIndex else { return false }
+        saveCurrentEpisodeProgress()
+        audioManager.streamFinished = false
+        currentIndex = index
+        sliderValue = 0
+        duration = 0
+        manuallyPaused = false
+        prepareCurrentEpisode()
+        playCurrentEpisode()
+        return true
+    }
+
+    private func makeQueueItem(_ episode: PodcastEpisode) -> CarPlayMediaItem? {
+        guard let url = episode.playableAudioURL else { return nil }
+        return CarPlayMediaItem(
+            id: queueID(for: episode),
+            kind: .podcast,
+            title: episode.title,
+            subtitle: episode.show?.title ?? "Podcast",
+            url: url,
+            duration: episode.duration,
+            resumePosition: episode.playbackPosition,
+            date: episode.publishedDate,
+            artworkURL: episode.show?.artworkUrl.flatMap(URL.init(string:))
+        )
+    }
+
+    private func queueID(for episode: PodcastEpisode) -> String {
+        "podcast:\(episode.id.uuidString)"
     }
 
     private func saveCurrentEpisodeProgress() {
@@ -398,6 +470,7 @@ struct PodcastSessionView: View {
     private func endSession() {
         saveCurrentEpisodeProgress()
         clearSessionState()
+        playbackQueue.endControlledSession(id: queueSessionID)
         audioManager.stopStream()
         logSessionActivity()
         let mins = sessionStartTime.map { Int(Date().timeIntervalSince($0) / 60) } ?? 0

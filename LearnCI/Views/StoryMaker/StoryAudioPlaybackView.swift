@@ -7,6 +7,8 @@ struct StoryAudioPlaybackView: View {
 
     @State private var resumeChoice: StoryAudioResumeChoice?
     @State private var showResumePrompt = false
+    @State private var isDownloading = false
+    @State private var downloadFailure: String?
 
     private var adapter: StoryReaderDataAdapter {
         StoryReaderDataAdapter(story: story)
@@ -51,6 +53,21 @@ struct StoryAudioPlaybackView: View {
         }
         .navigationTitle("Listen")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await downloadStoryAudio() }
+                } label: {
+                    if isDownloading {
+                        ProgressView()
+                    } else {
+                        Image(systemName: allAudioIsCached ? "checkmark.circle.fill" : "arrow.down.circle")
+                    }
+                }
+                .disabled(isDownloading || allAudioIsCached)
+                .accessibilityLabel(allAudioIsCached ? "Downloaded" : "Download story audio")
+            }
+        }
         .onAppear {
             guard resumeChoice == nil else { return }
             if savedProgress?.isResumable == true {
@@ -80,10 +97,49 @@ struct StoryAudioPlaybackView: View {
         } message: {
             Text("Resume your listening session or start the story over.")
         }
+        .alert("Download Failed", isPresented: Binding(
+            get: { downloadFailure != nil },
+            set: { if !$0 { downloadFailure = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(downloadFailure ?? "The story audio could not be downloaded.")
+        }
     }
 
     private func saveProgress(_ update: StoryReaderProgressUpdate) {
         StoryReaderProgressStore.save(update, for: story.id, readerKind: .audioPlayback)
+    }
+
+    private var storyClips: [StorySceneAudioClip] {
+        adapter.audioBookPlaybackClips()
+    }
+
+    private var allAudioIsCached: Bool {
+        let clips = storyClips
+        return !clips.isEmpty && clips.allSatisfy {
+            StoryReaderDataAdapter.cachedAudioURL(storyID: story.id, clip: $0, storyUpdatedAt: story.updatedAt) != nil
+        }
+    }
+
+    private func downloadStoryAudio() async {
+        isDownloading = true
+        defer { isDownloading = false }
+        let clips = storyClips
+        guard !clips.isEmpty else {
+            downloadFailure = "This story does not have downloadable audio."
+            return
+        }
+        for clip in clips {
+            guard await StoryReaderDataAdapter.downloadAndCacheAudioIfNeeded(
+                storyID: story.id,
+                clip: clip,
+                storyUpdatedAt: story.updatedAt
+            ) != nil else {
+                downloadFailure = "One or more story audio tracks could not be downloaded."
+                return
+            }
+        }
     }
 }
 

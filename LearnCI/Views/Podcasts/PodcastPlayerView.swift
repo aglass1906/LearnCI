@@ -24,6 +24,8 @@ struct PodcastPlayerView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(MediaStudyStore.self) private var mediaStudyStore
+    @Environment(PlaybackQueueManager.self) private var playbackQueue
+    @Environment(MediaDownloadManager.self) private var downloads
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -38,6 +40,7 @@ struct PodcastPlayerView: View {
     @State private var toastMessage: String?
     @State private var playbackError: String?
     @State private var isPlayerMinimized = false
+    @State private var lastPersistedPlaybackSecond = -1
 
     @State private var studyLoadState: YouTubeStudyLoadState = .idle
     @State private var studyWords: [WordTiming] = []
@@ -107,15 +110,18 @@ struct PodcastPlayerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                FavoriteButton(
-                    consumptionUrl: episode.favoriteConsumptionUrl,
-                    type: .podcastEpisode,
-                    title: episode.title,
-                    author: episode.show?.title,
-                    subtitle: episode.favoriteSubtitle,
-                    imageUrl: episode.show?.artworkUrl,
-                    sourceResourceId: episode.id.uuidString
-                )
+                HStack {
+                    podcastDownloadButton
+                    FavoriteButton(
+                        consumptionUrl: episode.favoriteConsumptionUrl,
+                        type: .podcastEpisode,
+                        title: episode.title,
+                        author: episode.show?.title,
+                        subtitle: episode.favoriteSubtitle,
+                        imageUrl: episode.show?.artworkUrl,
+                        sourceResourceId: episode.id.uuidString
+                    )
+                }
             }
         }
         .onAppear {
@@ -151,6 +157,11 @@ struct PodcastPlayerView: View {
         }
         .onReceive(timer) { _ in
             syncPlaybackSnapshot()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                persistPlaybackProgress(force: true)
+            }
         }
         .sheet(isPresented: $showSessionSetup) {
             if let session = studySessionViewModel {
@@ -1587,6 +1598,7 @@ struct PodcastPlayerView: View {
         }
 
         playbackError = nil
+        preparePlaybackQueue()
         audioManager.streamAudio(url: url, startAt: episode.playbackPosition)
         duration = max(episode.duration, 1)
 
@@ -1610,6 +1622,27 @@ struct PodcastPlayerView: View {
                 }
             }
         }
+    }
+
+    private func preparePlaybackQueue() {
+        let showEpisodes = (episode.show?.episodes ?? [episode])
+            .sorted { $0.publishedDate > $1.publishedDate }
+        let queueItems = showEpisodes.compactMap { candidate -> CarPlayMediaItem? in
+            guard let url = candidate.playableAudioURL else { return nil }
+            return CarPlayMediaItem(
+                id: "podcast:\(candidate.id.uuidString)",
+                kind: .podcast,
+                title: candidate.title,
+                subtitle: candidate.show?.title ?? "Podcast",
+                url: url,
+                duration: candidate.duration,
+                resumePosition: candidate.playbackPosition,
+                date: candidate.publishedDate,
+                artworkURL: candidate.show?.artworkUrl.flatMap(URL.init(string:))
+            )
+        }
+        guard let current = queueItems.first(where: { $0.id == "podcast:\(episode.id.uuidString)" }) else { return }
+        playbackQueue.prepareQueue(with: queueItems, current: current)
     }
 
     private func syncPlaybackSnapshot() {
@@ -1638,6 +1671,60 @@ struct PodcastPlayerView: View {
             playbackError = streamError
             isPlaying = false
         }
+        persistPlaybackProgress(force: false)
+    }
+
+    private func persistPlaybackProgress(force: Bool) {
+        guard audioManager.streamPlayer != nil else { return }
+        let second = Int(audioManager.streamCurrentTime.rounded())
+        guard force || abs(second - lastPersistedPlaybackSecond) >= 5 else { return }
+        lastPersistedPlaybackSecond = second
+        episode.playbackPosition = audioManager.streamCurrentTime
+        episode.isSynced = false
+        if duration > 0 && (episode.playbackPosition >= duration - 30 || episode.playbackPosition / duration > 0.95) {
+            episode.isPlayed = true
+        }
+        try? modelContext.save()
+    }
+
+    @ViewBuilder
+    private var podcastDownloadButton: some View {
+        if let item = podcastQueueItem {
+            switch downloads.state(for: item) {
+            case .notDownloaded, .failed:
+                Button {
+                    Task { await downloads.download(item) }
+                } label: {
+                    Image(systemName: "arrow.down.circle")
+                }
+                .accessibilityLabel("Download episode")
+            case .downloading:
+                ProgressView()
+            case .downloaded:
+                Button {
+                    downloads.delete(item)
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                }
+                .accessibilityLabel("Remove downloaded episode")
+            }
+        }
+    }
+
+    private var podcastQueueItem: CarPlayMediaItem? {
+        guard let url = episode.playableAudioURL else { return nil }
+        return CarPlayMediaItem(
+            id: "podcast:\(episode.id.uuidString)",
+            kind: .podcast,
+            title: episode.title,
+            subtitle: episode.show?.title ?? "Podcast",
+            url: url,
+            duration: episode.duration,
+            resumePosition: episode.playbackPosition,
+            date: episode.publishedDate,
+            artworkURL: episode.show?.artworkUrl.flatMap(URL.init(string:))
+        )
     }
 
     private func cleanupSession() {

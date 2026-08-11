@@ -23,6 +23,20 @@ class SyncManager {
     init(authManager: AuthManager) {
         self.authManager = authManager
     }
+
+    /// Refreshes remote state only when the local snapshot is stale. This keeps
+    /// foreground transitions and view recreation from starting duplicate syncs.
+    @MainActor
+    func syncIfNeeded(
+        modelContext: ModelContext,
+        minimumInterval: TimeInterval = 5 * 60
+    ) async {
+        guard !isSyncing else { return }
+        if let lastSync, Date().timeIntervalSince(lastSync) < minimumInterval {
+            return
+        }
+        await syncNow(modelContext: modelContext)
+    }
     
 // MARK: - Story DTO
 struct StoryDTO: Codable {

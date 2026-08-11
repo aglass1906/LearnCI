@@ -129,7 +129,9 @@ final class MediaDownloadManager {
     }
 
     private func removeInvalidRecords() {
-        records = records.filter { fileManager.fileExists(atPath: $0.value) }
+        let validRecords = records.filter { fileManager.fileExists(atPath: $0.value) }
+        guard validRecords.count != records.count else { return }
+        records = validRecords
         persist()
     }
 

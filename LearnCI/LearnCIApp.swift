@@ -70,75 +70,29 @@ struct LearnCIApp: App {
 
     var sharedModelContainer: ModelContainer { Self.sharedModelContainer }
 
-    @State private var showSplash = true
-
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                if showSplash {
-                    SplashView(loadingText: loadingStatus)
-                        .transition(.opacity)
-                        .zIndex(1)
-                } else {
-                    ContentView()
-                        .environment(dataManager)
-                        .environment(youtubeManager)
-                        .environment(authManager)
-                        .environment(syncManager)
-                        .environment(locationManager)
-                        .environment(audioManager)
-                        .environment(playbackQueueManager)
-                        .environment(mediaDownloadManager)
-                        .environment(ambientSoundManager)
-                        .environment(savedStudyWordManager)
-                        .environment(nextSessionPlanManager)
-                        .environment(storyPathProgressStore)
-                        .environment(mediaStudyStore)
-                        .onOpenURL { url in
-                            print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
-                            Task {
-                                try? await authManager.handleIncomingURL(url)
-                            }
-                        }
-                        .transition(.opacity)
+            ContentView()
+                .environment(dataManager)
+                .environment(youtubeManager)
+                .environment(authManager)
+                .environment(syncManager)
+                .environment(locationManager)
+                .environment(audioManager)
+                .environment(playbackQueueManager)
+                .environment(mediaDownloadManager)
+                .environment(ambientSoundManager)
+                .environment(savedStudyWordManager)
+                .environment(nextSessionPlanManager)
+                .environment(storyPathProgressStore)
+                .environment(mediaStudyStore)
+                .onOpenURL { url in
+                    print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
+                    Task {
+                        try? await authManager.handleIncomingURL(url)
+                    }
                 }
-            }
-            .animation(.easeInOut(duration: 0.5), value: showSplash)
-            .animation(.easeInOut(duration: 0.5), value: showSplash)
-            .onAppear {
-                performInitialization()
-            }
         }
         .modelContainer(sharedModelContainer)
-    }
-    
-    @State private var loadingStatus = "Initializing..."
-    
-    private func performInitialization() {
-        Task {
-            // 1. Authentication Check
-            loadingStatus = "Checking authentication..."
-            try? await Task.sleep(nanoseconds: 500_000_000) // Small delay for UX so text is readable
-            
-            // 2. Data Manager Prep
-            loadingStatus = "Loading content..."
-            // Ensure any critical data is loaded here if needed
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            
-            // 3. Sync Check (Optional/Background)
-            if authManager.isAuthenticated {
-                loadingStatus = "Syncing profile..."
-                // syncManager.syncUserProfile() // Example: trigger a sync if needed immediately
-                try? await Task.sleep(nanoseconds: 500_000_000)
-            }
-            
-            // 4. Finalizing
-            loadingStatus = "Ready!"
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            
-            withAnimation {
-                showSplash = false
-            }
-        }
     }
 }

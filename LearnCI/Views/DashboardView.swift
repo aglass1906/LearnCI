@@ -6,7 +6,6 @@ struct DashboardView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
-    @Environment(SyncManager.self) private var syncManager
     
     @Query(sort: \UserActivity.date, order: .reverse) private var allActivities: [UserActivity]
     @Query private var allProfiles: [UserProfile]
@@ -84,9 +83,6 @@ struct DashboardView: View {
                         }
                         isLoadingWordOfDay = false
                     }
-                    
-                    // Trigger Data Sync
-                    await syncManager.syncNow(modelContext: modelContext)
                 }
                 .onChange(of: userProfile?.currentLanguage) { _, newLanguage in
                     if let language = newLanguage, let profile = userProfile {
@@ -108,7 +104,7 @@ struct DashboardView: View {
             }
 
             // Loading Overlay
-            if userProfile == nil || (isLoadingWordOfDay && wordOfDay == nil) {
+            if userProfile == nil {
                 LoadingView(message: "Loading your progress...")
                     .transition(.opacity.animation(.easeInOut(duration: 0.3)))
                     .zIndex(1)

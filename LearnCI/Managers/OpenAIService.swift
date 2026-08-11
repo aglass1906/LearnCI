@@ -12,6 +12,36 @@ struct WordTranslationResult: Equatable {
     let exampleEnglish: String?
 }
 
+extension WordTranslationResult {
+    func replacingTranslation(with translation: String) -> WordTranslationResult {
+        WordTranslationResult(
+            translation: translation,
+            partOfSpeech: partOfSpeech,
+            lemma: lemma,
+            level: level,
+            verbTense: verbTense,
+            grammarNotes: grammarNotes,
+            usageNote: usageNote,
+            exampleTarget: exampleTarget,
+            exampleEnglish: exampleEnglish
+        )
+    }
+
+    static func translationOnly(_ translation: String) -> WordTranslationResult {
+        WordTranslationResult(
+            translation: translation,
+            partOfSpeech: "",
+            lemma: nil,
+            level: nil,
+            verbTense: nil,
+            grammarNotes: nil,
+            usageNote: nil,
+            exampleTarget: nil,
+            exampleEnglish: nil
+        )
+    }
+}
+
 enum OpenAIServiceError: Error, LocalizedError {
     case invalidURL
     case noAPIKey
@@ -894,7 +924,12 @@ actor OpenAIService {
         return wrapper.questions
     }
 
-    func translateWord(_ word: String, language: String, context: String?) async throws -> WordTranslationResult {
+    func translateWord(
+        _ word: String,
+        language: String,
+        targetLanguage: String = "English",
+        context: String?
+    ) async throws -> WordTranslationResult {
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             throw OpenAIServiceError.noAPIKey
         }
@@ -908,11 +943,11 @@ actor OpenAIService {
         let lookupText = word.trimmingCharacters(in: .whitespacesAndNewlines)
         let isPhrase = lookupText.contains(where: { $0.isWhitespace || $0.isPunctuation })
         var prompt = if isPhrase {
-            "Translate the phrase '\(lookupText)' from \(language) to English for a language learner."
+            "Translate the phrase '\(lookupText)' from \(language) to \(targetLanguage) for a language learner."
         } else {
-            "Translate the word '\(lookupText)' from \(language) to English for a language learner."
+            "Translate the word '\(lookupText)' from \(language) to \(targetLanguage) for a language learner."
         }
-        prompt += " Return JSON with string keys: translation, partOfSpeech, lemma, level, verbTense, grammarNotes, usageNote, exampleTarget, exampleEnglish. Keep translation concise. Use CEFR-style level when possible. Leave verbTense empty unless this is a conjugated verb form. Keep grammarNotes and usageNote under 18 words each."
+        prompt += " Return JSON with string keys: translation, partOfSpeech, lemma, level, verbTense, grammarNotes, usageNote, exampleTarget, exampleEnglish. The exampleEnglish value must be in \(targetLanguage). Keep translation concise. Use CEFR-style level when possible. Leave verbTense empty unless this is a conjugated verb form. Keep grammarNotes and usageNote under 18 words each."
         if let ctx = context, !ctx.isEmpty {
             prompt += " Context sentence: '\(ctx)'"
         }

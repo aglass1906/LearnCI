@@ -35,9 +35,11 @@ struct AudioBookReaderView: View {
     @State private var didLogActivity = false
     @State private var usesAudioBookSidePane = false
     @State private var didAttemptContinuousAutoplay = false
+    @State private var queueSessionID = UUID()
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(PlaybackQueueManager.self) private var playbackQueue
     @Bindable private var audioManager = AudioManager.shared
     private let sleepTimerTicker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private let supplementalTicker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -147,6 +149,7 @@ struct AudioBookReaderView: View {
             refreshChapterDuration()
             loadLockScreenArtwork()
             updateNowPlayingMetadata()
+            synchronizeSharedQueue()
         }
         .onChange(of: selectedNavItemID) { _, _ in
             loadLockScreenArtwork()
@@ -279,6 +282,7 @@ struct AudioBookReaderView: View {
                 sceneCountByChapter = sceneCounts
                 isPreparingReader = false
                 bootstrapSelection()
+                configureSharedQueue()
                 prepareSupplementalForSelectedNavItem()
                 if prepareInitialPlaybackPositionIfNeeded() {
                     didAttemptContinuousAutoplay = true
@@ -1222,6 +1226,72 @@ struct AudioBookReaderView: View {
         }
     }
 
+    private func configureSharedQueue() {
+        guard playbackMode == .continuousAudio,
+              clips.indices.contains(currentClipIndex) else { return }
+        let queueItems = clips.compactMap(makeSharedQueueItem)
+        guard let current = queueItems.first(where: { $0.id == sharedQueueID(for: clips[currentClipIndex]) }) else {
+            return
+        }
+        playbackQueue.beginControlledSession(
+            id: queueSessionID,
+            items: queueItems,
+            current: current,
+            onSelect: { itemID in selectClipFromSharedQueue(itemID) },
+            onNext: { selectAdjacentClipFromSharedQueue(offset: 1) },
+            onPrevious: { selectAdjacentClipFromSharedQueue(offset: -1) }
+        )
+    }
+
+    private func synchronizeSharedQueue() {
+        guard playbackMode == .continuousAudio,
+              clips.indices.contains(currentClipIndex) else { return }
+        playbackQueue.synchronizeControlledSession(
+            id: queueSessionID,
+            currentItemID: sharedQueueID(for: clips[currentClipIndex])
+        )
+    }
+
+    private func selectClipFromSharedQueue(_ itemID: String) -> Bool {
+        guard let index = clips.firstIndex(where: { sharedQueueID(for: $0) == itemID }) else { return false }
+        return selectSharedQueueClip(at: index)
+    }
+
+    private func selectAdjacentClipFromSharedQueue(offset: Int) -> Bool {
+        selectSharedQueueClip(at: currentClipIndex + offset)
+    }
+
+    private func selectSharedQueueClip(at index: Int) -> Bool {
+        guard clips.indices.contains(index), index != currentClipIndex else { return false }
+        saveReadingProgress()
+        audioManager.streamFinished = false
+        playClip(at: index, autoplay: true)
+        return true
+    }
+
+    private func makeSharedQueueItem(_ clip: StorySceneAudioClip) -> CarPlayMediaItem? {
+        guard let url = StoryReaderDataAdapter.cachedAudioURL(
+            storyID: story.id,
+            clip: clip,
+            storyUpdatedAt: story.updatedAt
+        ) ?? StoryReaderDataAdapter.remoteAudioURL(for: clip.urlString) else { return nil }
+        return CarPlayMediaItem(
+            id: sharedQueueID(for: clip),
+            kind: .story,
+            title: clip.title,
+            subtitle: story.title,
+            url: url,
+            duration: 0,
+            resumePosition: 0,
+            date: story.updatedAt ?? story.createdAt,
+            artworkURL: storyCoverImageURL
+        )
+    }
+
+    private func sharedQueueID(for clip: StorySceneAudioClip) -> String {
+        "story:\(story.id.uuidString):\(clip.id)"
+    }
+
     private func startPlayback(url: URL, clip: StorySceneAudioClip, autoplay: Bool, startAt: Double = 0) {
         audioManager.streamAudio(url: url, startAt: startAt)
         audioManager.setStreamRate(playbackRate)
@@ -1519,6 +1589,7 @@ struct AudioBookReaderView: View {
     }
 
     private func cleanupSession() {
+        playbackQueue.endControlledSession(id: queueSessionID)
         supplementalPlayback.stop()
         audioManager.stopAudio()
         logActivityIfNeeded()

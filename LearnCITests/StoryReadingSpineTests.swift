@@ -3,6 +3,92 @@ import XCTest
 
 @MainActor
 final class StoryReadingSpineTests: XCTestCase {
+    func testContinueListeningEligibilityTreatsStoriesAndPodcastsConsistently() {
+        XCTAssertFalse(SharedListeningEligibility.canResumePodcast(position: 1, duration: 100, isPlayed: false))
+        XCTAssertTrue(SharedListeningEligibility.canResumePodcast(position: 20, duration: 100, isPlayed: false))
+        XCTAssertFalse(SharedListeningEligibility.canResumePodcast(position: 96, duration: 100, isPlayed: false))
+        XCTAssertFalse(SharedListeningEligibility.canResumePodcast(position: 20, duration: 100, isPlayed: true))
+
+        let resumable = StoryReaderProgress(
+            index: 1,
+            total: 3,
+            chapterIndex: 0,
+            sceneIndex: 1,
+            position: 10,
+            updatedAt: Date()
+        )
+        XCTAssertTrue(SharedListeningEligibility.canResumeStory(resumable))
+        XCTAssertFalse(SharedListeningEligibility.canResumeStory(nil))
+    }
+
+    func testSharedQueueSupportsControlledNavigationAndPersistence() {
+        let suiteName = "PlaybackQueueManagerTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let audioManager = AudioManager()
+        let queue = PlaybackQueueManager(
+            audioManager: audioManager,
+            downloads: .shared,
+            defaults: defaults
+        )
+        let first = testMediaItem(id: "podcast:first", title: "First")
+        let second = testMediaItem(id: "story:second", title: "Second")
+        var selectedID: String?
+        var requestedNext = false
+
+        queue.beginControlledSession(
+            id: UUID(),
+            items: [first, second],
+            current: first,
+            onSelect: { selectedID = $0; return true },
+            onNext: { requestedNext = true; return true },
+            onPrevious: { false }
+        )
+
+        XCTAssertTrue(queue.play(second))
+        XCTAssertEqual(selectedID, second.id)
+        XCTAssertTrue(queue.playNext())
+        XCTAssertTrue(requestedNext)
+        XCTAssertEqual(queue.items.map(\.id), [first.id, second.id])
+
+        let restoredQueue = PlaybackQueueManager(
+            audioManager: AudioManager(),
+            downloads: .shared,
+            defaults: defaults
+        )
+        XCTAssertEqual(restoredQueue.items.map(\.id), [first.id, second.id])
+        XCTAssertEqual(restoredQueue.currentItem?.id, first.id)
+    }
+
+    func testDownloadManagerRemovesInvalidPersistedFiles() {
+        let suiteName = "MediaDownloadManagerTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(["podcast:missing": "/tmp/learnci-file-that-does-not-exist.m4a"], forKey: "mediaDownloads.records.v1")
+
+        let manager = MediaDownloadManager(defaults: defaults)
+
+        XCTAssertEqual(manager.downloadedCount, 0)
+        XCTAssertEqual(
+            defaults.dictionary(forKey: "mediaDownloads.records.v1") as? [String: String],
+            [:]
+        )
+    }
+
+    private func testMediaItem(id: String, title: String) -> CarPlayMediaItem {
+        CarPlayMediaItem(
+            id: id,
+            kind: id.hasPrefix("story") ? .story : .podcast,
+            title: title,
+            subtitle: "Test",
+            url: URL(fileURLWithPath: "/tmp/\(title).m4a"),
+            duration: 100,
+            resumePosition: 10,
+            date: Date()
+        )
+    }
+
     func testCanonicalChapterSceneAndReadingMatterDecode() throws {
         let chapterJSON = """
         {

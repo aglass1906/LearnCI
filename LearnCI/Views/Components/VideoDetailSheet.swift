@@ -11,6 +11,7 @@ struct VideoDetailSheet: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(SavedStudyWordManager.self) private var savedStudyWordManager
     @Environment(MediaStudyStore.self) private var mediaStudyStore
+    @Environment(MediaPlaybackStore.self) private var mediaPlaybackStore
     @Query private var allProfiles: [UserProfile]
 
     private let captionService = YouTubeCaptionService()
@@ -43,6 +44,8 @@ struct VideoDetailSheet: View {
     @State private var savedStudyRevision = 0
     @State private var mediaStudyRevision = 0
     @State private var didApplyInitialStudyMode = false
+    @State private var didRestoreWatchPosition = false
+    @State private var lastWatchProgressSave = Date.distantPast
 
     private let playbackRates: [Float] = [0.75, 1.0, 1.25, 1.5]
 
@@ -142,6 +145,7 @@ struct VideoDetailSheet: View {
                 }
             }
             .onAppear {
+                restoreWatchPositionIfNeeded()
                 wireYouTubeStudyMediaPlayer()
                 hydrateStudyModeFromCacheIfAvailable()
                 if studyViewModel.mode == .study {
@@ -249,6 +253,7 @@ struct VideoDetailSheet: View {
                         in: modelContext
                     )
                 }
+                saveWatchProgress()
             }
         }
     }
@@ -920,6 +925,10 @@ struct VideoDetailSheet: View {
             playbackRate: snapshot.playbackRate
         )
 
+        if snapshot.isPlaying, Date().timeIntervalSince(lastWatchProgressSave) >= 10 {
+            saveWatchProgress(position: snapshot.currentTime, duration: snapshot.duration)
+        }
+
         if studyViewModel.mode == .study {
             studySessionViewModel?.handlePlaybackTime(
                 snapshot.currentTime,
@@ -932,6 +941,35 @@ struct VideoDetailSheet: View {
                 }
             }
         }
+    }
+
+    private func restoreWatchPositionIfNeeded() {
+        guard !didRestoreWatchPosition else { return }
+        didRestoreWatchPosition = true
+        let position = mediaPlaybackStore.resumePosition(
+            for: video,
+            userID: authManager.currentUser,
+            in: modelContext
+        )
+        guard position >= MediaPlaybackStore.minimumResumePosition else { return }
+        seekRequest = position
+        studyViewModel.updatePlayback(
+            currentTime: position,
+            duration: Double(video.durationInSeconds),
+            isPlaying: false,
+            playbackRate: studyViewModel.playback.playbackRate
+        )
+    }
+
+    private func saveWatchProgress(position: Double? = nil, duration: Double? = nil) {
+        mediaPlaybackStore.saveVideoProgress(
+            video: video,
+            userID: authManager.currentUser,
+            positionSeconds: position ?? studyViewModel.playback.currentTime,
+            durationSeconds: duration ?? studyViewModel.playback.duration,
+            in: modelContext
+        )
+        lastWatchProgressSave = Date()
     }
 
     private var transcriptPanel: some View {

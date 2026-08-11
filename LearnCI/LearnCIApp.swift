@@ -25,6 +25,7 @@ struct LearnCIApp: App {
     @State private var nextSessionPlanManager = NextSessionPlanManager()
     @State private var storyPathProgressStore = StoryPathProgressStore()
     @State private var mediaStudyStore = MediaStudyStore()
+    @State private var mediaPlaybackStore = MediaPlaybackStore()
 
     init() {
         let auth = AuthManager()
@@ -57,7 +58,8 @@ struct LearnCIApp: App {
             NextSessionPlan.self,
             StoryPathProgress.self,
             StoryStudyState.self,
-            MediaStudyState.self
+            MediaStudyState.self,
+            MediaPlaybackState.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -86,6 +88,7 @@ struct LearnCIApp: App {
                 .environment(nextSessionPlanManager)
                 .environment(storyPathProgressStore)
                 .environment(mediaStudyStore)
+                .environment(mediaPlaybackStore)
                 .onOpenURL { url in
                     print("DEBUG: LearnCIApp received URL: \(url.absoluteString)")
                     Task {

@@ -34,7 +34,7 @@ struct LearnHubView: View {
                         NavigationLink(destination: ContinueListeningView()) {
                             HubPanelHero(
                                 title: "Continue Listening",
-                                subtitle: "Resume stories and podcasts where you left off",
+                                subtitle: "Resume stories, podcasts, and videos where you left off",
                                 icon: "play.circle.fill",
                                 gradient: Gradient(colors: [.indigo, .purple])
                             )
@@ -43,8 +43,8 @@ struct LearnHubView: View {
 
                         NavigationLink(destination: PlaybackQueueView()) {
                             HubPanelHero(
-                                title: "Listening Queue",
-                                subtitle: "Manage what is playing and coming next",
+                                title: "Media Queue",
+                                subtitle: "Manage audio and resumable videos",
                                 icon: "text.line.first.and.arrowtriangle.forward",
                                 gradient: Gradient(colors: [.cyan, .blue])
                             )

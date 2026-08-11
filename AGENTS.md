@@ -22,6 +22,14 @@ LearnCI follows the **Agent OS** standard for context management. Prior to under
 
 Backend services use **Supabase** (Authentication, PostgreSQL Database, Storage) alongside **OpenAI**, **ElevenLabs**, and **Google Veo** APIs.
 
+### Production Database Operations
+
+- Prefer the Supabase MCP tools for direct SQL and schema migrations when they are available.
+- The Supabase CLI is also permitted when the user explicitly authorizes a production database operation.
+- Before any CLI production write, verify the linked project ref is `vuygqrbludhuywupcbma`, inspect remote migration history, and dry-run migration pushes when supported.
+- Apply only the migration or SQL explicitly in scope. Never repair, revert, reset, or broaden production migration history to bypass a mismatch without separate user approval.
+- After applying a migration, verify the expected tables, policies, and recorded migration version.
+
 ---
 
 ## 3. Build & Verification Commands

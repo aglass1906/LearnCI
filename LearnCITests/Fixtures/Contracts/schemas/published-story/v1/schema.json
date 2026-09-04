@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learnci.org/schemas/published-story/v1/schema.json",
+  "title": "PublishedStoryPackageV1",
+  "description": "Canonical schema for LearnCI Published Story Asset Format V1 packages.",
+  "type": "object",
+  "required": [
+    "published_format_version",
+    "story_id",
+    "content_revision",
+    "content_hash",
+    "published_at",
+    "metadata",
+    "text_units",
+    "audio_manifest",
+    "learning_manifest",
+    "lineage"
+  ],
+  "properties": {
+    "published_format_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Must be 1 for Published Story Asset Format V1."
+    },
+    "story_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F-]+$|^story_[a-zA-Z0-9_-]+$",
+      "description": "Unique story identifier."
+    },
+    "content_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Incremented each time learner-visible content changes."
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$|^[0-9a-f]{64}$",
+      "description": "SHA-256 hash of canonical learner-visible content."
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of publication."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["title", "target_language", "native_language"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "target_language": { "type": "string", "minLength": 2 },
+        "native_language": { "type": "string", "minLength": 2 },
+        "level": { "type": "string" },
+        "story_type": { "type": "string" },
+        "cover_art_url": { "type": "string" },
+        "cover_art_path": { "type": "string" }
+      }
+    },
+    "text_units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "chapter_id", "scene_id", "sequence", "kind", "by_language", "content_hash"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^tu_" },
+          "chapter_id": { "type": "string" },
+          "scene_id": { "type": "string" },
+          "sequence": { "type": "integer", "minimum": 0 },
+          "kind": {
+            "type": "string",
+            "enum": ["dialogue_turn", "narration_sentence", "narration_segment", "caption", "chapter_intro", "reading_matter"]
+          },
+          "speaker_id": { "type": ["string", "null"] },
+          "by_language": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["text"],
+              "properties": {
+                "text": { "type": "string" }
+              }
+            }
+          },
+          "content_hash": { "type": "string" }
+        }
+      }
+    },
+    "audio_manifest": {
+      "type": "object",
+      "required": ["spoken_units", "assets"],
+      "properties": {
+        "spoken_units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "text_unit_ids", "language_code", "audio_asset_id", "duration_ms", "word_timings"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^su_" },
+              "kind": { "type": "string", "enum": ["speaker_turn", "narration_sentence", "narration_segment", "chapter_intro", "reading_matter"] },
+              "text_unit_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "language_code": { "type": "string" },
+              "speaker_id": { "type": ["string", "null"] },
+              "voice_id": { "type": ["string", "null"] },
+              "audio_asset_id": { "type": "string", "pattern": "^aud_" },
+              "duration_ms": { "type": "integer", "minimum": 0 },
+              "word_timings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["token_id", "text_unit_id", "text", "start_ms", "end_ms"],
+                  "properties": {
+                    "token_id": { "type": "string" },
+                    "text_unit_id": { "type": "string" },
+                    "text": { "type": "string" },
+                    "start_ms": { "type": "integer", "minimum": 0 },
+                    "end_ms": { "type": "integer", "minimum": 0 },
+                    "character_start": { "type": "integer", "minimum": 0 },
+                    "character_end": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "storage_path", "content_hash", "duration_ms"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^aud_" },
+              "storage_path": { "type": "string" },
+              "content_hash": { "type": "string" },
+              "duration_ms": { "type": "integer", "minimum": 0 },
+              "media_type": { "type": "string", "default": "audio/mpeg" },
+              "byte_size": { "type": "integer", "minimum": 0 },
+              "provider": { "type": "string" },
+              "model": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "learning_manifest": {
+      "type": "object",
+      "required": ["vocabulary", "questions", "capabilities"],
+      "properties": {
+        "vocabulary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "lemma", "occurrences"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^voc_" },
+              "lemma": { "type": "string" },
+              "translation": { "type": "string" },
+              "part_of_speech": { "type": "string" },
+              "estimated_cefr": { "type": "string" },
+              "occurrences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["text_unit_id", "token_id"],
+                  "properties": {
+                    "text_unit_id": { "type": "string" },
+                    "token_id": { "type": "string" },
+                    "character_start": { "type": "integer" },
+                    "character_end": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "prompt", "options", "correct_index"],
+            "properties": {
+              "id": { "type": "string" },
+              "chapter_id": { "type": ["string", "null"] },
+              "prompt": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+              "correct_index": { "type": "integer", "minimum": 0 },
+              "explanation": { "type": "string" }
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "required": ["story"],
+          "properties": {
+            "story": { "type": "array", "items": { "type": "string" } },
+            "text_units": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "required": ["origin", "root_story_id"],
+      "properties": {
+        "origin": { "type": "string", "enum": ["curated", "remix", "personalized_from_learning", "fully_custom"] },
+        "root_story_id": { "type": "string" },
+        "parent_story_id": { "type": ["string", "null"] },
+        "parent_revision": { "type": ["integer", "null"] },
+        "remix_spec_id": { "type": ["string", "null"] },
+        "inherited_artifact_ids": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

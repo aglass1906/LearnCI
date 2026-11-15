@@ -64,8 +64,12 @@ class YouTubeManager {
         // Restore session to ensure token is fresh
         restoreSession()
         
-        // Load from cache initially
-        loadFromCache()
+        // Cache decoding isn't required to construct the app. Yield one frame so
+        // launch and authentication UI can appear before larger payloads decode.
+        Task { @MainActor [weak self] in
+            await Task.yield()
+            self?.loadFromCache()
+        }
     }
     
     private func restoreSession() {
@@ -189,7 +193,8 @@ class YouTubeManager {
     // MARK: - Caching Logic
     
     private func saveToCache() {
-        guard !videos.isEmpty || !discoveryVideos.isEmpty || !recommendedVideos.isEmpty else { return }
+        guard !videos.isEmpty || !discoveryVideos.isEmpty || !recommendedVideos.isEmpty
+                || !channels.isEmpty || !playlists.isEmpty else { return }
         
         let encoder = JSONEncoder()
         if let encodedSubs = try? encoder.encode(videos) {
@@ -203,6 +208,9 @@ class YouTubeManager {
         }
         if let encodedChannels = try? encoder.encode(channels) {
             defaults.set(encodedChannels, forKey: channelsKey)
+        }
+        if let encodedPlaylists = try? encoder.encode(playlists) {
+            defaults.set(encodedPlaylists, forKey: playlistsKey)
         }
     }
     
@@ -1520,5 +1528,4 @@ extension ISO8601DateFormatter {
         return formatter
     }
 }
-
 

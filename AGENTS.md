@@ -22,6 +22,13 @@ LearnCI follows the **Agent OS** standard for context management. Prior to under
 
 Backend services use **Supabase** (Authentication, PostgreSQL Database, Storage) alongside **OpenAI**, **ElevenLabs**, and **Google Veo** APIs.
 
+### Production Database Operations
+
+- All Supabase PostgreSQL schema migrations and Edge Functions are canonically managed in **`LearnCI_Backend`**. Do not author new migrations directly within `LearnCI`.
+- Prefer the Supabase MCP tools for direct SQL and schema inspection when available.
+- When applying schema changes, perform them from `LearnCI_Backend/supabase/migrations/`.
+- Verify the linked project ref is `vuygqrbludhuywupcbma`. Never repair, revert, reset, or broaden production migration history without explicit user approval.
+
 ---
 
 ## 3. Build & Verification Commands

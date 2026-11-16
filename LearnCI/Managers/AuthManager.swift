@@ -56,6 +56,12 @@ class AuthManager {
                 auth: SupabaseClientOptions.AuthOptions(emitLocalSessionAsInitialSession: true)
             )
         )
+        if UITestMode.isActive {
+            state = UITestMode.startsAuthenticated
+                ? .authenticated(userID: UITestMode.userID, email: "uitest@example.com", fullName: "UI Tester", avatarURL: nil)
+                : .unauthenticated
+            return
+        }
         checkSession()
         listenForAuthChanges()
     }

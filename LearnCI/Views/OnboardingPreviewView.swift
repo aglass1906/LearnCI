@@ -42,6 +42,7 @@ struct OnboardingPreviewView: View {
                     Button("Skip") {
                         onFinished()
                     }
+                    .accessibilityIdentifier("onboardingPreview.skip")
                     .foregroundStyle(.white.opacity(0.9))
                 }
 
@@ -67,6 +68,7 @@ struct OnboardingPreviewView: View {
                                 Text(item.title)
                                     .font(.system(size: 38, weight: .heavy, design: .rounded))
                                     .foregroundStyle(.white)
+                                    .accessibilityIdentifier("onboardingPreview.title.\(index)")
 
                                 Text(item.subtitle)
                                     .font(.title3)
@@ -110,6 +112,7 @@ struct OnboardingPreviewView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(pages[page].colors[0])
                 .background(.white, in: RoundedRectangle(cornerRadius: 18))
+                .accessibilityIdentifier("onboardingPreview.next")
             }
             .padding(24)
         }

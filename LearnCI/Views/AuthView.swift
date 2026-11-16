@@ -49,12 +49,14 @@ struct AuthView: View {
                                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                                 .submitLabel(.continue)
                                 .onSubmit(sendCode)
+                                .accessibilityIdentifier("auth.emailField")
 
                             if let errorMessage {
                                 Text(errorMessage)
                                     .font(.caption)
                                     .foregroundStyle(.red)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .accessibilityIdentifier("auth.error")
                             }
 
                             Button(action: sendCode) {
@@ -74,6 +76,7 @@ struct AuthView: View {
                             .background(.white, in: RoundedRectangle(cornerRadius: 16))
                             .disabled(!isEmailValid || isSendingCode)
                             .opacity(isEmailValid ? 1 : 0.65)
+                            .accessibilityIdentifier("auth.continueEmail")
 
                             HStack {
                                 Rectangle().frame(height: 1).foregroundStyle(.white.opacity(0.3))
@@ -92,12 +95,14 @@ struct AuthView: View {
                             .buttonStyle(.plain)
                             .foregroundStyle(.primary)
                             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                            .accessibilityIdentifier("auth.google")
 
                             Button("Use Password Instead") {
                                 showPasswordAuth = true
                             }
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.white)
+                            .accessibilityIdentifier("auth.usePassword")
                         }
                         .padding(22)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28))
@@ -299,6 +304,34 @@ private struct PasswordAuthView: View {
     @State private var errorMessage: String?
     @State private var showForgotPassword = false
     @State private var showConfirmation = false
+    @State private var isPasswordVisible = false
+
+    @ViewBuilder
+    private func passwordField(_ title: String, text: Binding<String>, contentType: UITextContentType, identifier: String) -> some View {
+        HStack {
+            Group {
+                if isPasswordVisible {
+                    TextField(title, text: text)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } else {
+                    SecureField(title, text: text)
+                }
+            }
+            .textContentType(contentType)
+            .accessibilityIdentifier(identifier)
+
+            Button {
+                isPasswordVisible.toggle()
+            } label: {
+                Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(isPasswordVisible ? "Hide password" : "Show password")
+            .accessibilityIdentifier("\(identifier).toggleVisibility")
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -308,10 +341,12 @@ private struct PasswordAuthView: View {
                     Text("Sign Up").tag(true)
                 }
                 .pickerStyle(.segmented)
+                .accessibilityIdentifier("passwordAuth.modePicker")
 
                 if isSignUp {
                     TextField("Full name", text: $name)
                         .textContentType(.name)
+                        .accessibilityIdentifier("passwordAuth.name")
                 }
 
                 TextField("Email address", text: $email)
@@ -319,34 +354,37 @@ private struct PasswordAuthView: View {
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .accessibilityIdentifier("passwordAuth.email")
 
-                SecureField("Password", text: $password)
-                    .textContentType(isSignUp ? .newPassword : .password)
+                passwordField("Password", text: $password, contentType: isSignUp ? .newPassword : .password, identifier: "passwordAuth.password")
 
                 if isSignUp {
-                    SecureField("Confirm password", text: $confirmPassword)
-                        .textContentType(.newPassword)
+                    passwordField("Confirm password", text: $confirmPassword, contentType: .newPassword, identifier: "passwordAuth.confirmPassword")
                 }
 
                 if let errorMessage {
                     Text(errorMessage).foregroundStyle(.red)
+                        .accessibilityIdentifier("passwordAuth.error")
                 }
 
                 Button(isSignUp ? "Create Account" : "Sign In") {
                     submit()
                 }
                 .disabled(!isValid || isLoading)
+                .accessibilityIdentifier("passwordAuth.submit")
 
                 if !isSignUp {
                     Button("Forgot Password?") {
                         showForgotPassword = true
                     }
+                    .accessibilityIdentifier("passwordAuth.forgot")
                 }
             }
             .navigationTitle(isSignUp ? "Create Account" : "Password Sign In")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .accessibilityIdentifier("passwordAuth.cancel")
                 }
             }
             .sheet(isPresented: $showForgotPassword) {

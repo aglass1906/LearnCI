@@ -28,6 +28,7 @@ struct LearnCIApp: App {
     @State private var mediaPlaybackStore = MediaPlaybackStore()
 
     init() {
+        UITestMode.applyLaunchResets()
         let auth = AuthManager()
         _authManager = State(initialValue: auth)
         _syncManager = State(initialValue: SyncManager(authManager: auth))
@@ -61,7 +62,7 @@ struct LearnCIApp: App {
             MediaStudyState.self,
             MediaPlaybackState.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: UITestMode.isActive)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

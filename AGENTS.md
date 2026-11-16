@@ -37,11 +37,16 @@ This is an Xcode project — CLI build and test commands must be run from the re
 
 ```bash
 # Build iOS App via CLI
-xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17'
 
 # Run Unit Tests via CLI
-xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+### Local secrets
+
+- `YOUTUBE_API_KEY`: copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (gitignored). `Info.plist` reads it via `$(YOUTUBE_API_KEY)`.
+- `SUPABASE_ACCESS_TOKEN`: export in your shell; `.mcp.json` and `.codex/config.toml` read it from the environment. Never commit tokens.
 
 ---
 

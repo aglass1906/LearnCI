@@ -736,6 +736,14 @@ extension DashboardView {
             destination: FlashcardDeckBrowserView(),
             appliesHorizontalPadding: false
         ) {
+            wordOfDayContent
+        }
+        .accessibilityIdentifier("dashboard.wordOfDay")
+    }
+
+    @ViewBuilder
+    private var wordOfDayContent: some View {
+        Group {
             if let word = wordOfDay {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -743,9 +751,11 @@ extension DashboardView {
                             Text(word.wordTarget)
                                 .font(.title)
                                 .fontWeight(.bold)
+                                .accessibilityIdentifier("wordOfDay.word")
                             Text(word.wordNative)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
+                                .accessibilityIdentifier("wordOfDay.translation")
                         }
                         
                         Spacer()
@@ -768,6 +778,8 @@ extension DashboardView {
                                         .font(.system(size: 40))
                                         .foregroundColor(.blue)
                                 }
+                                .accessibilityLabel("Play word audio")
+                                .accessibilityIdentifier("wordOfDay.wordAudio")
                             }
                         }
                     }
@@ -779,6 +791,7 @@ extension DashboardView {
                             Text(word.sentenceTarget)
                                 .font(.subheadline.italic())
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .accessibilityIdentifier("wordOfDay.sentence")
                             
                             Button(action: {
                                 audioManager.playAudio(
@@ -794,6 +807,8 @@ extension DashboardView {
                                     .font(.title3)
                                     .foregroundColor(.blue.opacity(0.8))
                             }
+                            .accessibilityLabel("Play sentence audio")
+                            .accessibilityIdentifier("wordOfDay.sentenceAudio")
                         }
                         
                         Text(word.sentenceNative)
@@ -807,6 +822,7 @@ extension DashboardView {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .padding(.top, 4)
+                                .accessibilityIdentifier("wordOfDay.deck")
                             
                             if let deckDesc = wordOfDayDeckDescription, !deckDesc.isEmpty {
                                 Text(deckDesc)
@@ -825,6 +841,7 @@ extension DashboardView {
                     Text("Selecting daily word...")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .accessibilityIdentifier("wordOfDay.loading")
                     Spacer()
                 }
                 .padding()
@@ -834,6 +851,7 @@ extension DashboardView {
                     Text("No daily word found for your current level.")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .accessibilityIdentifier("wordOfDay.empty")
                     Spacer()
                 }
                 .padding()

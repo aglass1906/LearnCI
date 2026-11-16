@@ -9,6 +9,7 @@ struct PodcastShowView: View {
     @State private var podcastManager = PodcastManager()
     @State private var isRefreshing = false
     @State private var sortedEpisodes: [PodcastEpisode] = []
+    @AppStorage(PodcastPlayOrder.storageKey) private var oldestFirst = false
     @Query private var allMediaStudyStates: [MediaStudyState]
 
     private func mediaStudyState(for episode: PodcastEpisode) -> MediaStudyState? {
@@ -93,6 +94,9 @@ struct PodcastShowView: View {
         .onChange(of: show.episodes.count) { _, _ in
             updateSortedEpisodes()
         }
+        .onChange(of: oldestFirst) { _, _ in
+            updateSortedEpisodes()
+        }
         .refreshable {
             await podcastManager.refreshEpisodes(for: show, modelContext: modelContext)
             updateSortedEpisodes()
@@ -100,6 +104,13 @@ struct PodcastShowView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
+                    Button {
+                        oldestFirst.toggle()
+                    } label: {
+                        Image(systemName: oldestFirst ? "arrow.up.to.line" : "arrow.down.to.line")
+                    }
+                    .accessibilityLabel(oldestFirst ? "Oldest first" : "Newest first")
+
                     FavoriteButton(
                         consumptionUrl: show.feedUrl,
                         type: .podcast,
@@ -128,7 +139,7 @@ struct PodcastShowView: View {
     }
 
     private func updateSortedEpisodes() {
-        sortedEpisodes = show.episodes.sorted { $0.publishedDate > $1.publishedDate }
+        sortedEpisodes = PodcastPlayOrder.sorted(show.episodes, oldestFirst: oldestFirst)
     }
 }
 

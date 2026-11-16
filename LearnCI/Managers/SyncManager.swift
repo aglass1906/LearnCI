@@ -31,7 +31,7 @@ class SyncManager {
         modelContext: ModelContext,
         minimumInterval: TimeInterval = 5 * 60
     ) async {
-        guard !isSyncing else { return }
+        guard !UITestMode.isActive, !isSyncing else { return }
         if let lastSync, Date().timeIntervalSince(lastSync) < minimumInterval {
             return
         }
@@ -363,6 +363,7 @@ struct CoachingCheckInDTO: Codable {
 
     @MainActor
     func syncCurrentProfile(modelContext: ModelContext) async throws {
+        if UITestMode.isActive { return }
         guard let userID = authManager.currentUser else {
             throw SyncError.notAuthenticated
         }

@@ -84,6 +84,9 @@ struct ContentView: View {
             if let fullName = authManager.currentUserFullName, !fullName.isEmpty {
                 newProfile.name = fullName
             }
+            if UITestMode.startsOnboarded {
+                newProfile.completeOnboarding(name: "UI Tester", language: .spanish, proficiencyLevel: 1, dailyGoalMinutes: 20)
+            }
             modelContext.insert(newProfile)
             try? modelContext.save()
             profile = newProfile

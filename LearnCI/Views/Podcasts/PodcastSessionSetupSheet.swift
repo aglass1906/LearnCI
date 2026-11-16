@@ -164,10 +164,10 @@ struct PodcastSessionSetupSheet: View {
 
     private func buildQueue() -> [PodcastEpisode] {
         let selectedShows = shows.filter { selectedShowIDs.contains($0.id) }
-        let unplayed = selectedShows
-            .flatMap { $0.episodes }
-            .filter { !$0.isPlayed }
-            .sorted { $0.publishedDate > $1.publishedDate }
+        let unplayed = PodcastPlayOrder.sorted(
+            selectedShows.flatMap { $0.episodes }.filter { !$0.isPlayed },
+            oldestFirst: UserDefaults.standard.bool(forKey: PodcastPlayOrder.storageKey)
+        )
 
         var queue: [PodcastEpisode] = []
         var totalSeconds: Double = 0

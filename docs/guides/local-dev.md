@@ -80,7 +80,7 @@ xcrun simctl list devices available
 Set convenience variables:
 
 ```bash
-export SIMULATOR="iPhone 16"
+export SIMULATOR="iPhone 17"
 export DERIVED="./build/DerivedData"
 ```
 

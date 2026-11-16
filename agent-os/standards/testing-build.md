@@ -14,7 +14,7 @@ xcodebuild build \
   -project LearnCI.xcodeproj \
   -scheme LearnCI \
   -configuration Debug \
-  -destination 'platform=iOS Simulator,name=iPhone 16'
+  -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ### Unit Test Execution Command
@@ -22,7 +22,7 @@ xcodebuild build \
 xcodebuild test \
   -project LearnCI.xcodeproj \
   -scheme LearnCI \
-  -destination 'platform=iOS Simulator,name=iPhone 16'
+  -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ---
@@ -33,7 +33,7 @@ To install and launch the compiled binary in an active simulator:
 
 ```bash
 export DERIVED="./build/DerivedData"
-export SIMULATOR="iPhone 16"
+export SIMULATOR="iPhone 17"
 
 # Compile Debug binary
 xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination "platform=iOS Simulator,name=${SIMULATOR}" -derivedDataPath "$DERIVED"
@@ -51,4 +51,4 @@ xcrun simctl launch booted com.sankofaplex.LearnCI
 
 - **No Unverified Success Declarations**: Edits to `.swift` files are NOT complete until the project compiles cleanly via `xcodebuild`.
 - **Log Inspection**: If a build fails, inspect `build_output.txt` or terminal output immediately before attempting repairs.
-- **Simulator Availability**: If `iPhone 16` simulator is not installed, list available runtimes using `xcrun simctl list devices available` and use an available simulator device.
+- **Simulator Availability**: If `iPhone 17` simulator is not installed, list available runtimes using `xcrun simctl list devices available` and use an available simulator device.

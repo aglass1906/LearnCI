@@ -78,6 +78,8 @@ struct OnboardingSetupView: View {
                         .frame(width: 40, height: 40)
                         .background(.thinMaterial, in: Circle())
                 }
+                .accessibilityLabel("Back")
+                .accessibilityIdentifier("onboarding.back")
             } else {
                 Color.clear.frame(width: 40, height: 40)
             }
@@ -101,6 +103,7 @@ struct OnboardingSetupView: View {
             }
             .font(.caption.weight(.semibold))
             .frame(width: 58)
+            .accessibilityIdentifier("onboarding.signOut")
         }
     }
 
@@ -116,6 +119,7 @@ struct OnboardingSetupView: View {
                 .font(.title2.bold())
                 .padding()
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                .accessibilityIdentifier("onboarding.nameField")
         }
     }
 
@@ -128,7 +132,7 @@ struct OnboardingSetupView: View {
         ) {
             LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 12) {
                 ForEach(Language.allCases) { option in
-                    SelectionCard(isSelected: language == option) {
+                    SelectionCard(isSelected: language == option, identifier: "onboarding.language.\(option.code)") {
                         language = option
                     } content: {
                         Text(option.flag).font(.system(size: 36))
@@ -148,7 +152,7 @@ struct OnboardingSetupView: View {
         ) {
             VStack(spacing: 10) {
                 ForEach(1...6, id: \.self) { level in
-                    SelectionCard(isSelected: proficiencyLevel == level) {
+                    SelectionCard(isSelected: proficiencyLevel == level, identifier: "onboarding.level.\(level)") {
                         proficiencyLevel = level
                     } content: {
                         HStack {
@@ -179,7 +183,7 @@ struct OnboardingSetupView: View {
         ) {
             VStack(spacing: 12) {
                 ForEach(dailyGoals, id: \.self) { minutes in
-                    SelectionCard(isSelected: dailyGoalMinutes == minutes) {
+                    SelectionCard(isSelected: dailyGoalMinutes == minutes, identifier: "onboarding.goal.\(minutes)") {
                         dailyGoalMinutes = minutes
                     } content: {
                         HStack {
@@ -206,6 +210,7 @@ struct OnboardingSetupView: View {
             Text("\(language.greetingPrefix) \(name.trimmingCharacters(in: .whitespacesAndNewlines))!")
                 .font(.system(size: 38, weight: .heavy, design: .rounded))
                 .multilineTextAlignment(.center)
+                .accessibilityIdentifier("onboarding.welcomeGreeting")
             Text("Your \(LevelManager.shared.displayString(level: proficiencyLevel, language: language.code, preferredScale: .simple)) plan is ready, with a \(dailyGoalMinutes)-minute daily goal.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
@@ -244,6 +249,7 @@ struct OnboardingSetupView: View {
         .background(.indigo, in: RoundedRectangle(cornerRadius: 18))
         .disabled(!canContinue || isSaving)
         .opacity(canContinue ? 1 : 0.55)
+        .accessibilityIdentifier("onboarding.primaryButton")
     }
 
     private var canContinue: Bool {
@@ -340,11 +346,13 @@ private struct OnboardingCard<Content: View>: View {
 
 private struct SelectionCard<Content: View>: View {
     let isSelected: Bool
+    let identifier: String?
     let action: () -> Void
     @ViewBuilder let content: Content
 
-    init(isSelected: Bool, action: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+    init(isSelected: Bool, identifier: String? = nil, action: @escaping () -> Void, @ViewBuilder content: () -> Content) {
         self.isSelected = isSelected
+        self.identifier = identifier
         self.action = action
         self.content = content()
     }
@@ -366,6 +374,8 @@ private struct SelectionCard<Content: View>: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier ?? "")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

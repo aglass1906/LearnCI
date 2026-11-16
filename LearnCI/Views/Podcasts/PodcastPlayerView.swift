@@ -1625,8 +1625,10 @@ struct PodcastPlayerView: View {
     }
 
     private func preparePlaybackQueue() {
-        let showEpisodes = (episode.show?.episodes ?? [episode])
-            .sorted { $0.publishedDate > $1.publishedDate }
+        let showEpisodes = PodcastPlayOrder.sorted(
+            episode.show?.episodes ?? [episode],
+            oldestFirst: UserDefaults.standard.bool(forKey: PodcastPlayOrder.storageKey)
+        )
         let queueItems = showEpisodes.compactMap { candidate -> CarPlayMediaItem? in
             guard let url = candidate.playableAudioURL else { return nil }
             return CarPlayMediaItem(

@@ -2891,7 +2891,7 @@ struct AudioPlayerBar: View {
                     }
                 }
         )
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel("Minimized audio player")
         .accessibilityHint("Swipe up or tap to show playback controls")
     }

@@ -132,9 +132,9 @@ struct StoryListView: View {
     @State private var showKeyAlert = false
     
     // Filters & Sorting
-    @State private var sortOption: SortOption = .newest
-    @State private var selectedLanguage: String = "All"
-    @State private var selectedStoryTypeID: String = "All"
+    @AppStorage("input.stories.sortOption") private var sortOption: SortOption = .newest
+    @AppStorage("input.stories.languageFilter") private var selectedLanguage: String = "All"
+    @AppStorage("input.stories.storyTypeFilter") private var selectedStoryTypeID: String = "All"
     @State private var selectedStoryID: Story.ID?
     
     enum SortOption: String, CaseIterable {

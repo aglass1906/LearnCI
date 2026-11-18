@@ -41,7 +41,7 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active, authManager.currentUser != nil else { return }
             Task {
-                await syncManager.syncNow(modelContext: modelContext)
+                await syncManager.syncIfNeeded(modelContext: modelContext)
             }
         }
         .sheet(isPresented: Bindable(authManager).isPasswordResetRequired) {
@@ -75,8 +75,6 @@ struct ContentView: View {
 
     @MainActor
     private func prepareAuthenticatedUser(_ userID: String) async {
-        await syncManager.syncNow(modelContext: modelContext)
-
         var profile = profile(for: userID)
         if profile == nil {
             let newProfile = UserProfile(userID: userID)
@@ -86,6 +84,9 @@ struct ContentView: View {
             if let fullName = authManager.currentUserFullName, !fullName.isEmpty {
                 newProfile.name = fullName
             }
+            if UITestMode.startsOnboarded {
+                newProfile.completeOnboarding(name: "UI Tester", language: .spanish, proficiencyLevel: 1, dailyGoalMinutes: 20)
+            }
             modelContext.insert(newProfile)
             try? modelContext.save()
             profile = newProfile
@@ -93,6 +94,12 @@ struct ContentView: View {
 
         onboardingUserID = profile?.hasCompletedOnboarding == false ? userID : nil
         preparedUserID = userID
+
+        // SwiftData is the immediate source of truth. Refresh it without holding
+        // the authenticated interface behind network requests.
+        Task {
+            await syncManager.syncIfNeeded(modelContext: modelContext)
+        }
     }
 
     private func profile(for userID: String) -> UserProfile? {

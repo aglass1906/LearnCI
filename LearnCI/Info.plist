@@ -7,7 +7,7 @@
 		<string>audio</string>
 	</array>
 	<key>YouTubeAPIKey</key>
-	<string>AIzaSyB71BUNTgtp6uiSS3DyRc-ZA5oQkaVbQe8</string>
+	<string>$(YOUTUBE_API_KEY)</string>
 	<key>GIDClientID</key>
 	<string>552647494880-jktkhpond5gofkvbcr0mrd2u2ucfrmd3.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>

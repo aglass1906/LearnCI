@@ -41,11 +41,11 @@ struct PodcastListView: View {
     @State private var sessionMinutes: Int = 30
     @State private var sessionResumeIndex: Int = 0
     @State private var resumableSession: (episodeIDs: [String], currentIndex: Int, minutes: Int)? = nil
-    @State private var selectedTab: PodcastTab = .newEpisodes
+    @AppStorage("input.podcasts.selectedTab") private var selectedTab: PodcastTab = .newEpisodes
     @State private var isRefreshing = false
-    @State private var filterUnplayedOnly = false
-    @State private var filterFavoritesOnly = false
-    @State private var sortOption: PodcastSortOption = .newest
+    @AppStorage("input.podcasts.unplayedOnly") private var filterUnplayedOnly = false
+    @AppStorage("input.podcasts.favoritesOnly") private var filterFavoritesOnly = false
+    @AppStorage("input.podcasts.sortOption") private var sortOption: PodcastSortOption = .newest
     @State private var selectedEpisodeID: PodcastEpisode.ID?
     @State private var selectedShowID: PodcastShow.ID?
 

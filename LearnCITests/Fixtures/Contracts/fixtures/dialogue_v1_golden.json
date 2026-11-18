@@ -1,0 +1,168 @@
+{
+  "published_format_version": 1,
+  "story_id": "story_dialogue_el_mercado",
+  "content_revision": 1,
+  "content_hash": "sha256:a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+  "published_at": "2026-09-04T12:00:00Z",
+  "metadata": {
+    "title": "Un Día en el Mercado",
+    "description": "Sofia and Mateo visit the local market in Oaxaca to buy ingredients for mole.",
+    "target_language": "es",
+    "native_language": "en",
+    "level": "A2",
+    "story_type": "dialogue_story",
+    "cover_art_url": "https://vuygqrbludhuywupcbma.supabase.co/storage/v1/object/public/story-covers/mercado_cover.jpg",
+    "cover_art_path": "published/assets/cover_mercado_a1b2.jpg"
+  },
+  "text_units": [
+    {
+      "id": "tu_ch1_sc1_001",
+      "chapter_id": "ch_01",
+      "scene_id": "sc_01",
+      "sequence": 0,
+      "kind": "dialogue_turn",
+      "speaker_id": "char_sofia",
+      "by_language": {
+        "es": { "text": "¡Hola Mateo! ¿Tienes la lista de compras para el mole?" },
+        "en": { "text": "Hello Mateo! Do you have the shopping list for the mole?" }
+      },
+      "content_hash": "sha256:d1e2f3a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abc1"
+    },
+    {
+      "id": "tu_ch1_sc1_002",
+      "chapter_id": "ch_01",
+      "scene_id": "sc_01",
+      "sequence": 1,
+      "kind": "dialogue_turn",
+      "speaker_id": "char_mateo",
+      "by_language": {
+        "es": { "text": "Sí, aquí está. Necesitamos chiles secos, chocolate y canela." },
+        "en": { "text": "Yes, here it is. We need dried chilies, chocolate, and cinnamon." }
+      },
+      "content_hash": "sha256:d1e2f3a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abc2"
+    }
+  ],
+  "audio_manifest": {
+    "spoken_units": [
+      {
+        "id": "su_001",
+        "kind": "speaker_turn",
+        "text_unit_ids": ["tu_ch1_sc1_001"],
+        "language_code": "es",
+        "speaker_id": "char_sofia",
+        "voice_id": "eleven_sofia_warm",
+        "audio_asset_id": "aud_sofia_001",
+        "duration_ms": 3850,
+        "word_timings": [
+          { "token_id": "tok_1", "text_unit_id": "tu_ch1_sc1_001", "text": "¡Hola", "start_ms": 0, "end_ms": 420, "character_start": 0, "character_end": 5 },
+          { "token_id": "tok_2", "text_unit_id": "tu_ch1_sc1_001", "text": "Mateo!", "start_ms": 450, "end_ms": 910, "character_start": 6, "character_end": 12 },
+          { "token_id": "tok_3", "text_unit_id": "tu_ch1_sc1_001", "text": "¿Tienes", "start_ms": 1020, "end_ms": 1420, "character_start": 13, "character_end": 20 },
+          { "token_id": "tok_4", "text_unit_id": "tu_ch1_sc1_001", "text": "la", "start_ms": 1450, "end_ms": 1600, "character_start": 21, "character_end": 23 },
+          { "token_id": "tok_5", "text_unit_id": "tu_ch1_sc1_001", "text": "lista", "start_ms": 1620, "end_ms": 1980, "character_start": 24, "character_end": 29 },
+          { "token_id": "tok_6", "text_unit_id": "tu_ch1_sc1_001", "text": "de", "start_ms": 2010, "end_ms": 2120, "character_start": 30, "character_end": 32 },
+          { "token_id": "tok_7", "text_unit_id": "tu_ch1_sc1_001", "text": "compras", "start_ms": 2150, "end_ms": 2680, "character_start": 33, "character_end": 40 },
+          { "token_id": "tok_8", "text_unit_id": "tu_ch1_sc1_001", "text": "para", "start_ms": 2720, "end_ms": 2980, "character_start": 41, "character_end": 45 },
+          { "token_id": "tok_9", "text_unit_id": "tu_ch1_sc1_001", "text": "el", "start_ms": 3010, "end_ms": 3150, "character_start": 46, "character_end": 48 },
+          { "token_id": "tok_10", "text_unit_id": "tu_ch1_sc1_001", "text": "mole?", "start_ms": 3180, "end_ms": 3720, "character_start": 49, "character_end": 54 }
+        ]
+      },
+      {
+        "id": "su_002",
+        "kind": "speaker_turn",
+        "text_unit_ids": ["tu_ch1_sc1_002"],
+        "language_code": "es",
+        "speaker_id": "char_mateo",
+        "voice_id": "eleven_mateo_natural",
+        "audio_asset_id": "aud_mateo_002",
+        "duration_ms": 4210,
+        "word_timings": [
+          { "token_id": "tok_11", "text_unit_id": "tu_ch1_sc1_002", "text": "Sí,", "start_ms": 0, "end_ms": 350, "character_start": 0, "character_end": 3 },
+          { "token_id": "tok_12", "text_unit_id": "tu_ch1_sc1_002", "text": "aquí", "start_ms": 380, "end_ms": 650, "character_start": 4, "character_end": 8 },
+          { "token_id": "tok_13", "text_unit_id": "tu_ch1_sc1_002", "text": "está.", "start_ms": 680, "end_ms": 1100, "character_start": 9, "character_end": 14 },
+          { "token_id": "tok_14", "text_unit_id": "tu_ch1_sc1_002", "text": "Necesitamos", "start_ms": 1250, "end_ms": 1950, "character_start": 15, "character_end": 26 },
+          { "token_id": "tok_15", "text_unit_id": "tu_ch1_sc1_002", "text": "chiles", "start_ms": 1990, "end_ms": 2420, "character_start": 27, "character_end": 33 },
+          { "token_id": "tok_16", "text_unit_id": "tu_ch1_sc1_002", "text": "secos,", "start_ms": 2450, "end_ms": 2900, "character_start": 34, "character_end": 40 },
+          { "token_id": "tok_17", "text_unit_id": "tu_ch1_sc1_002", "text": "chocolate", "start_ms": 2980, "end_ms": 3550, "character_start": 41, "character_end": 50 },
+          { "token_id": "tok_18", "text_unit_id": "tu_ch1_sc1_002", "text": "y", "start_ms": 3580, "end_ms": 3680, "character_start": 51, "character_end": 52 },
+          { "token_id": "tok_19", "text_unit_id": "tu_ch1_sc1_002", "text": "canela.", "start_ms": 3710, "end_ms": 4150, "character_start": 53, "character_end": 60 }
+        ]
+      }
+    ],
+    "assets": [
+      {
+        "id": "aud_sofia_001",
+        "storage_path": "audio-stories/published/assets/aud_sofia_001.mp3",
+        "content_hash": "sha256:7f8e9d0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e",
+        "duration_ms": 3850,
+        "media_type": "audio/mpeg",
+        "byte_size": 61600,
+        "provider": "elevenlabs",
+        "model": "eleven_multilingual_v2"
+      },
+      {
+        "id": "aud_mateo_002",
+        "storage_path": "audio-stories/published/assets/aud_mateo_002.mp3",
+        "content_hash": "sha256:8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b",
+        "duration_ms": 4210,
+        "media_type": "audio/mpeg",
+        "byte_size": 67360,
+        "provider": "elevenlabs",
+        "model": "eleven_multilingual_v2"
+      }
+    ]
+  },
+  "learning_manifest": {
+    "vocabulary": [
+      {
+        "id": "voc_lista_compras",
+        "lemma": "lista de compras",
+        "translation": "shopping list",
+        "part_of_speech": "noun phrase",
+        "estimated_cefr": "A1",
+        "occurrences": [
+          { "text_unit_id": "tu_ch1_sc1_001", "token_id": "tok_5", "character_start": 24, "character_end": 40 }
+        ]
+      },
+      {
+        "id": "voc_chiles_secos",
+        "lemma": "chile seco",
+        "translation": "dried chili",
+        "part_of_speech": "noun",
+        "estimated_cefr": "A2",
+        "occurrences": [
+          { "text_unit_id": "tu_ch1_sc1_002", "token_id": "tok_15", "character_start": 27, "character_end": 39 }
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "id": "q_001",
+        "chapter_id": "ch_01",
+        "prompt": "¿Qué necesitan comprar Sofia y Mateo?",
+        "options": [
+          "Ingredientes para el mole (chiles secos, chocolate y canela)",
+          "Frutas para un postre",
+          "Ropa tradicional",
+          "Libros de cocina"
+        ],
+        "correct_index": 0,
+        "explanation": "Mateo confirma que necesitan chiles secos, chocolate y canela para el mole."
+      }
+    ],
+    "capabilities": {
+      "story": ["reading", "listening", "comprehension", "dialogue_practice"],
+      "text_units": {
+        "tu_ch1_sc1_001": ["flashcard", "audio_cloze", "shadowing"],
+        "tu_ch1_sc1_002": ["flashcard", "audio_cloze", "shadowing"]
+      }
+    }
+  },
+  "lineage": {
+    "origin": "curated",
+    "root_story_id": "story_dialogue_el_mercado",
+    "parent_story_id": null,
+    "parent_revision": null,
+    "remix_spec_id": null,
+    "inherited_artifact_ids": []
+  }
+}

@@ -11,8 +11,8 @@ For full system architecture, build/test commands, and Agent OS standards, pleas
 
 ```bash
 # Build project
-xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17'
 
 # Run unit tests
-xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 17'
 ```

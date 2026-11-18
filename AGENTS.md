@@ -22,6 +22,13 @@ LearnCI follows the **Agent OS** standard for context management. Prior to under
 
 Backend services use **Supabase** (Authentication, PostgreSQL Database, Storage) alongside **OpenAI**, **ElevenLabs**, and **Google Veo** APIs.
 
+### Production Database Operations
+
+- All Supabase PostgreSQL schema migrations and Edge Functions are canonically managed in **`LearnCI_Backend`**. Do not author new migrations directly within `LearnCI`.
+- Prefer the Supabase MCP tools for direct SQL and schema inspection when available.
+- When applying schema changes, perform them from `LearnCI_Backend/supabase/migrations/`.
+- Verify the linked project ref is `vuygqrbludhuywupcbma`. Never repair, revert, reset, or broaden production migration history without explicit user approval.
+
 ---
 
 ## 3. Build & Verification Commands
@@ -30,11 +37,16 @@ This is an Xcode project — CLI build and test commands must be run from the re
 
 ```bash
 # Build iOS App via CLI
-xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild build -project LearnCI.xcodeproj -scheme LearnCI -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17'
 
 # Run Unit Tests via CLI
-xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project LearnCI.xcodeproj -scheme LearnCI -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+### Local secrets
+
+- `YOUTUBE_API_KEY`: copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (gitignored). `Info.plist` reads it via `$(YOUTUBE_API_KEY)`.
+- `SUPABASE_ACCESS_TOKEN`: export in your shell; `.mcp.json` and `.codex/config.toml` read it from the environment. Never commit tokens.
 
 ---
 

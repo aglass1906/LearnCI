@@ -4,6 +4,7 @@ import AVKit
 import Combine
 import SwiftData
 import MediaPlayer
+import Translation
 
 private enum StoryBookLayout {
     static let horizontalPadding: CGFloat = 16
@@ -84,6 +85,7 @@ struct StorySessionView: View {
     @State private var isTranslatingWord: Bool = false
     @State private var showWordLookup: Bool = false
     @State private var wordTranslationCache: [String: WordTranslationResult] = [:]
+    @State private var wordTranslationConfiguration: TranslationSession.Configuration?
     @State private var selectedWordRequest: StoryWordLookupRequest?
     @State private var phraseSelectionStart: StoryWordLookupRequest?
     @State private var phraseSelectionMessage: String?
@@ -184,6 +186,9 @@ struct StorySessionView: View {
             handleWordLookupRequest(request)
         }
         .overlay(alignment: .bottom) { phraseSelectionBanner }
+        .translationTask(wordTranslationConfiguration) { session in
+            await performHybridWordLookup(using: session)
+        }
     }
 
     private var readerBody: some View {
@@ -289,7 +294,8 @@ struct StorySessionView: View {
                 },
                 isMarkedForStudy: isSelectedWordSaved
             )
-            .presentationDetents([.fraction(0.4)])
+            .presentationDetents([.medium, .large])
+            .presentationContentInteraction(.scrolls)
             .presentationDragIndicator(.visible)
         }
         .onReceive(timer) { _ in
@@ -709,25 +715,57 @@ struct StorySessionView: View {
         }
 
         isTranslatingWord = true
-        Task {
+        wordTranslationConfiguration = .init(
+            source: Locale.Language(identifier: story.language.code),
+            target: Locale.Language(identifier: story.nativeLanguageCode)
+        )
+    }
+
+    private func performHybridWordLookup(using session: TranslationSession) async {
+        guard let word = selectedWord else { return }
+        let context = selectedWordRequest?.context ?? sentenceContaining(word: word)
+        let cacheKey = "\(word.lowercased())_\(story.language.rawValue)_\(context ?? "")"
+        let sourceLanguage = story.language.displayName
+        let targetLanguage = Locale.current.localizedString(forLanguageCode: story.nativeLanguageCode)
+            ?? story.nativeLanguageCode
+
+        async let enrichment = openAIService.translateWord(
+            word,
+            language: sourceLanguage,
+            targetLanguage: targetLanguage,
+            context: context
+        )
+
+        do {
+            let nativeResponse = try await session.translate(word)
+            wordTranslation = nativeResponse.targetText
+            isTranslatingWord = false
+
             do {
-                let result = try await OpenAIService().translateWord(word, language: story.language.displayName, context: context)
-                await MainActor.run {
-                    wordTranslation = result.translation
-                    wordPartOfSpeech = result.partOfSpeech
-                    wordLookupDetails = result
-                    wordTranslationCache[cacheKey] = result
-                    isTranslatingWord = false
-                }
+                let enriched = try await enrichment
+                let hybrid = enriched.replacingTranslation(with: nativeResponse.targetText)
+                wordTranslation = hybrid.translation
+                wordPartOfSpeech = hybrid.partOfSpeech
+                wordLookupDetails = hybrid
+                wordTranslationCache[cacheKey] = hybrid
             } catch {
-                await MainActor.run {
-                    wordTranslation = error.localizedDescription
-                    wordPartOfSpeech = ""
-                    wordLookupDetails = nil
-                    isTranslatingWord = false
-                    Logger.error("Story word lookup failed for '\(word)': \(error.localizedDescription)", category: .general)
-                }
+                wordTranslationCache[cacheKey] = .translationOnly(nativeResponse.targetText)
+                Logger.debug("OpenAI word enrichment unavailable: \(error.localizedDescription)", category: .general)
             }
+        } catch {
+            do {
+                let fallback = try await enrichment
+                wordTranslation = fallback.translation
+                wordPartOfSpeech = fallback.partOfSpeech
+                wordLookupDetails = fallback
+                wordTranslationCache[cacheKey] = fallback
+            } catch {
+                wordTranslation = "Translation unavailable"
+                wordPartOfSpeech = ""
+                wordLookupDetails = nil
+                Logger.error("Hybrid word lookup failed for '\(word)': \(error.localizedDescription)", category: .general)
+            }
+            isTranslatingWord = false
         }
     }
 
@@ -3524,8 +3562,6 @@ struct WordLookupSheet: View {
                     .padding(.horizontal)
                     .padding(.bottom, 16)
                 }
-
-                Spacer()
 
                 if let onMarkForStudy {
                     SaveForStudyControl(

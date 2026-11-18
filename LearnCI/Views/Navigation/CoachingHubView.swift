@@ -80,7 +80,9 @@ struct CoachingHubView: View {
         .background(Color(UIColor.systemGroupedBackground))
         .navigationTitle("Coaching")
         .task {
-            await syncManager.syncNow(modelContext: modelContext)
+            // Throttled: this view is recreated whenever the header's minutes pill is tapped,
+            // and a full sync also re-pulls stories and their audio.
+            await syncManager.syncIfNeeded(modelContext: modelContext)
         }
     }
 }

@@ -2822,27 +2822,51 @@ struct AudioPlayerBar: View {
     }
 
     private var minimizedBody: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Capsule()
                 .fill(Color.white.opacity(0.35))
-                .frame(width: 44, height: 5)
+                .frame(width: 28, height: 5)
                 .accessibilityHidden(true)
 
             Text(formatTime(displayedSliderValue))
                 .font(.caption.monospacedDigit().weight(.semibold))
                 .foregroundStyle(PlayerTheme.secondaryText)
 
-            Spacer(minLength: 8)
+            Spacer(minLength: 4)
+
+            Button(action: onSkipBackward) {
+                Image(systemName: "gobackward.\(skipInterval)")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: PlayerTheme.minTapTarget, height: PlayerTheme.minTapTarget)
+            }
+            .buttonStyle(PlayerPressStyle())
+            .disabled(!canControlPlayback)
+            .opacity(canControlPlayback ? 1 : 0.4)
+            .accessibilityLabel("Back \(skipInterval) seconds")
 
             Button(action: onPlayPause) {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(.white)
-                    .frame(width: 38, height: 38)
+                    .frame(width: 44, height: 44)
                     .background(canControlPlayback ? PlayerTheme.accent : Color.white.opacity(0.18))
                     .clipShape(Circle())
             }
+            .buttonStyle(PlayerPressStyle())
             .disabled(!canControlPlayback)
+            .accessibilityLabel(isPlaying ? "Pause" : "Play")
+
+            Button(action: onSkipForward) {
+                Image(systemName: "goforward.\(skipInterval)")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: PlayerTheme.minTapTarget, height: PlayerTheme.minTapTarget)
+            }
+            .buttonStyle(PlayerPressStyle())
+            .disabled(!canControlPlayback)
+            .opacity(canControlPlayback ? 1 : 0.4)
+            .accessibilityLabel("Forward \(skipInterval) seconds")
         }
         .padding(.horizontal, 20)
         .padding(.top, 10)

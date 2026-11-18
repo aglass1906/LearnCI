@@ -9,6 +9,7 @@ struct PictureBookReaderView: View {
     private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var currentSpreadIndex = 0
     @State private var currentClipIndex = 0
     @State private var isPlaying = false
@@ -92,7 +93,11 @@ struct PictureBookReaderView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: verticalSizeClass) { _, newValue in
+            if newValue == .compact { minimizePlayerForReading() }
+        }
         .onAppear {
+            if verticalSizeClass == .compact { minimizePlayerForReading() }
             if startTime == nil {
                 startTime = Date()
             }

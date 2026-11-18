@@ -10,6 +10,7 @@ struct DialogStoryFlowView: View {
     private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     /// Read mode starts with the compact player so the text is the focus.
     @State private var isPlayerMinimized = true
     @State private var spineIndex = 0
@@ -92,9 +93,21 @@ struct DialogStoryFlowView: View {
         VStack(spacing: 0) {
             flowHeader
             phaseContent
+                .minimizesPlayerOnScroll(minimizePlayerForReading)
             flowFooter
         }
         .background(Color(.systemGroupedBackground))
+        .onAppear { if verticalSizeClass == .compact { minimizePlayerForReading() } }
+        .onChange(of: verticalSizeClass) { _, newValue in
+            if newValue == .compact { minimizePlayerForReading() }
+        }
+    }
+
+    private func minimizePlayerForReading() {
+        guard !isPlayerMinimized else { return }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            isPlayerMinimized = true
+        }
     }
 
     @ViewBuilder

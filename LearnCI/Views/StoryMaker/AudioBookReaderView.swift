@@ -763,6 +763,7 @@ struct AudioBookReaderView: View {
                 isBuffering: playerBarIsBuffering,
                 bufferingLabel: loadingAudioLabel ?? "Loading audio…",
                 showsRateControl: false,
+                skipInterval: 15,
                 onPlayPause: togglePlay,
                 onSkipForward: skipForward,
                 onSkipBackward: skipBackward,

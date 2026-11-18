@@ -2785,6 +2785,8 @@ struct AudioPlayerBar: View {
     var bufferingLabel: String = "Buffering…"
     var isMinimized: Bool = false
     var showsRateControl: Bool = true
+    /// Seconds moved by the back/forward buttons; must match the host's skipForward/skipBackward.
+    var skipInterval: Int = 10
 
     var onPlayPause: () -> Void
     var onSkipForward: () -> Void
@@ -2821,22 +2823,22 @@ struct AudioPlayerBar: View {
     private var minimizedBody: some View {
         HStack(spacing: 12) {
             Capsule()
-                .fill(Color.secondary.opacity(0.35))
+                .fill(Color.white.opacity(0.35))
                 .frame(width: 44, height: 5)
                 .accessibilityHidden(true)
 
             Text(formatTime(displayedSliderValue))
                 .font(.caption.monospacedDigit().weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(PlayerTheme.secondaryText)
 
             Spacer(minLength: 8)
 
             Button(action: onPlayPause) {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(canControlPlayback ? .white : .secondary)
+                    .foregroundStyle(.white)
                     .frame(width: 38, height: 38)
-                    .background(canControlPlayback ? Color.accentColor : Color(.systemGray5))
+                    .background(canControlPlayback ? PlayerTheme.accent : Color.white.opacity(0.18))
                     .clipShape(Circle())
             }
             .disabled(!canControlPlayback)
@@ -2845,10 +2847,13 @@ struct AudioPlayerBar: View {
         .padding(.top, 10)
         .padding(.bottom, 14)
         .background(
-            Rectangle()
-                .fill(.thinMaterial)
-                .cornerRadius(24, corners: [.topLeft, .topRight])
-                .ignoresSafeArea(edges: .bottom)
+            LinearGradient(
+                colors: [PlayerTheme.backgroundTop, PlayerTheme.backgroundBottom],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .cornerRadius(24, corners: [.topLeft, .topRight])
+            .ignoresSafeArea(edges: .bottom)
         )
         .shadow(radius: 8, y: -4)
         .contentShape(Rectangle())
@@ -2867,16 +2872,16 @@ struct AudioPlayerBar: View {
     }
 
     private var expandedBody: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             if let onMinimize {
                 HStack {
                     Spacer()
                     Button(action: onMinimize) {
                         Image(systemName: "chevron.down")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(PlayerTheme.secondaryText)
                             .frame(width: 34, height: 28)
-                            .background(Color(.secondarySystemBackground).opacity(0.85))
+                            .background(Color.white.opacity(0.12))
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -2889,19 +2894,20 @@ struct AudioPlayerBar: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .controlSize(.small)
+                        .tint(.white)
                     Text(bufferingLabel)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PlayerTheme.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
-                .padding(.top, 4)
             }
 
             if let playbackContextLabel {
                 Text(playbackContextLabel)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .font(.system(.footnote, design: .rounded).weight(.semibold))
+                    .foregroundStyle(PlayerTheme.primaryText)
+                    .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal)
             }
@@ -2911,50 +2917,30 @@ struct AudioPlayerBar: View {
                 HStack(spacing: 8) {
                     Image(systemName: "music.note")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PlayerTheme.secondaryText)
                         .frame(width: 16)
                     Slider(value: $ambientVolume, in: 0...1)
-                        .tint(.secondary)
+                        .tint(.white.opacity(0.7))
                     Image(systemName: "music.note.list")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PlayerTheme.secondaryText)
                         .frame(width: 16)
                 }
                 .padding(.horizontal)
-                .padding(.top, 4)
             }
 
-            HStack(spacing: 8) {
-                Text(formatTime(displayedSliderValue))
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
-
-                Slider(value: Binding(
-                    get: { displayedSliderValue },
-                    set: { newValue in
-                        guard canSeek else { return }
-                        scrubberPreviewValue = min(max(0, newValue), duration)
-                    }
-                ), in: 0...duration) { editing in
-                    guard canSeek else { return }
-                    if editing {
-                        scrubberPreviewValue = sliderValue
-                        isScrubbing = true
-                    } else {
-                        let seekValue = min(max(0, scrubberPreviewValue), duration)
-                        sliderValue = seekValue
-                        isScrubbing = false
-                        onSeek(seekValue)
-                    }
+            PlayerScrubber(
+                position: min(max(0, sliderValue), duration),
+                duration: duration,
+                isEnabled: canSeek,
+                accessibilityStep: TimeInterval(skipInterval),
+                onSeek: { newValue in
+                    let clamped = min(max(0, newValue), duration)
+                    sliderValue = clamped
+                    onSeek(clamped)
                 }
-                .disabled(!canSeek)
-
-                Text(formatTime(duration))
-                    .font(.caption2.monospacedDigit())
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            .opacity(canSeek ? 1 : 0.55)
+            )
+            .padding(.horizontal, 24)
 
             if onSkipPreviousChapter != nil || onSkipNextChapter != nil {
                 HStack(spacing: 12) {
@@ -2971,7 +2957,7 @@ struct AudioPlayerBar: View {
 
                     Text("Chapter")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PlayerTheme.secondaryText)
 
                     Spacer()
 
@@ -2984,31 +2970,46 @@ struct AudioPlayerBar: View {
                     .disabled(onSkipNextChapter == nil)
                     .opacity(onSkipNextChapter == nil ? 0.35 : 1)
                 }
+                .foregroundStyle(PlayerTheme.iconTint)
                 .padding(.horizontal, 28)
             }
-            
-            StoryPlaybackControls(
+
+            PlayerTransportControls(
                 isPlaying: isPlaying,
-                playbackRate: playbackRate,
+                isBuffering: false,
                 canGoPrevious: onPreviousChapter != nil,
                 canGoNext: onNextChapter != nil,
                 canPlayPause: canControlPlayback,
-                onPlayPause: onPlayPause,
+                skipInterval: skipInterval,
                 onPrevious: { onPreviousChapter?() },
-                onNext: { onNextChapter?() },
-                onChangeRate: onChangeRate,
-                showsRateControl: showsRateControl,
-                onShowSpine: onShowSpine
+                onSkipBackward: onSkipBackward,
+                onPlayPause: onPlayPause,
+                onSkipForward: onSkipForward,
+                onNext: { onNextChapter?() }
             )
-            .padding(.horizontal)
+            .padding(.horizontal, 12)
+
+            PlayerSecondaryRow(
+                rate: Binding(
+                    get: { playbackRate },
+                    set: { onChangeRate($0) }
+                ),
+                showsSpeed: showsRateControl,
+                onChapters: onShowSpine
+            )
+            .padding(.horizontal, 12)
         }
         .padding(.top, onMinimize == nil ? 20 : 10)
-        .padding(.bottom, 20)
+        .padding(.bottom, 16)
+        .environment(\.colorScheme, .dark)
         .background(
-            Rectangle()
-                .fill(.thinMaterial)
-                .cornerRadius(24, corners: [.topLeft, .topRight])
-                .ignoresSafeArea(edges: .bottom)
+            LinearGradient(
+                colors: [PlayerTheme.backgroundTop, PlayerTheme.backgroundBottom],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .cornerRadius(24, corners: [.topLeft, .topRight])
+            .ignoresSafeArea(edges: .bottom)
         )
         .shadow(radius: 10, y: -5)
     }

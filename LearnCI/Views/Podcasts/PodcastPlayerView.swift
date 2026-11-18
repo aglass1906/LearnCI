@@ -135,7 +135,23 @@ struct PodcastPlayerView: View {
         .onDisappear {
             // Avoid tearing down playback when the app backgrounds (lock screen, etc.).
             if scenePhase == .active {
-                cleanupSession()
+                // Keep a playing episode going after Back; the global mini player takes over.
+                let keepPlaying = audioManager.isStreaming
+                    && audioManager.streamPlayer != nil
+                    && episode.playableAudioURL != nil
+                cleanupSession(stopPlayback: !keepPlaying)
+                if keepPlaying, let url = episode.playableAudioURL {
+                    PodcastMiniPlayer.shared.activate(
+                        .init(
+                            episodeID: episode.id,
+                            title: episode.title,
+                            subtitle: episode.show?.title ?? "Podcast",
+                            audioURL: url
+                        )
+                    )
+                } else {
+                    PodcastMiniPlayer.shared.clear()
+                }
             }
         }
         .onChange(of: playbackMode) { _, newMode in
@@ -1637,16 +1653,31 @@ struct PodcastPlayerView: View {
 
         playbackError = nil
         preparePlaybackQueue()
-        audioManager.streamAudio(url: url, startAt: episode.playbackPosition)
-        duration = max(episode.duration, 1)
 
-        audioManager.updateStreamNowPlayingInfo(
-            title: episode.title,
-            artist: episode.show?.title ?? "Podcast"
-        )
+        let miniPlayer = PodcastMiniPlayer.shared
+        let isResumingLiveStream = audioManager.streamPlayer != nil
+            && audioManager.currentStreamURL == url
+            && miniPlayer.context?.episodeID == episode.id
+        miniPlayer.clear()
 
-        isPlaying = false
-        sliderValue = episode.playbackPosition
+        if isResumingLiveStream {
+            // Playback continued in the background (mini player); reattach instead of restarting.
+            duration = max(audioManager.streamDuration, episode.duration, 1)
+            sliderValue = audioManager.streamCurrentTime
+            isPlaying = audioManager.isStreaming
+            playbackRate = audioManager.streamPlaybackRate
+        } else {
+            audioManager.streamAudio(url: url, startAt: episode.playbackPosition)
+            duration = max(episode.duration, 1)
+
+            audioManager.updateStreamNowPlayingInfo(
+                title: episode.title,
+                artist: episode.show?.title ?? "Podcast"
+            )
+
+            isPlaying = false
+            sliderValue = episode.playbackPosition
+        }
 
         if let artworkUrlStr = episode.show?.artworkUrl,
            let artworkUrl = URL(string: artworkUrlStr) {
@@ -1767,7 +1798,7 @@ struct PodcastPlayerView: View {
         )
     }
 
-    private func cleanupSession() {
+    private func cleanupSession(stopPlayback: Bool = true) {
         let currentTime = audioManager.streamCurrentTime
         episode.playbackPosition = currentTime
         episode.isSynced = false
@@ -1794,7 +1825,9 @@ struct PodcastPlayerView: View {
         }
 
         try? modelContext.save()
-        audioManager.stopStream()
+        if stopPlayback {
+            audioManager.stopStream()
+        }
 
         if let start = startTime {
             let minutes = Int(Date().timeIntervalSince(start) / 60)

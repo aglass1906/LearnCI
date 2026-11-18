@@ -17,6 +17,8 @@ struct MainTabView: View {
     @State private var learnResetID = UUID()
     @State private var discoveryResetID = UUID()
     @State private var historyResetID = UUID()
+    @State private var miniPlayerRoute: MiniPlayerRoute?
+    private let podcastMiniPlayer = PodcastMiniPlayer.shared
     
     var body: some View {
         VStack(spacing: 0) {
@@ -57,14 +59,25 @@ struct MainTabView: View {
                     }
                     .tag(AppTab.history)
             }
+            .tabViewBottomAccessory(isEnabled: podcastMiniPlayer.isShowing(for: audioManager)) {
+                MiniNowPlayingBar { episodeID in
+                    miniPlayerRoute = MiniPlayerRoute(id: episodeID)
+                }
+            }
         }
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
+        .sheet(item: $miniPlayerRoute) { route in
+            PodcastMiniPlayerSheet(episodeID: route.id)
+        }
     }
 
     private func selectTab(_ tab: AppTab) {
-        audioManager.stopAudio()
+        // Let a podcast keep playing (mini player) when switching tabs.
+        if !podcastMiniPlayer.isShowing(for: audioManager) {
+            audioManager.stopAudio()
+        }
         dataManager.isFullScreen = false
 
         switch tab {

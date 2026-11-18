@@ -42,6 +42,9 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
     private var wasPlayingBeforeInterruption = false
     private var wasStreamingBeforeInterruption = false
     private var currentStreamRequest: (url: URL, startAt: Double)?
+
+    /// URL of the stream currently loaded (nil when nothing is streaming).
+    var currentStreamURL: URL? { currentStreamRequest?.url }
     var onNextTrackCommand: (() -> Bool)?
     var onPreviousTrackCommand: (() -> Bool)?
     

@@ -920,13 +920,18 @@ class AudioManager: NSObject, AVAudioPlayerDelegate {
         }
     }
 
-    func updateStreamNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil) {
+    func updateStreamNowPlayingInfo(title: String? = nil, artist: String? = nil, artworkImage: UIImage? = nil, chapterNumber: Int? = nil, chapterCount: Int? = nil) {
         var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
 
         if let title = title { info[MPMediaItemPropertyTitle] = title }
         if let artist = artist { info[MPMediaItemPropertyArtist] = artist }
         if let image = artworkImage {
             info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        }
+
+        if let chapterNumber, let chapterCount, chapterCount > 1 {
+            info[MPNowPlayingInfoPropertyChapterNumber] = chapterNumber
+            info[MPNowPlayingInfoPropertyChapterCount] = chapterCount
         }
 
         info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = streamCurrentTime

@@ -1826,7 +1826,17 @@ struct PodcastPlayerView: View {
             audioManager.playStream()
             isPlaying = audioManager.isStreaming
         }
-        audioManager.updateStreamNowPlayingInfo()
+        publishNowPlayingChapter()
+    }
+
+    /// Refreshes lock-screen/CarPlay info, including the current section when available.
+    private func publishNowPlayingChapter() {
+        let sections = podcastSections
+        if let index = sections.chapterIndex(at: sliderValue) {
+            audioManager.updateStreamNowPlayingInfo(chapterNumber: index + 1, chapterCount: sections.count)
+        } else {
+            audioManager.updateStreamNowPlayingInfo()
+        }
     }
 
     private func skipForward() {
@@ -1843,7 +1853,7 @@ struct PodcastPlayerView: View {
         audioManager.seekStream(to: value)
         sliderValue = value
         studySessionViewModel?.syncCurrentBlockToPlaybackTime()
-        audioManager.updateStreamNowPlayingInfo()
+        publishNowPlayingChapter()
     }
 
     private func setRate(_ rate: Float) {

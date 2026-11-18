@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Study-block transport (previous block · play/stop block · loop · next block).
+/// Styled to match the shared player controls but kept separate: it steps through
+/// transcript blocks, not the whole episode.
 struct StudyTransportBar: View {
     let canGoPrevious: Bool
     let canGoNext: Bool
@@ -13,22 +16,19 @@ struct StudyTransportBar: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            HStack(spacing: 10) {
-                transportButton("Prev", systemImage: "chevron.left", disabled: !canGoPrevious, action: onPrevious)
-                transportButton(
-                    isBlockPlaying ? "Stop" : "Play",
-                    systemImage: isBlockPlaying ? "stop.fill" : "play.fill",
-                    prominent: true,
-                    action: onPlayStop
-                )
-                transportButton(
-                    "Loop",
-                    systemImage: isLooping ? "repeat.1.circle.fill" : "repeat.1.circle",
-                    selected: isLooping,
+            HStack(spacing: 0) {
+                sideButton("backward.end.fill", label: "Previous block", enabled: canGoPrevious, action: onPrevious)
+                playStopButton
+                sideButton(
+                    isLooping ? "repeat.1.circle.fill" : "repeat.1.circle",
+                    label: isLooping ? "Stop looping block" : "Loop block",
+                    enabled: true,
+                    highlighted: isLooping,
                     action: onToggleLoop
                 )
-                transportButton("Next", systemImage: "chevron.right", disabled: !canGoNext, action: onNext)
+                sideButton("forward.end.fill", label: "Next block", enabled: canGoNext, action: onNext)
             }
+            .sensoryFeedback(.impact(weight: .light), trigger: isBlockPlaying)
 
             if isBlockPlaybackLocked {
                 Label("Native speed locked during block playback", systemImage: "1.circle.fill")
@@ -38,22 +38,38 @@ struct StudyTransportBar: View {
         }
     }
 
-    @ViewBuilder
-    private func transportButton(
-        _ title: String,
-        systemImage: String,
-        disabled: Bool = false,
-        prominent: Bool = false,
-        selected: Bool = false,
+    private var playStopButton: some View {
+        Button(action: onPlayStop) {
+            Image(systemName: isBlockPlaying ? "stop.fill" : "play.fill")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 60, height: 60)
+                .background(PlayerTheme.accent, in: Circle())
+                .shadow(color: PlayerTheme.accent.opacity(0.35), radius: 10, y: 4)
+        }
+        .buttonStyle(PlayerPressStyle())
+        .frame(maxWidth: .infinity)
+        .accessibilityLabel(isBlockPlaying ? "Stop block" : "Play block")
+    }
+
+    private func sideButton(
+        _ symbol: String,
+        label: String,
+        enabled: Bool,
+        highlighted: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.caption.weight(.semibold))
-                .frame(maxWidth: .infinity)
+            Image(systemName: symbol)
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(highlighted ? PlayerTheme.accent : Color.primary)
+                .frame(minWidth: PlayerTheme.minTapTarget, minHeight: PlayerTheme.minTapTarget)
         }
-        .buttonStyle(.bordered)
-        .tint(prominent ? .blue : (selected ? .blue : .primary))
-        .disabled(disabled)
+        .buttonStyle(PlayerPressStyle())
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.35)
+        .frame(maxWidth: .infinity)
+        .accessibilityLabel(label)
     }
 }

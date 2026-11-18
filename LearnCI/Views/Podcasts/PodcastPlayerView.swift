@@ -299,6 +299,8 @@ struct PodcastPlayerView: View {
         }
     }
 
+    @State private var showSections = false
+
     private var podcastAudioPlayerBar: some View {
         AudioPlayerBar(
             isPlaying: $isPlaying,
@@ -315,9 +317,45 @@ struct PodcastPlayerView: View {
             onSkipBackward: skipBackward,
             onSeek: seekTo,
             onChangeRate: setRate,
+            onNextChapter: adjacentSectionAction(delta: 1),
+            onPreviousChapter: adjacentSectionAction(delta: -1),
+            onShowSpine: podcastSections.count > 1 ? { showSections = true } : nil,
             onExpand: expandPlayerController,
             onMinimize: minimizePlayerController
         )
+        .sheet(isPresented: $showSections) {
+            ChapterNavigatorSheet(
+                chapters: podcastSections,
+                currentIndex: podcastSections.chapterIndex(at: sliderValue),
+                currentProgress: currentSectionProgress,
+                isPlaying: isPlaying,
+                onSelect: { chapter in seekTo(chapter.startTime) }
+            )
+        }
+    }
+
+    /// Sections derived from the transcript blocks; empty when no transcript is loaded.
+    private var podcastSections: [PlaybackChapter] {
+        guard let session = studySessionViewModel else { return [] }
+        return PodcastSections.make(from: session.blocks, episodeDuration: duration)
+    }
+
+    private var currentSectionProgress: Double {
+        let sections = podcastSections
+        guard let i = sections.chapterIndex(at: sliderValue) else { return 0 }
+        let start = sections[i].startTime
+        let end = sections[i].endTime ?? duration
+        guard end > start else { return 0 }
+        return min(max((sliderValue - start) / (end - start), 0), 1)
+    }
+
+    /// Previous/next section jump; nil (button dimmed) when there is nowhere to go.
+    private func adjacentSectionAction(delta: Int) -> (() -> Void)? {
+        let sections = podcastSections
+        guard sections.count > 1, let current = sections.chapterIndex(at: sliderValue) else { return nil }
+        let target = current + delta
+        guard sections.indices.contains(target) else { return nil }
+        return { seekTo(sections[target].startTime) }
     }
 
     private var modePicker: some View {

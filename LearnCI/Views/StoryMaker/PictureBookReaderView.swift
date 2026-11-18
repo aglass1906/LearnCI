@@ -17,7 +17,8 @@ struct PictureBookReaderView: View {
     @State private var duration = 0.0
     @State private var playbackRate: Float = 1.0
     @State private var showSpine = false
-    @State private var isPlayerMinimized = false
+    /// Read mode starts with the compact player so the text is the focus.
+    @State private var isPlayerMinimized = true
     @State private var isLoadingBook = true
     @State private var loadingIssue: StoryReaderRequirementIssue?
     @State private var spreads: [PictureBookSpreadModel]
@@ -321,7 +322,8 @@ struct PictureBookReaderView: View {
                     isPlayerMinimized = false
                     showSpine = true
                 },
-                onExpand: expandPlayerController
+                onExpand: expandPlayerController,
+                onMinimize: minimizePlayerForReading
             )
             .disabled(isDownloadingAudio || supplementalPlayback.isLoading)
             .ignoresSafeArea(edges: .bottom)

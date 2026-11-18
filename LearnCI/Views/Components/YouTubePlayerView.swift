@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import os
 
 struct YouTubePlayerPlaybackSnapshot: Equatable {
     let currentTime: Double
@@ -61,6 +62,15 @@ struct YouTubePlayerView: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
 
+        // YouTube's player pauses itself when the page becomes hidden (screen lock,
+        // app switch). Report the page as always visible so audio keeps playing.
+        let keepAlive = WKUserScript(
+            source: Self.keepPlayingInBackgroundScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(keepAlive)
+
         // Add Script Handler
         configuration.userContentController.add(context.coordinator, name: "playbackHandler")
 
@@ -70,6 +80,22 @@ struct YouTubePlayerView: UIViewRepresentable {
         webView.isOpaque = false
         return webView
     }
+
+    private static let keepPlayingInBackgroundScript = """
+    (function() {
+        try {
+            Object.defineProperty(document, 'hidden', { configurable: true, get: function() { return false; } });
+            Object.defineProperty(document, 'webkitHidden', { configurable: true, get: function() { return false; } });
+            Object.defineProperty(document, 'visibilityState', { configurable: true, get: function() { return 'visible'; } });
+            Object.defineProperty(document, 'webkitVisibilityState', { configurable: true, get: function() { return 'visible'; } });
+        } catch (e) {}
+        var swallow = function(event) { event.stopImmediatePropagation(); };
+        document.addEventListener('visibilitychange', swallow, true);
+        document.addEventListener('webkitvisibilitychange', swallow, true);
+        window.addEventListener('pagehide', swallow, true);
+        window.addEventListener('blur', swallow, true);
+    })();
+    """
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
         // Prevent reloading if the video is already loaded
@@ -388,9 +414,36 @@ postSnapshot();
         var watchTimer: Timer?
         var currentVideoID: String?
         weak var webView: WKWebView?
+        private var lastKnownPlaying = false
+        private var lifecycleObservers: [NSObjectProtocol] = []
 
         init(_ parent: YouTubePlayerView) {
             self.parent = parent
+            super.init()
+            // Backstop: if the player still pauses as the app leaves the foreground,
+            // ask it to resume. The app has the audio background mode, so this runs while locked.
+            let center = NotificationCenter.default
+            for name in [UIApplication.willResignActiveNotification, UIApplication.didEnterBackgroundNotification] {
+                lifecycleObservers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                    self?.resumeIfWasPlaying()
+                })
+            }
+        }
+
+        private static let log = os.Logger(subsystem: "com.sankofaplex.LearnCI", category: "YouTubeBackground")
+
+        private func resumeIfWasPlaying() {
+            Self.log.debug("lifecycle change, lastKnownPlaying=\(self.lastKnownPlaying)")
+            guard lastKnownPlaying else { return }
+            // Touching the audio session here made the player flap play/pause, so only
+            // ask the player itself to resume.
+            for delay in [0.3, 1.0, 2.5] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    guard let self, let webView = self.webView, self.lastKnownPlaying else { return }
+                    Self.log.debug("resume attempt after \(delay)s")
+                    webView.evaluateJavaScript("playVideo();", completionHandler: nil)
+                }
+            }
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -438,6 +491,10 @@ postSnapshot();
             let duration = Self.doubleValue(payload["duration"]) ?? 0
             let playbackRate = Float(Self.doubleValue(payload["playbackRate"]) ?? 1)
             let isPlaying = payload["isPlaying"] as? Bool ?? false
+            if isPlaying != lastKnownPlaying {
+                Self.log.debug("player isPlaying -> \(isPlaying)")
+            }
+            lastKnownPlaying = isPlaying
 
             let snapshot = YouTubePlayerPlaybackSnapshot(
                 currentTime: currentTime,
@@ -473,6 +530,7 @@ postSnapshot();
 
         deinit {
             stopWatchTimer()
+            lifecycleObservers.forEach(NotificationCenter.default.removeObserver)
         }
 
         private static func doubleValue(_ raw: Any?) -> Double? {

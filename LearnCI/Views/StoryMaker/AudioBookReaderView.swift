@@ -121,6 +121,8 @@ struct AudioBookReaderView: View {
         }
         .navigationTitle(playbackMode == .continuousAudio ? "Listen" : "Audio Book")
         .navigationBarTitleDisplayMode(.inline)
+        .preferredColorScheme(.dark)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             if startTime == nil {
                 startTime = Date()
@@ -428,7 +430,7 @@ struct AudioBookReaderView: View {
                             .frame(width: 380)
                     }
                 } else {
-                    audioBookMainColumn(showsSpineNavigation: true)
+                    audioBookMainColumn(showsSpineNavigation: false)
                 }
             }
             .onAppear {
@@ -509,7 +511,7 @@ struct AudioBookReaderView: View {
     @ViewBuilder
     private var podcastBackground: some View {
         ZStack {
-            Color(.systemBackground)
+            PlayerBackground()
 
             if let url = selectedNavItem?.imageURL ?? storyCoverImageURL {
                 AsyncImage(url: url) { phase in
@@ -519,20 +521,11 @@ struct AudioBookReaderView: View {
                             .scaledToFill()
                     }
                 }
-                .blur(radius: 36)
-                .opacity(0.28)
+                .blur(radius: 60)
+                .opacity(0.45)
+                .overlay(Color.black.opacity(0.35))
                 .allowsHitTesting(false)
             }
-
-            LinearGradient(
-                colors: [
-                    Color(.systemBackground).opacity(0.35),
-                    Color(.systemBackground).opacity(0.92),
-                    Color(.systemBackground)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
         }
         .ignoresSafeArea()
     }
@@ -603,9 +596,10 @@ struct AudioBookReaderView: View {
                         heroPlaceholder(for: item)
                     }
                 }
-                .frame(width: 220, height: 220)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
+                .containerRelativeFrame(.horizontal) { length, _ in min(length - 40, 380) }
+                .aspectRatio(1, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: PlayerTheme.artworkCornerRadius, style: .continuous))
+                .shadow(color: .black.opacity(0.45), radius: 24, y: 12)
 
                 if isNowPlaying(item) {
                     Label("Now Playing", systemImage: "waveform")

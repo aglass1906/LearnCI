@@ -10,6 +10,8 @@ struct DialogStoryFlowView: View {
     private let onProgressChange: ((StoryReaderProgressUpdate) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    /// Read mode starts with the compact player so the text is the focus.
+    @State private var isPlayerMinimized = true
     @State private var spineIndex = 0
     @State private var displayLanguage: StorySessionView.DisplayLanguage = .target
     @State private var playbackRate: Float = 1.0
@@ -245,13 +247,20 @@ struct DialogStoryFlowView: View {
             playbackContextLabel: spinePlaybackContextLabel,
             isBuffering: supplementalPlayback.isLoading,
             bufferingLabel: "Loading audio…",
+            isMinimized: isPlayerMinimized,
             onPlayPause: toggleSpinePlayback,
             onSkipForward: skipSpineForward,
             onSkipBackward: skipSpineBackward,
             onSeek: seekSpinePlayback,
             onChangeRate: setSpinePlaybackRate,
             onNextChapter: spineStepNavigationHandler(delta: 1),
-            onPreviousChapter: spineStepNavigationHandler(delta: -1)
+            onPreviousChapter: spineStepNavigationHandler(delta: -1),
+            onExpand: {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) { isPlayerMinimized = false }
+            },
+            onMinimize: {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) { isPlayerMinimized = true }
+            }
         )
         .disabled(supplementalPlayback.isLoading)
         .ignoresSafeArea(edges: .bottom)

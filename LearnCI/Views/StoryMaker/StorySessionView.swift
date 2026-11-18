@@ -43,7 +43,8 @@ struct StorySessionView: View {
     // UI State
     @State private var showStoryInfo = false
     @State private var showSpine = false
-    @State private var isPlayerMinimized = false
+    /// Read mode starts with the compact player so the text is the focus.
+    @State private var isPlayerMinimized = true
     @State private var selectedLanguage: DisplayLanguage = .target
     @State private var heroImage: UIImage? = nil
     @State private var readingMatterHeroImage: UIImage? = nil

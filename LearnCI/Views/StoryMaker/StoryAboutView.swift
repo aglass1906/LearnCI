@@ -161,7 +161,7 @@ struct StoryAboutView: View {
                             StoryActionTile(
                                 icon: "sparkles",
                                 title: studyState != nil ? "Resume" : "Study",
-                                isProminent: true,
+                                isProminent: false,
                                 isBusy: false
                             ) {
                                 navigateToGuidedPath = true

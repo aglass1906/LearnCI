@@ -97,6 +97,7 @@ struct PictureBookReaderView: View {
             if newValue == .compact { minimizePlayerForReading() }
         }
         .onAppear {
+            BackgroundPlaybackSession.shared.clear()
             if verticalSizeClass == .compact { minimizePlayerForReading() }
             if startTime == nil {
                 startTime = Date()

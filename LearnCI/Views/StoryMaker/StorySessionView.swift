@@ -234,6 +234,7 @@ struct StorySessionView: View {
             StoryQuizView(story: story, preloadedQuestions: quizQuestions.isEmpty ? nil : quizQuestions)
         }
         .onAppear {
+            BackgroundPlaybackSession.shared.clear()
             startTime = Date()
             ambientVolume = story.ambientVolume
             reconcileCurrentSpinePosition()

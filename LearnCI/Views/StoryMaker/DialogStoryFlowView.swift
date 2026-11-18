@@ -69,6 +69,7 @@ struct DialogStoryFlowView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            BackgroundPlaybackSession.shared.clear()
             reconcileSpinePosition()
         }
         .mediaPlaybackLifecycle(

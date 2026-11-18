@@ -18,7 +18,7 @@ struct MainTabView: View {
     @State private var discoveryResetID = UUID()
     @State private var historyResetID = UUID()
     @State private var miniPlayerRoute: MiniPlayerRoute?
-    private let podcastMiniPlayer = PodcastMiniPlayer.shared
+    private let podcastMiniPlayer = BackgroundPlaybackSession.shared
     
     var body: some View {
         VStack(spacing: 0) {
@@ -60,8 +60,8 @@ struct MainTabView: View {
                     .tag(AppTab.history)
             }
             .tabViewBottomAccessory(isEnabled: podcastMiniPlayer.isShowing(for: audioManager)) {
-                MiniNowPlayingBar { episodeID in
-                    miniPlayerRoute = MiniPlayerRoute(id: episodeID)
+                MiniNowPlayingBar { route in
+                    miniPlayerRoute = route
                 }
             }
         }
@@ -69,7 +69,12 @@ struct MainTabView: View {
             ProfileView()
         }
         .sheet(item: $miniPlayerRoute) { route in
-            PodcastMiniPlayerSheet(episodeID: route.id)
+            switch route.target.kind {
+            case .podcast:
+                PodcastMiniPlayerSheet(episodeID: route.target.id)
+            case .story:
+                StoryMiniPlayerSheet(storyID: route.target.id)
+            }
         }
     }
 

@@ -124,6 +124,7 @@ struct AudioBookReaderView: View {
         .preferredColorScheme(.dark)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
+            BackgroundPlaybackSession.shared.clear()
             if startTime == nil {
                 startTime = Date()
             }
@@ -1584,10 +1585,32 @@ struct AudioBookReaderView: View {
     }
 
     private func cleanupSession() {
+        if handOffPlaybackToMiniPlayer() {
+            logActivityIfNeeded()
+            return
+        }
         playbackQueue.endControlledSession(id: queueSessionID)
         supplementalPlayback.stop()
         audioManager.stopAudio()
         logActivityIfNeeded()
+    }
+
+    /// Keeps narration going after the screen is left: the shared queue advances through the
+    /// remaining clips on its own while the app-level mini player controls playback.
+    private func handOffPlaybackToMiniPlayer() -> Bool {
+        guard audioManager.isStreaming,
+              audioManager.streamPlayer != nil,
+              !supplementalPlayback.isPlaying,
+              clips.indices.contains(currentClipIndex) else { return false }
+        let queueItems = clips.compactMap(makeSharedQueueItem)
+        guard let current = queueItems.first(where: { $0.id == sharedQueueID(for: clips[currentClipIndex]) }) else {
+            return false
+        }
+        playbackQueue.prepareQueue(with: queueItems, current: current)
+        BackgroundPlaybackSession.shared.activate(
+            .init(kind: .story, contentID: story.id, title: current.title, subtitle: story.title)
+        )
+        return true
     }
 
     private func logActivityIfNeeded() {

@@ -1,25 +1,38 @@
 import SwiftUI
 import SwiftData
 
-/// App-level now-playing bar for a podcast that kept playing after its screen was left.
+/// App-level now-playing bar for a podcast or story that kept playing after its screen was left.
 struct MiniNowPlayingBar: View {
     @Environment(AudioManager.self) private var audioManager
+    @Environment(PlaybackQueueManager.self) private var playbackQueue
     @Environment(\.modelContext) private var modelContext
 
-    private let miniPlayer = PodcastMiniPlayer.shared
-    let onOpen: (UUID) -> Void
+    private let session = BackgroundPlaybackSession.shared
+    let onOpen: (MiniPlayerRoute) -> Void
+
+    private var target: BackgroundPlaybackSession.Target? {
+        session.target(currentQueueItem: playbackQueue.currentItem)
+    }
+
+    private var displayTitle: String {
+        playbackQueue.currentItem?.title ?? session.context?.title ?? ""
+    }
+
+    private var displaySubtitle: String {
+        playbackQueue.currentItem?.subtitle ?? session.context?.subtitle ?? ""
+    }
 
     var body: some View {
-        if let context = miniPlayer.context {
+        if session.context != nil {
             HStack(spacing: 8) {
                 Button {
-                    onOpen(context.episodeID)
+                    if let target { onOpen(MiniPlayerRoute(target: target)) }
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(context.title)
+                        Text(displayTitle)
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .lineLimit(1)
-                        Text(context.subtitle)
+                        Text(displaySubtitle)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -28,7 +41,7 @@ struct MiniNowPlayingBar: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Now playing \(context.title). Open episode")
+                .accessibilityLabel("Now playing \(displayTitle). Open")
 
                 controlButton("gobackward.10", label: "Back 10 seconds") { skip(-10) }
 
@@ -44,16 +57,19 @@ struct MiniNowPlayingBar: View {
 
                 controlButton("goforward.10", label: "Forward 10 seconds") { skip(10) }
 
-                controlButton("xmark", label: "Stop and close") { close(context) }
+                controlButton("xmark", label: "Stop and close") { close() }
             }
             .padding(.horizontal, 12)
             .onChange(of: Int(audioManager.streamCurrentTime / 10)) { _, _ in
-                persistPosition(for: context.episodeID)
+                persistPodcastPosition()
             }
             .onChange(of: audioManager.streamFinished) { _, finished in
-                guard finished else { return }
-                persistPosition(for: context.episodeID)
-                miniPlayer.clear()
+                guard finished, playbackQueue.hasNext == false else { return }
+                persistPodcastPosition()
+                session.clear()
+            }
+            .onChange(of: audioManager.streamPlayer == nil) { _, isGone in
+                if isGone { session.clear() }
             }
         }
     }
@@ -71,7 +87,7 @@ struct MiniNowPlayingBar: View {
     private func togglePlay() {
         if audioManager.isStreaming {
             audioManager.pauseStream()
-            if let id = miniPlayer.context?.episodeID { persistPosition(for: id) }
+            persistPodcastPosition()
         } else {
             audioManager.playStream()
         }
@@ -79,22 +95,23 @@ struct MiniNowPlayingBar: View {
 
     private func skip(_ delta: Double) {
         let duration = audioManager.streamDuration
-        var target = audioManager.streamCurrentTime + delta
-        target = max(0, target)
-        if duration > 0 { target = min(duration, target) }
-        audioManager.seekStream(to: target)
+        var seconds = max(0, audioManager.streamCurrentTime + delta)
+        if duration > 0 { seconds = min(duration, seconds) }
+        audioManager.seekStream(to: seconds)
     }
 
-    private func close(_ context: PodcastMiniPlayer.Context) {
-        persistPosition(for: context.episodeID)
+    private func close() {
+        persistPodcastPosition()
+        audioManager.onStreamFinished = nil
         audioManager.stopStream()
-        miniPlayer.clear()
+        session.clear()
     }
 
-    private func persistPosition(for episodeID: UUID) {
-        let descriptor = FetchDescriptor<PodcastEpisode>(
-            predicate: #Predicate { $0.id == episodeID }
-        )
+    /// Only podcast episodes keep a per-episode resume position here.
+    private func persistPodcastPosition() {
+        guard let target, target.kind == .podcast else { return }
+        let id = target.id
+        let descriptor = FetchDescriptor<PodcastEpisode>(predicate: #Predicate { $0.id == id })
         guard let episode = try? modelContext.fetch(descriptor).first else { return }
         episode.playbackPosition = audioManager.streamCurrentTime
         episode.isSynced = false
@@ -131,6 +148,42 @@ struct PodcastMiniPlayerSheet: View {
     }
 }
 
+/// Sheet used to reopen a story's listen player from the mini bar.
+struct StoryMiniPlayerSheet: View {
+    let storyID: UUID
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            if let story = fetchStory() {
+                StoryAudioPlaybackView(story: story)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Done") { dismiss() }
+                        }
+                    }
+            } else {
+                ContentUnavailableView("Story not found", systemImage: "headphones")
+            }
+        }
+    }
+
+    private func fetchStory() -> Story? {
+        let id = storyID
+        let descriptor = FetchDescriptor<Story>(predicate: #Predicate { $0.id == id })
+        return try? modelContext.fetch(descriptor).first
+    }
+}
+
 struct MiniPlayerRoute: Identifiable {
-    let id: UUID
+    let target: BackgroundPlaybackSession.Target
+
+    var id: String {
+        switch target.kind {
+        case .podcast: return "podcast:\(target.id.uuidString)"
+        case .story: return "story:\(target.id.uuidString)"
+        }
+    }
 }

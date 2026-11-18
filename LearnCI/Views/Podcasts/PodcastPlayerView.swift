@@ -140,17 +140,17 @@ struct PodcastPlayerView: View {
                     && audioManager.streamPlayer != nil
                     && episode.playableAudioURL != nil
                 cleanupSession(stopPlayback: !keepPlaying)
-                if keepPlaying, let url = episode.playableAudioURL {
-                    PodcastMiniPlayer.shared.activate(
+                if keepPlaying {
+                    BackgroundPlaybackSession.shared.activate(
                         .init(
-                            episodeID: episode.id,
+                            kind: .podcast,
+                            contentID: episode.id,
                             title: episode.title,
-                            subtitle: episode.show?.title ?? "Podcast",
-                            audioURL: url
+                            subtitle: episode.show?.title ?? "Podcast"
                         )
                     )
                 } else {
-                    PodcastMiniPlayer.shared.clear()
+                    BackgroundPlaybackSession.shared.clear()
                 }
             }
         }
@@ -1654,10 +1654,10 @@ struct PodcastPlayerView: View {
         playbackError = nil
         preparePlaybackQueue()
 
-        let miniPlayer = PodcastMiniPlayer.shared
+        let miniPlayer = BackgroundPlaybackSession.shared
         let isResumingLiveStream = audioManager.streamPlayer != nil
             && audioManager.currentStreamURL == url
-            && miniPlayer.context?.episodeID == episode.id
+            && miniPlayer.context != nil
         miniPlayer.clear()
 
         if isResumingLiveStream {

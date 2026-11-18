@@ -311,6 +311,12 @@ struct StoryReaderDataAdapter {
             }
     }
 
+    /// Every chapter scene's narration clip, in the exact form the reader requests it, so a
+    /// background sync can pre-warm the same cache files (same name and version key) the player uses.
+    func scenePrefetchClips() -> [StorySceneAudioClip] {
+        story.chapters.indices.flatMap { sceneClips(forChapter: $0, introBaseOffset: 0) }
+    }
+
     func audioClip(for sceneItem: StoryReadingSpineItem) -> StorySceneAudioClip? {
         guard case .scene(let chapterIndex, let sceneIndex) = sceneItem else { return nil }
         return audioClips(forChapter: chapterIndex).first { $0.sceneIndex == sceneIndex }

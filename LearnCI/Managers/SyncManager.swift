@@ -1580,7 +1580,8 @@ struct CoachingCheckInDTO: Codable {
                     language: Language.fromStoredValue(dto.language),
                     nativeLanguageCode: Language.code(fromStoredValue: dto.native_language ?? "en"),
                     level: dto.level,
-                    createdAt: dto.created_at
+                    createdAt: dto.created_at,
+                    updatedAt: dto.updated_at
                 )
                 newStory.isFavorite = dto.is_favorite
                 newStory.comprehensionQuestionsJSON = dto.comprehension_questions_json
@@ -1648,32 +1649,51 @@ struct CoachingCheckInDTO: Codable {
         try context.save()
     }
 
+    /// Pre-warms scene narration into the same cache the story player reads
+    /// (`StoryReaderDataAdapter` naming, versioned by the story's `updatedAt`), so a scene is
+    /// downloaded once and never again by the player.
     private func downloadChapterAudio(for story: Story, context: ModelContext) {
         let storyID = story.id
-        let chapters = story.chapters
+        let updatedAt = story.updatedAt
+        removeLegacySceneAudio(for: story)
+
+        for clip in StoryReaderDataAdapter(story: story).scenePrefetchClips() {
+            if StoryReaderDataAdapter.cachedAudioURL(
+                storyID: storyID,
+                clip: clip,
+                storyUpdatedAt: updatedAt
+            ) != nil { continue }
+
+            let title = story.title
+            Task {
+                let url = await StoryReaderDataAdapter.downloadAndCacheAudioIfNeeded(
+                    storyID: storyID,
+                    clip: clip,
+                    storyUpdatedAt: updatedAt
+                )
+                if let url {
+                    print("[Sync] Cached scene audio for \(title): \(url.lastPathComponent)")
+                } else {
+                    print("[Sync] Failed to cache scene audio for \(title) (chapter \(clip.chapterIndex), scene \(clip.sceneIndex))")
+                }
+            }
+        }
+    }
+
+    /// Older syncs saved scene audio as `story_<id>_chapter_<chapterID>_scene_<n>.<ext>`, a name
+    /// the player never reads. Delete those orphans (player cache names carry a fingerprint suffix).
+    private func removeLegacySceneAudio(for story: Story) {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let targetCode = story.targetLanguageCode
-        
-        for chapter in chapters {
+        for chapter in story.chapters {
             for scene in chapter.scenes {
                 guard let remotePath = scene.audioUrlForLanguage(targetCode) else { continue }
                 let ext = (remotePath as NSString).pathExtension
                 let finalExt = ext.isEmpty ? "m4a" : ext
-                let filename = "story_\(storyID.uuidString)_chapter_\(chapter.id)_scene_\(scene.sceneIndex).\(finalExt)"
-                let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                let url = docs.appendingPathComponent(filename)
-                if FileManager.default.fileExists(atPath: url.path) { continue }
-
-                Task {
-                    do {
-                        let data = try await authManager.supabase.storage
-                            .from("audio-stories")
-                            .download(path: remotePath)
-
-                        try data.write(to: url)
-                        print("[Sync] Downloaded scene audio for \(story.title): \(filename)")
-                    } catch {
-                        print("[Sync] Failed to download scene audio (\(chapter.titleFor(targetCode))) for \(story.title): \(error)")
-                    }
+                let legacyName = "story_\(story.id.uuidString)_chapter_\(chapter.id)_scene_\(scene.sceneIndex).\(finalExt)"
+                let legacyURL = docs.appendingPathComponent(legacyName)
+                if FileManager.default.fileExists(atPath: legacyURL.path) {
+                    try? FileManager.default.removeItem(at: legacyURL)
                 }
             }
         }
